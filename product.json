@@ -90,27 +90,27 @@
 		}
 	],
 	"defaultChatAgent": {
-		"extensionId": "GitHub.copilot",
-		"chatExtensionId": "GitHub.copilot-chat",
-		"chatExtensionOutputId": "GitHub.copilot-chat.GitHub Copilot Chat.log",
-		"documentationUrl": "https://aka.ms/github-copilot-overview",
-		"termsStatementUrl": "https://aka.ms/github-copilot-terms-statement",
-		"privacyStatementUrl": "https://aka.ms/github-copilot-privacy-statement",
-		"skusDocumentationUrl": "https://aka.ms/github-copilot-plans",
-		"publicCodeMatchesUrl": "https://aka.ms/github-copilot-match-public-code",
-		"manageSettingsUrl": "https://aka.ms/github-copilot-settings",
-		"managePlanUrl": "https://aka.ms/github-copilot-manage-plan",
-		"manageOverageUrl": "https://aka.ms/github-copilot-manage-overage",
-		"upgradePlanUrl": "https://aka.ms/github-copilot-upgrade-plan",
-		"signUpUrl": "https://aka.ms/github-sign-up",
+		"extensionId": "pointer.pointer-ai",
+		"chatExtensionId": "pointer.pointer-ai",
+		"chatExtensionOutputId": "pointer.pointer-ai.Pointer AI.log",
+		"documentationUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"termsStatementUrl": "https://github.com/SkinnnyJay/vscode/blob/main/LICENSE.txt",
+		"privacyStatementUrl": "https://github.com/SkinnnyJay/vscode/blob/main/SECURITY.md",
+		"skusDocumentationUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"publicCodeMatchesUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"manageSettingsUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"managePlanUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"manageOverageUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"upgradePlanUrl": "https://github.com/SkinnnyJay/vscode#readme",
+		"signUpUrl": "https://github.com/signup",
 		"provider": {
 			"default": {
-				"id": "github",
-				"name": "GitHub"
+				"id": "pointer",
+				"name": "Pointer"
 			},
 			"enterprise": {
-				"id": "github-enterprise",
-				"name": "GHE.com"
+				"id": "pointer-enterprise",
+				"name": "Pointer Enterprise"
 			},
 			"google": {
 				"id": "google",
@@ -121,43 +121,23 @@
 				"name": "Apple"
 			}
 		},
-		"providerUriSetting": "github-enterprise.uri",
-		"providerScopes": [
-			[
-				"read:user",
-				"user:email",
-				"repo",
-				"workflow"
-			],
-			[
-				"user:email"
-			],
-			[
-				"read:user"
-			]
-		],
-		"entitlementUrl": "https://api.github.com/copilot_internal/user",
-		"entitlementSignupLimitedUrl": "https://api.github.com/copilot_internal/subscribe_limited_user",
-		"chatQuotaExceededContext": "github.copilot.chat.quotaExceeded",
-		"completionsQuotaExceededContext": "github.copilot.completions.quotaExceeded",
-		"walkthroughCommand": "github.copilot.open.walkthrough",
-		"completionsMenuCommand": "github.copilot.toggleStatusMenu",
-		"completionsRefreshTokenCommand": "github.copilot.signIn",
-		"chatRefreshTokenCommand": "github.copilot.refreshToken",
-		"generateCommitMessageCommand": "github.copilot.git.generateCommitMessage",
-		"resolveMergeConflictsCommand": "github.copilot.git.resolveMergeConflicts",
-		"completionsAdvancedSetting": "github.copilot.advanced",
-		"completionsEnablementSetting": "github.copilot.enable",
-		"nextEditSuggestionsSetting": "github.copilot.nextEditSuggestions.enabled",
-		"tokenEntitlementUrl": "https://api.github.com/copilot_internal/v2/token",
-		"mcpRegistryDataUrl": "https://api.github.com/copilot/mcp_registry"
+		"providerUriSetting": "pointer.providers.enterpriseUri",
+		"providerScopes": [],
+		"entitlementUrl": "https://github.com/SkinnnyJay/vscode",
+		"entitlementSignupLimitedUrl": "https://github.com/SkinnnyJay/vscode",
+		"chatQuotaExceededContext": "pointer.chat.quotaExceeded",
+		"completionsQuotaExceededContext": "pointer.completions.quotaExceeded",
+		"walkthroughCommand": "pointer.openSettings",
+		"completionsMenuCommand": "pointer.toggleTab",
+		"completionsRefreshTokenCommand": "pointer.openSettings",
+		"chatRefreshTokenCommand": "pointer.openSettings",
+		"generateCommitMessageCommand": "pointer.openChat",
+		"resolveMergeConflictsCommand": "pointer.openChat",
+		"completionsAdvancedSetting": "pointer.providers.primary",
+		"completionsEnablementSetting": "pointer.tab.enabled",
+		"nextEditSuggestionsSetting": "pointer.tab.enabled",
+		"tokenEntitlementUrl": "https://github.com/SkinnnyJay/vscode",
+		"mcpRegistryDataUrl": "https://github.com/SkinnnyJay/vscode"
 	},
-	"trustedExtensionAuthAccess": {
-		"github": [
-			"GitHub.copilot-chat"
-		],
-		"github-enterprise": [
-			"GitHub.copilot-chat"
-		]
-	}
+	"trustedExtensionAuthAccess": {}
 }

@@ -87,7 +87,7 @@ Tasks:
 - [x] - M1 - [extension] Add settings schema defaults and descriptions.
 - [x] - M1 - [extension] Add defaults UI for tab/chat/agent provider+model selection.
 - [x] - M1 - [extension] Add settings validation and migration placeholder.
-- [ ] - M1 - [core] Hide/disable Copilot commands and menus by default.
+- [x] - M1 - [core] Hide/disable Copilot commands and menus by default.
 - [ ] - M1 - [core] Add setting to re-enable Copilot visibility.
 - [ ] - M1 - [extension] Add compatibility setting to re-enable Copilot if needed.
 - [ ] - M1 - [policy] Define workspace trust model for loading `.pointer/` config and rules.

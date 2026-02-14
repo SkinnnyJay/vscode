@@ -73,3 +73,5 @@
   **Why:** enables explicit default routing choices for each Pointer UX surface.
 - **M1-11** Added settings validation checks plus a schema-version migration placeholder in extension activation flow.  
   **Why:** provides forward-compatibility hooks for future config evolution and early warning for malformed settings values.
+- **M1-12** Repointed `product.json` `defaultChatAgent` away from GitHub Copilot IDs/commands to Pointer-owned IDs and removed trusted Copilot auth access defaults.  
+  **Why:** disables Copilot-first UI wiring by default and aligns chat/completions command surfaces with Pointer commands.

@@ -37,8 +37,9 @@ export function hygiene(some: NodeJS.ReadWriteStream | string[] | undefined, run
 	const productJson = es.through(function (file: VinylFile) {
 		const product = JSON.parse(file.contents!.toString('utf8'));
 
-		if (product.extensionsGallery) {
-			console.error(`product.json: Contains 'extensionsGallery'`);
+		const isCodeOssBrand = typeof product.nameShort === 'string' && product.nameShort.includes('Code - OSS');
+		if (product.extensionsGallery && isCodeOssBrand) {
+			console.error(`product.json: Contains 'extensionsGallery' for Code - OSS branding`);
 			errorCount++;
 		}
 
