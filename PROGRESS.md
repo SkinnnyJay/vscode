@@ -77,3 +77,5 @@
   **Why:** disables Copilot-first UI wiring by default and aligns chat/completions command surfaces with Pointer commands.
 - **M1-13** Added `configurationDefaults` entries that keep Copilot completions and next-edit suggestions disabled by default while remaining user-overridable.  
   **Why:** preserves a core-level compatibility toggle path for users who explicitly opt back into Copilot visibility.
+- **M1-14** Added `pointer.compatibility.enableCopilotVisibility` extension setting and surfaced its state in the Pointer status bar tooltip/text.  
+  **Why:** provides an explicit extension-level compatibility switch for users that need temporary Copilot re-enablement.

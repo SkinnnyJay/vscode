@@ -111,6 +111,11 @@
 						"default": "confirm",
 						"enum": ["disabled", "confirm", "allow"],
 						"description": "Default terminal tool execution policy."
+					},
+					"pointer.compatibility.enableCopilotVisibility": {
+						"type": "boolean",
+						"default": false,
+						"description": "When enabled, restores Copilot-related visibility settings for compatibility workflows."
 					}
 				}
 			},

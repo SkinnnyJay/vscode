@@ -91,12 +91,14 @@ function activate(context) {
 		const tabModel = config.get('tab.model', 'auto');
 		const agentProvider = config.get('agent.provider', 'auto');
 		const agentModel = config.get('agent.model', 'auto');
+		const copilotCompatibility = vscode.workspace.getConfiguration('pointer.compatibility').get('enableCopilotVisibility', false);
 
-		statusBarItem.text = `$(sparkle) Pointer ${chatProvider}/${chatModel}`;
+		statusBarItem.text = `$(sparkle) Pointer ${chatProvider}/${chatModel}${copilotCompatibility ? ' +Copilot' : ''}`;
 		statusBarItem.tooltip = [
 			`Chat: ${chatProvider}/${chatModel}`,
 			`Tab: ${tabProvider}/${tabModel}`,
-			`Agent: ${agentProvider}/${agentModel}`
+			`Agent: ${agentProvider}/${agentModel}`,
+			`Copilot Compatibility: ${copilotCompatibility ? 'Enabled' : 'Disabled'}`
 		].join('\n');
 	};
 
@@ -108,7 +110,7 @@ function activate(context) {
 	}
 
 	const configWatcher = vscode.workspace.onDidChangeConfiguration((event) => {
-		if (event.affectsConfiguration('pointer.defaults')) {
+		if (event.affectsConfiguration('pointer.defaults') || event.affectsConfiguration('pointer.compatibility')) {
 			updateStatusBar();
 		}
 	});
