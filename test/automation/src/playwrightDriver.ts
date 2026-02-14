@@ -504,7 +504,9 @@ export class PlaywrightDriver {
 				const details = [
 					event.blockedReason ? `blockedReason=${event.blockedReason}` : undefined,
 					event.canceled ? 'canceled=true' : undefined,
-					event.type ? `resourceType=${event.type}` : undefined
+					event.type ? `resourceType=${event.type}` : undefined,
+					event.corsErrorStatus?.corsError ? `corsError=${event.corsErrorStatus.corsError}` : undefined,
+					event.corsErrorStatus?.failedParameter ? `corsParam=${event.corsErrorStatus.failedParameter}` : undefined
 				].filter(Boolean).join(' ');
 				const entry = this.toFailureEntry(`[cdp] ${event.errorText}`, url, details);
 				this.pushRecentRequestFailure(entry);

@@ -329,6 +329,10 @@
   **Why:** augments Playwright’s coarse `net::ERR_FAILED` signal with lower-level network event context to tighten root-cause analysis.
 - **CDP diagnostics verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke startup case; fail-fast output now includes entries like `[cdp] net::ERR_FAILED ... resourceType=Script` alongside existing `existsOnDisk=true` annotations. Re-ran `make lint` (pass).
   **Why:** confirms CDP enrichment is active and non-disruptive while preserving prior diagnostics.
+- **Extended CDP failure metadata capture (2026-02-14 PM)** Expanded smoke CDP `Network.loadingFailed` diagnostics to include CORS metadata when available (`corsError`, `corsParam`) in addition to resource type/blocked/canceled flags.
+  **Why:** preserves current diagnostics while preparing for richer root-cause signals when Chromium surfaces CORS-specific failure context.
+- **Extended CDP metadata verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke startup case; output continues to include `[cdp] ... resourceType=Script` entries (no additional CORS fields surfaced in this run), then re-ran `make lint` (pass).
+  **Why:** verifies the metadata extension is active, compatible, and non-regressive even when optional fields are absent.
 - **Focused smoke reproducibility check (2026-02-14 PM)** Re-ran the same focused smoke startup case (`-g "verifies opened editors are restored"`) 5 consecutive times; all 5/5 runs failed with the same renderer import-startup error path.
   **Why:** confirms this environment failure mode is deterministic for the focused startup scenario, not a transient flake.
 - **Unit harness `existsOnDisk` import diagnostics (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` structured `[ESM IMPORT FAILURE]` logging to include `existsOnDisk` by converting the failing module URL to a local file path (`fileURLToPath` + `fs.existsSync`).
