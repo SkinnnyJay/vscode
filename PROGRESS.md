@@ -584,3 +584,7 @@
   **Why:** makes it explicit that the fail-fast summary shows a bounded tail of the diagnostics buffer rather than the full history.
 - **Display-window validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes truncation metadata (sample: `showingLast=8/25`), and re-ran `make lint` (pass).
   **Why:** confirms bounded-window metadata is active and non-regressive.
+- **Always-on fail-fast window metadata (2026-02-14 PM)** Updated `test/automation/src/code.ts` to always include `showingLast=<displayed>/<recorded>` in the smoke fail-fast header, even when the window is not truncated.
+  **Why:** keeps header schema stable across runs and simplifies downstream parsing/alerts that consume this field.
+- **Always-on window validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header includes `showingLast=...` in this run (`8/25`), and re-ran `make lint` (pass).
+  **Why:** confirms schema-stable display-window metadata is active and lint-clean.

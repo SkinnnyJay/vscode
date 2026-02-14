@@ -348,11 +348,9 @@ export class Code {
 					const allRecentFailures = this.driver.getRecentRequestFailures();
 					const recentFailures = allRecentFailures.slice(-Code.recentFailuresDisplayLimit);
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
-					const truncationSuffix = allRecentFailures.length > recentFailures.length
-						? `, showingLast=${recentFailures.length}/${allRecentFailures.length}`
-						: '';
+					const displayWindowSuffix = `, showingLast=${recentFailures.length}/${allRecentFailures.length}`;
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${truncationSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
