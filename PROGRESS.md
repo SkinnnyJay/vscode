@@ -15,3 +15,5 @@
   **Why:** surfaces upstream drift risk automatically before manual sync windows and shortens reaction time.
 - **M0-07** Added `.github/workflows/smoke-launch.yml` to execute `./scripts/code.sh --version` on Linux and macOS after build/runtime setup.  
   **Why:** creates a fast cross-platform launch signal that catches broken dev startup paths early in CI.
+- **M0-08** Rebranded core product identity values in `product.json` (app names, protocol, issue URL, platform IDs, server/tunnel names).  
+  **Why:** establishes Pointer-specific product identity and removes Code - OSS defaults from runtime metadata.
