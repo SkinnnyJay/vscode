@@ -321,3 +321,7 @@
   **Why:** surfaces the failing entry module’s actual filesystem existence inline, reducing one more manual step in triage.
 - **Import-target diagnostics verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke case (`-g "verifies opened editors are restored"`); output now includes `Import target on disk: /workspace/out/vs/workbench/workbench.desktop.main.js (exists=true)`. Re-ran `make lint` (pass).
   **Why:** confirms the new diagnostics are active and reinforces that the startup failure is not caused by missing target file artifacts.
+- **Protocol canonical-path fallback attempt (2026-02-14 PM)** Updated `src/vs/platform/protocol/electron-main/protocolMainService.ts` to add a canonical realpath-based root check fallback for `vscode-file` requests (computed lazily after the normal root check) to tolerate symlinked workspace path mismatches.
+  **Why:** tests whether path-alias mismatches between request URLs and allowed roots are causing `net::ERR_FAILED` module loads.
+- **Canonical-path fallback validation (2026-02-14 PM)** Rebuilt (`make build`) and reran focused smoke startup case; failure remains the same (`workbench.desktop.main.js` import fetch fails, target exists on disk, failed requests still report `existsOnDisk=true`). Re-ran `make lint` + `make test-unit` (7584 passing / 134 pending).
+  **Why:** records a concrete mitigation attempt that did not resolve the loader issue while keeping core gates green.
