@@ -71,3 +71,5 @@
   **Why:** makes settings self-documenting and safe-by-default in the Settings UI.
 - **M1-10** Added per-surface provider/model settings (`pointer.defaults.{chat|tab|agent}.{provider|model}`) in the extension settings schema.  
   **Why:** enables explicit default routing choices for each Pointer UX surface.
+- **M1-11** Added settings validation checks plus a schema-version migration placeholder in extension activation flow.  
+  **Why:** provides forward-compatibility hooks for future config evolution and early warning for malformed settings values.

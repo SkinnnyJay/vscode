@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 const vscode = require('vscode');
+const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
+const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
 class PointerViewDataProvider {
 	getTreeItem(element) {
@@ -18,7 +20,40 @@ class PointerViewDataProvider {
 /**
  * @param {vscode.ExtensionContext} context
  */
+async function migratePointerSettings(context) {
+	const currentVersion = context.globalState.get(SETTINGS_SCHEMA_VERSION_KEY, 0);
+	if (currentVersion < CURRENT_SETTINGS_SCHEMA_VERSION) {
+		// Placeholder migration path for future settings shape changes.
+		await context.globalState.update(SETTINGS_SCHEMA_VERSION_KEY, CURRENT_SETTINGS_SCHEMA_VERSION);
+	}
+}
+
+/**
+ * @returns {string[]}
+ */
+function validatePointerDefaultsConfiguration() {
+	const config = vscode.workspace.getConfiguration('pointer.defaults');
+	const keys = [
+		'chat.provider',
+		'chat.model',
+		'tab.provider',
+		'tab.model',
+		'agent.provider',
+		'agent.model'
+	];
+
+	return keys.filter((key) => {
+		const value = config.get(key, 'auto');
+		return typeof value !== 'string' || value.trim().length === 0;
+	});
+}
+
+/**
+ * @param {vscode.ExtensionContext} context
+ */
 function activate(context) {
+	void migratePointerSettings(context);
+
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
 		treeDataProvider: pointerViewDataProvider,
@@ -66,6 +101,11 @@ function activate(context) {
 	};
 
 	updateStatusBar();
+
+	const invalidKeys = validatePointerDefaultsConfiguration();
+	if (invalidKeys.length > 0) {
+		void vscode.window.showWarningMessage(`Pointer settings validation: invalid values detected for ${invalidKeys.join(', ')}. Falling back to automatic defaults.`);
+	}
 
 	const configWatcher = vscode.workspace.onDidChangeConfiguration((event) => {
 		if (event.affectsConfiguration('pointer.defaults')) {
