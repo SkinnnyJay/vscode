@@ -27,6 +27,8 @@
 		"onCommand:pointer.chat.newSession",
 		"onCommand:pointer.chat.renameSession",
 		"onCommand:pointer.chat.deleteSession",
+		"onCommand:pointer.chat.exportSessions",
+		"onCommand:pointer.chat.importSessions",
 		"onCommand:pointer.chat.sendMessage",
 		"onCommand:pointer.chat.cancelMessage",
 		"onCommand:pointer.chat.selectProvider",
@@ -85,6 +87,16 @@
 			{
 				"command": "pointer.chat.deleteSession",
 				"title": "Pointer: Delete Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.exportSessions",
+				"title": "Pointer: Export Sessions",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.importSessions",
+				"title": "Pointer: Import Sessions",
 				"category": "Pointer"
 			},
 			{
@@ -174,6 +186,16 @@
 					"command": "pointer.chat.newSession",
 					"when": "view == pointer.chatSessions",
 					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.exportSessions",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.importSessions",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation@3"
 				},
 				{
 					"command": "pointer.chat.sendMessage",

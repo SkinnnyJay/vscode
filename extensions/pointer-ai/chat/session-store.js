@@ -198,6 +198,23 @@ class ChatSessionStore {
 		activeSession.pinnedContext = activeSession.pinnedContext.filter((item) => item.id !== contextId);
 		this.onDidChangeEmitter.fire(undefined);
 	}
+
+	exportSessions() {
+		return {
+			activeSessionId: this.activeSessionId,
+			sessions: this.sessions
+		};
+	}
+
+	importSessions(payload) {
+		if (!payload || !Array.isArray(payload.sessions) || payload.sessions.length === 0) {
+			return false;
+		}
+		this.sessions = payload.sessions;
+		this.activeSessionId = payload.activeSessionId ?? payload.sessions[0].id;
+		this.onDidChangeEmitter.fire(undefined);
+		return true;
+	}
 }
 
 module.exports = {

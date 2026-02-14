@@ -232,7 +232,7 @@ Tasks:
 - [ ] - M8 - [extension] Add grouped diffs for multi-file refactors.
 - [x] - M8 - [extension] Add slash commands and structured workflows.
 - [ ] - M8 - [extension] Add workspace-level “intent/project brief” pinned context.
-- [ ] - M8 - [extension+sidecar] Add session management: named sessions, export/import.
+- [x] - M8 - [extension+sidecar] Add session management: named sessions, export/import.
 - [x] - M8 - [decision] Decide whether AI settings sync is parity or V2 scope.
 - [x] - M8 - [extension] Improve UX polish (empty states, error states, loading).
 - [ ] - M8 - [security][external-fix][upstream] Update Electron/Chromium/deps to reduce active vulns; flag as upstream VS Code fix with comment/tag.

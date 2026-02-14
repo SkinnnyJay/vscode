@@ -531,6 +531,39 @@ function activate(context) {
 		}
 	});
 
+	const exportChatSessions = vscode.commands.registerCommand('pointer.chat.exportSessions', async () => {
+		const target = await vscode.window.showSaveDialog({
+			defaultUri: vscode.Uri.file('pointer-sessions.json'),
+			filters: {
+				JSON: ['json']
+			}
+		});
+		if (!target) {
+			return;
+		}
+		const payload = chatSessionStore.exportSessions();
+		await fs.writeFile(target.fsPath, JSON.stringify(payload, null, 2), 'utf8');
+		void vscode.window.showInformationMessage(`Exported Pointer sessions to ${target.fsPath}`);
+	});
+
+	const importChatSessions = vscode.commands.registerCommand('pointer.chat.importSessions', async () => {
+		const files = await vscode.window.showOpenDialog({
+			canSelectMany: false,
+			filters: {
+				JSON: ['json']
+			}
+		});
+		const target = files?.[0];
+		if (!target) {
+			return;
+		}
+		const payload = JSON.parse(await fs.readFile(target.fsPath, 'utf8'));
+		const imported = chatSessionStore.importSessions(payload);
+		if (!imported) {
+			void vscode.window.showWarningMessage('Selected file did not contain valid Pointer sessions.');
+		}
+	});
+
 	const sendChatMessage = vscode.commands.registerCommand('pointer.chat.sendMessage', async () => {
 		const value = await vscode.window.showInputBox({
 			prompt: 'Send message to Pointer',
@@ -878,6 +911,8 @@ function activate(context) {
 		createChatSession,
 		renameChatSession,
 		deleteChatSession,
+		exportChatSessions,
+		importChatSessions,
 		sendChatMessage,
 		cancelChatMessage,
 		attachCurrentFile,

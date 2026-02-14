@@ -44,3 +44,14 @@ test('ChatSessionStore tracks pinned context chips with remove support', () => {
 	store.removePinnedContext(contextId);
 	assert.equal(store.listPinnedContext().length, 0);
 });
+
+test('ChatSessionStore supports export and import of sessions', () => {
+	const store = new ChatSessionStore();
+	store.createSession('Imported');
+	const payload = store.exportSessions();
+
+	const nextStore = new ChatSessionStore();
+	const imported = nextStore.importSessions(payload);
+	assert.equal(imported, true);
+	assert.ok(nextStore.listSessions().some((session) => session.name === 'Imported'));
+});

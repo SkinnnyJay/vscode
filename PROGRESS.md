@@ -205,5 +205,7 @@
   **Why:** removes dead-end feedback gaps and makes async chat lifecycle states obvious to users.
 - **M8-03** Added structured slash command workflows (`/explain`, `/fix`, `/test`) in chat input parsing with workflow-aware prompt shaping.
   **Why:** speeds common intent-driven chat tasks with predictable prompt templates.
+- **M8-05** Added session export/import workflow (`pointer.chat.exportSessions`, `pointer.chat.importSessions`) and session store serialization support.
+  **Why:** enables portable multi-session workflows beyond a single local runtime instance.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
