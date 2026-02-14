@@ -11,9 +11,7 @@ class PointerViewDataProvider {
 	}
 
 	getChildren() {
-		return [
-			new vscode.TreeItem('Pointer is ready. Open Command Palette for actions.', vscode.TreeItemCollapsibleState.None)
-		];
+		return [];
 	}
 }
 
@@ -26,6 +24,7 @@ function activate(context) {
 		treeDataProvider: pointerViewDataProvider,
 		showCollapseAll: false
 	});
+	pointerTree.message = 'Pointer AI is not configured yet. Open Command Palette and run Pointer commands to begin.';
 
 	context.subscriptions.push(pointerTree);
 }

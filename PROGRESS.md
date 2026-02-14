@@ -55,3 +55,5 @@
   **Why:** establishes a first-class Pointer surface entry point in the editor shell.
 - **M1-02** Declared `viewsContainers.activitybar` and `views.pointer` contributions in `extensions/pointer-ai/package.json`.  
   **Why:** registers Pointer container/view metadata through extension manifests instead of core forks.
+- **M1-03** Switched `pointer.home` to an empty tree state and set an explicit placeholder guidance message via `TreeView.message`.  
+  **Why:** provides immediate in-product onboarding context before chat/tab surfaces are wired.
