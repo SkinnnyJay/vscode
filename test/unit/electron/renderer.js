@@ -145,6 +145,34 @@ function initLoadFn(opts) {
 		return specifier;
 	}
 
+	function deriveFailureFamily(resolved) {
+		if (!resolved.startsWith('file://')) {
+			return 'non-file';
+		}
+
+		try {
+			const path = fileURLToPath(resolved);
+			const marker = `${require('path').sep}out${require('path').sep}`;
+			const outIndex = path.indexOf(marker);
+			if (outIndex === -1) {
+				return 'file-outside-out';
+			}
+
+			const relative = path.slice(outIndex + marker.length).replace(/\\/g, '/');
+			const segments = relative.split('/').filter(Boolean);
+			if (segments.length >= 3) {
+				return segments.slice(0, 3).join('/');
+			}
+			if (segments.length > 0) {
+				return segments.join('/');
+			}
+
+			return 'file-empty';
+		} catch {
+			return 'file-parse-error';
+		}
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -165,6 +193,7 @@ function initLoadFn(opts) {
 			const source = await response.text();
 			const specifiers = extractDirectImportSpecifiers(source).slice(0, 25);
 			const failures = [];
+			const failureFamilies = Object.create(null);
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
 				try {
@@ -187,6 +216,8 @@ function initLoadFn(opts) {
 						error: String(depErr),
 						existsOnDisk: depExistsOnDisk
 					});
+					const family = deriveFailureFamily(resolved);
+					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
 				}
 			}
 
@@ -196,6 +227,7 @@ function initLoadFn(opts) {
 					url: moduleUrl,
 					specifierCount: specifiers.length,
 					failureCount: failures.length,
+					failureFamilies,
 					failures
 				}));
 			}

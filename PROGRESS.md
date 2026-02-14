@@ -385,3 +385,7 @@
   - `xvfb-run -a ./scripts/test.sh --run vs/editor/test/common/testTextModel.js`
   and confirmed both emit populated `[ESM IMPORT FAILURE DEPS SUMMARY]` payloads (non-zero `specifierCount` / `failureCount`) after sequential runs; re-ran `make lint` (pass).
   **Why:** confirms stable repeated parsing behavior across consecutive diagnostic invocations.
+- **Failure-family aggregation in unit dependency diagnostics (2026-02-14 PM)** Extended `[ESM IMPORT FAILURE DEPS SUMMARY]` payloads in `test/unit/electron/renderer.js` with `failureFamilies` counts (grouped by the first three path segments under `out/`, e.g. `vs/editor/test`).
+  **Why:** adds quick clustering context to identify which subsystem namespaces dominate import failures without scanning full per-edge failure arrays.
+- **Failure-family aggregation validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes family rollups such as `vs/editor/common`, `vs/editor/contrib`, `vs/editor/test`; re-ran `make lint` (pass).
+  **Why:** confirms new grouping signal is present and lint-clean.
