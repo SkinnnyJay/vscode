@@ -345,7 +345,7 @@ export class Code {
 				if (pageError?.includes('Failed to fetch dynamically imported module')) {
 					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures:\n${recentFailures.join('\n')}`
+						? `\nRecent request failures (${recentFailures.length}):\n${recentFailures.join('\n')}\nEnd of recent request failures.`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath

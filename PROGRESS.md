@@ -389,3 +389,9 @@
   **Why:** adds quick clustering context to identify which subsystem namespaces dominate import failures without scanning full per-edge failure arrays.
 - **Failure-family aggregation validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes family rollups such as `vs/editor/common`, `vs/editor/contrib`, `vs/editor/test`; re-ran `make lint` (pass).
   **Why:** confirms new grouping signal is present and lint-clean.
+- **Smoke failure-entry normalization and summary terminator hardening (2026-02-14 PM)** Refined smoke startup diagnostics:
+  - `test/automation/src/playwrightDriver.ts`: normalize failure entries more aggressively (strip variable `after <n>ms` suffixes and collapse whitespace across entire entry).
+  - `test/automation/src/code.ts`: include `Recent request failures (N):` header and trailing `End of recent request failures.` sentinel in fail-fast error payload.
+  **Why:** keeps recent-failure details stable and shifts external timing suffixes to a deterministic terminator line, reducing noisy drift in repeated diagnostics.
+- **Normalization/terminator validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes the count header + terminator line, and observed variable `after <n>ms` suffix attached only to the sentinel line in runner logs; re-ran `make lint` (pass).
+  **Why:** confirms improved diagnostic readability while preserving behavior and lint health.

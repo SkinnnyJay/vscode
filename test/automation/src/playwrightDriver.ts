@@ -465,11 +465,19 @@ export class PlaywrightDriver {
 	}
 
 	private toFailureEntry(errorText: string, url: string, details?: string): string {
+		const normalizedErrorText = this.normalizeFailureText(errorText);
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
 		const detailsSuffix = details ? ` ${details}` : '';
 
-		return `${errorText} ${url}${fileExistsSuffix}${detailsSuffix}`;
+		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
+	}
+
+	private normalizeFailureText(value: string): string {
+		return value
+			.replace(/\s+after\s+\d+ms\b/gi, '')
+			.replace(/\s+/g, ' ')
+			.trim();
 	}
 
 	private pushRecentRequestFailure(entry: string): void {
