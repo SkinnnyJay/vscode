@@ -49,6 +49,21 @@
 						"type": "string",
 						"default": "auto",
 						"description": "Primary provider identifier used when a surface does not override provider selection."
+					},
+					"pointer.defaults.chat.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer chat surface."
+					},
+					"pointer.defaults.tab.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer tab completion surface."
+					},
+					"pointer.defaults.agent.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer agent surface."
 					}
 				}
 			},
@@ -59,6 +74,21 @@
 						"type": "string",
 						"default": "auto",
 						"description": "Default model identifier used when a surface does not override model selection."
+					},
+					"pointer.defaults.chat.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer chat surface."
+					},
+					"pointer.defaults.tab.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer tab completion surface."
+					},
+					"pointer.defaults.agent.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer agent surface."
 					}
 				}
 			},

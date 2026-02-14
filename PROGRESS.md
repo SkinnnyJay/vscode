@@ -69,3 +69,5 @@
   **Why:** establishes the expected Pointer settings IA early so feature defaults can be wired incrementally.
 - **M1-09** Added explicit default values, enums, constraints, and human-readable descriptions for each new Pointer configuration property.  
   **Why:** makes settings self-documenting and safe-by-default in the Settings UI.
+- **M1-10** Added per-surface provider/model settings (`pointer.defaults.{chat|tab|agent}.{provider|model}`) in the extension settings schema.  
+  **Why:** enables explicit default routing choices for each Pointer UX surface.
