@@ -9,3 +9,5 @@
   **Why:** creates an explicit, versioned reference for future merge operations and CI conflict detection steps.
 - **M0-04** Added `docs/upstream-merge-strategy.md` with merge cadence and rebase/merge branch policy.  
   **Why:** defines a stable operating model for keeping the fork current while minimizing long-term merge friction.
+- **M0-05** Added `docs/upstream-merge-playbook.md` with executable sync commands and explicit conflict resolution policy.  
+  **Why:** gives contributors a deterministic, repeatable upstream sync flow and reduces unsafe conflict handling.
