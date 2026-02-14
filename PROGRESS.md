@@ -599,3 +599,7 @@
   - top-level payload includes `"dependencySummarySchemaVersion":1` with matching dependency signature/counts.
   Re-ran `make lint` (pass).
   **Why:** confirms schema-version correlation is emitted end-to-end and lint-safe.
+- **Smoke fail-fast display-limit metadata (2026-02-14 PM)** Updated `test/automation/src/code.ts` recent-failure header to include explicit `displayLimit=<N>` alongside existing `showingLast=<displayed>/<recorded>`.
+  **Why:** makes the configured window size explicit for parsers and reviewers, even when observed counts vary across runs.
+- **Display-limit validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `displayLimit=8`, and re-ran `make lint` (pass).
+  **Why:** confirms the additional metadata is active and non-regressive.
