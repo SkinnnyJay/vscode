@@ -199,5 +199,7 @@
   **Why:** gates performance regressions with automated threshold checks.
 - **M8-01** Added partial tab accept command (`pointer.tab.acceptPartial`) using last inline suggestion state to insert word-sized partial completions.
   **Why:** improves tab completion ergonomics for incremental acceptance workflows.
+- **M8-06** Documented settings-sync scope decision in `docs/m8-ai-settings-sync-decision.md` (deferred to V2/M9).
+  **Why:** keeps M8 parity focused while reserving sync complexity for dedicated V2 scope.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
