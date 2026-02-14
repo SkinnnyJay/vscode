@@ -668,3 +668,13 @@
   - `Import target CDP script lifecycle: unseen`
   Re-ran `make lint` (pass).
   **Why:** confirms the lifecycle-correlation line is emitted and remains non-regressive in the same known VM failure mode.
+- **Import-target per-channel event counts (2026-02-14 PM)** Extended smoke fail-fast diagnostics in `test/automation/src/code.ts` with explicit import-target event counters across the in-memory buffers:
+  - `requestFailures=<N>`
+  - `scriptResponses=<N>`
+  - `cdpScriptLoads=<N>`
+  **Why:** makes cross-channel presence/absence for the failing import target immediately visible without requiring manual scan of each summary block.
+- **Import-target per-channel count validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target channel event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  alongside existing import-target latest summary/lifecycle lines.
+  Re-ran `make lint` (pass).
+  **Why:** confirms per-channel event-count diagnostics emit correctly and remain non-regressive.

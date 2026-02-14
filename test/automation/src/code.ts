@@ -395,6 +395,9 @@ export class Code {
 					const importTargetCdpScriptLifecycle = importTargetUrl
 						? this.driver.getCdpScriptLifecycleSummaryForUrl(importTargetUrl)
 						: undefined;
+					const importTargetRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentFailures, importTargetUrl) : 0;
+					const importTargetScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentScriptResponses, importTargetUrl) : 0;
+					const importTargetCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentCdpScriptLoads, importTargetUrl) : 0;
 					const importTargetScriptResponseStatus = importTargetUrl
 						? `\nImport target latest script response: ${importTargetLatestScriptResponse ?? 'unseen'}`
 						: '';
@@ -407,8 +410,11 @@ export class Code {
 					const importTargetCdpScriptLifecycleStatus = importTargetUrl
 						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
 						: '';
+					const importTargetChannelEventCounts = importTargetUrl
+						? `\nImport target channel event counts: requestFailures=${importTargetRequestFailureEventCount}, scriptResponses=${importTargetScriptResponseEventCount}, cdpScriptLoads=${importTargetCdpScriptLoadEventCount}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -489,6 +495,17 @@ export class Code {
 			uniqueCount: counts.size,
 			signature
 		};
+	}
+
+	private countEntriesContainingUrl(entries: readonly string[], url: string): number {
+		let count = 0;
+		for (const entry of entries) {
+			if (entry.includes(url)) {
+				count++;
+			}
+		}
+
+		return count;
 	}
 
 	private computeStableSignature(value: string): string {
