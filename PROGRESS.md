@@ -29,3 +29,5 @@
   **Why:** formalizes a marketplace-legal distribution path for a Code - OSS fork and unblocks product gallery configuration.
 - **M0-14** Configured `product.json` `extensionsGallery` to Open VSX service/item/resource endpoints.  
   **Why:** activates the chosen default extension registry directly in product runtime settings.
+- **M0-15** Added `docs/vsix-sideloading.md` covering UI/CLI extension sideload flow and trust guidance.  
+  **Why:** provides a concrete operational fallback when registry-based extension discovery is unavailable.
