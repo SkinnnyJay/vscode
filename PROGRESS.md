@@ -123,5 +123,7 @@
   **Why:** supports OpenCode-specific JSON/table interaction modes required by router capabilities.
 - **M2-21** Added OpenCode adapter tests validating JSON mode output argument wiring and table-mode argument support.
   **Why:** locks adapter CLI argument behavior for structured output workflows.
+- **M2-22** Documented ACP compatibility decision in `docs/acp-compatibility-decision.md` (defer ACP layer in M2; revisit with explicit triggers).
+  **Why:** prevents premature abstraction while preserving a clear future decision checkpoint.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

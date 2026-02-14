@@ -122,7 +122,7 @@ Tasks:
 - [x] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
 - [x] - M2 - [sidecar] Implement OpenCode adapter with JSON/table output support.
 - [x] - M2 - [sidecar] Add OpenCode adapter unit tests (JSON mode).
-- [ ] - M2 - [sidecar] Decide on ACP compatibility layer and document decision.
+- [x] - M2 - [sidecar] Decide on ACP compatibility layer and document decision.
 
 ### M3 — Tab completion MVP
 Criteria (exit):
