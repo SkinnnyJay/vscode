@@ -63,3 +63,5 @@
   **Why:** keeps command discoverability clear and consistent in the global command palette.
 - **M1-06** Added a persistent status bar item that reflects active chat provider/model and refreshes on Pointer defaults configuration updates.  
   **Why:** surfaces active model routing context without requiring users to open settings or deep UI panels.
+- **M1-07** Added multi-line status-bar tooltip detail for Chat/Tab/Agent provider-model selections.  
+  **Why:** provides per-surface visibility while keeping the status bar label compact.
