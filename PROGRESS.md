@@ -81,3 +81,5 @@
   **Why:** provides an explicit extension-level compatibility switch for users that need temporary Copilot re-enablement.
 - **M1-15** Added trust-policy documentation (`docs/workspace-trust-model.md`) and extension trust-state wiring (`pointer.workspaceTrusted` context + warning in untrusted workspaces).  
   **Why:** defines and enforces the security boundary for loading workspace `.pointer/` automation configuration.
+- **M1-16** Added `docs/pointer-settings.md` documenting Pointer settings categories, keys, and defaults introduced in M1.  
+  **Why:** gives users and contributors a single reference for configurable routing/safety behavior.
