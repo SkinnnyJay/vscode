@@ -235,6 +235,19 @@ function initLoadFn(opts) {
 		return fetchedBytes - onDiskBytes;
 	}
 
+	function classifyByteDelta(fetchOk, onDiskBytes, fetchDiskByteDelta) {
+		if (!fetchOk) {
+			return 'fetch-not-ok';
+		}
+		if (onDiskBytes <= 0) {
+			return 'disk-bytes-unavailable';
+		}
+		if (fetchDiskByteDelta === 0) {
+			return 'byte-match';
+		}
+		return 'byte-mismatch';
+	}
+
 	function classifyImportError(error) {
 		const value = String(error);
 		if (value.includes('Failed to fetch dynamically imported module')) {
@@ -291,6 +304,7 @@ function initLoadFn(opts) {
 			const failureResolvedKinds = Object.create(null);
 			const failureFetchStatuses = Object.create(null);
 			const failureFetchOk = Object.create(null);
+			const failureByteDeltaKinds = Object.create(null);
 			let successfulDependencyImportCount = 0;
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
@@ -302,6 +316,8 @@ function initLoadFn(opts) {
 					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
 					const errorKind = classifyImportError(depErr);
 					const resolvedKind = classifyResolvedSpecifier(resolved);
+					const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
+					const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
 
 					failures.push({
 						module: moduleId,
@@ -313,7 +329,8 @@ function initLoadFn(opts) {
 						errorKind,
 						...fileDiagnostics,
 						...fetchDiagnostics,
-						fetchDiskByteDelta: computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes)
+						fetchDiskByteDelta,
+						byteDeltaKind
 					});
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
@@ -321,6 +338,7 @@ function initLoadFn(opts) {
 					failureResolvedKinds[resolvedKind] = (failureResolvedKinds[resolvedKind] ?? 0) + 1;
 					failureFetchStatuses[fetchDiagnostics.fetchStatus] = (failureFetchStatuses[fetchDiagnostics.fetchStatus] ?? 0) + 1;
 					failureFetchOk[String(fetchDiagnostics.fetchOk)] = (failureFetchOk[String(fetchDiagnostics.fetchOk)] ?? 0) + 1;
+					failureByteDeltaKinds[byteDeltaKind] = (failureByteDeltaKinds[byteDeltaKind] ?? 0) + 1;
 				}
 			}
 
@@ -338,6 +356,8 @@ function initLoadFn(opts) {
 					.map(entry => ({ fetchStatus: entry.key, count: entry.count }));
 				const failureFetchOkEntries = toSortedCountEntries(failureFetchOk)
 					.map(entry => ({ fetchOk: entry.key === 'true', count: entry.count }));
+				const failureByteDeltaKindEntries = toSortedCountEntries(failureByteDeltaKinds)
+					.map(entry => ({ byteDeltaKind: entry.key, count: entry.count }));
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -363,6 +383,8 @@ function initLoadFn(opts) {
 					failureFetchStatusEntries,
 					failureFetchOk,
 					failureFetchOkEntries,
+					failureByteDeltaKinds,
+					failureByteDeltaKindEntries,
 					failures
 				}));
 			}
@@ -383,6 +405,8 @@ function initLoadFn(opts) {
 			return import(url).catch(async err => {
 				const fileDiagnostics = getFileImportDiagnostics(url);
 				const fetchDiagnostics = await getImportFetchDiagnostics(url);
+				const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
+				const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
 
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
 					module: mod,
@@ -392,7 +416,8 @@ function initLoadFn(opts) {
 					errorKind: classifyImportError(err),
 					...fileDiagnostics,
 					...fetchDiagnostics,
-					fetchDiskByteDelta: computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes)
+					fetchDiskByteDelta,
+					byteDeltaKind
 				}));
 				await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);

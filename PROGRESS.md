@@ -510,3 +510,14 @@
   **Why:** enables quick comparison of failure-shape identity across reruns without visually diffing full failure blocks.
 - **Signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast header now includes `signature=<8-hex>` (e.g. `signature=86c15b67`), and re-ran `make lint` (pass).
   **Why:** confirms signature generation is active and non-regressive.
+- **Byte-delta kind classification + rollups (2026-02-14 PM)** Extended unit ESM diagnostics (`test/unit/electron/renderer.js`) with:
+  - per-failure `byteDeltaKind` classification (`byte-match`, `byte-mismatch`, `fetch-not-ok`, `disk-bytes-unavailable`),
+  - aggregate `failureByteDeltaKinds` + sorted `failureByteDeltaKindEntries` in dependency summaries,
+  - top-level failure payload now also includes `byteDeltaKind`.
+  **Why:** turns raw byte deltas into immediately readable integrity-state categories for faster triage at both edge and summary levels.
+- **Byte-delta kind validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - top-level payload includes `byteDeltaKind`,
+  - summary includes `failureByteDeltaKinds` + ordered entries,
+  - per-edge entries include `byteDeltaKind` and `fetchDiskByteDelta`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms new byte-delta categorization is active and lint-safe.
