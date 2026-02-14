@@ -22,13 +22,13 @@ if hash update-mime-database 2>/dev/null; then
 	update-mime-database /usr/share/mime
 fi
 
-if [ "@@NAME@@" != "code-oss" ]; then
+if false; then
 	# Remove the legacy bin command if this is the stable build
 	if [ "@@NAME@@" = "code" ]; then
 		rm -f /usr/local/bin/code
 	fi
 
-	# Register apt repository
+	# Pointer package repositories are currently managed externally.
 	eval $(apt-config shell APT_SOURCE_PARTS Dir::Etc::sourceparts/d)
 	CODE_SOURCE_PART=${APT_SOURCE_PARTS}vscode.list
 	CODE_SOURCE_PART_DEB822=${APT_SOURCE_PARTS}vscode.sources
@@ -40,13 +40,13 @@ if [ "@@NAME@@" != "code-oss" ]; then
 	RET='true'
 	if [ -e '/usr/share/debconf/confmodule' ]; then
 		. /usr/share/debconf/confmodule
-		db_get @@NAME@@/add-microsoft-repo || true
+		db_get @@NAME@@/add-pointer-repo || true
 	fi
 
-	# Determine whether to write the Microsoft repository source list
+	# Determine whether to write the Pointer repository source list
 	WRITE_SOURCE='no'
 	if [ "$RET" = 'false' ]; then
-		# The user specified in debconf not to add the Microsoft repository
+		# The user specified in debconf not to add the Pointer repository
 		WRITE_SOURCE='no'
 	elif [ -f "$CODE_SOURCE_PART" ]; then
 		# The user is not on the new DEB822 format
@@ -69,10 +69,10 @@ if [ "@@NAME@@" != "code-oss" ]; then
 			WRITE_SOURCE='yes'
 		elif [ -e '/usr/share/debconf/confmodule' ]; then
 			# Ask the user whether to actually write the source list
-			db_input high @@NAME@@/add-microsoft-repo || true
+			db_input high @@NAME@@/add-pointer-repo || true
 			db_go || true
 
-			db_get @@NAME@@/add-microsoft-repo
+			db_get @@NAME@@/add-pointer-repo
 			if [ "$RET" = false ]; then
 				WRITE_SOURCE='no'
 			else

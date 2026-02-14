@@ -1,10 +1,10 @@
 name: @@NAME@@
 version: '@@VERSION@@'
-summary: Code editing. Redefined.
+summary: Pointer IDE for provider-agnostic AI coding.
 description: |
-  Visual Studio Code is a new choice of tool that combines the
-  simplicity of a code editor with what developers need for the core
-  edit-build-debug cycle.
+  Pointer is a provider-agnostic AI IDE built on Code - OSS. It combines
+  responsive code editing with configurable AI workflows across multiple
+  providers.
 
 architectures:
   - build-on: amd64

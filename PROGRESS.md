@@ -19,3 +19,5 @@
   **Why:** establishes Pointer-specific product identity and removes Code - OSS defaults from runtime metadata.
 - **M0-09** Replaced product launcher icon assets across Linux/Windows/macOS and added pointer-named icon variants for packaging compatibility.  
   **Why:** removes inherited product icon branding and aligns runtime/package assets with Pointer identity.
+- **M0-10** Updated packaging/product strings (desktop metadata, Linux package text, Windows display name) and added a Pointer update URL in `product.json`.  
+  **Why:** aligns user-facing product metadata with Pointer branding and avoids stale Code - OSS/VS Code references in installer surfaces.

@@ -51,7 +51,7 @@ Tasks:
 - [x] - M0 - [ci] Add CI job to run smoke launch (`./scripts/code.sh`) on macOS/Linux.
 - [x] - M0 - [core] Replace product branding in `product.json` (Pointer name/icons/URLs).
 - [x] - M0 - [core] Replace product icons and ensure no VS Code/Cursor assets remain.
-- [ ] - M0 - [core] Update product strings (about dialog, app name, update URL).
+- [x] - M0 - [core] Update product strings (about dialog, app name, update URL).
 - [ ] - M0 - [docs] Add `pointer/BRANDING.md` describing allowed assets and forbidden trademarks.
 - [ ] - M0 - [docs] Add `SECURITY.md` and `CODE_OF_CONDUCT.md`.
 - [ ] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.

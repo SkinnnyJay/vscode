@@ -5,14 +5,14 @@ Depends: @@DEPENDS@@
 Recommends: @@RECOMMENDS@@
 Priority: optional
 Architecture: @@ARCHITECTURE@@
-Maintainer: Microsoft Corporation <vscode-linux@microsoft.com>
-Homepage: https://code.visualstudio.com/
+Maintainer: Pointer Maintainers <opensource@pointer.dev>
+Homepage: https://github.com/SkinnnyJay/vscode
 Installed-Size: @@INSTALLEDSIZE@@
-Provides: visual-studio-@@NAME@@
-Conflicts: visual-studio-@@NAME@@
-Replaces: visual-studio-@@NAME@@
-Description: Code editing. Redefined.
- Visual Studio Code is a new choice of tool that combines the simplicity of
- a code editor with what developers need for the core edit-build-debug cycle.
- See https://code.visualstudio.com/docs/setup/linux for installation
- instructions and FAQ.
+Provides: pointer-@@NAME@@
+Conflicts: pointer-@@NAME@@
+Replaces: pointer-@@NAME@@
+Description: Pointer IDE. Provider-agnostic AI coding.
+ Pointer is a provider-agnostic AI IDE built on Code - OSS, combining
+ responsive code editing with model-flexible AI workflows.
+ See https://github.com/SkinnnyJay/vscode for installation instructions
+ and project documentation.
