@@ -149,5 +149,7 @@
   **Why:** standardizes chat request/response streaming semantics between extension and router layers.
 - **M4-09** Added sidecar trace/log primitives (`chat/tracing.ts`) to capture chat request plan metadata with stable trace IDs and test coverage.
   **Why:** provides auditable chat planning telemetry required for debugging and policy review.
+- **M4-10** Added sidecar patch schema (`patch/schema.ts`) and validator for diff-first agent responses with unit tests.
+  **Why:** enforces explicit, reviewable patch payload structure before editor-side apply workflows.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
