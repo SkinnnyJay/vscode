@@ -403,3 +403,10 @@
   - `xvfb-run -a make test` still fails on renderer ESM import, now emitting both `[ESM IMPORT FAILURE]` and enriched `[ESM IMPORT FAILURE DEPS SUMMARY]` with `failureFamilies` rollups.
   - `xvfb-run -a make test-smoke` remains **1 failing / 94 pending / 0 passing** with compact `Recent request failures (8)` block and terminator line.
   **Why:** reconfirms core health, preserves known environment-level renderer blocker signature, and validates latest diagnostic formatting in end-to-end runs.
+- **Smoke fail-fast trailing-newline refinement (2026-02-14 PM)** Adjusted `test/automation/src/code.ts` to append a trailing newline after the `End of recent request failures.` sentinel in startup fail-fast errors.
+  **Why:** ensures outer `measureAndLog(...with error ... after Nms)` suffix lands on its own line instead of mutating the sentinel line, improving log readability and parse stability.
+- **Trailing-newline validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified:
+  - terminal output still shows clean request-failure block with sentinel,
+  - smoke runner file now places `after <n>ms` on a dedicated follow-up line (not appended to sentinel text).
+  Re-ran `make lint` (pass).
+  **Why:** confirms improved log framing without behavior change.
