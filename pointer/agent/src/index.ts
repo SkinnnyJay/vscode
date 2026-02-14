@@ -35,3 +35,6 @@ export * from './perf/indexer-observer.js';
 export * from './providers/backpressure.js';
 export * from './ci/policy-secrets.js';
 export * from './ci/headless-agent.js';
+export * from './cloud/annotations.js';
+export * from './cloud/checks.js';
+export * from './cloud/pr-review-bot.js';

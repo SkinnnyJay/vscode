@@ -246,9 +246,9 @@ Success metrics:
 Tasks:
 - [x] - M9 - [sidecar] Implement `pointer-agent` headless/CI mode with patch output.
 - [x] - M9 - [sidecar] Add policy and secrets handling for CI mode.
-- [ ] - M9 - [sidecar+cloud] Build PR review bot prototype (Bugbot-like).
-- [ ] - M9 - [cloud] Add PR annotations and suggested changes.
-- [ ] - M9 - [cloud] Integrate with GitHub checks.
+- [x] - M9 - [sidecar+cloud] Build PR review bot prototype (Bugbot-like).
+- [x] - M9 - [cloud] Add PR annotations and suggested changes.
+- [x] - M9 - [cloud] Integrate with GitHub checks.
 - [ ] - M9 - [sidecar] Add enterprise policy bundles and audit log schema.
 - [ ] - M9 - [sidecar] Add provider allowlists and data boundary controls.
 - [ ] - M9 - [extension+sidecar] Add settings sync for AI config if approved in M8.

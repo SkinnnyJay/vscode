@@ -217,5 +217,7 @@
   **Why:** establishes a runnable `pointer-agent` path for CI-oriented automated patch generation.
 - **M9-02** Added CI policy/secrets runtime loader (`ci/policy-secrets.ts`) with allowlisted providers, data-boundary mode, and env-secret filtering.
   **Why:** introduces explicit CI policy and secret controls before automated headless execution.
+- **M9-03/M9-04/M9-05** Added PR review bot prototype and cloud outputs (`cloud/pr-review-bot.ts`, `cloud/annotations.ts`, `cloud/checks.ts`) with tests.
+  **Why:** provides end-to-end PR review artifact generation (annotations + GitHub checks payloads) from headless agent output.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
