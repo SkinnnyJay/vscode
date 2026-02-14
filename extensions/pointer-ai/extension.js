@@ -26,7 +26,24 @@ function activate(context) {
 	});
 	pointerTree.message = 'Pointer AI is not configured yet. Open Command Palette and run Pointer commands to begin.';
 
-	context.subscriptions.push(pointerTree);
+	const openChat = vscode.commands.registerCommand('pointer.openChat', async () => {
+		await vscode.commands.executeCommand('workbench.view.extension.pointer');
+		await vscode.commands.executeCommand('pointer.home.focus');
+	});
+
+	const toggleTab = vscode.commands.registerCommand('pointer.toggleTab', async () => {
+		await vscode.window.showInformationMessage('Pointer Tab toggle is not wired yet. This command placeholder is active.');
+	});
+
+	const selectModel = vscode.commands.registerCommand('pointer.selectModel', async () => {
+		await vscode.window.showInformationMessage('Pointer model selection is not wired yet. This command placeholder is active.');
+	});
+
+	const openSettings = vscode.commands.registerCommand('pointer.openSettings', async () => {
+		await vscode.commands.executeCommand('workbench.action.openSettings', 'Pointer');
+	});
+
+	context.subscriptions.push(pointerTree, openChat, toggleTab, selectModel, openSettings);
 }
 
 function deactivate() {}

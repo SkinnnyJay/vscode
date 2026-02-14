@@ -57,3 +57,5 @@
   **Why:** registers Pointer container/view metadata through extension manifests instead of core forks.
 - **M1-03** Switched `pointer.home` to an empty tree state and set an explicit placeholder guidance message via `TreeView.message`.  
   **Why:** provides immediate in-product onboarding context before chat/tab surfaces are wired.
+- **M1-04** Added command contributions and handlers for Open Chat, Toggle Tab, Select Model, and Open Settings in `extensions/pointer-ai`.  
+  **Why:** establishes stable command IDs and command-palette entry points for the Pointer UX shell.

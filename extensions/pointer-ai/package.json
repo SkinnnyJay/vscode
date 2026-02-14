@@ -11,10 +11,36 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:pointer.home"
+		"onView:pointer.home",
+		"onCommand:pointer.openChat",
+		"onCommand:pointer.toggleTab",
+		"onCommand:pointer.selectModel",
+		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
 	"contributes": {
+		"commands": [
+			{
+				"command": "pointer.openChat",
+				"title": "Pointer: Open Chat",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.toggleTab",
+				"title": "Pointer: Toggle Tab",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.selectModel",
+				"title": "Pointer: Select Model",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.openSettings",
+				"title": "Pointer: Open Settings",
+				"category": "Pointer"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{
