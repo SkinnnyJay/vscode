@@ -9,6 +9,8 @@ import { Application, ApplicationOptions, Logger } from '../../automation';
 
 let fatalWorkbenchStartupFailure: string | undefined;
 let fatalWorkbenchStartupFailureSummary: string | undefined;
+let didLogTestSkipForFatalStartupFailure = false;
+let didLogSuiteSkipForFatalStartupFailure = false;
 
 function isWorkbenchStartupImportFailure(error: unknown): boolean {
 	return String(error).includes('Workbench startup failed due to renderer module import error');
@@ -51,7 +53,11 @@ export function installDiagnosticsHandler(logger: Logger, appFn?: () => Applicat
 	// Before each test
 	beforeEach(async function () {
 		if (fatalWorkbenchStartupFailure) {
-			logger.log(`Skipping test due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+			if (!didLogTestSkipForFatalStartupFailure) {
+				logger.log(`Skipping test due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+				logger.log('Subsequent tests will be skipped silently while preserving the original startup failure.');
+				didLogTestSkipForFatalStartupFailure = true;
+			}
 			this.skip();
 			return;
 		}
@@ -106,7 +112,11 @@ export function suiteCrashPath(options: ApplicationOptions, suiteName: string): 
 function installAppBeforeHandler(optionsTransform?: (opts: ApplicationOptions) => ApplicationOptions) {
 	before(async function () {
 		if (fatalWorkbenchStartupFailure) {
-			this.defaultOptions.logger.log(`Skipping suite startup due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+			if (!didLogSuiteSkipForFatalStartupFailure) {
+				this.defaultOptions.logger.log(`Skipping suite startup due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+				this.defaultOptions.logger.log('Subsequent suites will be skipped silently while preserving the original startup failure.');
+				didLogSuiteSkipForFatalStartupFailure = true;
+			}
 			this.skip();
 			return;
 		}

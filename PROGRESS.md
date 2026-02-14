@@ -359,3 +359,7 @@
   **Why:** removes repeated multiline error payload spam from smoke runner logs while preserving the exact primary failure signal in the first failing test.
 - **Compaction validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (still **1 failing / 94 pending / 0 passing** in ~2s), verified skip logs are now concise one-line entries, and re-ran `make lint` (pass).
   **Why:** confirms the logging refinement is active, keeps behavior unchanged, and remains lint-clean.
+- **One-time skip-log dedupe (2026-02-14 PM)** Further refined `test/smoke/src/utils.ts` to emit fatal-startup skip logs only once per test-level and suite-level path (with explicit “subsequent ... skipped silently” notices).
+  **Why:** removes repetitive duplicate skip lines from smoke runner artifacts while still documenting that dedupe behavior is intentional.
+- **One-time dedupe validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified runner logs now include a single test-skip notice and a single suite-skip notice, and re-ran `make lint` (pass).
+  **Why:** confirms log dedupe works as designed without altering failure semantics or lint health.
