@@ -305,9 +305,13 @@ function initLoadFn(opts) {
 			const failureFetchStatuses = Object.create(null);
 			const failureFetchOk = Object.create(null);
 			const failureByteDeltaKinds = Object.create(null);
+			const attemptedResolvedKinds = Object.create(null);
 			let successfulDependencyImportCount = 0;
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
+				const resolvedKind = classifyResolvedSpecifier(resolved);
+				attemptedResolvedKinds[resolvedKind] = (attemptedResolvedKinds[resolvedKind] ?? 0) + 1;
+
 				try {
 					await import(resolved);
 					successfulDependencyImportCount++;
@@ -315,7 +319,6 @@ function initLoadFn(opts) {
 					const fileDiagnostics = getFileImportDiagnostics(resolved);
 					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
 					const errorKind = classifyImportError(depErr);
-					const resolvedKind = classifyResolvedSpecifier(resolved);
 					const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
 					const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
 
@@ -358,6 +361,8 @@ function initLoadFn(opts) {
 					.map(entry => ({ fetchOk: entry.key === 'true', count: entry.count }));
 				const failureByteDeltaKindEntries = toSortedCountEntries(failureByteDeltaKinds)
 					.map(entry => ({ byteDeltaKind: entry.key, count: entry.count }));
+				const attemptedResolvedKindEntries = toSortedCountEntries(attemptedResolvedKinds)
+					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -377,6 +382,8 @@ function initLoadFn(opts) {
 					failureFamilyEntries,
 					failureKinds,
 					failureKindEntries,
+					attemptedResolvedKinds,
+					attemptedResolvedKindEntries,
 					failureResolvedKinds,
 					failureResolvedKindEntries,
 					failureFetchStatuses,
