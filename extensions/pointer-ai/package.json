@@ -13,6 +13,7 @@
 	"activationEvents": [
 		"onView:pointer.home",
 		"onView:pointer.contextSent",
+		"onView:pointer.chatSessions",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -177,6 +178,10 @@
 				{
 					"id": "pointer.contextSent",
 					"name": "Context Sent"
+				},
+				{
+					"id": "pointer.chatSessions",
+					"name": "Chat Sessions"
 				}
 			]
 		}

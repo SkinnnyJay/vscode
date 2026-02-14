@@ -135,5 +135,7 @@
   **Why:** enables user-level control over tab behavior and latency tradeoffs.
 - **M3-09/M3-10** Added tab completion engine integration/perf smoke tests (`tab-completion-engine.test.js`) covering happy path, cancellation, caching, and latency budget.
   **Why:** verifies baseline correctness and responsiveness targets for the MVP tab flow.
+- **M4-01** Added chat sessions view (`pointer.chatSessions`) with `ChatSessionStore` and tree rendering in the Pointer container.
+  **Why:** establishes the base chat surface/navigation model before message-level features.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

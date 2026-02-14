@@ -7,6 +7,7 @@ const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
 const { createInlineCompletionProvider } = require('./tab/inline-completion-provider.js');
+const { ChatSessionStore } = require('./chat/session-store.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -52,6 +53,36 @@ class RouterContextViewDataProvider {
 	}
 }
 
+class ChatSessionTreeDataProvider {
+	/**
+	 * @param {ChatSessionStore} sessionStore
+	 */
+	constructor(sessionStore) {
+		this.sessionStore = sessionStore;
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		this.storeWatcher = sessionStore.onDidChange(() => this.onDidChangeTreeDataEmitter.fire(undefined));
+	}
+
+	dispose() {
+		this.storeWatcher.dispose();
+		this.onDidChangeTreeDataEmitter.dispose();
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren() {
+		return this.sessionStore.listSessions().map((session) => {
+			const item = new vscode.TreeItem(session.name, vscode.TreeItemCollapsibleState.None);
+			item.id = session.id;
+			item.contextValue = 'pointerChatSession';
+			return item;
+		});
+	}
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -91,6 +122,7 @@ function activate(context) {
 	void vscode.commands.executeCommand('setContext', 'pointer.workspaceTrusted', vscode.workspace.isTrusted);
 	const routerClient = new PointerRouterClient();
 	const internalApi = createPointerInternalApi(routerClient);
+	const chatSessionStore = new ChatSessionStore();
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -104,6 +136,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	contextSentTree.message = 'Shows explainability data from the last router plan.';
+	const chatSessionProvider = new ChatSessionTreeDataProvider(chatSessionStore);
+	const chatSessionTree = vscode.window.createTreeView('pointer.chatSessions', {
+		treeDataProvider: chatSessionProvider,
+		showCollapseAll: false
+	});
+	chatSessionTree.message = 'Chat sessions';
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
 		{ scheme: 'file' },
@@ -211,6 +249,8 @@ function activate(context) {
 	context.subscriptions.push(
 		pointerTree,
 		contextSentTree,
+		chatSessionTree,
+		chatSessionProvider,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,

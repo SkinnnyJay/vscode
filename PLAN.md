@@ -150,7 +150,7 @@ Success metrics:
 - 100% of agent edits go through diff-first apply flow.
 - Tool gating prevents silent terminal/fs/network actions.
 Tasks:
-- [ ] - M4 - [extension] Create chat view container and session list.
+- [x] - M4 - [extension] Create chat view container and session list.
 - [ ] - M4 - [extension] Add new-session action and session rename/delete.
 - [ ] - M4 - [extension] Implement message list rendering with streaming updates.
 - [ ] - M4 - [extension] Add prompt composer input with send/cancel.
