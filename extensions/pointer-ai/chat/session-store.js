@@ -30,6 +30,10 @@ function createMessageId() {
 	return `message-${Date.now()}-${Math.floor(Math.random() * 100000).toString(16)}`;
 }
 
+function createContextId() {
+	return `context-${Date.now()}-${Math.floor(Math.random() * 100000).toString(16)}`;
+}
+
 function createSession(name) {
 	return {
 		id: createSessionId(),
@@ -160,6 +164,37 @@ class ChatSessionStore {
 			return;
 		}
 		delete message.streaming;
+		this.onDidChangeEmitter.fire(undefined);
+	}
+
+	listPinnedContext(sessionId = this.activeSessionId) {
+		const session = this.sessions.find((item) => item.id === sessionId);
+		return session?.pinnedContext ?? [];
+	}
+
+	addPinnedContext(label, value, source) {
+		const activeSession = this.getActiveSession();
+		if (!activeSession) {
+			return undefined;
+		}
+		const contextItem = {
+			id: createContextId(),
+			label,
+			value,
+			source
+		};
+		activeSession.pinnedContext.push(contextItem);
+		this.onDidChangeEmitter.fire(undefined);
+		return contextItem.id;
+	}
+
+	removePinnedContext(contextId) {
+		const activeSession = this.getActiveSession();
+		if (!activeSession) {
+			return;
+		}
+
+		activeSession.pinnedContext = activeSession.pinnedContext.filter((item) => item.id !== contextId);
 		this.onDidChangeEmitter.fire(undefined);
 	}
 }

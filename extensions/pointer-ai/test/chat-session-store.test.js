@@ -33,3 +33,13 @@ test('ChatSessionStore appends and streams assistant messages', () => {
 	assert.equal(messages[1].text, 'chunk 1 chunk 2');
 	assert.equal(messages[1].streaming, undefined);
 });
+
+test('ChatSessionStore tracks pinned context chips with remove support', () => {
+	const store = new ChatSessionStore();
+	const contextId = store.addPinnedContext('file.ts', '/workspace/file.ts', 'file');
+	assert.ok(contextId);
+	assert.equal(store.listPinnedContext().length, 1);
+
+	store.removePinnedContext(contextId);
+	assert.equal(store.listPinnedContext().length, 0);
+});

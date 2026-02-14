@@ -15,6 +15,7 @@
 		"onView:pointer.contextSent",
 		"onView:pointer.chatSessions",
 		"onView:pointer.chatMessages",
+		"onView:pointer.chatContext",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -24,6 +25,10 @@
 		"onCommand:pointer.chat.deleteSession",
 		"onCommand:pointer.chat.sendMessage",
 		"onCommand:pointer.chat.cancelMessage",
+		"onCommand:pointer.chat.attachCurrentFile",
+		"onCommand:pointer.chat.attachSelection",
+		"onCommand:pointer.chat.pinContext",
+		"onCommand:pointer.chat.removePinnedContext",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -75,6 +80,26 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.chat.attachCurrentFile",
+				"title": "Pointer: Attach Current File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.attachSelection",
+				"title": "Pointer: Attach Selection",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.pinContext",
+				"title": "Pointer: Pin Context",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.removePinnedContext",
+				"title": "Pointer: Remove Pinned Context",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -96,6 +121,21 @@
 					"command": "pointer.chat.cancelMessage",
 					"when": "view == pointer.chatMessages",
 					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.attachCurrentFile",
+					"when": "view == pointer.chatContext",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.attachSelection",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.pinContext",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@3"
 				}
 			],
 			"view/item/context": [
@@ -107,6 +147,11 @@
 				{
 					"command": "pointer.chat.deleteSession",
 					"when": "view == pointer.chatSessions && viewItem == pointerChatSession",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.chat.removePinnedContext",
+					"when": "view == pointer.chatContext && viewItem == pointerPinnedContext",
 					"group": "inline"
 				}
 			]
@@ -248,6 +293,10 @@
 				{
 					"id": "pointer.chatMessages",
 					"name": "Messages"
+				},
+				{
+					"id": "pointer.chatContext",
+					"name": "Context Chips"
 				}
 			]
 		}

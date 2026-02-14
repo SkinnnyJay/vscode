@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+const path = require('node:path');
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
@@ -118,6 +119,36 @@ class ChatMessageTreeDataProvider {
 	}
 }
 
+class ChatContextChipTreeDataProvider {
+	/**
+	 * @param {ChatSessionStore} sessionStore
+	 */
+	constructor(sessionStore) {
+		this.sessionStore = sessionStore;
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		this.storeWatcher = sessionStore.onDidChange(() => this.onDidChangeTreeDataEmitter.fire(undefined));
+	}
+
+	dispose() {
+		this.storeWatcher.dispose();
+		this.onDidChangeTreeDataEmitter.dispose();
+	}
+
+	getTreeItem(element) {
+		const item = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
+		item.id = element.id;
+		item.description = element.source;
+		item.contextValue = 'pointerPinnedContext';
+		item.tooltip = element.value;
+		return item;
+	}
+
+	getChildren() {
+		return this.sessionStore.listPinnedContext();
+	}
+}
+
 function delay(milliseconds) {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -187,6 +218,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	chatMessageTree.message = 'Messages';
+	const chatContextProvider = new ChatContextChipTreeDataProvider(chatSessionStore);
+	const chatContextTree = vscode.window.createTreeView('pointer.chatContext', {
+		treeDataProvider: chatContextProvider,
+		showCollapseAll: false
+	});
+	chatContextTree.message = 'Pinned context';
 	let activeChatAbortController;
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
@@ -289,7 +326,11 @@ function activate(context) {
 			modelId: chatSelection.modelId,
 			templateId: 'chat-default',
 			userPrompt: value,
-			context: []
+			context: chatSessionStore.listPinnedContext().map((item) => ({
+				kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
+				label: item.label,
+				tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
+			}))
 		});
 		const streamedResponse = `Router ready. ${plan.explainability.join(' | ')}`;
 		const chunks = streamedResponse.split(' ');
@@ -309,6 +350,45 @@ function activate(context) {
 
 	const cancelChatMessage = vscode.commands.registerCommand('pointer.chat.cancelMessage', async () => {
 		activeChatAbortController?.abort();
+	});
+
+	const attachCurrentFile = vscode.commands.registerCommand('pointer.chat.attachCurrentFile', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const filePath = editor.document.uri.fsPath;
+		chatSessionStore.addPinnedContext(path.basename(filePath), filePath, 'file');
+	});
+
+	const attachCurrentSelection = vscode.commands.registerCommand('pointer.chat.attachSelection', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const selectedText = editor.document.getText(editor.selection);
+		if (!selectedText || selectedText.trim().length === 0) {
+			return;
+		}
+		const label = selectedText.length > 30 ? `${selectedText.slice(0, 30)}...` : selectedText;
+		chatSessionStore.addPinnedContext(label, selectedText, 'selection');
+	});
+
+	const pinCustomContext = vscode.commands.registerCommand('pointer.chat.pinContext', async () => {
+		const value = await vscode.window.showInputBox({
+			prompt: 'Pin context text'
+		});
+		if (!value || value.trim().length === 0) {
+			return;
+		}
+		const label = value.length > 30 ? `${value.slice(0, 30)}...` : value;
+		chatSessionStore.addPinnedContext(label, value, 'manual');
+	});
+
+	const removePinnedContext = vscode.commands.registerCommand('pointer.chat.removePinnedContext', async (contextItem) => {
+		if (contextItem?.id) {
+			chatSessionStore.removePinnedContext(contextItem.id);
+		}
 	});
 
 	const updateStatusBar = () => {
@@ -384,6 +464,8 @@ function activate(context) {
 		chatSessionProvider,
 		chatMessageTree,
 		chatMessageProvider,
+		chatContextTree,
+		chatContextProvider,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,
@@ -399,6 +481,10 @@ function activate(context) {
 		deleteChatSession,
 		sendChatMessage,
 		cancelChatMessage,
+		attachCurrentFile,
+		attachCurrentSelection,
+		pinCustomContext,
+		removePinnedContext,
 		sessionSelectionWatcher
 	);
 	return internalApi;

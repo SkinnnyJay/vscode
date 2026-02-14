@@ -141,5 +141,7 @@
   **Why:** enables basic multi-session chat management needed for multi-turn workflows.
 - **M4-03/M4-04** Added chat messages tree rendering with streaming updates plus send/cancel chat actions (`pointer.chat.sendMessage`, `pointer.chat.cancelMessage`) backed by store-level message streaming APIs.
   **Why:** delivers a functional multi-turn MVP loop with visible incremental assistant output and interruption support.
+- **M4-05/M4-06** Added file/selection/manual pin context actions and a dedicated context chips view (`pointer.chatContext`) with per-chip remove action.
+  **Why:** enables explicit context attachment flows and transparent context control in chat sessions.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
