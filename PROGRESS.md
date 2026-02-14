@@ -67,3 +67,5 @@
   **Why:** provides per-surface visibility while keeping the status bar label compact.
 - **M1-08** Added five settings category groups in extension configuration: Providers, Models, Context, Tools and Safety, Prompts and Rules.  
   **Why:** establishes the expected Pointer settings IA early so feature defaults can be wired incrementally.
+- **M1-09** Added explicit default values, enums, constraints, and human-readable descriptions for each new Pointer configuration property.  
+  **Why:** makes settings self-documenting and safe-by-default in the Settings UI.
