@@ -155,5 +155,7 @@
   **Why:** enforces diff-first review workflow and gives users transparent per-file decision control with conflict feedback.
 - **M4-14/M4-15/M4-16** Added sidecar tool gate evaluator (`policy/tool-gates.ts`) for terminal, filesystem (diff-only), and network policy enforcement with tests.
   **Why:** hardens tool safety defaults to prevent silent terminal/fs/network actions outside approved policy.
+- **M4-17** Added prompt injection defense module (`policy/prompt-injection.ts`) and strategy doc (`docs/prompt-injection-defense.md`) covering detection + patch path sanitization.
+  **Why:** establishes explicit defense-in-depth policy against instruction override and unsafe patch/tool payloads.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
