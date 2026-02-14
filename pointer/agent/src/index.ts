@@ -29,3 +29,5 @@ export * from './rules/loader.js';
 export * from './hooks/dispatcher.js';
 export * from './mcp/client.js';
 export * from './mcp/allowlist.js';
+export * from './perf/metrics.js';
+export * from './perf/indexer-observer.js';

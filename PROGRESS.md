@@ -185,5 +185,9 @@
   **Why:** enables local MCP connectivity with workspace-scoped tool permission boundaries.
 - **M6-09** Added MCP audit view (`pointer.mcp`) in extension UI showing configured servers and allowed tools with refresh action.
   **Why:** makes MCP server/tool permission state visible and manageable from the editor surface.
+- **M7-01/M7-02** Added request perf metrics recorder (`perf/metrics.ts`) for per-surface latency, cancellation rate, and chat TTFT tracking with tests.
+  **Why:** creates measurable runtime telemetry for responsiveness and cancellation reliability.
+- **M7-03** Added opt-in indexer resource observer (`perf/indexer-observer.ts`) that captures CPU/memory samples and logs to local perf artifacts.
+  **Why:** enables low-friction local profiling of indexing overhead without always-on instrumentation.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

@@ -211,9 +211,9 @@ Success metrics:
 - Budgets (set in M0) are met in perf runs.
 - Leak harness shows bounded memory after repeated agent ops.
 Tasks:
-- [ ] - M7 - [sidecar] Instrument request latency per surface and cancellation success.
-- [ ] - M7 - [sidecar] Track time-to-first-token for chat.
-- [ ] - M7 - [sidecar] Measure indexer CPU/memory and log locally (opt-in).
+- [x] - M7 - [sidecar] Instrument request latency per surface and cancellation success.
+- [x] - M7 - [sidecar] Track time-to-first-token for chat.
+- [x] - M7 - [sidecar] Measure indexer CPU/memory and log locally (opt-in).
 - [ ] - M7 - [perf] Capture baseline memory snapshots after key scenarios.
 - [ ] - M7 - [perf] Build automated leak test harness and scenario runner.
 - [ ] - M7 - [core] Lazy-load heavy AI components.
