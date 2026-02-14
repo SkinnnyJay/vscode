@@ -239,3 +239,5 @@
   **Why:** narrows the failure scope to renderer module loading in this VM and records safe process cleanup details.
 - **Smoke validation follow-up (2026-02-14 PM)** Ran `xvfb-run -a make test-smoke`; smoke runner launched but all Electron suites timed out waiting for `.monaco-workbench` (0 passing / 19 failing / 3 pending), with logs emitted to `.build/logs`.
   **Why:** captures another reproducible headless-environment limitation while preserving successful lint/unit/typecheck/build evidence as the reliable validation baseline.
+- **Pointer agent regression pass (2026-02-14 PM)** Re-ran `npm run typecheck && npm test` in `pointer/agent`; all 72 tests passed with no failures.
+  **Why:** reconfirms sidecar router/providers/policy modules remain stable after repeated validation loops.
