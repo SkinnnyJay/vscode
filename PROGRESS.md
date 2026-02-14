@@ -245,3 +245,5 @@
   **Why:** reconfirms Pointer extension chat/tab/patch/settings modules remain stable in the current branch state.
 - **Electron loader deep-dive (2026-02-14 PM)** Rechecked the isolated renderer failure and verified the target module file is readable/fetchable (`200 OK`, expected byte size) while dynamic `import()` still fails in this VM; reverted temporary harness instrumentation after confirming no durable code fix.
   **Why:** adds stronger root-cause evidence that the remaining `make test` issue is runtime-environment specific rather than missing build artifacts.
+- **Import-map scope experiment (2026-02-14 PM)** Tried extending the renderer import-map generation to add scoped mappings for relative `.css` imports discovered in compiled `out/**/*.js`; isolated renderer test still failed with the same dynamic import error, so the experiment was reverted.
+  **Why:** rules out simple relative-css import-map scope gaps as the cause and keeps the branch free of speculative harness changes.
