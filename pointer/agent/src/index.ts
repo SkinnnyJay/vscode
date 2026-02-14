@@ -8,3 +8,4 @@ export * from './router/config.js';
 export * from './router/resolver.js';
 export * from './router/prompt-assembly.js';
 export * from './router/planner.js';
+export * from './providers/capabilities.js';

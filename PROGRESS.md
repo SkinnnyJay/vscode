@@ -107,3 +107,5 @@
   **Why:** enforces deterministic safety limits across surfaces while preserving debuggable reasoning for dropped context.
 - **M2-12** Added `pointer.contextSent` view and renderer that subscribes to router plan events, showing plan explainability/context metadata in UI.
   **Why:** gives users immediate visibility into what context and policy decisions are being sent to the router.
+- **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
+  **Why:** provides a single source of truth for provider feature compatibility checks during routing.

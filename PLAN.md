@@ -113,7 +113,7 @@ Tasks:
 - [x] - M2 - [sidecar] Add prompt part ordering tests.
 - [x] - M2 - [sidecar] Add hard token budgets per surface with explainability data.
 - [x] - M2 - [extension] Render “context sent” panel from router plan.
-- [ ] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
+- [x] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
 - [ ] - M2 - [sidecar] Add provider health checks, missing-binary detection, and “Test provider”.
 - [ ] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
 - [ ] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
