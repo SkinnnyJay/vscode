@@ -139,17 +139,16 @@ export class HookDispatcher<TPayload> {
 				}
 			}
 			if (result.redactedFields && result.redactedFields.length > 0 && policy.allowPromptRedaction) {
-				const payloadWithText = currentPayload as unknown as { text?: unknown };
-				if (typeof payloadWithText.text === 'string') {
-					let redactedText = payloadWithText.text;
-					for (const field of result.redactedFields) {
-						const pattern = new RegExp(field, 'gi');
-						redactedText = redactedText.replace(pattern, '[REDACTED]');
+				if (typeof currentPayload === 'object' && currentPayload !== null) {
+					const payloadWithText = currentPayload as { text?: unknown };
+					if (typeof payloadWithText.text === 'string') {
+						let redactedText = payloadWithText.text;
+						for (const field of result.redactedFields) {
+							const pattern = new RegExp(field, 'gi');
+							redactedText = redactedText.replace(pattern, '[REDACTED]');
+						}
+						payloadWithText.text = redactedText;
 					}
-					currentPayload = {
-						...(currentPayload as unknown as Record<string, unknown>),
-						text: redactedText
-					} as TPayload;
 				}
 			}
 

@@ -217,6 +217,32 @@ class RulesAuditTreeDataProvider {
 	}
 }
 
+class McpAuditTreeDataProvider {
+	constructor() {
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		/** @type {vscode.TreeItem[]} */
+		this.items = [
+			new vscode.TreeItem('No MCP servers configured', vscode.TreeItemCollapsibleState.None)
+		];
+	}
+
+	setItems(items) {
+		this.items = items.length > 0 ? items : [
+			new vscode.TreeItem('No MCP servers configured', vscode.TreeItemCollapsibleState.None)
+		];
+		this.onDidChangeTreeDataEmitter.fire(undefined);
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren() {
+		return this.items;
+	}
+}
+
 function toDiffPreview(diff) {
 	const lines = diff.split('\n');
 	const before = [];
@@ -329,6 +355,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	rulesAuditTree.message = 'Applied rules';
+	const mcpAuditProvider = new McpAuditTreeDataProvider();
+	const mcpAuditTree = vscode.window.createTreeView('pointer.mcp', {
+		treeDataProvider: mcpAuditProvider,
+		showCollapseAll: false
+	});
+	mcpAuditTree.message = 'MCP servers and permissions';
 	let activeChatAbortController;
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
@@ -583,6 +615,37 @@ function activate(context) {
 		}
 	});
 
+	const refreshMcpAudit = vscode.commands.registerCommand('pointer.mcp.refresh', async () => {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			mcpAuditProvider.setItems([]);
+			return;
+		}
+		const pointerDirectory = path.join(workspaceFolder.uri.fsPath, '.pointer');
+		const serversPath = path.join(pointerDirectory, 'mcp-servers.json');
+		const allowlistPath = path.join(pointerDirectory, 'mcp-allowlist.json');
+		try {
+			const serverPayload = JSON.parse(await fs.readFile(serversPath, 'utf8'));
+			const allowlistPayload = JSON.parse(await fs.readFile(allowlistPath, 'utf8'));
+			const servers = Array.isArray(serverPayload.servers) ? serverPayload.servers : [];
+			const allowlist = Array.isArray(allowlistPayload.tools) ? allowlistPayload.tools : [];
+			const items = [];
+			for (const server of servers) {
+				const serverItem = new vscode.TreeItem(`Server: ${server.name ?? 'unknown'}`, vscode.TreeItemCollapsibleState.None);
+				serverItem.description = server.command ?? '';
+				items.push(serverItem);
+			}
+			for (const tool of allowlist) {
+				const toolItem = new vscode.TreeItem(`Allowed tool: ${tool}`, vscode.TreeItemCollapsibleState.None);
+				toolItem.description = 'workspace allowlist';
+				items.push(toolItem);
+			}
+			mcpAuditProvider.setItems(items);
+		} catch {
+			mcpAuditProvider.setItems([]);
+		}
+	});
+
 	const openPatchDiff = vscode.commands.registerCommand('pointer.patch.openDiff', async (patchFile) => {
 		if (!patchFile?.diff || !patchFile?.path) {
 			return;
@@ -667,6 +730,7 @@ function activate(context) {
 	syncSelectionsFromConfig();
 	updateStatusBar();
 	void refreshRulesAudit();
+	void refreshMcpAudit();
 
 	const invalidKeys = validatePointerDefaultsConfiguration();
 	if (invalidKeys.length > 0) {
@@ -726,6 +790,7 @@ function activate(context) {
 		patchReviewTree,
 		patchReviewProvider,
 		rulesAuditTree,
+		mcpAuditTree,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,
@@ -749,6 +814,7 @@ function activate(context) {
 		removePinnedContext,
 		openContextExcludes,
 		refreshRulesAudit,
+		refreshMcpAudit,
 		openPatchDiff,
 		applyPatchFile,
 		rejectPatchFile,

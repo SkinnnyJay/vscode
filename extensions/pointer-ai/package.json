@@ -18,6 +18,7 @@
 		"onView:pointer.chatContext",
 		"onView:pointer.patchReview",
 		"onView:pointer.rulesAudit",
+		"onView:pointer.mcp",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -39,6 +40,7 @@
 		"onCommand:pointer.patch.applyAll",
 		"onCommand:pointer.context.openExcludes",
 		"onCommand:pointer.rules.refresh",
+		"onCommand:pointer.mcp.refresh",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -150,6 +152,11 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.mcp.refresh",
+				"title": "Pointer: Refresh MCP Audit",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -210,6 +217,11 @@
 				{
 					"command": "pointer.rules.refresh",
 					"when": "view == pointer.rulesAudit",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.mcp.refresh",
+					"when": "view == pointer.mcp",
 					"group": "navigation"
 				}
 			],
@@ -395,6 +407,10 @@
 				{
 					"id": "pointer.rulesAudit",
 					"name": "Rules Audit"
+				},
+				{
+					"id": "pointer.mcp",
+					"name": "MCP"
 				}
 			]
 		}

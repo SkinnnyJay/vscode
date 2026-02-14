@@ -27,3 +27,5 @@ export * from './context/retrieval.js';
 export * from './context/embedding-retrieval.js';
 export * from './rules/loader.js';
 export * from './hooks/dispatcher.js';
+export * from './mcp/client.js';
+export * from './mcp/allowlist.js';

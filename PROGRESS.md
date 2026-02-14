@@ -181,5 +181,9 @@
   **Why:** surfaces applied rules visibility directly in the UI for policy transparency.
 - **M6-04/M6-05/M6-06/M6-10** Added hook dispatcher (`hooks/dispatcher.ts`) covering pre/post events, timeout sandboxing, block/modify/redact controls, and failure-mode tests.
   **Why:** provides safe, policy-limited hook execution with explicit timeout/failure handling guarantees.
+- **M6-07/M6-08** Added MCP client + workspace allowlist modules (`mcp/client.ts`, `mcp/allowlist.ts`) with connection/call/allowlist tests.
+  **Why:** enables local MCP connectivity with workspace-scoped tool permission boundaries.
+- **M6-09** Added MCP audit view (`pointer.mcp`) in extension UI showing configured servers and allowed tools with refresh action.
+  **Why:** makes MCP server/tool permission state visible and manageable from the editor surface.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
