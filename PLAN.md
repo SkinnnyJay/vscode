@@ -102,7 +102,7 @@ Success metrics:
 - Provider cancellation resolves within 500ms (or documented CLI limitation).
 Tasks:
 - [x] - M2 - [research] Spike CLI feasibility: codex/claude/opencode stdin/stdout, streaming, JSON, cancel.
-- [ ] - M2 - [research] Capture example transcripts for each CLI mode.
+- [x] - M2 - [research] Capture example transcripts for each CLI mode.
 - [ ] - M2 - [docs] Document CLI findings and kill non-viable adapters early.
 - [ ] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).
 - [ ] - M2 - [sidecar] Define config schema for router defaults and policies.

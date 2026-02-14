@@ -85,3 +85,5 @@
   **Why:** gives users and contributors a single reference for configurable routing/safety behavior.
 - **M2-01** Completed initial CLI feasibility spike and confirmed provider binaries are absent in the current environment.  
   **Why:** establishes an evidence-based baseline before adapter implementation work begins.
+- **M2-02** Captured shell transcript snippets for Codex/Claude/OpenCode probes in `docs/router-cli-feasibility.md`.  
+  **Why:** preserves reproducible command-level evidence for adapter bootstrap decisions.
