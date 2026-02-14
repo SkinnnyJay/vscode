@@ -395,3 +395,11 @@
   **Why:** keeps recent-failure details stable and shifts external timing suffixes to a deterministic terminator line, reducing noisy drift in repeated diagnostics.
 - **Normalization/terminator validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes the count header + terminator line, and observed variable `after <n>ms` suffix attached only to the sentinel line in runner logs; re-ran `make lint` (pass).
   **Why:** confirms improved diagnostic readability while preserving behavior and lint health.
+- **Post-formatting validation sweep (2026-02-14 PM)** Re-ran core gates:
+  - `make test-unit` (pass),
+  - `make build` (pass),
+  - `xvfb-run -a ./scripts/code.sh --version` (pass).
+  Re-ran full suites:
+  - `xvfb-run -a make test` still fails on renderer ESM import, now emitting both `[ESM IMPORT FAILURE]` and enriched `[ESM IMPORT FAILURE DEPS SUMMARY]` with `failureFamilies` rollups.
+  - `xvfb-run -a make test-smoke` remains **1 failing / 94 pending / 0 passing** with compact `Recent request failures (8)` block and terminator line.
+  **Why:** reconfirms core health, preserves known environment-level renderer blocker signature, and validates latest diagnostic formatting in end-to-end runs.
