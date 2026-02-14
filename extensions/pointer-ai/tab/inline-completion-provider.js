@@ -10,6 +10,7 @@ const { PointerTabCompletionEngine } = require('./tab-completion-engine.js');
  * @param {import('../internal-api.js').PointerInternalApi} internalApi
  */
 function createInlineCompletionProvider(internalApi) {
+	let lastSuggestionText = '';
 	const engine = new PointerTabCompletionEngine({
 		requestPlan: async ({ providerId, modelId, prompt }) => {
 			await internalApi.requestRouterPlan({
@@ -65,6 +66,7 @@ function createInlineCompletionProvider(internalApi) {
 			if (!suggestion || !suggestion.text) {
 				return { items: [] };
 			}
+			lastSuggestionText = suggestion.text;
 
 			return {
 				items: [
@@ -80,7 +82,8 @@ function createInlineCompletionProvider(internalApi) {
 	return {
 		provider,
 		cancelPending: () => engine.cancelPending(),
-		engine
+		engine,
+		getLastSuggestionText: () => lastSuggestionText
 	};
 }
 

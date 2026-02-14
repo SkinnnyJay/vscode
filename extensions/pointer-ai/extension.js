@@ -442,6 +442,21 @@ function activate(context) {
 		inlineCompletion.cancelPending();
 	});
 
+	const acceptPartialTabCompletion = vscode.commands.registerCommand('pointer.tab.acceptPartial', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const suggestionText = inlineCompletion.getLastSuggestionText();
+		if (!suggestionText) {
+			return;
+		}
+		const partial = (suggestionText.match(/^\S+\s?/) ?? [suggestionText])[0];
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(editor.selection.active, partial);
+		});
+	});
+
 	const createChatSession = vscode.commands.registerCommand('pointer.chat.newSession', async () => {
 		const value = await vscode.window.showInputBox({
 			prompt: 'Session name',
@@ -803,6 +818,7 @@ function activate(context) {
 		selectChatModel,
 		openSettings,
 		cancelTabCompletion,
+		acceptPartialTabCompletion,
 		createChatSession,
 		renameChatSession,
 		deleteChatSession,

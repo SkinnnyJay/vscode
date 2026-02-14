@@ -197,5 +197,7 @@
   **Why:** prevents unbounded provider request fan-out under high load.
 - **M7-09** Added CI perf regression workflow (`.github/workflows/perf-regression.yml`) enforcing leak-threshold pass/fail and artifact upload.
   **Why:** gates performance regressions with automated threshold checks.
+- **M8-01** Added partial tab accept command (`pointer.tab.acceptPartial`) using last inline suggestion state to insert word-sized partial completions.
+  **Why:** improves tab completion ergonomics for incremental acceptance workflows.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

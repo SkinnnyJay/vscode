@@ -22,6 +22,7 @@
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
+		"onCommand:pointer.tab.acceptPartial",
 		"onCommand:pointer.selectModel",
 		"onCommand:pointer.chat.newSession",
 		"onCommand:pointer.chat.renameSession",
@@ -59,6 +60,11 @@
 			{
 				"command": "pointer.tab.cancel",
 				"title": "Pointer: Cancel Tab Completion",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.tab.acceptPartial",
+				"title": "Pointer: Accept Partial Tab Suggestion",
 				"category": "Pointer"
 			},
 			{
