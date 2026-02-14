@@ -289,7 +289,7 @@ function initLoadFn(opts) {
 
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
-			return;
+			return undefined;
 		}
 		seenDependencyDiagnostics.add(moduleUrl);
 
@@ -301,7 +301,7 @@ function initLoadFn(opts) {
 					url: moduleUrl,
 					error: `dependency source fetch failed (${response.status})`
 				}));
-				return;
+				return undefined;
 			}
 
 			const source = await response.text();
@@ -417,6 +417,14 @@ function initLoadFn(opts) {
 					failureSignature,
 					failures
 				}));
+
+				return {
+					module: moduleId,
+					url: moduleUrl,
+					failureSignature,
+					failureCount: totalFailedDependencyImportCount,
+					failureDetailsReturnedCount: failures.length
+				};
 			}
 		} catch (diagnosticErr) {
 			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
@@ -425,6 +433,8 @@ function initLoadFn(opts) {
 				error: String(diagnosticErr)
 			}));
 		}
+
+		return undefined;
 	}
 
 	// set loader
@@ -449,10 +459,13 @@ function initLoadFn(opts) {
 					fetchDiskByteDelta,
 					byteDeltaKind
 				}));
-				await logDirectImportDiagnostics(mod, url);
+				const dependencyDiagnosticsSummary = await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);
 				console.log(err);
 				_loaderErrors.push(err);
+				if (dependencyDiagnosticsSummary) {
+					console.error('[ESM IMPORT FAILURE DEP SUMMARY REF]', JSON.stringify(dependencyDiagnosticsSummary));
+				}
 				throw err;
 			});
 		});

@@ -542,3 +542,10 @@
   - `xvfb-run -a ./scripts/test.sh --run vs/editor/browser/view.js` (truncation active: failure count 16, returned 12, dropped 4).
   Verified counts/rates remain coherent and re-ran `make lint` (pass).
   **Why:** confirms capped details behave correctly in both small and large failure-frontier cases.
+- **Dependency summary reference emission (2026-02-14 PM)** Updated `test/unit/electron/renderer.js` to have `logDirectImportDiagnostics(...)` return a compact summary object (`failureSignature`, counts) and emit a follow-up `[ESM IMPORT FAILURE DEP SUMMARY REF]` record from the top-level import-failure path.
+  **Why:** creates an easy-to-grep stable link between top-level failure events and large dependency summary blobs without reprinting full detail payloads.
+- **Summary-reference validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified logs now include:
+  - full `[ESM IMPORT FAILURE DEPS SUMMARY]` with `failureSignature`,
+  - compact `[ESM IMPORT FAILURE DEP SUMMARY REF]` carrying matching signature/counts.
+  Re-ran `make lint` (pass).
+  **Why:** confirms summary-reference linkage is active and lint-safe.
