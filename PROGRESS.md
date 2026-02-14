@@ -211,5 +211,7 @@
   **Why:** makes larger refactors reviewable by directory-level groups rather than flat file lists.
 - **M8-04** Added workspace-level project brief support (`project-brief.md` load/save, set-brief command, pinned context surfacing in chat context and router payloads).
   **Why:** captures durable workspace intent that is automatically available to chat workflows.
+- **M8-08** Added upstream security external-fix tracking doc (`docs/upstream-security-external-fix.md`) with explicit tag `upstream-vscode-security-fix`.
+  **Why:** marks runtime vulnerability remediation as an upstream Code - OSS dependency update track item.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
