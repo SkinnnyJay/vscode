@@ -14,6 +14,7 @@
 		"onView:pointer.home",
 		"onView:pointer.contextSent",
 		"onView:pointer.chatSessions",
+		"onView:pointer.chatMessages",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -21,6 +22,8 @@
 		"onCommand:pointer.chat.newSession",
 		"onCommand:pointer.chat.renameSession",
 		"onCommand:pointer.chat.deleteSession",
+		"onCommand:pointer.chat.sendMessage",
+		"onCommand:pointer.chat.cancelMessage",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -62,6 +65,16 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.chat.sendMessage",
+				"title": "Pointer: Send Chat Message",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.cancelMessage",
+				"title": "Pointer: Cancel Chat Message",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -73,6 +86,16 @@
 					"command": "pointer.chat.newSession",
 					"when": "view == pointer.chatSessions",
 					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.sendMessage",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.cancelMessage",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@2"
 				}
 			],
 			"view/item/context": [
@@ -221,6 +244,10 @@
 				{
 					"id": "pointer.chatSessions",
 					"name": "Chat Sessions"
+				},
+				{
+					"id": "pointer.chatMessages",
+					"name": "Messages"
 				}
 			]
 		}

@@ -152,8 +152,8 @@ Success metrics:
 Tasks:
 - [x] - M4 - [extension] Create chat view container and session list.
 - [x] - M4 - [extension] Add new-session action and session rename/delete.
-- [ ] - M4 - [extension] Implement message list rendering with streaming updates.
-- [ ] - M4 - [extension] Add prompt composer input with send/cancel.
+- [x] - M4 - [extension] Implement message list rendering with streaming updates.
+- [x] - M4 - [extension] Add prompt composer input with send/cancel.
 - [ ] - M4 - [extension] Add attach file/selection and pin context actions.
 - [ ] - M4 - [extension] Add context chips UI with remove action.
 - [ ] - M4 - [extension] Add provider/model selector for chat.

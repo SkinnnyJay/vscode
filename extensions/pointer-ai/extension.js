@@ -81,6 +81,47 @@ class ChatSessionTreeDataProvider {
 	}
 }
 
+class ChatMessageTreeDataProvider {
+	/**
+	 * @param {ChatSessionStore} sessionStore
+	 */
+	constructor(sessionStore) {
+		this.sessionStore = sessionStore;
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		this.storeWatcher = sessionStore.onDidChange(() => this.onDidChangeTreeDataEmitter.fire(undefined));
+	}
+
+	dispose() {
+		this.storeWatcher.dispose();
+		this.onDidChangeTreeDataEmitter.dispose();
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren() {
+		const session = this.sessionStore.getActiveSession();
+		if (!session) {
+			return [];
+		}
+		return this.sessionStore.listMessages(session.id).map((message) => {
+			const rolePrefix = message.role === 'user' ? 'You' : 'Pointer';
+			const suffix = message.streaming ? ' (streaming)' : '';
+			const body = message.text.length > 0 ? message.text : '...';
+			const item = new vscode.TreeItem(`${rolePrefix}: ${body}${suffix}`, vscode.TreeItemCollapsibleState.None);
+			item.description = message.role;
+			item.tooltip = body;
+			return item;
+		});
+	}
+}
+
+function delay(milliseconds) {
+	return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -140,6 +181,13 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	chatSessionTree.message = 'Chat sessions';
+	const chatMessageProvider = new ChatMessageTreeDataProvider(chatSessionStore);
+	const chatMessageTree = vscode.window.createTreeView('pointer.chatMessages', {
+		treeDataProvider: chatMessageProvider,
+		showCollapseAll: false
+	});
+	chatMessageTree.message = 'Messages';
+	let activeChatAbortController;
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
 		{ scheme: 'file' },
@@ -216,6 +264,53 @@ function activate(context) {
 		}
 	});
 
+	const sendChatMessage = vscode.commands.registerCommand('pointer.chat.sendMessage', async () => {
+		const value = await vscode.window.showInputBox({
+			prompt: 'Send message to Pointer',
+			placeHolder: 'Ask Pointer...'
+		});
+		if (!value || value.trim().length === 0) {
+			return;
+		}
+
+		activeChatAbortController?.abort();
+		activeChatAbortController = new AbortController();
+
+		chatSessionStore.addUserMessage(value);
+		const assistantMessageId = chatSessionStore.startAssistantMessage();
+		if (!assistantMessageId) {
+			return;
+		}
+
+		const chatSelection = internalApi.getSelection('chat');
+		const plan = await internalApi.requestRouterPlan({
+			surface: 'chat',
+			providerId: chatSelection.providerId,
+			modelId: chatSelection.modelId,
+			templateId: 'chat-default',
+			userPrompt: value,
+			context: []
+		});
+		const streamedResponse = `Router ready. ${plan.explainability.join(' | ')}`;
+		const chunks = streamedResponse.split(' ');
+
+		for (const chunk of chunks) {
+			if (activeChatAbortController.signal.aborted) {
+				chatSessionStore.appendAssistantChunk(assistantMessageId, '\n[Cancelled]');
+				chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+				return;
+			}
+			chatSessionStore.appendAssistantChunk(assistantMessageId, `${chunk} `);
+			await delay(20);
+		}
+
+		chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+	});
+
+	const cancelChatMessage = vscode.commands.registerCommand('pointer.chat.cancelMessage', async () => {
+		activeChatAbortController?.abort();
+	});
+
 	const updateStatusBar = () => {
 		const chatSelection = internalApi.getSelection('chat');
 		const tabSelection = internalApi.getSelection('tab');
@@ -271,6 +366,12 @@ function activate(context) {
 	const typingCancelWatcher = vscode.workspace.onDidChangeTextDocument(() => {
 		inlineCompletion.cancelPending();
 	});
+	const sessionSelectionWatcher = chatSessionTree.onDidChangeSelection((event) => {
+		const selected = event.selection[0];
+		if (selected?.id) {
+			chatSessionStore.setActiveSession(selected.id);
+		}
+	});
 
 	const routerPlanWatcher = internalApi.onDidCreateRouterPlan((plan) => {
 		routerContextViewProvider.refreshFromPlan(plan);
@@ -281,6 +382,8 @@ function activate(context) {
 		contextSentTree,
 		chatSessionTree,
 		chatSessionProvider,
+		chatMessageTree,
+		chatMessageProvider,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,
@@ -293,7 +396,10 @@ function activate(context) {
 		cancelTabCompletion,
 		createChatSession,
 		renameChatSession,
-		deleteChatSession
+		deleteChatSession,
+		sendChatMessage,
+		cancelChatMessage,
+		sessionSelectionWatcher
 	);
 	return internalApi;
 }
