@@ -121,6 +121,7 @@ function initLoadFn(opts) {
 
 	const staticImportRegex = /(?:import\s+(?:[^'"]+from\s*)?["']([^"']+)["'])|(?:export\s+[^'"]*from\s*["']([^"']+)["'])/g;
 	const seenDependencyDiagnostics = new Set();
+	const dependencyDiagnosticsByUrl = new Map();
 
 	function extractDirectImportSpecifiers(sourceText) {
 		staticImportRegex.lastIndex = 0;
@@ -289,7 +290,7 @@ function initLoadFn(opts) {
 
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
-			return undefined;
+			return dependencyDiagnosticsByUrl.get(moduleUrl);
 		}
 		seenDependencyDiagnostics.add(moduleUrl);
 
@@ -418,13 +419,16 @@ function initLoadFn(opts) {
 					failures
 				}));
 
-				return {
+				const summary = {
 					module: moduleId,
 					url: moduleUrl,
 					failureSignature,
 					failureCount: totalFailedDependencyImportCount,
 					failureDetailsReturnedCount: failures.length
 				};
+
+				dependencyDiagnosticsByUrl.set(moduleUrl, summary);
+				return summary;
 			}
 		} catch (diagnosticErr) {
 			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({

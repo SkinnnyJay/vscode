@@ -557,3 +557,7 @@
   - standalone `[ESM IMPORT FAILURE DEP SUMMARY REF]` line is absent.
   Re-ran `make lint` (pass).
   **Why:** confirms tighter, less noisy correlation path is active and lint-clean.
+- **Dependency-summary cache by module URL (2026-02-14 PM)** Updated `test/unit/electron/renderer.js` to cache compact dependency-summary metadata (`failureSignature` + counts) by module URL, so repeated top-level failures in the same run can reuse existing summary linkage without recomputing diagnostics.
+  **Why:** preserves correlation data with lower repeated diagnostic overhead and consistent reference payloads for duplicate failure events.
+- **Cache-path validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified top-level failure still carries `dependencyFailureSignature`/counts matching emitted summary; re-ran `make lint` (pass).
+  **Why:** confirms cache introduction is behavior-preserving and lint-safe.
