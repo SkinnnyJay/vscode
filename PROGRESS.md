@@ -153,5 +153,7 @@
   **Why:** enforces explicit, reviewable patch payload structure before editor-side apply workflows.
 - **M4-11/M4-12/M4-13** Added patch review store + view (`pointer.patchReview`) with per-file diff preview, apply/reject/apply-all actions, rationale display, and conflict/summary messaging.
   **Why:** enforces diff-first review workflow and gives users transparent per-file decision control with conflict feedback.
+- **M4-14/M4-15/M4-16** Added sidecar tool gate evaluator (`policy/tool-gates.ts`) for terminal, filesystem (diff-only), and network policy enforcement with tests.
+  **Why:** hardens tool safety defaults to prevent silent terminal/fs/network actions outside approved policy.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

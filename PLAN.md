@@ -163,9 +163,9 @@ Tasks:
 - [x] - M4 - [extension] Render per-file diff view with apply/reject/apply all.
 - [x] - M4 - [extension] Add apply summary banner and conflict messaging.
 - [x] - M4 - [extension] Track and show changed files with rationale.
-- [ ] - M4 - [sidecar] Gate terminal tool (confirm-by-default or disabled).
-- [ ] - M4 - [sidecar] Gate filesystem edits to diff apply only.
-- [ ] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).
+- [x] - M4 - [sidecar] Gate terminal tool (confirm-by-default or disabled).
+- [x] - M4 - [sidecar] Gate filesystem edits to diff apply only.
+- [x] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).
 - [ ] - M4 - [policy] Add prompt injection defense strategy for tools and patches.
 - [ ] - M4 - [tests] Add agent patch apply tests (apply/reject/conflict).
 
