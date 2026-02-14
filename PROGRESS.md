@@ -335,3 +335,7 @@
   **Why:** aligns unit-harness diagnostics with smoke diagnostics so both surfaces explicitly report whether failing import targets are physically present.
 - **Unit `existsOnDisk` verification (2026-02-14 PM)** Re-ran isolated failing module (`vs/workbench/workbench.desktop.main.js`) and verified new log payload includes `"existsOnDisk":true` while import still fails; re-ran `make lint` (pass).
   **Why:** confirms the additional unit-level signal is active and supports the “not missing artifact” conclusion.
+- **Protocol fallback rollback (2026-02-14 PM)** Reverted the earlier canonical realpath fallback logic in `protocolMainService` after observing no runtime improvement, restoring upstream-like protocol behavior.
+  **Why:** removes speculative production-path complexity that did not mitigate the renderer import failure.
+- **Rollback validation (2026-02-14 PM)** Rebuilt (`make build`), re-ran focused smoke startup case (still fails with the same import error and `existsOnDisk=true` diagnostics), then re-ran `make lint` and `make test-unit` (7584 passing / 134 pending).
+  **Why:** confirms rollback is safe and keeps the known failure signature unchanged while preserving green core gates.

@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { existsSync, realpathSync } from 'fs';
 import { session } from 'electron';
 import { Disposable, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { COI, FileAccess, Schemas, CacheControlheaders, DocumentPolicyheaders } from '../../../base/common/network.js';
@@ -129,12 +128,6 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 			return callback({ path, headers });
 		}
 
-		// second check by validRoots on canonicalized path to handle symlinked workspaces
-		const canonicalPath = this.toCanonicalPath(path);
-		if (canonicalPath && this.validRoots.findSubstr(canonicalPath)) {
-			return callback({ path: canonicalPath, headers });
-		}
-
 		// then check by validExtensions
 		if (this.validExtensions.has(extname(path).toLowerCase())) {
 			return callback({ path, headers });
@@ -144,18 +137,6 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 		this.logService.error(`${Schemas.vscodeFileResource}: Refused to load resource ${path} from ${Schemas.vscodeFileResource}: protocol (original URL: ${request.url})`);
 
 		return callback({ error: -3 /* ABORTED */ });
-	}
-
-	private toCanonicalPath(path: string): string | undefined {
-		if (!existsSync(path)) {
-			return undefined;
-		}
-
-		try {
-			return normalize(realpathSync.native(path));
-		} catch {
-			return undefined;
-		}
 	}
 
 	private requestToNormalizedFilePath(request: Electron.ProtocolRequest): string {
