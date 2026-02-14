@@ -41,6 +41,60 @@
 				"category": "Pointer"
 			}
 		],
+		"configuration": [
+			{
+				"title": "Pointer: Providers",
+				"properties": {
+					"pointer.providers.primary": {
+						"type": "string",
+						"default": "auto",
+						"description": "Primary provider identifier used when a surface does not override provider selection."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Models",
+				"properties": {
+					"pointer.models.default": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model identifier used when a surface does not override model selection."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Context",
+				"properties": {
+					"pointer.context.maxFiles": {
+						"type": "number",
+						"default": 8,
+						"minimum": 1,
+						"description": "Maximum number of files to include in automatically assembled context."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Tools and Safety",
+				"properties": {
+					"pointer.tools.terminalPolicy": {
+						"type": "string",
+						"default": "confirm",
+						"enum": ["disabled", "confirm", "allow"],
+						"description": "Default terminal tool execution policy."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Prompts and Rules",
+				"properties": {
+					"pointer.prompts.rulesProfile": {
+						"type": "string",
+						"default": "workspace",
+						"description": "Default rules profile applied when composing prompts."
+					}
+				}
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{

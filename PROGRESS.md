@@ -65,3 +65,5 @@
   **Why:** surfaces active model routing context without requiring users to open settings or deep UI panels.
 - **M1-07** Added multi-line status-bar tooltip detail for Chat/Tab/Agent provider-model selections.  
   **Why:** provides per-surface visibility while keeping the status bar label compact.
+- **M1-08** Added five settings category groups in extension configuration: Providers, Models, Context, Tools and Safety, Prompts and Rules.  
+  **Why:** establishes the expected Pointer settings IA early so feature defaults can be wired incrementally.
