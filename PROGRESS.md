@@ -267,3 +267,9 @@
   **Why:** rules out missing CSS mappings and missing on-disk files, reinforcing that the unresolved issue is in runtime module loading rather than build outputs.
 - **Diagnostic rollback (2026-02-14 PM)** Reverted all temporary instrumentation/retry experiments in `test/unit/electron/renderer.html` and `test/unit/electron/renderer.js` after collecting evidence.
   **Why:** keeps the branch clean and avoids landing speculative harness behavior changes.
+- **Import-map readiness probe (2026-02-14 PM)** Tried a temporary harness change to await `import('assert')` and `import('electron')` immediately after installing the renderer import-map, then re-ran repeated isolated cases (`bracketMatching.test.js` still failed 5/5); reverted the probe.
+  **Why:** tested (and ruled out) a simple import-map activation race as the dominant cause of the renderer dynamic-import failures in this VM.
+- **Expanded isolated module matrix (2026-02-14 PM)** Ran additional isolated module loads across editor/workbench paths and observed high variability: many modules failed with the same dynamic-import `TypeError` in one run while some (including previously failing paths) occasionally passed.
+  **Why:** strengthens the conclusion that this is a broader Electron renderer ESM instability under this headless environment rather than a single bad module artifact.
+- **Gate rerun after diagnostics (2026-02-14 PM)** Re-ran `make test-unit` (7584 passing / 134 pending), `make build` (compile finished with 0 errors), and `xvfb-run -a ./scripts/code.sh --version` (pass; expected headless DBus/GPU warnings).  
+  **Why:** reconfirms branch health on core quality/runtime gates after the latest diagnostic and rollback cycle.
