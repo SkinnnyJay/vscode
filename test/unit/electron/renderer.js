@@ -205,6 +205,36 @@ function initLoadFn(opts) {
 		return { fetchStatus, fetchOk, fetchedBytes };
 	}
 
+	function getFileImportDiagnostics(url) {
+		let existsOnDisk = false;
+		let onDiskBytes = 0;
+
+		if (!url.startsWith('file://')) {
+			return { existsOnDisk, onDiskBytes };
+		}
+
+		try {
+			const path = fileURLToPath(url);
+			existsOnDisk = fs.existsSync(path);
+			if (existsOnDisk) {
+				onDiskBytes = fs.statSync(path).size;
+			}
+		} catch {
+			existsOnDisk = false;
+			onDiskBytes = 0;
+		}
+
+		return { existsOnDisk, onDiskBytes };
+	}
+
+	function computeByteDelta(fetchOk, fetchedBytes, onDiskBytes) {
+		if (!fetchOk || onDiskBytes <= 0) {
+			return null;
+		}
+
+		return fetchedBytes - onDiskBytes;
+	}
+
 	function classifyImportError(error) {
 		const value = String(error);
 		if (value.includes('Failed to fetch dynamically imported module')) {
@@ -268,14 +298,7 @@ function initLoadFn(opts) {
 					await import(resolved);
 					successfulDependencyImportCount++;
 				} catch (depErr) {
-					let depExistsOnDisk = false;
-					if (resolved.startsWith('file://')) {
-						try {
-							depExistsOnDisk = fs.existsSync(fileURLToPath(resolved));
-						} catch {
-							depExistsOnDisk = false;
-						}
-					}
+					const fileDiagnostics = getFileImportDiagnostics(resolved);
 					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
 					const errorKind = classifyImportError(depErr);
 					const resolvedKind = classifyResolvedSpecifier(resolved);
@@ -288,8 +311,9 @@ function initLoadFn(opts) {
 						resolvedKind,
 						error: String(depErr),
 						errorKind,
-						existsOnDisk: depExistsOnDisk,
-						...fetchDiagnostics
+						...fileDiagnostics,
+						...fetchDiagnostics,
+						fetchDiskByteDelta: computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes)
 					});
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
@@ -357,13 +381,8 @@ function initLoadFn(opts) {
 		const tasks = moduleArray.map(mod => {
 			const url = new URL(`./${mod}.js`, baseUrl).href;
 			return import(url).catch(async err => {
+				const fileDiagnostics = getFileImportDiagnostics(url);
 				const fetchDiagnostics = await getImportFetchDiagnostics(url);
-				let existsOnDisk = false;
-				try {
-					existsOnDisk = fs.existsSync(fileURLToPath(url));
-				} catch {
-					existsOnDisk = false;
-				}
 
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
 					module: mod,
@@ -371,8 +390,9 @@ function initLoadFn(opts) {
 					moduleFamily: deriveFailureFamily(url),
 					error: String(err),
 					errorKind: classifyImportError(err),
-					existsOnDisk,
-					...fetchDiagnostics
+					...fileDiagnostics,
+					...fetchDiagnostics,
+					fetchDiskByteDelta: computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes)
 				}));
 				await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);

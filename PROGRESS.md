@@ -496,3 +496,13 @@
   **Why:** highlights mixed transport behavior (e.g. mostly HTTP 200 fetches plus occasional `TypeError: Failed to fetch`) at a glance without scanning every failure entry.
 - **Fetch-rollup validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes fetch-status/fetchOk rollups (example observed: `200:3`, `TypeError: Failed to fetch:1`, `fetchOk true:3 / false:1`); re-ran `make lint` (pass).
   **Why:** confirms the new transport rollup metrics are active and lint-safe.
+- **On-disk byte + fetch-delta diagnostics (2026-02-14 PM)** Extended unit ESM diagnostics in `test/unit/electron/renderer.js` to include:
+  - `onDiskBytes` for file-backed module URLs,
+  - `fetchDiskByteDelta` (fetched bytes minus on-disk bytes when fetch succeeds).
+  Applied to both top-level `[ESM IMPORT FAILURE]` and per-edge dependency failures.
+  **Why:** gives direct integrity checks for “fetch succeeded but import failed” cases, helping rule out truncation/corruption mismatches quickly.
+- **Byte-delta validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - top-level failure now reports `onDiskBytes` and `fetchDiskByteDelta:null` when fetch itself fails,
+  - dependency failures with `fetchStatus=200` report `fetchDiskByteDelta:0` and matching `onDiskBytes/fetchedBytes`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms byte-level diagnostics are active and consistent with observed fetch behavior.
