@@ -349,3 +349,9 @@
   **Why:** prevents secondary `TypeError` noise (`workspacePathOrFolder` on undefined) when the suite was skipped after a prior fatal startup failure.
 - **Smoke fail-fast suppression validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran full smoke runner (`xvfb-run -a node test/index.js`): run now completes in ~2s with **1 failing** / **94 pending** (down from repeated multi-suite failures), preserving the primary renderer import root-cause failure signal. Re-ran `make lint` (pass).
   **Why:** confirms the suppression logic is active, non-regressive for lint, and materially improves signal-to-noise and runtime for repeated startup-failure loops.
+- **Post-change core gate rerun (2026-02-14 PM)** Re-ran `make test-unit`, `make build`, and `xvfb-run -a ./scripts/code.sh --version`; all passed after smoke harness updates.
+  **Why:** confirms the smoke harness changes do not regress core compile/unit/runtime gates.
+- **Post-change full-suite characterization rerun (2026-02-14 PM)** Re-ran `xvfb-run -a make test` and `xvfb-run -a make test-smoke`:
+  - `make test` still fails on renderer dynamic import in unit-electron harness, now with structured `[ESM IMPORT FAILURE]` payload including `fetchStatus=200`, `fetchOk=true`, `existsOnDisk=true`.
+  - `make test-smoke` now reports **1 failing / 94 pending / 0 passing (~2s)**, preserving only the primary fatal startup import failure.
+  **Why:** verifies improved smoke failure dedupe behavior while reconfirming unchanged underlying environment-level renderer import failure signature.
