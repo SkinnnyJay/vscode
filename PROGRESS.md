@@ -285,3 +285,9 @@
   **Why:** confirms the primary `make test` blocker is independent from build-mode artifact generation.
 - **Smoke rerun + gate confirmation (2026-02-14 PM)** Re-ran `xvfb-run -a make test-smoke` (now 20 failing / 3 pending, still dominated by `.monaco-workbench` timeout, plus one `spawnSync /bin/sh ENOENT` in notebook cleanup), then re-ran `make test-unit` (7584 passing / 134 pending) and `xvfb-run -a ./scripts/code.sh --version` (pass).
   **Why:** captures current smoke failure profile while reconfirming core unit/runtime gates stay green.
+- **Smoke log root-cause capture (2026-02-14 PM)** Inspected `.build/logs/smoke-tests-electron/smoke-test-runner.log` from the latest smoke run and confirmed the renderer repeatedly emits `net::ERR_FAILED` resource loads followed by `TypeError: Failed to fetch dynamically imported module: vscode-file://vscode-app/workspace/out/vs/workbench/workbench.desktop.main.js`.
+  **Why:** provides direct runtime evidence that smoke startup failure is aligned with the broader renderer ESM import issue (not only selector timeouts).
+- **Workbench module isolation follow-up (2026-02-14 PM)** Ran isolated renderer loads for `vs/workbench/workbench.desktop.main.js` in both dev and `--build` modes; both failed reproducibly with the same dynamic-import error.
+  **Why:** demonstrates that the smoke failureing entry module also fails under the unit Electron harness, and that switching `out` vs `out-build` does not mitigate.
+- **Single-smoke args probe (2026-02-14 PM)** Ran focused smoke case (`-g "verifies opened editors are restored"`) with and without `--electronArgs "--disable-gpu --no-sandbox"`; both runs still timed out waiting for `.monaco-workbench`.
+  **Why:** rules out a straightforward smoke-launch mitigation via those common Electron runtime flags.
