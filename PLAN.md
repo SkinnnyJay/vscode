@@ -167,7 +167,7 @@ Tasks:
 - [x] - M4 - [sidecar] Gate filesystem edits to diff apply only.
 - [x] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).
 - [x] - M4 - [policy] Add prompt injection defense strategy for tools and patches.
-- [ ] - M4 - [tests] Add agent patch apply tests (apply/reject/conflict).
+- [x] - M4 - [tests] Add agent patch apply tests (apply/reject/conflict).
 
 ### M5 — Context engine v1
 Criteria (exit):

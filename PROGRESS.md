@@ -157,5 +157,7 @@
   **Why:** hardens tool safety defaults to prevent silent terminal/fs/network actions outside approved policy.
 - **M4-17** Added prompt injection defense module (`policy/prompt-injection.ts`) and strategy doc (`docs/prompt-injection-defense.md`) covering detection + patch path sanitization.
   **Why:** establishes explicit defense-in-depth policy against instruction override and unsafe patch/tool payloads.
+- **M4-18** Added patch apply behavior tests in `extensions/pointer-ai/test/patch-review-store.test.js` covering apply/reject/apply-all/conflict outcomes.
+  **Why:** validates the diff-first decision workflow expected for agent patch review.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
