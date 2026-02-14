@@ -37,3 +37,5 @@
   **Why:** validates the required iterative development loop for Pointer changes.
 - **M0-18** Verified `scripts/code.sh` launches a dev build under virtual display, confirmed `./.build/electron/pointer` executable resolution, and aligned `scripts/code.bat` window title with Pointer branding.  
   **Why:** confirms both platform launch scripts resolve Pointer dev binaries and maintain product-consistent startup behavior.
+- **M0-19** Added `.github/workflows/dev-artifacts.yml` to build compile+electron outputs on Linux/macOS/Windows and upload per-OS dev artifacts.  
+  **Why:** provides cross-platform artifact validation and reproducible developer runtime outputs in CI.

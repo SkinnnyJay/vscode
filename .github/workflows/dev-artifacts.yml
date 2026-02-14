@@ -1,0 +1,59 @@
+name: Dev Artifacts
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-dev-artifacts:
+    name: Build dev artifacts (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+
+      - name: Install Linux native build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libkrb5-dev
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build client and extensions
+        run: npm run compile
+
+      - name: Build Electron runtime
+        run: npm run electron
+
+      - name: Package Linux/macOS dev artifact
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p .artifacts
+          tar -czf ".artifacts/dev-electron-${{ runner.os }}.tar.gz" -C .build electron
+
+      - name: Package Windows dev artifact
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path .artifacts -Force | Out-Null
+          Compress-Archive -Path .build/electron/* -DestinationPath ".artifacts/dev-electron-${{ runner.os }}.zip"
+
+      - name: Upload dev artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: dev-artifact-${{ runner.os }}
+          path: .artifacts/*
+          if-no-files-found: error
