@@ -101,7 +101,7 @@ Success metrics:
 - Router emits structured request plans for 100% of AI calls.
 - Provider cancellation resolves within 500ms (or documented CLI limitation).
 Tasks:
-- [ ] - M2 - [research] Spike CLI feasibility: codex/claude/opencode stdin/stdout, streaming, JSON, cancel.
+- [x] - M2 - [research] Spike CLI feasibility: codex/claude/opencode stdin/stdout, streaming, JSON, cancel.
 - [ ] - M2 - [research] Capture example transcripts for each CLI mode.
 - [ ] - M2 - [docs] Document CLI findings and kill non-viable adapters early.
 - [ ] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).

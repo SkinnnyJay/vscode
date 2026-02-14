@@ -83,3 +83,5 @@
   **Why:** defines and enforces the security boundary for loading workspace `.pointer/` automation configuration.
 - **M1-16** Added `docs/pointer-settings.md` documenting Pointer settings categories, keys, and defaults introduced in M1.  
   **Why:** gives users and contributors a single reference for configurable routing/safety behavior.
+- **M2-01** Completed initial CLI feasibility spike and confirmed provider binaries are absent in the current environment.  
+  **Why:** establishes an evidence-based baseline before adapter implementation work begins.
