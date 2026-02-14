@@ -231,3 +231,5 @@
   **Why:** protects delivery cadence while enabling strategic runtime exploration.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
+- **Final revalidation (2026-02-14 PM)** Re-ran release gates: `make lint`, `make test-unit` (7584 passing), `make build` (0 compile errors), and `xvfb-run -a ./scripts/code.sh --version`.
+  **Why:** confirms the fully completed PLAN remains green end-to-end after final pass.
