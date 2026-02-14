@@ -237,3 +237,5 @@
   **Why:** documents full-suite environment limitation transparently and preserves reproducible evidence of the failure mode.
 - **Electron test isolation follow-up (2026-02-14 PM)** Reproduced the same failure on a single renderer case (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and observed `--build` mode fails earlier due missing `out-build/nls.messages.json`; terminated the hanging `--build` run by explicit PID after timeout.
   **Why:** narrows the failure scope to renderer module loading in this VM and records safe process cleanup details.
+- **Smoke validation follow-up (2026-02-14 PM)** Ran `xvfb-run -a make test-smoke`; smoke runner launched but all Electron suites timed out waiting for `.monaco-workbench` (0 passing / 19 failing / 3 pending), with logs emitted to `.build/logs`.
+  **Why:** captures another reproducible headless-environment limitation while preserving successful lint/unit/typecheck/build evidence as the reliable validation baseline.
