@@ -261,6 +261,42 @@ function activate(context) {
 		await vscode.window.showInformationMessage('Pointer model selection is not wired yet. This command placeholder is active.');
 	});
 
+	const selectChatProvider = vscode.commands.registerCommand('pointer.chat.selectProvider', async () => {
+		const picked = await vscode.window.showQuickPick(
+			[
+				{ label: 'auto', description: 'Automatic provider routing' },
+				{ label: 'codex', description: 'OpenAI Codex CLI' },
+				{ label: 'claude', description: 'Claude Code CLI' },
+				{ label: 'opencode', description: 'OpenCode CLI' }
+			],
+			{
+				title: 'Select chat provider'
+			}
+		);
+		if (!picked) {
+			return;
+		}
+		await vscode.workspace.getConfiguration('pointer.defaults').update('chat.provider', picked.label, vscode.ConfigurationTarget.Global);
+	});
+
+	const selectChatModel = vscode.commands.registerCommand('pointer.chat.selectModel', async () => {
+		const providerId = internalApi.getSelection('chat').providerId;
+		const optionsByProvider = {
+			auto: ['auto'],
+			codex: ['gpt-5-codex', 'gpt-4.1'],
+			claude: ['claude-sonnet-4', 'claude-opus-4'],
+			opencode: ['opencode-large', 'opencode-fast']
+		};
+		const options = optionsByProvider[providerId] ?? ['auto'];
+		const picked = await vscode.window.showQuickPick(options.map((label) => ({ label })), {
+			title: `Select chat model (${providerId})`
+		});
+		if (!picked) {
+			return;
+		}
+		await vscode.workspace.getConfiguration('pointer.defaults').update('chat.model', picked.label, vscode.ConfigurationTarget.Global);
+	});
+
 	const openSettings = vscode.commands.registerCommand('pointer.openSettings', async () => {
 		await vscode.commands.executeCommand('workbench.action.openSettings', 'Pointer');
 	});
@@ -474,6 +510,8 @@ function activate(context) {
 		openChat,
 		toggleTab,
 		selectModel,
+		selectChatProvider,
+		selectChatModel,
 		openSettings,
 		cancelTabCompletion,
 		createChatSession,

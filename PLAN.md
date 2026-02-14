@@ -156,7 +156,7 @@ Tasks:
 - [x] - M4 - [extension] Add prompt composer input with send/cancel.
 - [x] - M4 - [extension] Add attach file/selection and pin context actions.
 - [x] - M4 - [extension] Add context chips UI with remove action.
-- [ ] - M4 - [extension] Add provider/model selector for chat.
+- [x] - M4 - [extension] Add provider/model selector for chat.
 - [ ] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
 - [ ] - M4 - [sidecar] Add chat request plan logging and trace IDs.
 - [ ] - M4 - [sidecar] Define patch schema and diff-first agent response format.

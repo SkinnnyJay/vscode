@@ -25,6 +25,8 @@
 		"onCommand:pointer.chat.deleteSession",
 		"onCommand:pointer.chat.sendMessage",
 		"onCommand:pointer.chat.cancelMessage",
+		"onCommand:pointer.chat.selectProvider",
+		"onCommand:pointer.chat.selectModel",
 		"onCommand:pointer.chat.attachCurrentFile",
 		"onCommand:pointer.chat.attachSelection",
 		"onCommand:pointer.chat.pinContext",
@@ -80,6 +82,16 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.chat.selectProvider",
+				"title": "Pointer: Select Chat Provider",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.selectModel",
+				"title": "Pointer: Select Chat Model",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.chat.attachCurrentFile",
 				"title": "Pointer: Attach Current File",
 				"category": "Pointer"
@@ -121,6 +133,16 @@
 					"command": "pointer.chat.cancelMessage",
 					"when": "view == pointer.chatMessages",
 					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.selectProvider",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.chat.selectModel",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@4"
 				},
 				{
 					"command": "pointer.chat.attachCurrentFile",
