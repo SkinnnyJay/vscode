@@ -193,8 +193,8 @@ Success metrics:
 - 100% of requests show applied rules list.
 - Hook timeouts enforced with safe failure.
 Tasks:
-- [ ] - M6 - [sidecar] Implement `.pointer/rules/` loader.
-- [ ] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
+- [x] - M6 - [sidecar] Implement `.pointer/rules/` loader.
+- [x] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
 - [ ] - M6 - [extension] Display applied rules in UI.
 - [ ] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
 - [ ] - M6 - [sidecar] Run hooks sandboxed with timeouts.
