@@ -51,7 +51,7 @@ export class PlaywrightDriver {
 	private static readonly recentRequestFailureCapacity = 25;
 	private static readonly recentScriptResponseCapacity = 25;
 	private static readonly recentCdpScriptLoadCapacity = 25;
-	private static readonly scriptResponseSummaryCapacity = 200;
+	private static readonly recentSummaryCapacity = 200;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
 		cmd: 'Meta',
@@ -71,6 +71,8 @@ export class PlaywrightDriver {
 	private readonly recentRequestFailures: string[] = [];
 	private totalRecordedRequestFailures = 0;
 	private droppedRecentRequestFailures = 0;
+	private readonly requestFailureSummariesByUrl = new Map<string, string>();
+	private readonly requestFailureSeenCountsByUrl = new Map<string, number>();
 	private readonly recentScriptResponses: string[] = [];
 	private totalRecordedScriptResponses = 0;
 	private droppedRecentScriptResponses = 0;
@@ -447,6 +449,10 @@ export class PlaywrightDriver {
 		return this.droppedRecentRequestFailures;
 	}
 
+	getLatestRequestFailureSummaryForUrl(url: string): string | undefined {
+		return this.requestFailureSummariesByUrl.get(url);
+	}
+
 	getRecentScriptResponses(): readonly string[] {
 		return this.recentScriptResponses;
 	}
@@ -557,6 +563,10 @@ export class PlaywrightDriver {
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
 		const detailsSuffix = details ? ` ${details}` : '';
+		const seenCount = (this.requestFailureSeenCountsByUrl.get(url) ?? 0) + 1;
+		this.requestFailureSeenCountsByUrl.set(url, seenCount);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount} error=${normalizedErrorText}${fileExistsSuffix}${detailsSuffix}`);
+		this.setLatestSummary(this.requestFailureSummariesByUrl, url, summary);
 
 		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
 	}
@@ -661,7 +671,7 @@ export class PlaywrightDriver {
 	private setLatestSummary(summaryMap: Map<string, string>, url: string, summary: string): void {
 		if (summaryMap.has(url)) {
 			summaryMap.delete(url);
-		} else if (summaryMap.size >= PlaywrightDriver.scriptResponseSummaryCapacity) {
+		} else if (summaryMap.size >= PlaywrightDriver.recentSummaryCapacity) {
 			const oldestUrl = summaryMap.keys().next().value;
 			if (oldestUrl) {
 				summaryMap.delete(oldestUrl);

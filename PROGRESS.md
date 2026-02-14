@@ -652,3 +652,11 @@
   - import-target correlation line `Import target latest CDP script load: unseen` when no matching finished-load event exists for the failing import target.
   Re-ran `make lint` (pass).
   **Why:** confirms CDP byte-level load diagnostics are emitted correctly and provide additional signal without changing the known environment-limited startup failure.
+- **Import-target request-failure correlation metadata (2026-02-14 PM)** Extended `PlaywrightDriver` to retain URL-keyed latest request-failure summaries (with per-URL seen counts) and surfaced `Import target latest request failure: ...` in smoke fail-fast output.
+  **Why:** closes the diagnostics triangle for the failing import target by explicitly reporting latest request-failed signal alongside latest response and latest CDP load views.
+- **Import-target request-failure correlation validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target latest script response: ...`
+  - `Import target latest request failure: unseen`
+  - `Import target latest CDP script load: unseen`
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new import-target request-failure line is emitted and remains non-regressive.
