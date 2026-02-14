@@ -1,0 +1,39 @@
+# Pointer IDE — Cursor rules
+
+Apply these rules when editing or generating code in this project.
+
+Pointer is a **provider-agnostic AI IDE** built by forking **Code - OSS** (VS Code’s open source core). It aims for Cursor-style UX (Tab, Chat, Agent, Rules, Hooks, MCP) with CLI-first model backends and a clean-room implementation. See [README.md](README.md) for goals, status, and quickstart.
+
+## Project layout
+
+- **Scripts:** All runnable automation lives in `scripts/`. Each script is invoked via the Makefile (e.g. `make setup`, `make test`). Add new commands by adding a script under `scripts/` and a matching Makefile target. See `scripts/README.md` for formats and naming.
+- **Scratchpad:** Use `scratchpad/` only for temporary working files, drafts, and notes—not for committed source or long-term docs. See `scratchpad/README.md` for what belongs there and required formats.
+- **Sandbox:** Use `sandbox/` for experiments that need to run (e.g. small apps, dependency tryouts). One subfolder per experiment; treat as disposable. See `sandbox/README.md` for structure and formats.
+
+## Conventions
+
+- **Commits:** Use clear, descriptive commit messages. Prefer small, focused changes. Prefer Conventional Commits (`feat`, `fix`, `refactor`, `docs`, `chore`, etc.). For atomic, reviewable commits (e.g. when multiple agents work in the same folder), use `./scripts/committer -m "type: message" path1 path2` or `make commit FILES="path1 path2" MSG="type: message"`.
+- **Docs:** Agent-facing docs live in `docs/` when used; keep them up to date so agents have better context than cranking reasoning. Prefer local Markdown over web scraping (see scratchpad/research/research_02.md).
+- **Inspiration repos:** When you need to fork a project or learn from a similar codebase (e.g. Toad, OpenCode, codex-monitor), use the curated list in `scratchpad/research/inspiration-forked-projects/`: see `repos.json` and the folder README; run `./scripts/import-inspiration-repos.sh [name ...]` or `make import-inspiration` to clone on demand. Clones live under `inspiration-forked-projects/repos/<name>/` (gitignored).
+- **Tests:** Write tests for new functionality. Once a test layout is defined (e.g. in CLAUDE.md or a test README), put tests in the designated locations—not under `src/` or ad-hoc folders unless the project explicitly allows it.
+- **Code style:** Follow existing patterns in the codebase. When the tech stack is set, use strict typing and project-style utilities where they exist.
+- **Secrets:** Never commit API keys, passwords, or tokens. Use environment variables or a secrets manager; do not hardcode in scripts or config.
+- **Workflow:** One aspect of a feature at a time; hand off clearly; let the agent run. No need for huge Plan.md files.
+- **PLAN files:** When a `PLAN` file lists tasks, complete them strictly one at a time. Mark each task done before starting the next. Do not stop or ask for human interaction until 100% of tasks are resolved.
+- **UI:** Avoid generic “AI slop”: use real typography, a committed palette, and depth; skip purple-on-white clichés.
+
+## Lint and formatting
+
+Lint and formatting expectations align with **Code - OSS** (upstream) so the fork stays consistent and merge-friendly.
+
+- **Upstream reference:** [VS Code eslint.config.js](https://github.com/microsoft/vscode/blob/main/eslint.config.js), [README / Contributing](https://github.com/microsoft/vscode/blob/main/README.md), [.vscode](https://github.com/microsoft/vscode/tree/main/.vscode).
+- **ESLint:** Use flat config (`eslint.config.js`). Use TypeScript-ESLint for TS/JS; stylistic rules for semicolons and style; avoid `any` (warn/error per upstream); prefer `prefer-const`, `no-var`, `curly`, `eqeqeq`, and project naming conventions.
+- **Editor:** Follow upstream `.vscode/settings.json`: **tabs** for indentation (`editor.insertSpaces: false`), trim trailing whitespace, insert final newline; format on save for TypeScript and JavaScript. TypeScript quote style follows upstream (e.g. single).
+- **Tooling:** Use `make lint` and `make fmt` when implemented; otherwise use the project's npm scripts or upstream scripts (e.g. `npm run lint`). Recommended extensions: **ESLint** (`dbaeumer.vscode-eslint`), **EditorConfig** (`editorconfig.editorconfig`). Use `eslint.useFlatConfig: true` in workspace settings.
+- **Pointer-only code** (e.g. `scripts/`, tooling outside `src/`): Match the same style (tabs, semicolons, strict typing). Use Biome or ESLint per project config when present.
+
+## Commands
+
+- Prefer `make <target>` for setup, build, test, lint, and other workflows. Run `make help` to see available commands.
+- Use `make setup` to verify Node 22.x and install dependencies.
+- Custom Cursor/Claude commands live under `.claude/commands/`; Codex commands under `.codex/commands/`.
