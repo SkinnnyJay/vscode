@@ -53,6 +53,7 @@ function validatePointerDefaultsConfiguration() {
  */
 function activate(context) {
 	void migratePointerSettings(context);
+	void vscode.commands.executeCommand('setContext', 'pointer.workspaceTrusted', vscode.workspace.isTrusted);
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -107,6 +108,9 @@ function activate(context) {
 	const invalidKeys = validatePointerDefaultsConfiguration();
 	if (invalidKeys.length > 0) {
 		void vscode.window.showWarningMessage(`Pointer settings validation: invalid values detected for ${invalidKeys.join(', ')}. Falling back to automatic defaults.`);
+	}
+	if (!vscode.workspace.isTrusted) {
+		void vscode.window.showWarningMessage('Pointer workspace rules/config are disabled until this workspace is trusted.');
 	}
 
 	const configWatcher = vscode.workspace.onDidChangeConfiguration((event) => {

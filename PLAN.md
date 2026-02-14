@@ -90,7 +90,7 @@ Tasks:
 - [x] - M1 - [core] Hide/disable Copilot commands and menus by default.
 - [x] - M1 - [core] Add setting to re-enable Copilot visibility.
 - [x] - M1 - [extension] Add compatibility setting to re-enable Copilot if needed.
-- [ ] - M1 - [policy] Define workspace trust model for loading `.pointer/` config and rules.
+- [x] - M1 - [policy] Define workspace trust model for loading `.pointer/` config and rules.
 - [ ] - M1 - [docs] Document Pointer settings categories and defaults.
 
 ### M2 — Model Router + Provider CLI adapters
