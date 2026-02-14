@@ -15,3 +15,4 @@ export * from './providers/adapter-types.js';
 export * from './providers/codex-adapter.js';
 export * from './providers/claude-adapter.js';
 export * from './providers/opencode-adapter.js';
+export * from './chat/protocol.js';

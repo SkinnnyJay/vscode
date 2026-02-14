@@ -23,6 +23,7 @@ const vscode = require('vscode');
  *   setSelection(surface: PointerSurface, selection: SurfaceSelection): void;
  *   getAllSelections(): Readonly<Record<PointerSurface, SurfaceSelection>>;
  *   requestRouterPlan(request: import('./router-client.js').RouterPlanRequest): Promise<import('./router-client.js').RouterPlanResponse>;
+ *   streamChat(request: import('./router-client.js').RouterPlanRequest): AsyncGenerator<import('./router-client.js').ChatStreamEvent>;
  *   getLastRouterPlan(): import('./router-client.js').RouterPlanResponse | undefined;
  *   onDidChangeSelection(listener: (surface: PointerSurface, selection: SurfaceSelection) => void): vscode.Disposable;
  *   onDidCreateRouterPlan(listener: (plan: import('./router-client.js').RouterPlanResponse) => void): vscode.Disposable;
@@ -60,6 +61,9 @@ function createPointerInternalApi(routerClient) {
 			const plan = await routerClient.requestPlan(request);
 			onDidCreateRouterPlanEmitter.fire(plan);
 			return plan;
+		},
+		streamChat(request) {
+			return routerClient.streamChat(request);
 		},
 		getLastRouterPlan() {
 			return routerClient.getLastPlan();

@@ -145,5 +145,7 @@
   **Why:** enables explicit context attachment flows and transparent context control in chat sessions.
 - **M4-07** Added chat provider/model selector commands with quick-pick UX and config persistence (`pointer.defaults.chat.*`).
   **Why:** allows per-user chat routing control from the chat surface without manual settings edits.
+- **M4-08** Added chat stream protocol primitives in sidecar (`pointer/agent/src/chat/protocol.ts`) and wired extension chat send flow to consume streamed router events.
+  **Why:** standardizes chat request/response streaming semantics between extension and router layers.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

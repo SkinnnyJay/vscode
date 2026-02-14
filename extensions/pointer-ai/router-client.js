@@ -40,6 +40,14 @@
  */
 
 /**
+ * @typedef {{
+ *   traceId: string;
+ *   type: 'delta' | 'done';
+ *   text: string;
+ * }} ChatStreamEvent
+ */
+
+/**
  * @callback RouterTransport
  * @param {RouterPlanRequest} request
  * @returns {Promise<RouterPlanResponse>}
@@ -60,6 +68,28 @@ class PointerRouterClient {
 		this.transport = transport ?? this.defaultTransport;
 		/** @type {RouterPlanResponse | undefined} */
 		this.lastPlan = undefined;
+	}
+
+	/**
+	 * @param {RouterPlanRequest} request
+	 * @returns {AsyncGenerator<ChatStreamEvent>}
+	 */
+	async *streamChat(request) {
+		const plan = await this.requestPlan(request);
+		const responseText = `Router ready. ${plan.explainability.join(' | ')}`;
+		const chunks = responseText.split(' ');
+		for (const chunk of chunks) {
+			yield {
+				traceId: plan.requestId,
+				type: 'delta',
+				text: `${chunk} `
+			};
+		}
+		yield {
+			traceId: plan.requestId,
+			type: 'done',
+			text: ''
+		};
 	}
 
 	/**

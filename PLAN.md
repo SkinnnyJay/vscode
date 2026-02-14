@@ -157,7 +157,7 @@ Tasks:
 - [x] - M4 - [extension] Add attach file/selection and pin context actions.
 - [x] - M4 - [extension] Add context chips UI with remove action.
 - [x] - M4 - [extension] Add provider/model selector for chat.
-- [ ] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
+- [x] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
 - [ ] - M4 - [sidecar] Add chat request plan logging and trace IDs.
 - [ ] - M4 - [sidecar] Define patch schema and diff-first agent response format.
 - [ ] - M4 - [extension] Render per-file diff view with apply/reject/apply all.

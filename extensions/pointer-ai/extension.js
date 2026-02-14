@@ -356,7 +356,7 @@ function activate(context) {
 		}
 
 		const chatSelection = internalApi.getSelection('chat');
-		const plan = await internalApi.requestRouterPlan({
+		const stream = internalApi.streamChat({
 			surface: 'chat',
 			providerId: chatSelection.providerId,
 			modelId: chatSelection.modelId,
@@ -368,17 +368,17 @@ function activate(context) {
 				tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
 			}))
 		});
-		const streamedResponse = `Router ready. ${plan.explainability.join(' | ')}`;
-		const chunks = streamedResponse.split(' ');
 
-		for (const chunk of chunks) {
+		for await (const event of stream) {
 			if (activeChatAbortController.signal.aborted) {
 				chatSessionStore.appendAssistantChunk(assistantMessageId, '\n[Cancelled]');
 				chatSessionStore.finalizeAssistantMessage(assistantMessageId);
 				return;
 			}
-			chatSessionStore.appendAssistantChunk(assistantMessageId, `${chunk} `);
-			await delay(20);
+			if (event.type === 'delta') {
+				chatSessionStore.appendAssistantChunk(assistantMessageId, event.text);
+				await delay(20);
+			}
 		}
 
 		chatSessionStore.finalizeAssistantMessage(assistantMessageId);
