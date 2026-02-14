@@ -87,3 +87,5 @@
   **Why:** establishes an evidence-based baseline before adapter implementation work begins.
 - **M2-02** Captured shell transcript snippets for Codex/Claude/OpenCode probes in `docs/router-cli-feasibility.md`.  
   **Why:** preserves reproducible command-level evidence for adapter bootstrap decisions.
+- **M2-03** Added explicit non-viable/blocked adapter decision and next-enablement actions in the CLI feasibility doc.  
+  **Why:** prevents premature adapter implementation against unavailable binaries and keeps execution focused on viable dependencies.
