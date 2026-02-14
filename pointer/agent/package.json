@@ -6,7 +6,8 @@
 	"description": "Pointer sidecar agent/router package.",
 	"scripts": {
 		"typecheck": "tsc --noEmit",
-		"test": "tsx --test test/**/*.test.ts"
+		"test": "tsx --test test/**/*.test.ts",
+		"pointer-agent": "tsx src/cli/pointer-agent.ts"
 	},
 	"devDependencies": {
 		"@types/node": "^24.5.2",

@@ -33,3 +33,5 @@ export * from './mcp/allowlist.js';
 export * from './perf/metrics.js';
 export * from './perf/indexer-observer.js';
 export * from './providers/backpressure.js';
+export * from './ci/policy-secrets.js';
+export * from './ci/headless-agent.js';

@@ -244,8 +244,8 @@ Success metrics:
 - Headless agent can run in CI and produce patches consistently.
 - Enterprise policy bundle prototype validated with a test org.
 Tasks:
-- [ ] - M9 - [sidecar] Implement `pointer-agent` headless/CI mode with patch output.
-- [ ] - M9 - [sidecar] Add policy and secrets handling for CI mode.
+- [x] - M9 - [sidecar] Implement `pointer-agent` headless/CI mode with patch output.
+- [x] - M9 - [sidecar] Add policy and secrets handling for CI mode.
 - [ ] - M9 - [sidecar+cloud] Build PR review bot prototype (Bugbot-like).
 - [ ] - M9 - [cloud] Add PR annotations and suggested changes.
 - [ ] - M9 - [cloud] Integrate with GitHub checks.

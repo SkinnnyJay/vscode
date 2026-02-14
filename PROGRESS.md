@@ -213,5 +213,9 @@
   **Why:** captures durable workspace intent that is automatically available to chat workflows.
 - **M8-08** Added upstream security external-fix tracking doc (`docs/upstream-security-external-fix.md`) with explicit tag `upstream-vscode-security-fix`.
   **Why:** marks runtime vulnerability remediation as an upstream Code - OSS dependency update track item.
+- **M9-01** Added headless CI agent mode (`src/cli/pointer-agent.ts`, `ci/headless-agent.ts`) producing patch-schema JSON output from CLI prompts.
+  **Why:** establishes a runnable `pointer-agent` path for CI-oriented automated patch generation.
+- **M9-02** Added CI policy/secrets runtime loader (`ci/policy-secrets.ts`) with allowlisted providers, data-boundary mode, and env-secret filtering.
+  **Why:** introduces explicit CI policy and secret controls before automated headless execution.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
