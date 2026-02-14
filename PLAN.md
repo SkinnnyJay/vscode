@@ -180,7 +180,7 @@ Tasks:
 - [x] - M5 - [sidecar] Add incremental updates via watcher-based indexing.
 - [x] - M5 - [sidecar] Store metadata in a local DB (embeddings optional for MVP).
 - [x] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.
-- [ ] - M5 - [sidecar] Add optional embeddings retrieval if configured.
+- [x] - M5 - [sidecar] Add optional embeddings retrieval if configured.
 - [ ] - M5 - [extension] Add pinned context list per chat.
 - [ ] - M5 - [extension] Add workspace exclude UI and `.pointer/excludes` support.
 - [ ] - M5 - [extension] Show token estimate per context chunk.

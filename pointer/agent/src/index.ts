@@ -24,3 +24,4 @@ export * from './context/file-discovery.js';
 export * from './context/indexer.js';
 export * from './context/metadata-db.js';
 export * from './context/retrieval.js';
+export * from './context/embedding-retrieval.js';

@@ -167,5 +167,7 @@
   **Why:** establishes durable context metadata storage required by retrieval pipelines.
 - **M5-04** Added lexical retrieval and context dedupe/merge (`context/retrieval.ts`) with ranking and merge tests.
   **Why:** provides baseline automatic context selection without requiring manual copy/paste.
+- **M5-05** Added optional embedding retrieval (`context/embedding-retrieval.ts`) with cosine ranking and feature-flag gating.
+  **Why:** enables higher-quality semantic retrieval when embeddings are available while keeping MVP optional.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
