@@ -345,7 +345,7 @@ export class Code {
 				if (pageError?.includes('Failed to fetch dynamically imported module')) {
 					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${recentFailures.length}):\n${recentFailures.join('\n')}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${recentFailures.length}):\n${this.formatRecentRequestFailures(recentFailures)}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
@@ -379,6 +379,17 @@ export class Code {
 			await this.wait(retryInterval);
 			trial++;
 		}
+	}
+
+	private formatRecentRequestFailures(failures: readonly string[]): string {
+		const counts = new Map<string, number>();
+		for (const failure of failures) {
+			counts.set(failure, (counts.get(failure) ?? 0) + 1);
+		}
+
+		return [...counts.entries()]
+			.map(([failure, count]) => count > 1 ? `[x${count}] ${failure}` : failure)
+			.join('\n');
 	}
 
 	private extractImportTargetPathFromError(errorText: string): string | undefined {

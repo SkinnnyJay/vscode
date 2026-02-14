@@ -410,3 +410,11 @@
   - smoke runner file now places `after <n>ms` on a dedicated follow-up line (not appended to sentinel text).
   Re-ran `make lint` (pass).
   **Why:** confirms improved log framing without behavior change.
+- **Fail-fast recent-failure formatter extraction (2026-02-14 PM)** Refactored `test/automation/src/code.ts` startup fail-fast path to route recent request failures through a dedicated formatter (`formatRecentRequestFailures`) before rendering the failure block.
+  **Why:** centralizes block formatting logic so future dedupe/grouping tweaks can be made in one place without touching error-construction control flow.
+- **Formatter extraction validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**) and verified the fail-fast block still includes:
+  - `Recent request failures (8):`
+  - request-failure lines
+  - `End of recent request failures.`
+  Re-ran `make lint` (pass).
+  **Why:** confirms the refactor is behavior-preserving and lint-clean.
