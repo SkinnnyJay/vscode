@@ -48,6 +48,7 @@ export class PlaywrightDriver {
 
 	private static traceCounter = 1;
 	private static screenShotCounter = 1;
+	private static readonly recentRequestFailureCapacity = 25;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
 		cmd: 'Meta',
@@ -418,6 +419,10 @@ export class PlaywrightDriver {
 		return this.recentRequestFailures;
 	}
 
+	getRecentRequestFailureCapacity(): number {
+		return PlaywrightDriver.recentRequestFailureCapacity;
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -482,7 +487,7 @@ export class PlaywrightDriver {
 
 	private pushRecentRequestFailure(entry: string): void {
 		this.recentRequestFailures.push(entry);
-		if (this.recentRequestFailures.length > 25) {
+		if (this.recentRequestFailures.length > PlaywrightDriver.recentRequestFailureCapacity) {
 			this.recentRequestFailures.shift();
 		}
 	}

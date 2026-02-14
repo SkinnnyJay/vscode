@@ -348,8 +348,9 @@ export class Code {
 				if (pageError?.includes('Failed to fetch dynamically imported module')) {
 					const allRecentFailures = this.driver.getRecentRequestFailures();
 					const recentFailures = allRecentFailures.slice(-Code.recentFailuresDisplayLimit);
+					const recentFailureCapacity = this.driver.getRecentRequestFailureCapacity();
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
-					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, showingLast=${recentFailures.length}/${allRecentFailures.length}`;
+					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}`;
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';

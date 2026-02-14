@@ -603,3 +603,7 @@
   **Why:** makes the configured window size explicit for parsers and reviewers, even when observed counts vary across runs.
 - **Display-limit validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `displayLimit=8`, and re-ran `make lint` (pass).
   **Why:** confirms the additional metadata is active and non-regressive.
+- **Smoke buffer-capacity metadata exposure (2026-02-14 PM)** Added an explicit `recentRequestFailureCapacity` constant/getter in `PlaywrightDriver` and surfaced `bufferCapacity=<N>` in the fail-fast header assembled by `Code`.
+  **Why:** clarifies total in-memory ring size independently from display window size (`displayLimit`), improving interpretation of `showingLast` ratios.
+- **Buffer-capacity validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `bufferCapacity=25` alongside `displayLimit=8` and `showingLast=8/25`; re-ran `make lint` (pass).
+  **Why:** confirms capacity metadata is active and lint-clean.
