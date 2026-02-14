@@ -173,6 +173,18 @@ function initLoadFn(opts) {
 		}
 	}
 
+	function classifyResolvedSpecifier(resolved) {
+		if (resolved.startsWith('file://')) {
+			return 'file-url';
+		}
+
+		if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(resolved)) {
+			return 'other-url';
+		}
+
+		return 'bare-specifier';
+	}
+
 	async function getImportFetchDiagnostics(url) {
 		let fetchStatus = 'unavailable';
 		let fetchOk = false;
@@ -238,6 +250,7 @@ function initLoadFn(opts) {
 			const failures = [];
 			const failureFamilies = Object.create(null);
 			const failureKinds = Object.create(null);
+			const failureResolvedKinds = Object.create(null);
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
 				try {
@@ -253,12 +266,14 @@ function initLoadFn(opts) {
 					}
 					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
 					const errorKind = classifyImportError(depErr);
+					const resolvedKind = classifyResolvedSpecifier(resolved);
 
 					failures.push({
 						module: moduleId,
 						parentUrl: moduleUrl,
 						specifier,
 						resolved,
+						resolvedKind,
 						error: String(depErr),
 						errorKind,
 						existsOnDisk: depExistsOnDisk,
@@ -267,6 +282,7 @@ function initLoadFn(opts) {
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
 					failureKinds[errorKind] = (failureKinds[errorKind] ?? 0) + 1;
+					failureResolvedKinds[resolvedKind] = (failureResolvedKinds[resolvedKind] ?? 0) + 1;
 				}
 			}
 
@@ -275,6 +291,8 @@ function initLoadFn(opts) {
 					.map(entry => ({ family: entry.key, count: entry.count }));
 				const failureKindEntries = toSortedCountEntries(failureKinds)
 					.map(entry => ({ errorKind: entry.key, count: entry.count }));
+				const failureResolvedKindEntries = toSortedCountEntries(failureResolvedKinds)
+					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -288,6 +306,8 @@ function initLoadFn(opts) {
 					failureFamilyEntries,
 					failureKinds,
 					failureKindEntries,
+					failureResolvedKinds,
+					failureResolvedKindEntries,
 					failures
 				}));
 			}

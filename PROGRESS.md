@@ -466,3 +466,13 @@
   - truncated case reports `totalSpecifierCount > specifierCount` with `isSpecifierListTruncated: true`.
   Re-ran `make lint` (pass).
   **Why:** validates the new fields accurately communicate diagnostic coverage depth.
+- **Resolved-kind rollups for dependency failures (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` dependency summaries with:
+  - per-edge `resolvedKind` classification (`file-url`, `other-url`, `bare-specifier`),
+  - aggregate `failureResolvedKinds` map, and
+  - sorted `failureResolvedKindEntries`.
+  **Why:** quickly surfaces whether failing edges are filesystem URLs vs bare/import-map paths, tightening triage around protocol/import-map classes of failures.
+- **Resolved-kind validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - each failure entry now includes `resolvedKind`,
+  - summary includes `failureResolvedKinds` + sorted `failureResolvedKindEntries` (`file-url` count shown).
+  Re-ran `make lint` (pass).
+  **Why:** confirms resolved-kind diagnostics are active and lint-safe.
