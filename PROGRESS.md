@@ -169,5 +169,11 @@
   **Why:** provides baseline automatic context selection without requiring manual copy/paste.
 - **M5-05** Added optional embedding retrieval (`context/embedding-retrieval.ts`) with cosine ranking and feature-flag gating.
   **Why:** enables higher-quality semantic retrieval when embeddings are available while keeping MVP optional.
+- **M5-06/M5-08** Extended per-session pinned context chips with stored token estimates and token-aware UI labels in chat context view.
+  **Why:** keeps context ownership session-scoped and makes context budget impact visible.
+- **M5-07** Added workspace excludes editor command (`pointer.context.openExcludes`) for `.pointer/excludes` management from the UI.
+  **Why:** allows users to control indexing scope without leaving the editor.
+- **M5-09** Added lexical/dedupe retrieval unit tests (`context-retrieval.test.ts`) for ranking and merge behavior.
+  **Why:** protects context engine correctness as retrieval evolves.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

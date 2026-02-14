@@ -36,6 +36,7 @@
 		"onCommand:pointer.patch.applyFile",
 		"onCommand:pointer.patch.rejectFile",
 		"onCommand:pointer.patch.applyAll",
+		"onCommand:pointer.context.openExcludes",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -137,6 +138,11 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.context.openExcludes",
+				"title": "Pointer: Edit Context Excludes",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -183,6 +189,11 @@
 					"command": "pointer.chat.pinContext",
 					"when": "view == pointer.chatContext",
 					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.context.openExcludes",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@4"
 				},
 				{
 					"command": "pointer.patch.applyAll",

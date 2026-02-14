@@ -181,7 +181,8 @@ class ChatSessionStore {
 			id: createContextId(),
 			label,
 			value,
-			source
+			source,
+			tokenEstimate: Math.max(1, Math.ceil(value.length / 4))
 		};
 		activeSession.pinnedContext.push(contextItem);
 		this.onDidChangeEmitter.fire(undefined);

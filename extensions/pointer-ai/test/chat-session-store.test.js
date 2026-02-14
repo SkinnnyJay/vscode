@@ -39,6 +39,7 @@ test('ChatSessionStore tracks pinned context chips with remove support', () => {
 	const contextId = store.addPinnedContext('file.ts', '/workspace/file.ts', 'file');
 	assert.ok(contextId);
 	assert.equal(store.listPinnedContext().length, 1);
+	assert.ok((store.listPinnedContext()[0]?.tokenEstimate ?? 0) > 0);
 
 	store.removePinnedContext(contextId);
 	assert.equal(store.listPinnedContext().length, 0);

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
@@ -139,7 +140,7 @@ class ChatContextChipTreeDataProvider {
 	getTreeItem(element) {
 		const item = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
 		item.id = element.id;
-		item.description = element.source;
+		item.description = `${element.source} | ~${element.tokenEstimate} tokens`;
 		item.contextValue = 'pointerPinnedContext';
 		item.tooltip = element.value;
 		return item;
@@ -508,6 +509,24 @@ function activate(context) {
 		}
 	});
 
+	const openContextExcludes = vscode.commands.registerCommand('pointer.context.openExcludes', async () => {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			void vscode.window.showWarningMessage('Open a workspace folder to edit Pointer excludes.');
+			return;
+		}
+		const pointerDirectory = path.join(workspaceFolder.uri.fsPath, '.pointer');
+		const excludesPath = path.join(pointerDirectory, 'excludes');
+		await fs.mkdir(pointerDirectory, { recursive: true });
+		try {
+			await fs.access(excludesPath);
+		} catch {
+			await fs.writeFile(excludesPath, '# One pattern per line\n', 'utf8');
+		}
+		const document = await vscode.workspace.openTextDocument(vscode.Uri.file(excludesPath));
+		await vscode.window.showTextDocument(document);
+	});
+
 	const openPatchDiff = vscode.commands.registerCommand('pointer.patch.openDiff', async (patchFile) => {
 		if (!patchFile?.diff || !patchFile?.path) {
 			return;
@@ -667,6 +686,7 @@ function activate(context) {
 		attachCurrentSelection,
 		pinCustomContext,
 		removePinnedContext,
+		openContextExcludes,
 		openPatchDiff,
 		applyPatchFile,
 		rejectPatchFile,
