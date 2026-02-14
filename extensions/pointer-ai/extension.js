@@ -264,6 +264,48 @@ function toDiffPreview(diff) {
 	};
 }
 
+function parseStructuredChatInput(rawInput) {
+	const trimmed = rawInput.trim();
+	if (!trimmed.startsWith('/')) {
+		return {
+			displayMessage: rawInput,
+			prompt: rawInput,
+			workflow: 'freeform'
+		};
+	}
+
+	if (trimmed.startsWith('/explain ')) {
+		const payload = trimmed.slice('/explain '.length);
+		return {
+			displayMessage: rawInput,
+			prompt: `Explain the following code or behavior:\n${payload}`,
+			workflow: 'explain'
+		};
+	}
+	if (trimmed.startsWith('/fix ')) {
+		const payload = trimmed.slice('/fix '.length);
+		return {
+			displayMessage: rawInput,
+			prompt: `Propose a fix with rationale and patch suggestions:\n${payload}`,
+			workflow: 'fix'
+		};
+	}
+	if (trimmed.startsWith('/test ')) {
+		const payload = trimmed.slice('/test '.length);
+		return {
+			displayMessage: rawInput,
+			prompt: `Design and describe targeted tests for:\n${payload}`,
+			workflow: 'test'
+		};
+	}
+
+	return {
+		displayMessage: rawInput,
+		prompt: rawInput,
+		workflow: 'freeform'
+	};
+}
+
 function delay(milliseconds) {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -497,12 +539,13 @@ function activate(context) {
 		if (!value || value.trim().length === 0) {
 			return;
 		}
+		const parsedInput = parseStructuredChatInput(value);
 
 		activeChatAbortController?.abort();
 		activeChatAbortController = new AbortController();
 		chatMessageTree.message = 'Streaming response...';
 
-		chatSessionStore.addUserMessage(value);
+		chatSessionStore.addUserMessage(parsedInput.displayMessage);
 		const assistantMessageId = chatSessionStore.startAssistantMessage();
 		if (!assistantMessageId) {
 			chatMessageTree.message = 'Messages';
@@ -516,13 +559,16 @@ function activate(context) {
 				providerId: chatSelection.providerId,
 				modelId: chatSelection.modelId,
 				templateId: 'chat-default',
-				userPrompt: value,
+				userPrompt: parsedInput.prompt,
 				context: chatSessionStore.listPinnedContext().map((item) => ({
 					kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
 					label: item.label,
 					tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
 				}))
 			});
+			if (parsedInput.workflow !== 'freeform') {
+				chatSessionStore.appendAssistantChunk(assistantMessageId, `[workflow:${parsedInput.workflow}] `);
+			}
 
 			for await (const event of stream) {
 				if (activeChatAbortController.signal.aborted) {
