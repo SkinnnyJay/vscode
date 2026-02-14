@@ -111,6 +111,7 @@ export async function launch(options: LaunchOptions): Promise<Code> {
 
 export class Code {
 
+	private static readonly recentFailuresSummarySchemaVersion = 1;
 	private static readonly recentFailuresDisplayLimit = 8;
 
 	readonly driver: PlaywrightDriver;
@@ -350,7 +351,7 @@ export class Code {
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const displayWindowSuffix = `, showingLast=${recentFailures.length}/${allRecentFailures.length}`;
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath

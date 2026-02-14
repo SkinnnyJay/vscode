@@ -588,3 +588,7 @@
   **Why:** keeps header schema stable across runs and simplifies downstream parsing/alerts that consume this field.
 - **Always-on window validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header includes `showingLast=...` in this run (`8/25`), and re-ran `make lint` (pass).
   **Why:** confirms schema-stable display-window metadata is active and lint-clean.
+- **Smoke fail-fast summary schema version (2026-02-14 PM)** Added `schemaVersion=1` marker to the smoke fail-fast recent-failure header in `test/automation/src/code.ts`.
+  **Why:** aligns smoke diagnostics with versioned unit diagnostics so downstream parsers can evolve safely with explicit schema signals.
+- **Smoke schema-version validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `schemaVersion=1` alongside counts/signature, and re-ran `make lint` (pass).
+  **Why:** confirms schema-version tagging is active and non-regressive.
