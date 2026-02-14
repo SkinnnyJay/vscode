@@ -6,7 +6,7 @@
 import * as playwright from '@playwright/test';
 import type { Protocol } from 'playwright-core/types/protocol';
 import { dirname, join } from 'path';
-import { promises, readFileSync } from 'fs';
+import { existsSync, promises, readFileSync } from 'fs';
 import { IWindowDriver } from './driver';
 import { measureAndLog } from './logger';
 import { LaunchOptions } from './code';
@@ -434,7 +434,10 @@ export class PlaywrightDriver {
 				return;
 			}
 
-			const entry = `${failureText} ${request.url()}`;
+			const url = request.url();
+			const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+			const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+			const entry = `${failureText} ${url}${fileExistsSuffix}`;
 			if (this.recentRequestFailures.includes(entry)) {
 				return;
 			}
@@ -444,6 +447,26 @@ export class PlaywrightDriver {
 				this.recentRequestFailures.shift();
 			}
 		});
+	}
+
+	private toFilePathFromVscodeFileUrl(url: string): string | undefined {
+		if (!url.startsWith('vscode-file://')) {
+			return undefined;
+		}
+
+		try {
+			const parsed = new URL(url);
+			let pathname = decodeURIComponent(parsed.pathname);
+
+			// Windows paths in file-like URLs can come as `/c:/...`
+			if (/^\/[a-zA-Z]:\//.test(pathname)) {
+				pathname = pathname.slice(1);
+			}
+
+			return pathname;
+		} catch {
+			return undefined;
+		}
 	}
 
 	async startCDP() {

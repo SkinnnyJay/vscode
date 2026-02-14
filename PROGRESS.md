@@ -313,3 +313,7 @@
   **Why:** preserves existing behavior while making `make test` / isolated renderer failures substantially easier to triage from logs.
 - **Import diagnostic verification (2026-02-14 PM)** Re-ran isolated failing/passing renderer modules (`vs/workbench/workbench.desktop.main.js`, `vs/editor/common/viewEventHandler.js`) and confirmed new structured diagnostics appear only for failing imports; re-ran `make lint` (pass).
   **Why:** confirms the new observability path is active and non-disruptive.
+- **Smoke request-failure on-disk annotation (2026-02-14 PM)** Enhanced Playwright smoke diagnostics (`test/automation/src/playwrightDriver.ts`) to annotate `vscode-file://...` request failures with `existsOnDisk=<bool>` by mapping URL pathname to filesystem path.
+  **Why:** quickly distinguishes “missing artifact” vs “loader/runtime transport failure” during smoke startup debugging.
+- **On-disk annotation validation (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke case; fail-fast startup error now includes request entries like `... existsOnDisk=true` for failed `vscode-file://` module loads, then re-ran `make lint` (pass).
+  **Why:** provides direct runtime proof that many failed module requests point to files that do exist on disk, narrowing root cause away from missing outputs.
