@@ -273,3 +273,7 @@
   **Why:** strengthens the conclusion that this is a broader Electron renderer ESM instability under this headless environment rather than a single bad module artifact.
 - **Gate rerun after diagnostics (2026-02-14 PM)** Re-ran `make test-unit` (7584 passing / 134 pending), `make build` (compile finished with 0 errors), and `xvfb-run -a ./scripts/code.sh --version` (pass; expected headless DBus/GPU warnings).  
   **Why:** reconfirms branch health on core quality/runtime gates after the latest diagnostic and rollback cycle.
+- **Xvfb/GL runtime matrix probe (2026-02-14 PM)** Repeated isolated renderer runs under alternate display/GL setups (`xvfb-run` defaults, custom GLX screen args, and `LIBGL_ALWAYS_SOFTWARE=1`): `bracketMatching.test.js` and `view.js` still failed 3/3 in every configuration, while control `viewEventHandler.js` remained stable (0/3 failures).
+  **Why:** rules out basic Xvfb screen/GL backend tuning as a practical mitigation and confirms the failure is selective (not a universal renderer inability to run tests).
+- **Additional Chromium flag probe (2026-02-14 PM)** Retried isolated failing renderer case with further flags (`--disable-dev-shm-usage`, `--disable-dev-shm-usage --no-zygote`, `--in-process-gpu --disable-gpu`, `--disable-features=UseSkiaRenderer`); all variants still failed 3/3 with the same dynamic-import error.
+  **Why:** extends the ruled-out mitigation set across shared-memory, process-model, and Skia renderer toggles.
