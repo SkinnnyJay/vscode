@@ -730,3 +730,11 @@
   - `Import target diagnostics signature: 30ca1af4`
   Re-ran `make lint` (pass).
   **Why:** confirms coverage ratios are emitted correctly and align with existing totals/dropped estimates in the current failure mode.
+- **Import-target diagnostics schema-version field (2026-02-14 PM)** Added `Import target diagnostics schemaVersion: 1` line in smoke fail-fast output (`test/automation/src/code.ts`) and introduced a dedicated class constant for this metadata schema.
+  **Why:** version-tags the import-target diagnostic subsection so parsers can evolve independently from the broader failure-summary schema.
+- **Import-target schema-version validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target channel coverage: requestFailures=n/a (0/0), scriptResponses=0% (0/1), cdpScriptLoads=n/a (0/0)`
+  - `Import target diagnostics schemaVersion: 1`
+  - `Import target diagnostics signature: 30ca1af4`
+  Re-ran `make lint` (pass).
+  **Why:** confirms schema tagging is active and non-regressive for the import-target diagnostics block.

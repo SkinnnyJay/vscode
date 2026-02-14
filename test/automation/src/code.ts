@@ -114,6 +114,7 @@ export class Code {
 	private static readonly recentFailuresSummarySchemaVersion = 1;
 	private static readonly recentScriptResponsesSummarySchemaVersion = 1;
 	private static readonly recentCdpScriptLoadsSummarySchemaVersion = 1;
+	private static readonly importTargetDiagnosticsSchemaVersion = 1;
 	private static readonly recentFailuresDisplayLimit = 8;
 
 	readonly driver: PlaywrightDriver;
@@ -438,6 +439,9 @@ export class Code {
 					const importTargetCoverageStatus = importTargetUrl
 						? `\nImport target channel coverage: requestFailures=${this.formatCoverage(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0)}, scriptResponses=${this.formatCoverage(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0)}, cdpScriptLoads=${this.formatCoverage(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)}`
 						: '';
+					const importTargetDiagnosticsSchemaStatus = importTargetUrl
+						? `\nImport target diagnostics schemaVersion: ${Code.importTargetDiagnosticsSchemaVersion}`
+						: '';
 					const importTargetDiagnosticsSignature = importTargetUrl
 						? this.computeImportTargetDiagnosticsSignature(
 							importTargetUrl,
@@ -453,7 +457,7 @@ export class Code {
 						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
