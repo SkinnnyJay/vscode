@@ -1,0 +1,37 @@
+name: Smoke Launch
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke-launch:
+    name: Smoke launch on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build editor and electron runtime
+        run: |
+          npm run compile
+          npm run electron
+
+      - name: Smoke launch via scripts/code.sh
+        shell: bash
+        run: |
+          VSCODE_SKIP_PRELAUNCH=1 ./scripts/code.sh --version

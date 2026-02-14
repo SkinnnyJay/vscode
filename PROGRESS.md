@@ -13,3 +13,5 @@
   **Why:** gives contributors a deterministic, repeatable upstream sync flow and reduces unsafe conflict handling.
 - **M0-06** Added `.github/workflows/upstream-conflict-check.yml` to detect merge conflicts against `upstream/main` on PRs and a weekly schedule.  
   **Why:** surfaces upstream drift risk automatically before manual sync windows and shortens reaction time.
+- **M0-07** Added `.github/workflows/smoke-launch.yml` to execute `./scripts/code.sh --version` on Linux and macOS after build/runtime setup.  
+  **Why:** creates a fast cross-platform launch signal that catches broken dev startup paths early in CI.
