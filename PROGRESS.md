@@ -93,3 +93,5 @@
   **Why:** establishes the canonical sidecar contract foundation required by all later router/client integrations.
 - **M2-05** Added router config schema types/defaults plus `parseRouterConfig` validation+fallback logic for defaults and policy token budgets.  
   **Why:** provides deterministic configuration loading behavior before implementing routing resolution logic.
+- **M2-06** Implemented layered config resolution (`workspace > user > defaults`) in `pointer/agent/src/router/resolver.ts` for surface defaults and policy token/tool settings.  
+  **Why:** codifies precedence semantics needed for predictable per-workspace model/provider behavior.
