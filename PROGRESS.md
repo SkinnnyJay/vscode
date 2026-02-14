@@ -430,3 +430,10 @@
   **Why:** adds concrete transport/readability evidence for each failed dependency edge so we can distinguish parser/loader rejection from content-read failures without rerunning ad-hoc probes.
 - **Fetch-bytes diagnostics validation (2026-02-14 PM)** Re-ran isolated failing unit module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified `[ESM IMPORT FAILURE DEPS SUMMARY]` now includes populated per-edge fields such as `"fetchStatus":"200"`, `"fetchOk":true`, and non-zero `"fetchedBytes"`; re-ran `make lint` (pass).
   **Why:** confirms the enhanced unit-edge observability is active and lint-safe.
+- **Unit import-error classification enrichment (2026-02-14 PM)** Added `errorKind` classification in `test/unit/electron/renderer.js` for top-level and dependency-edge import failures (currently distinguishing `dynamic-import-fetch-failure` vs `other`) and reused shared fetch diagnostics helper for the top-level failure payload.
+  **Why:** provides a stable machine-readable discriminator for failure-type grouping in logs while keeping existing human-readable error text intact.
+- **Error-kind validation (2026-02-14 PM)** Re-ran isolated failing unit module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and confirmed:
+  - top-level `[ESM IMPORT FAILURE]` includes `errorKind` + `fetchedBytes`,
+  - dependency summary entries include per-edge `errorKind`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms classification and shared fetch metrics are active and lint-clean.

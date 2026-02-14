@@ -193,6 +193,15 @@ function initLoadFn(opts) {
 		return { fetchStatus, fetchOk, fetchedBytes };
 	}
 
+	function classifyImportError(error) {
+		const value = String(error);
+		if (value.includes('Failed to fetch dynamically imported module')) {
+			return 'dynamic-import-fetch-failure';
+		}
+
+		return 'other';
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -235,6 +244,7 @@ function initLoadFn(opts) {
 						specifier,
 						resolved,
 						error: String(depErr),
+						errorKind: classifyImportError(depErr),
 						existsOnDisk: depExistsOnDisk,
 						...fetchDiagnostics
 					});
@@ -268,16 +278,8 @@ function initLoadFn(opts) {
 		const tasks = moduleArray.map(mod => {
 			const url = new URL(`./${mod}.js`, baseUrl).href;
 			return import(url).catch(async err => {
-				let fetchStatus = 'unavailable';
-				let fetchOk = false;
+				const fetchDiagnostics = await getImportFetchDiagnostics(url);
 				let existsOnDisk = false;
-				try {
-					const response = await fetch(url);
-					fetchStatus = String(response.status);
-					fetchOk = response.ok;
-				} catch (fetchError) {
-					fetchStatus = String(fetchError);
-				}
 				try {
 					existsOnDisk = fs.existsSync(fileURLToPath(url));
 				} catch {
@@ -288,9 +290,9 @@ function initLoadFn(opts) {
 					module: mod,
 					url,
 					error: String(err),
-					fetchStatus,
-					fetchOk,
-					existsOnDisk
+					errorKind: classifyImportError(err),
+					existsOnDisk,
+					...fetchDiagnostics
 				}));
 				await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);
