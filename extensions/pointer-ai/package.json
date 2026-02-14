@@ -18,6 +18,9 @@
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
 		"onCommand:pointer.selectModel",
+		"onCommand:pointer.chat.newSession",
+		"onCommand:pointer.chat.renameSession",
+		"onCommand:pointer.chat.deleteSession",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -44,11 +47,47 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.chat.newSession",
+				"title": "Pointer: New Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.renameSession",
+				"title": "Pointer: Rename Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.deleteSession",
+				"title": "Pointer: Delete Chat Session",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
 			}
 		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "pointer.chat.newSession",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "pointer.chat.renameSession",
+					"when": "view == pointer.chatSessions && viewItem == pointerChatSession",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.chat.deleteSession",
+					"when": "view == pointer.chatSessions && viewItem == pointerChatSession",
+					"group": "inline"
+				}
+			]
+		},
 		"configuration": [
 			{
 				"title": "Pointer: Providers",

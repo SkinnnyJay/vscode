@@ -70,16 +70,14 @@ class ChatSessionTreeDataProvider {
 	}
 
 	getTreeItem(element) {
-		return element;
+		const item = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.None);
+		item.id = element.id;
+		item.contextValue = 'pointerChatSession';
+		return item;
 	}
 
 	getChildren() {
-		return this.sessionStore.listSessions().map((session) => {
-			const item = new vscode.TreeItem(session.name, vscode.TreeItemCollapsibleState.None);
-			item.id = session.id;
-			item.contextValue = 'pointerChatSession';
-			return item;
-		});
+		return this.sessionStore.listSessions();
 	}
 }
 
@@ -186,6 +184,38 @@ function activate(context) {
 		inlineCompletion.cancelPending();
 	});
 
+	const createChatSession = vscode.commands.registerCommand('pointer.chat.newSession', async () => {
+		const value = await vscode.window.showInputBox({
+			prompt: 'Session name',
+			placeHolder: 'New Chat'
+		});
+		chatSessionStore.createSession(value && value.trim().length > 0 ? value : 'New Chat');
+	});
+
+	const renameChatSession = vscode.commands.registerCommand('pointer.chat.renameSession', async (session) => {
+		const value = await vscode.window.showInputBox({
+			prompt: 'Rename session',
+			value: session?.name ?? 'Chat'
+		});
+		if (value && session?.id) {
+			chatSessionStore.renameSession(session.id, value);
+		}
+	});
+
+	const deleteChatSession = vscode.commands.registerCommand('pointer.chat.deleteSession', async (session) => {
+		if (!session?.id) {
+			return;
+		}
+		const confirm = await vscode.window.showWarningMessage(
+			`Delete chat session "${session.name}"?`,
+			{ modal: true },
+			'Delete'
+		);
+		if (confirm === 'Delete') {
+			chatSessionStore.deleteSession(session.id);
+		}
+	});
+
 	const updateStatusBar = () => {
 		const chatSelection = internalApi.getSelection('chat');
 		const tabSelection = internalApi.getSelection('tab');
@@ -260,7 +290,10 @@ function activate(context) {
 		toggleTab,
 		selectModel,
 		openSettings,
-		cancelTabCompletion
+		cancelTabCompletion,
+		createChatSession,
+		renameChatSession,
+		deleteChatSession
 	);
 	return internalApi;
 }

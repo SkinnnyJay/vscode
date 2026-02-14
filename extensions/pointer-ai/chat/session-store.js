@@ -34,6 +34,31 @@ class ChatSessionStore {
 		this.onDidChangeEmitter.fire(undefined);
 		return session;
 	}
+
+	renameSession(sessionId, newName) {
+		const trimmed = newName.trim();
+		if (!trimmed) {
+			return;
+		}
+		const session = this.sessions.find((item) => item.id === sessionId);
+		if (!session) {
+			return;
+		}
+		session.name = trimmed;
+		this.onDidChangeEmitter.fire(undefined);
+	}
+
+	deleteSession(sessionId) {
+		const next = this.sessions.filter((item) => item.id !== sessionId);
+		if (next.length === 0) {
+			next.push({
+				id: createSessionId(),
+				name: 'New Chat'
+			});
+		}
+		this.sessions = next;
+		this.onDidChangeEmitter.fire(undefined);
+	}
 }
 
 module.exports = {

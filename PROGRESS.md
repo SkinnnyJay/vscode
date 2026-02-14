@@ -137,5 +137,7 @@
   **Why:** verifies baseline correctness and responsiveness targets for the MVP tab flow.
 - **M4-01** Added chat sessions view (`pointer.chatSessions`) with `ChatSessionStore` and tree rendering in the Pointer container.
   **Why:** establishes the base chat surface/navigation model before message-level features.
+- **M4-02** Added chat session lifecycle actions (`pointer.chat.newSession`, rename, delete) with view title/context menu integration.
+  **Why:** enables basic multi-session chat management needed for multi-turn workflows.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

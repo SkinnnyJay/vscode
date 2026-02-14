@@ -151,7 +151,7 @@ Success metrics:
 - Tool gating prevents silent terminal/fs/network actions.
 Tasks:
 - [x] - M4 - [extension] Create chat view container and session list.
-- [ ] - M4 - [extension] Add new-session action and session rename/delete.
+- [x] - M4 - [extension] Add new-session action and session rename/delete.
 - [ ] - M4 - [extension] Implement message list rendering with streaming updates.
 - [ ] - M4 - [extension] Add prompt composer input with send/cancel.
 - [ ] - M4 - [extension] Add attach file/selection and pin context actions.
