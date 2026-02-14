@@ -257,3 +257,5 @@
   **Why:** confirms the branch remains healthy on core compile/type/runtime smoke checks after repeated diagnostic iterations.
 - **Electron runtime flag probes (2026-02-14 PM)** Retried the isolated failing renderer test with extra runtime flags (`--disable-gpu` and `--no-sandbox`) and observed the same dynamic import failure for `bracketMatching.test.js` in both cases.
   **Why:** further narrows the unresolved full-suite failure by ruling out two common headless Electron mitigations.
+- **Extended GPU-stack probe (2026-02-14 PM)** Retried isolated renderer test with `--disable-gpu --disable-software-rasterizer --disable-features=VizDisplayCompositor`; dynamic import failure persisted unchanged.
+  **Why:** rules out an additional Chromium GPU/compositor path as a practical workaround in this VM.
