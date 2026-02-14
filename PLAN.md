@@ -57,7 +57,7 @@ Tasks:
 - [x] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.
 - [x] - M0 - [core] Point `product.json` at the chosen extension registry.
 - [x] - M0 - [core] Add documentation for VSIX sideloading fallback.
-- [ ] - M0 - [core] Ensure `npm install` works on a clean machine.
+- [x] - M0 - [core] Ensure `npm install` works on a clean machine.
 - [ ] - M0 - [core] Ensure `npm run watch` works and stays watching.
 - [ ] - M0 - [core] Ensure `./scripts/code.sh` and `./scripts/code.bat` launch a dev build.
 - [ ] - M0 - [ci] Add CI to build dev artifacts for macOS/Linux/Windows.

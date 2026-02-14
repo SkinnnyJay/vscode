@@ -111,7 +111,8 @@ Pointer tracks upstream **VS Code build flows** unless explicitly documented oth
 ### Prerequisites
 
 - Git
-- Node.js 22.x (match the version pinned by the upstream repo via `.nvmrc`)
+- Node.js 22.22.0+ (match `.nvmrc` / setup script requirement)
+- Linux build prerequisites: `libkrb5-dev` (Kerberos headers for native module builds)
 - Enough RAM/CPU to build Code - OSS
 
 ### Clone + install

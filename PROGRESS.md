@@ -31,3 +31,5 @@
   **Why:** activates the chosen default extension registry directly in product runtime settings.
 - **M0-15** Added `docs/vsix-sideloading.md` covering UI/CLI extension sideload flow and trust guidance.  
   **Why:** provides a concrete operational fallback when registry-based extension discovery is unavailable.
+- **M0-16** Hardened setup prerequisites (`scripts/setup.sh` now enforces Node 22.22.0+) and verified `make setup` succeeds after installing required Linux Kerberos headers.  
+  **Why:** prevents false-positive setup attempts on incompatible Node patch versions and documents environment requirements for reproducible installs.
