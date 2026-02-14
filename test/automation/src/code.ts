@@ -349,8 +349,10 @@ export class Code {
 					const allRecentFailures = this.driver.getRecentRequestFailures();
 					const recentFailures = allRecentFailures.slice(-Code.recentFailuresDisplayLimit);
 					const recentFailureCapacity = this.driver.getRecentRequestFailureCapacity();
+					const totalObservedRequestFailures = this.driver.getTotalRecordedRequestFailureCount();
+					const droppedRecentRequestFailures = this.driver.getDroppedRecentRequestFailureCount();
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
-					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}`;
+					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}, observedEvents=${totalObservedRequestFailures}, droppedEvents=${droppedRecentRequestFailures}`;
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';

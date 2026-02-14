@@ -607,3 +607,7 @@
   **Why:** clarifies total in-memory ring size independently from display window size (`displayLimit`), improving interpretation of `showingLast` ratios.
 - **Buffer-capacity validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `bufferCapacity=25` alongside `displayLimit=8` and `showingLast=8/25`; re-ran `make lint` (pass).
   **Why:** confirms capacity metadata is active and lint-clean.
+- **Smoke observed/drop counters in fail-fast metadata (2026-02-14 PM)** Updated `PlaywrightDriver` to track total recorded request-failure events and ring-buffer drops, then surfaced `observedEvents=<N>` and `droppedEvents=<N>` in the smoke fail-fast header from `test/automation/src/code.ts`.
+  **Why:** makes historical event loss explicit when the bounded ring buffer overwrites older entries, improving confidence when interpreting `showingLast` diagnostics.
+- **Observed/drop counter validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `observedEvents=744` and `droppedEvents=719` alongside existing window/capacity fields; re-ran `make lint` (pass).
+  **Why:** confirms the new counters are emitted and that formatting/lint behavior remains stable.

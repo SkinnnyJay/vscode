@@ -66,6 +66,8 @@ export class PlaywrightDriver {
 
 	private lastPageError: string | undefined;
 	private readonly recentRequestFailures: string[] = [];
+	private totalRecordedRequestFailures = 0;
+	private droppedRecentRequestFailures = 0;
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -423,6 +425,14 @@ export class PlaywrightDriver {
 		return PlaywrightDriver.recentRequestFailureCapacity;
 	}
 
+	getTotalRecordedRequestFailureCount(): number {
+		return this.totalRecordedRequestFailures;
+	}
+
+	getDroppedRecentRequestFailureCount(): number {
+		return this.droppedRecentRequestFailures;
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -486,8 +496,10 @@ export class PlaywrightDriver {
 	}
 
 	private pushRecentRequestFailure(entry: string): void {
+		this.totalRecordedRequestFailures++;
 		this.recentRequestFailures.push(entry);
 		if (this.recentRequestFailures.length > PlaywrightDriver.recentRequestFailureCapacity) {
+			this.droppedRecentRequestFailures++;
 			this.recentRequestFailures.shift();
 		}
 	}
