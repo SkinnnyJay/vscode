@@ -89,3 +89,5 @@
   **Why:** preserves reproducible command-level evidence for adapter bootstrap decisions.
 - **M2-03** Added explicit non-viable/blocked adapter decision and next-enablement actions in the CLI feasibility doc.  
   **Why:** prevents premature adapter implementation against unavailable binaries and keeps execution focused on viable dependencies.
+- **M2-04** Created `pointer/agent` package scaffold and defined strongly-typed router contract interfaces (`surface/provider/model/template/policy`, request, plan, context sources).  
+  **Why:** establishes the canonical sidecar contract foundation required by all later router/client integrations.
