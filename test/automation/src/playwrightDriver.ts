@@ -66,6 +66,8 @@ export class PlaywrightDriver {
 	private lastPageError: string | undefined;
 	private readonly recentRequestFailures: string[] = [];
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
+	private cdpNetworkDiagnosticsAttached = false;
+	private readonly cdpRequestUrls = new Map<string, string>();
 
 	constructor(
 		private readonly application: playwright.Browser | playwright.ElectronApplication,
@@ -435,18 +437,11 @@ export class PlaywrightDriver {
 			}
 
 			const url = request.url();
-			const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
-			const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
-			const entry = `${failureText} ${url}${fileExistsSuffix}`;
-			if (this.recentRequestFailures.includes(entry)) {
-				return;
-			}
-
-			this.recentRequestFailures.push(entry);
-			if (this.recentRequestFailures.length > 25) {
-				this.recentRequestFailures.shift();
-			}
+			const entry = this.toFailureEntry(failureText, url);
+			this.pushRecentRequestFailure(entry);
 		});
+
+		void this.attachCdpNetworkDiagnostics(page);
 	}
 
 	private toFilePathFromVscodeFileUrl(url: string): string | undefined {
@@ -466,6 +461,56 @@ export class PlaywrightDriver {
 			return pathname;
 		} catch {
 			return undefined;
+		}
+	}
+
+	private toFailureEntry(errorText: string, url: string, details?: string): string {
+		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const detailsSuffix = details ? ` ${details}` : '';
+
+		return `${errorText} ${url}${fileExistsSuffix}${detailsSuffix}`;
+	}
+
+	private pushRecentRequestFailure(entry: string): void {
+		if (this.recentRequestFailures.includes(entry)) {
+			return;
+		}
+
+		this.recentRequestFailures.push(entry);
+		if (this.recentRequestFailures.length > 25) {
+			this.recentRequestFailures.shift();
+		}
+	}
+
+	private async attachCdpNetworkDiagnostics(page: playwright.Page): Promise<void> {
+		if (this.cdpNetworkDiagnosticsAttached) {
+			return;
+		}
+		this.cdpNetworkDiagnosticsAttached = true;
+
+		try {
+			const cdpSession = await page.context().newCDPSession(page);
+			await cdpSession.send('Network.enable');
+
+			cdpSession.on('Network.requestWillBeSent', event => {
+				if (event.request?.url) {
+					this.cdpRequestUrls.set(event.requestId, event.request.url);
+				}
+			});
+
+			cdpSession.on('Network.loadingFailed', event => {
+				const url = this.cdpRequestUrls.get(event.requestId) ?? 'unknown-url';
+				const details = [
+					event.blockedReason ? `blockedReason=${event.blockedReason}` : undefined,
+					event.canceled ? 'canceled=true' : undefined,
+					event.type ? `resourceType=${event.type}` : undefined
+				].filter(Boolean).join(' ');
+				const entry = this.toFailureEntry(`[cdp] ${event.errorText}`, url, details);
+				this.pushRecentRequestFailure(entry);
+			});
+		} catch {
+			// CDP diagnostics are best effort
 		}
 	}
 

@@ -325,3 +325,7 @@
   **Why:** tests whether path-alias mismatches between request URLs and allowed roots are causing `net::ERR_FAILED` module loads.
 - **Canonical-path fallback validation (2026-02-14 PM)** Rebuilt (`make build`) and reran focused smoke startup case; failure remains the same (`workbench.desktop.main.js` import fetch fails, target exists on disk, failed requests still report `existsOnDisk=true`). Re-ran `make lint` + `make test-unit` (7584 passing / 134 pending).
   **Why:** records a concrete mitigation attempt that did not resolve the loader issue while keeping core gates green.
+- **Smoke CDP loading-failed diagnostics (2026-02-14 PM)** Extended `test/automation/src/playwrightDriver.ts` diagnostics with best-effort CDP `Network.loadingFailed` capture (`resourceType`, blocked/canceled flags when present) and merged these into the recent request-failure list.
+  **Why:** augments Playwright’s coarse `net::ERR_FAILED` signal with lower-level network event context to tighten root-cause analysis.
+- **CDP diagnostics verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke startup case; fail-fast output now includes entries like `[cdp] net::ERR_FAILED ... resourceType=Script` alongside existing `existsOnDisk=true` annotations. Re-ran `make lint` (pass).
+  **Why:** confirms CDP enrichment is active and non-disruptive while preserving prior diagnostics.
