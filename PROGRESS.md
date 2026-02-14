@@ -209,5 +209,7 @@
   **Why:** enables portable multi-session workflows beyond a single local runtime instance.
 - **M8-02** Added grouped patch diff workflows (`patch-groups.js`, group tree nodes, group diff/apply commands) for multi-file refactors.
   **Why:** makes larger refactors reviewable by directory-level groups rather than flat file lists.
+- **M8-04** Added workspace-level project brief support (`project-brief.md` load/save, set-brief command, pinned context surfacing in chat context and router payloads).
+  **Why:** captures durable workspace intent that is automatically available to chat workflows.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

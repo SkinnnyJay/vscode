@@ -9,6 +9,7 @@ const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
 const { toDiffPreview, groupPatchFiles, buildGroupedDiffPreview } = require('./chat/patch-groups.js');
+const { loadProjectBrief, saveProjectBrief } = require('./chat/project-brief.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -70,6 +71,10 @@ class ChatSessionTreeDataProvider {
 		this.onDidChangeTreeDataEmitter.dispose();
 	}
 
+	refresh() {
+		this.onDidChangeTreeDataEmitter.fire(undefined);
+	}
+
 	getTreeItem(element) {
 		const item = new vscode.TreeItem(element.name, vscode.TreeItemCollapsibleState.None);
 		item.id = element.id;
@@ -122,9 +127,11 @@ class ChatMessageTreeDataProvider {
 class ChatContextChipTreeDataProvider {
 	/**
 	 * @param {ChatSessionStore} sessionStore
+	 * @param {() => string} getProjectBrief
 	 */
-	constructor(sessionStore) {
+	constructor(sessionStore, getProjectBrief) {
 		this.sessionStore = sessionStore;
+		this.getProjectBrief = getProjectBrief;
 		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
 		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
 		this.storeWatcher = sessionStore.onDidChange(() => this.onDidChangeTreeDataEmitter.fire(undefined));
@@ -139,13 +146,28 @@ class ChatContextChipTreeDataProvider {
 		const item = new vscode.TreeItem(element.label, vscode.TreeItemCollapsibleState.None);
 		item.id = element.id;
 		item.description = `${element.source} | ~${element.tokenEstimate} tokens`;
-		item.contextValue = 'pointerPinnedContext';
+		item.contextValue = element.source === 'workspace' ? 'pointerProjectBrief' : 'pointerPinnedContext';
 		item.tooltip = element.value;
 		return item;
 	}
 
 	getChildren() {
-		return this.sessionStore.listPinnedContext();
+		const pinned = this.sessionStore.listPinnedContext();
+		const projectBrief = this.getProjectBrief();
+		if (!projectBrief) {
+			return pinned;
+		}
+
+		return [
+			{
+				id: 'workspace-brief',
+				label: 'Project Brief',
+				value: projectBrief,
+				source: 'workspace',
+				tokenEstimate: Math.max(1, Math.ceil(projectBrief.length / 4))
+			},
+			...pinned
+		];
 	}
 }
 
@@ -356,6 +378,7 @@ function activate(context) {
 	const internalApi = createPointerInternalApi(routerClient);
 	const chatSessionStore = new ChatSessionStore();
 	const patchReviewStore = new PatchReviewStore();
+	let workspaceProjectBrief = '';
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -381,7 +404,7 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	chatMessageTree.message = 'Messages';
-	const chatContextProvider = new ChatContextChipTreeDataProvider(chatSessionStore);
+	const chatContextProvider = new ChatContextChipTreeDataProvider(chatSessionStore, () => workspaceProjectBrief);
 	const chatContextTree = vscode.window.createTreeView('pointer.chatContext', {
 		treeDataProvider: chatContextProvider,
 		showCollapseAll: false
@@ -595,11 +618,20 @@ function activate(context) {
 				modelId: chatSelection.modelId,
 				templateId: 'chat-default',
 				userPrompt: parsedInput.prompt,
-				context: chatSessionStore.listPinnedContext().map((item) => ({
-					kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
-					label: item.label,
-					tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
-				}))
+				context: [
+					...(workspaceProjectBrief
+						? [{
+							kind: 'rules',
+							label: 'workspace-project-brief',
+							tokenEstimate: Math.max(1, Math.ceil(workspaceProjectBrief.length / 4))
+						}]
+						: []),
+					...chatSessionStore.listPinnedContext().map((item) => ({
+						kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
+						label: item.label,
+						tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
+					}))
+				]
 			});
 			if (parsedInput.workflow !== 'freeform') {
 				chatSessionStore.appendAssistantChunk(assistantMessageId, `[workflow:${parsedInput.workflow}] `);
@@ -677,6 +709,24 @@ function activate(context) {
 		if (contextItem?.id) {
 			chatSessionStore.removePinnedContext(contextItem.id);
 		}
+	});
+
+	const setProjectBrief = vscode.commands.registerCommand('pointer.context.setProjectBrief', async () => {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			void vscode.window.showWarningMessage('Open a workspace folder to set a project brief.');
+			return;
+		}
+		const value = await vscode.window.showInputBox({
+			prompt: 'Set workspace project brief (shared intent/context)',
+			value: workspaceProjectBrief
+		});
+		if (typeof value !== 'string') {
+			return;
+		}
+		workspaceProjectBrief = value.trim();
+		await saveProjectBrief(workspaceFolder.uri.fsPath, workspaceProjectBrief);
+		chatContextProvider.refresh();
 	});
 
 	const openContextExcludes = vscode.commands.registerCommand('pointer.context.openExcludes', async () => {
@@ -861,6 +911,13 @@ function activate(context) {
 	updateStatusBar();
 	void refreshRulesAudit();
 	void refreshMcpAudit();
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+	if (workspaceFolder) {
+		void loadProjectBrief(workspaceFolder.uri.fsPath).then((brief) => {
+			workspaceProjectBrief = brief;
+			chatContextProvider.refresh();
+		});
+	}
 
 	const invalidKeys = validatePointerDefaultsConfiguration();
 	if (invalidKeys.length > 0) {
@@ -945,6 +1002,7 @@ function activate(context) {
 		attachCurrentSelection,
 		pinCustomContext,
 		removePinnedContext,
+		setProjectBrief,
 		openContextExcludes,
 		refreshRulesAudit,
 		refreshMcpAudit,

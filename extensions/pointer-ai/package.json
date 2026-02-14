@@ -37,6 +37,7 @@
 		"onCommand:pointer.chat.attachSelection",
 		"onCommand:pointer.chat.pinContext",
 		"onCommand:pointer.chat.removePinnedContext",
+		"onCommand:pointer.context.setProjectBrief",
 		"onCommand:pointer.patch.openDiff",
 		"onCommand:pointer.patch.openGroupDiff",
 		"onCommand:pointer.patch.applyFile",
@@ -139,6 +140,11 @@
 			{
 				"command": "pointer.chat.removePinnedContext",
 				"title": "Pointer: Remove Pinned Context",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.context.setProjectBrief",
+				"title": "Pointer: Set Project Brief",
 				"category": "Pointer"
 			},
 			{
@@ -245,9 +251,14 @@
 					"group": "navigation@3"
 				},
 				{
-					"command": "pointer.context.openExcludes",
+					"command": "pointer.context.setProjectBrief",
 					"when": "view == pointer.chatContext",
 					"group": "navigation@4"
+				},
+				{
+					"command": "pointer.context.openExcludes",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@5"
 				},
 				{
 					"command": "pointer.patch.applyAll",
@@ -284,6 +295,11 @@
 				{
 					"command": "pointer.chat.removePinnedContext",
 					"when": "view == pointer.chatContext && viewItem == pointerPinnedContext",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.context.setProjectBrief",
+					"when": "view == pointer.chatContext && viewItem == pointerProjectBrief",
 					"group": "inline"
 				},
 				{
