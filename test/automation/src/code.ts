@@ -426,6 +426,19 @@ export class Code {
 					const importTargetSignalClassStatus = importTargetUrl
 						? `\nImport target signal class: ${importTargetSignalClass}`
 						: '';
+					const importTargetVisibilityClass = importTargetUrl
+						? this.classifyImportTargetVisibility(
+							{
+								requestFailures: importTargetRequestFailureEventCount,
+								scriptResponses: importTargetScriptResponseEventCount,
+								cdpScriptLoads: importTargetCdpScriptLoadEventCount
+							},
+							importTargetTotalEventCounts
+						)
+						: 'no-import-target-url';
+					const importTargetVisibilityClassStatus = importTargetUrl
+						? `\nImport target visibility class: ${importTargetVisibilityClass}`
+						: '';
 					const importTargetDroppedEventEstimates = importTargetTotalEventCounts
 						? {
 							requestFailures: Math.max(0, importTargetTotalEventCounts.requestFailures - importTargetRequestFailureEventCount),
@@ -492,6 +505,7 @@ export class Code {
 						},
 						importTargetDroppedEventEstimates,
 						importTargetSignalClass,
+						importTargetVisibilityClass,
 						importTargetDiagnosticsSignature,
 						trial,
 						retryInterval,
@@ -504,7 +518,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -639,6 +653,24 @@ export class Code {
 		return 'mixed-all-channels';
 	}
 
+	private classifyImportTargetVisibility(
+		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
+		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined
+	): string {
+		const hasRecentSignals = recentEventCounts.requestFailures > 0 || recentEventCounts.scriptResponses > 0 || recentEventCounts.cdpScriptLoads > 0;
+		const hasTotalSignals = (totalEventCounts?.requestFailures ?? 0) > 0 || (totalEventCounts?.scriptResponses ?? 0) > 0 || (totalEventCounts?.cdpScriptLoads ?? 0) > 0;
+
+		if (hasRecentSignals) {
+			return 'visible-in-recent-window';
+		}
+
+		if (hasTotalSignals) {
+			return 'historical-only-truncated-from-window';
+		}
+
+		return 'unseen-across-all-channels';
+	}
+
 	private computeImportTargetDiagnosticsSignature(
 		importTargetUrl: string,
 		importTargetSignalClass: string,
@@ -671,6 +703,7 @@ export class Code {
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
 		signalClass: string,
+		visibilityClass: string,
 		signature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
@@ -683,6 +716,7 @@ export class Code {
 		schemaVersion: number;
 		url: string;
 		signalClass: string;
+		visibilityClass: string;
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -703,6 +737,7 @@ export class Code {
 			schemaVersion: Code.importTargetDiagnosticsSchemaVersion,
 			url: importTargetUrl,
 			signalClass,
+			visibilityClass,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,

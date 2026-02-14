@@ -765,3 +765,15 @@
   - structured record field `"globalChannelBufferStats":{...}` with matching values.
   Re-ran `make lint` (pass).
   **Why:** confirms global truncation context is emitted and consistent across human-readable and structured diagnostics.
+- **Import-target visibility class (2026-02-14 PM)** Added a derived visibility classification in smoke fail-fast output and structured record:
+  - `visible-in-recent-window`
+  - `historical-only-truncated-from-window`
+  - `unseen-across-all-channels`
+  Classification compares recent-window channel counts against total channel counts.
+  **Why:** distinguishes whether target evidence is currently visible versus only historically observed but truncated from retained buffers.
+- **Visibility-class validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target signal class: response-only-no-cdp-finish`
+  - `Import target visibility class: historical-only-truncated-from-window`
+  - structured record field `"visibilityClass":"historical-only-truncated-from-window"`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms visibility classification is emitted correctly and consistent with channel totals/recent counts in this run.
