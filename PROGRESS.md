@@ -639,3 +639,16 @@
   - per-entry script-response lines with the same byte fields.
   Re-ran `make lint` (pass).
   **Why:** confirms byte-integrity diagnostics emit as designed and remain lint-clean/non-regressive.
+- **CDP script-load byte diagnostics (2026-02-14 PM)** Extended `PlaywrightDriver` CDP instrumentation to capture `Network.loadingFinished` for script requests and emit bounded recent entries plus URL-keyed latest summaries with:
+  - `encodedDataLength`,
+  - `onDiskBytes`,
+  - `encodedDiskByteDelta`,
+  - `byteDeltaKind`.
+  Also added request-id resource-type tracking/cleanup for CDP event correlation.
+  **Why:** complements request-failed and response-header diagnostics with protocol-level transferred-byte evidence for successful script loads.
+- **CDP script-load diagnostics validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Recent CDP script loads (schemaVersion=1, ... observedEvents=<N>, droppedEvents=<N>, signature=<hex>)`
+  - per-entry lines like `[cdp-script-load] encodedDataLength=... onDiskBytes=... encodedDiskByteDelta=0 byteDeltaKind=byte-match ...`
+  - import-target correlation line `Import target latest CDP script load: unseen` when no matching finished-load event exists for the failing import target.
+  Re-ran `make lint` (pass).
+  **Why:** confirms CDP byte-level load diagnostics are emitted correctly and provide additional signal without changing the known environment-limited startup failure.

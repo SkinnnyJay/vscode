@@ -113,6 +113,7 @@ export class Code {
 
 	private static readonly recentFailuresSummarySchemaVersion = 1;
 	private static readonly recentScriptResponsesSummarySchemaVersion = 1;
+	private static readonly recentCdpScriptLoadsSummarySchemaVersion = 1;
 	private static readonly recentFailuresDisplayLimit = 8;
 
 	readonly driver: PlaywrightDriver;
@@ -357,15 +358,25 @@ export class Code {
 					const recentScriptResponseCapacity = this.driver.getRecentScriptResponseCapacity();
 					const totalObservedScriptResponses = this.driver.getTotalRecordedScriptResponseCount();
 					const droppedRecentScriptResponses = this.driver.getDroppedRecentScriptResponseCount();
+					const allRecentCdpScriptLoads = this.driver.getRecentCdpScriptLoads();
+					const recentCdpScriptLoads = allRecentCdpScriptLoads.slice(-Code.recentFailuresDisplayLimit);
+					const recentCdpScriptLoadCapacity = this.driver.getRecentCdpScriptLoadCapacity();
+					const totalObservedCdpScriptLoads = this.driver.getTotalRecordedCdpScriptLoadCount();
+					const droppedRecentCdpScriptLoads = this.driver.getDroppedRecentCdpScriptLoadCount();
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const scriptResponseSummaryData = this.summarizeRecentEntries(recentScriptResponses);
+					const cdpScriptLoadSummaryData = this.summarizeRecentEntries(recentCdpScriptLoads);
 					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}, observedEvents=${totalObservedRequestFailures}, droppedEvents=${droppedRecentRequestFailures}`;
 					const scriptResponseWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentScriptResponseCapacity}, showingLast=${recentScriptResponses.length}/${allRecentScriptResponses.length}, observedEvents=${totalObservedScriptResponses}, droppedEvents=${droppedRecentScriptResponses}`;
+					const cdpScriptLoadWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentCdpScriptLoadCapacity}, showingLast=${recentCdpScriptLoads.length}/${allRecentCdpScriptLoads.length}, observedEvents=${totalObservedCdpScriptLoads}, droppedEvents=${droppedRecentCdpScriptLoads}`;
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const scriptResponseSummary = recentScriptResponses.length
 						? `\nRecent script responses (schemaVersion=${Code.recentScriptResponsesSummarySchemaVersion}, ${scriptResponseSummaryData.totalCount} events, ${scriptResponseSummaryData.uniqueCount} unique${scriptResponseWindowSuffix}, signature=${scriptResponseSummaryData.signature}):\n${scriptResponseSummaryData.formattedEntries}\nEnd of recent script responses.\n`
+						: '';
+					const cdpScriptLoadSummary = recentCdpScriptLoads.length
+						? `\nRecent CDP script loads (schemaVersion=${Code.recentCdpScriptLoadsSummarySchemaVersion}, ${cdpScriptLoadSummaryData.totalCount} events, ${cdpScriptLoadSummaryData.uniqueCount} unique${cdpScriptLoadWindowSuffix}, signature=${cdpScriptLoadSummaryData.signature}):\n${cdpScriptLoadSummaryData.formattedEntries}\nEnd of recent CDP script loads.\n`
 						: '';
 					const importTargetUrl = this.extractImportTargetUrlFromError(pageError);
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
@@ -375,11 +386,17 @@ export class Code {
 					const importTargetLatestScriptResponse = importTargetUrl
 						? this.driver.getLatestScriptResponseSummaryForUrl(importTargetUrl)
 						: undefined;
+					const importTargetLatestCdpScriptLoad = importTargetUrl
+						? this.driver.getLatestCdpScriptLoadSummaryForUrl(importTargetUrl)
+						: undefined;
 					const importTargetScriptResponseStatus = importTargetUrl
 						? `\nImport target latest script response: ${importTargetLatestScriptResponse ?? 'unseen'}`
 						: '';
+					const importTargetCdpScriptLoadStatus = importTargetUrl
+						? `\nImport target latest CDP script load: ${importTargetLatestCdpScriptLoad ?? 'unseen'}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${failureSummary}${scriptResponseSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetCdpScriptLoadStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
