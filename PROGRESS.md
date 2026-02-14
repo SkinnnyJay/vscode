@@ -355,3 +355,7 @@
   - `make test` still fails on renderer dynamic import in unit-electron harness, now with structured `[ESM IMPORT FAILURE]` payload including `fetchStatus=200`, `fetchOk=true`, `existsOnDisk=true`.
   - `make test-smoke` now reports **1 failing / 94 pending / 0 passing (~2s)**, preserving only the primary fatal startup import failure.
   **Why:** verifies improved smoke failure dedupe behavior while reconfirming unchanged underlying environment-level renderer import failure signature.
+- **Smoke skip-log compaction for fatal startup dedupe (2026-02-14 PM)** Refined `test/smoke/src/utils.ts` fatal-startup tracking to store a single-line summary of the first fatal workbench startup error and reuse that summary for subsequent `Skipping test/suite startup...` log lines.
+  **Why:** removes repeated multiline error payload spam from smoke runner logs while preserving the exact primary failure signal in the first failing test.
+- **Compaction validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (still **1 failing / 94 pending / 0 passing** in ~2s), verified skip logs are now concise one-line entries, and re-ran `make lint` (pass).
+  **Why:** confirms the logging refinement is active, keeps behavior unchanged, and remains lint-clean.
