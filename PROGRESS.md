@@ -49,3 +49,5 @@
   **Why:** gives contributors a single explicit policy source for legal-safe clean-room development.
 - **M0-24** Collected startup/idle-memory/synthetic-typing baselines and published budgets in `docs/perf/M0-baseline-and-budgets.md`.  
   **Why:** establishes measurable M0 performance guardrails for later optimization and CI regression checks.
+- **M0-25** Stored baseline memory snapshots in `docs/perf/` (`perf-heap.txt`, `idle-memory-snapshot.txt`) for reproducible comparisons.  
+  **Why:** preserves concrete memory artifacts required for future leak/perf regression analysis.
