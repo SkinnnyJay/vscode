@@ -53,3 +53,5 @@
   **Why:** preserves concrete memory artifacts required for future leak/perf regression analysis.
 - **M1-01** Added a new built-in extension scaffold at `extensions/pointer-ai/` with an Activity Bar icon and Pointer view container contribution.  
   **Why:** establishes a first-class Pointer surface entry point in the editor shell.
+- **M1-02** Declared `viewsContainers.activitybar` and `views.pointer` contributions in `extensions/pointer-ai/package.json`.  
+  **Why:** registers Pointer container/view metadata through extension manifests instead of core forks.
