@@ -738,3 +738,13 @@
   - `Import target diagnostics signature: 30ca1af4`
   Re-ran `make lint` (pass).
   **Why:** confirms schema tagging is active and non-regressive for the import-target diagnostics block.
+- **Import-target structured diagnostics record (2026-02-14 PM)** Added a machine-readable fail-fast line in `test/automation/src/code.ts`:
+  - `Import target diagnostics record: { ...json... }`
+  The record includes `schemaVersion`, `url`, `signalClass`, `recentEventCounts`, `totalEventCounts`, `droppedEventEstimates`, and `signature`.
+  **Why:** provides a single structured payload for parsers/automation while retaining existing human-readable lines.
+- **Structured record validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target diagnostics schemaVersion: 1`
+  - `Import target diagnostics signature: 30ca1af4`
+  - `Import target diagnostics record: {"schemaVersion":1,"url":"vscode-file://vscode-app/workspace/out/vs/workbench/workbench.desktop.main.js","signalClass":"response-only-no-cdp-finish","recentEventCounts":{"requestFailures":0,"scriptResponses":0,"cdpScriptLoads":0},"totalEventCounts":{"requestFailures":0,"scriptResponses":1,"cdpScriptLoads":0},"droppedEventEstimates":{"requestFailures":0,"scriptResponses":1,"cdpScriptLoads":0},"signature":"30ca1af4"}`
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new structured payload is emitted and consistent with existing scalar diagnostics.

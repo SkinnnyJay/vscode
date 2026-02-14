@@ -456,8 +456,23 @@ export class Code {
 					const importTargetDiagnosticsSignatureStatus = importTargetUrl
 						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
 						: '';
+					const importTargetDiagnosticsRecord = this.buildImportTargetDiagnosticsRecord(
+						importTargetUrl,
+						importTargetTotalEventCounts,
+						{
+							requestFailures: importTargetRequestFailureEventCount,
+							scriptResponses: importTargetScriptResponseEventCount,
+							cdpScriptLoads: importTargetCdpScriptLoadEventCount
+						},
+						importTargetDroppedEventEstimates,
+						importTargetSignalClass,
+						importTargetDiagnosticsSignature
+					);
+					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
+						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -616,6 +631,37 @@ export class Code {
 		].join('|');
 
 		return this.computeStableSignature(payload);
+	}
+
+	private buildImportTargetDiagnosticsRecord(
+		importTargetUrl: string | undefined,
+		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
+		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		signalClass: string,
+		signature: string
+	): {
+		schemaVersion: number;
+		url: string;
+		signalClass: string;
+		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
+		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
+		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
+		signature: string;
+	} | undefined {
+		if (!importTargetUrl) {
+			return undefined;
+		}
+
+		return {
+			schemaVersion: Code.importTargetDiagnosticsSchemaVersion,
+			url: importTargetUrl,
+			signalClass,
+			recentEventCounts,
+			totalEventCounts: totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
+			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
+			signature
+		};
 	}
 
 	private formatCoverage(recentCount: number, totalCount: number): string {
