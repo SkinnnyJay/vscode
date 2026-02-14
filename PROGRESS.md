@@ -41,3 +41,5 @@
   **Why:** provides cross-platform artifact validation and reproducible developer runtime outputs in CI.
 - **M0-20** Added `.github/workflows/pointer-quality.yml` to run lint and fast unit tests on pointer-owned change paths.  
   **Why:** introduces an explicit quality gate for Pointer-specific modifications without waiting for full-suite pipelines.
+- **M0-21** Updated `.gitignore` to exclude `scratchpad/` plus local binary artifacts (`*.vsix`, `*.core`, `*.dmp`).  
+  **Why:** prevents accidental commits of ephemeral workspace notes and generated binary outputs.

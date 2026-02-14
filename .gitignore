@@ -2,6 +2,7 @@
 .cache
 npm-debug.log
 Thumbs.db
+/scratchpad/
 node_modules/
 .build/
 .vscode/extensions/**/out/
@@ -25,3 +26,6 @@ product.overrides.json
 .vscode-test
 vscode-telemetry-docs/
 test-output.json
+*.vsix
+*.core
+*.dmp
