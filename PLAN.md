@@ -109,8 +109,8 @@ Tasks:
 - [x] - M2 - [sidecar] Implement resolution order (workspace overrides → user overrides → defaults).
 - [x] - M2 - [extension] Expose stable internal API for UI surfaces.
 - [x] - M2 - [extension] Add router client with request/response types.
-- [ ] - M2 - [sidecar] Implement prompt assembly (system, rules, pinned, retrieved, user, tools).
-- [ ] - M2 - [sidecar] Add prompt part ordering tests.
+- [x] - M2 - [sidecar] Implement prompt assembly (system, rules, pinned, retrieved, user, tools).
+- [x] - M2 - [sidecar] Add prompt part ordering tests.
 - [ ] - M2 - [sidecar] Add hard token budgets per surface with explainability data.
 - [ ] - M2 - [extension] Render “context sent” panel from router plan.
 - [ ] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
