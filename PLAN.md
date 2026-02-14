@@ -116,8 +116,8 @@ Tasks:
 - [x] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
 - [x] - M2 - [sidecar] Add provider health checks, missing-binary detection, and “Test provider”.
 - [x] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
-- [ ] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
-- [ ] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
+- [x] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
+- [x] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
 - [ ] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
 - [ ] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
 - [ ] - M2 - [sidecar] Implement OpenCode adapter with JSON/table output support.

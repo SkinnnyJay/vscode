@@ -111,5 +111,9 @@
   **Why:** enables deterministic provider readiness checks before routing requests to unavailable CLIs.
 - **M2-15** Added provider error classifier (`providers/errors.ts`) for missing binary/auth/rate-limit/timeout cases with retryability signals, plus unit coverage.
   **Why:** standardizes downstream UX/retry behavior from heterogeneous CLI failure modes.
+- **M2-16** Implemented `CodexAdapter` with streamed stdout/stderr chunk callbacks, cancellation via `AbortSignal`, and classified error propagation.
+  **Why:** provides the first concrete CLI adapter path required for end-to-end router execution.
+- **M2-17** Added Codex adapter unit tests validating streaming aggregation and cancellation behavior.
+  **Why:** ensures adapter control-flow correctness under both happy path and interrupted requests.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
