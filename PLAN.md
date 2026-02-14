@@ -107,7 +107,7 @@ Tasks:
 - [x] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).
 - [x] - M2 - [sidecar] Define config schema for router defaults and policies.
 - [x] - M2 - [sidecar] Implement resolution order (workspace overrides → user overrides → defaults).
-- [ ] - M2 - [extension] Expose stable internal API for UI surfaces.
+- [x] - M2 - [extension] Expose stable internal API for UI surfaces.
 - [ ] - M2 - [extension] Add router client with request/response types.
 - [ ] - M2 - [sidecar] Implement prompt assembly (system, rules, pinned, retrieved, user, tools).
 - [ ] - M2 - [sidecar] Add prompt part ordering tests.

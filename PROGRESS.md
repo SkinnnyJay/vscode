@@ -95,3 +95,5 @@
   **Why:** provides deterministic configuration loading behavior before implementing routing resolution logic.
 - **M2-06** Implemented layered config resolution (`workspace > user > defaults`) in `pointer/agent/src/router/resolver.ts` for surface defaults and policy token/tool settings.  
   **Why:** codifies precedence semantics needed for predictable per-workspace model/provider behavior.
+- **M2-07** Added `extensions/pointer-ai/internal-api.js` stable API surface and returned it from extension activation for UI consumers (`getSelection`, `setSelection`, `onDidChangeSelection`, versioned API).  
+  **Why:** gives Pointer UI surfaces a shared contract to consume routing selections without tight coupling.

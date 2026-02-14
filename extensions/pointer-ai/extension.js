@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 const vscode = require('vscode');
+const { createPointerInternalApi } = require('./internal-api.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -54,6 +55,7 @@ function validatePointerDefaultsConfiguration() {
 function activate(context) {
 	void migratePointerSettings(context);
 	void vscode.commands.executeCommand('setContext', 'pointer.workspaceTrusted', vscode.workspace.isTrusted);
+	const internalApi = createPointerInternalApi();
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -85,24 +87,38 @@ function activate(context) {
 	});
 
 	const updateStatusBar = () => {
-		const config = vscode.workspace.getConfiguration('pointer.defaults');
-		const chatProvider = config.get('chat.provider', 'auto');
-		const chatModel = config.get('chat.model', 'auto');
-		const tabProvider = config.get('tab.provider', 'auto');
-		const tabModel = config.get('tab.model', 'auto');
-		const agentProvider = config.get('agent.provider', 'auto');
-		const agentModel = config.get('agent.model', 'auto');
+		const chatSelection = internalApi.getSelection('chat');
+		const tabSelection = internalApi.getSelection('tab');
+		const agentSelection = internalApi.getSelection('agent');
 		const copilotCompatibility = vscode.workspace.getConfiguration('pointer.compatibility').get('enableCopilotVisibility', false);
 
-		statusBarItem.text = `$(sparkle) Pointer ${chatProvider}/${chatModel}${copilotCompatibility ? ' +Copilot' : ''}`;
+		statusBarItem.text = `$(sparkle) Pointer ${chatSelection.providerId}/${chatSelection.modelId}${copilotCompatibility ? ' +Copilot' : ''}`;
 		statusBarItem.tooltip = [
-			`Chat: ${chatProvider}/${chatModel}`,
-			`Tab: ${tabProvider}/${tabModel}`,
-			`Agent: ${agentProvider}/${agentModel}`,
+			`Chat: ${chatSelection.providerId}/${chatSelection.modelId}`,
+			`Tab: ${tabSelection.providerId}/${tabSelection.modelId}`,
+			`Agent: ${agentSelection.providerId}/${agentSelection.modelId}`,
 			`Copilot Compatibility: ${copilotCompatibility ? 'Enabled' : 'Disabled'}`
 		].join('\n');
 	};
 
+	const syncSelectionsFromConfig = () => {
+		const defaultsConfig = vscode.workspace.getConfiguration('pointer.defaults');
+
+		internalApi.setSelection('chat', {
+			providerId: defaultsConfig.get('chat.provider', 'auto'),
+			modelId: defaultsConfig.get('chat.model', 'auto')
+		});
+		internalApi.setSelection('tab', {
+			providerId: defaultsConfig.get('tab.provider', 'auto'),
+			modelId: defaultsConfig.get('tab.model', 'auto')
+		});
+		internalApi.setSelection('agent', {
+			providerId: defaultsConfig.get('agent.provider', 'auto'),
+			modelId: defaultsConfig.get('agent.model', 'auto')
+		});
+	};
+
+	syncSelectionsFromConfig();
 	updateStatusBar();
 
 	const invalidKeys = validatePointerDefaultsConfiguration();
@@ -114,12 +130,17 @@ function activate(context) {
 	}
 
 	const configWatcher = vscode.workspace.onDidChangeConfiguration((event) => {
-		if (event.affectsConfiguration('pointer.defaults') || event.affectsConfiguration('pointer.compatibility')) {
+		if (event.affectsConfiguration('pointer.defaults')) {
+			syncSelectionsFromConfig();
+			updateStatusBar();
+		}
+		if (event.affectsConfiguration('pointer.compatibility')) {
 			updateStatusBar();
 		}
 	});
 
 	context.subscriptions.push(pointerTree, statusBarItem, configWatcher, openChat, toggleTab, selectModel, openSettings);
+	return internalApi;
 }
 
 function deactivate() {}
