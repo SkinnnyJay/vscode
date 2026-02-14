@@ -317,3 +317,7 @@
   **Why:** quickly distinguishes “missing artifact” vs “loader/runtime transport failure” during smoke startup debugging.
 - **On-disk annotation validation (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke case; fail-fast startup error now includes request entries like `... existsOnDisk=true` for failed `vscode-file://` module loads, then re-ran `make lint` (pass).
   **Why:** provides direct runtime proof that many failed module requests point to files that do exist on disk, narrowing root cause away from missing outputs.
+- **Smoke import-target existence diagnostics (2026-02-14 PM)** Extended smoke fail-fast error formatting in `test/automation/src/code.ts` to parse the dynamic-import target URL from page error text and append `Import target on disk: <path> (exists=<bool>)`.
+  **Why:** surfaces the failing entry module’s actual filesystem existence inline, reducing one more manual step in triage.
+- **Import-target diagnostics verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke case (`-g "verifies opened editors are restored"`); output now includes `Import target on disk: /workspace/out/vs/workbench/workbench.desktop.main.js (exists=true)`. Re-ran `make lint` (pass).
+  **Why:** confirms the new diagnostics are active and reinforces that the startup failure is not caused by missing target file artifacts.

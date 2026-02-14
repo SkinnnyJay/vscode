@@ -5,6 +5,7 @@
 
 import * as cp from 'child_process';
 import * as os from 'os';
+import { existsSync } from 'fs';
 import * as playwright from 'playwright';
 import { IElement, ILocaleInfo, ILocalizedStrings, ILogFile } from './driver';
 import { Logger, measureAndLog } from './logger';
@@ -346,8 +347,12 @@ export class Code {
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures:\n${recentFailures.join('\n')}`
 						: '';
+					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
+					const importTargetStatus = importTargetFilePath
+						? `\nImport target on disk: ${importTargetFilePath} (exists=${existsSync(importTargetFilePath)})`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${failureSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${failureSummary}`);
 				}
 			}
 
@@ -373,6 +378,29 @@ export class Code {
 
 			await this.wait(retryInterval);
 			trial++;
+		}
+	}
+
+	private extractImportTargetPathFromError(errorText: string): string | undefined {
+		const match = /Failed to fetch dynamically imported module: ([^\s]+)/.exec(errorText);
+		if (!match?.[1]) {
+			return undefined;
+		}
+
+		try {
+			const parsed = new URL(match[1]);
+			if (parsed.protocol !== 'vscode-file:' && parsed.protocol !== 'file:') {
+				return undefined;
+			}
+
+			let pathname = decodeURIComponent(parsed.pathname);
+			if (/^\/[a-zA-Z]:\//.test(pathname)) {
+				pathname = pathname.slice(1);
+			}
+
+			return pathname;
+		} catch {
+			return undefined;
 		}
 	}
 }
