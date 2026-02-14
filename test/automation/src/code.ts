@@ -504,14 +504,35 @@ export class Code {
 	}
 
 	private countEntriesContainingUrl(entries: readonly string[], url: string): number {
+		const targetUrlKey = this.toNormalizedUrlKey(url);
 		let count = 0;
 		for (const entry of entries) {
+			const entryUrl = this.extractFirstFileLikeUrl(entry);
+			if (entryUrl && this.toNormalizedUrlKey(entryUrl) === targetUrlKey) {
+				count++;
+				continue;
+			}
+
 			if (entry.includes(url)) {
 				count++;
 			}
 		}
 
 		return count;
+	}
+
+	private extractFirstFileLikeUrl(value: string): string | undefined {
+		const match = /(vscode-file:\/\/\S+|file:\/\/\S+)/.exec(value);
+		return match?.[1];
+	}
+
+	private toNormalizedUrlKey(url: string): string {
+		try {
+			const parsed = new URL(url);
+			return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+		} catch {
+			return url;
+		}
 	}
 
 	private computeStableSignature(value: string): string {

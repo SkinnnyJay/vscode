@@ -454,7 +454,7 @@ export class PlaywrightDriver {
 	}
 
 	getLatestRequestFailureSummaryForUrl(url: string): string | undefined {
-		return this.requestFailureSummariesByUrl.get(url);
+		return this.requestFailureSummariesByUrl.get(this.toUrlKey(url));
 	}
 
 	getRecentScriptResponses(): readonly string[] {
@@ -474,7 +474,7 @@ export class PlaywrightDriver {
 	}
 
 	getLatestScriptResponseSummaryForUrl(url: string): string | undefined {
-		return this.scriptResponseSummariesByUrl.get(url);
+		return this.scriptResponseSummariesByUrl.get(this.toUrlKey(url));
 	}
 
 	getRecentCdpScriptLoads(): readonly string[] {
@@ -494,11 +494,11 @@ export class PlaywrightDriver {
 	}
 
 	getLatestCdpScriptLoadSummaryForUrl(url: string): string | undefined {
-		return this.cdpScriptLoadSummariesByUrl.get(url);
+		return this.cdpScriptLoadSummariesByUrl.get(this.toUrlKey(url));
 	}
 
 	getCdpScriptLifecycleSummaryForUrl(url: string): string | undefined {
-		const lifecycle = this.cdpScriptLifecycleByUrl.get(url);
+		const lifecycle = this.cdpScriptLifecycleByUrl.get(this.toUrlKey(url));
 		if (!lifecycle) {
 			return undefined;
 		}
@@ -507,10 +507,11 @@ export class PlaywrightDriver {
 	}
 
 	getImportTargetEventCounts(url: string): { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } {
+		const urlKey = this.toUrlKey(url);
 		return {
-			requestFailures: this.requestFailureCountByUrl.get(url) ?? 0,
-			scriptResponses: this.scriptResponseCountByUrl.get(url) ?? 0,
-			cdpScriptLoads: this.cdpScriptLoadCountByUrl.get(url) ?? 0
+			requestFailures: this.requestFailureCountByUrl.get(urlKey) ?? 0,
+			scriptResponses: this.scriptResponseCountByUrl.get(urlKey) ?? 0,
+			cdpScriptLoads: this.cdpScriptLoadCountByUrl.get(urlKey) ?? 0
 		};
 	}
 
@@ -581,19 +582,21 @@ export class PlaywrightDriver {
 
 	private toFailureEntry(errorText: string, url: string, details?: string): string {
 		const normalizedErrorText = this.normalizeFailureText(errorText);
+		const urlKey = this.toUrlKey(url);
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
 		const detailsSuffix = details ? ` ${details}` : '';
-		const seenCount = (this.requestFailureSeenCountsByUrl.get(url) ?? 0) + 1;
-		this.requestFailureSeenCountsByUrl.set(url, seenCount);
-		this.requestFailureCountByUrl.set(url, (this.requestFailureCountByUrl.get(url) ?? 0) + 1);
+		const seenCount = (this.requestFailureSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.requestFailureSeenCountsByUrl.set(urlKey, seenCount);
+		this.requestFailureCountByUrl.set(urlKey, (this.requestFailureCountByUrl.get(urlKey) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount} error=${normalizedErrorText}${fileExistsSuffix}${detailsSuffix}`);
-		this.setLatestSummary(this.requestFailureSummariesByUrl, url, summary);
+		this.setLatestSummary(this.requestFailureSummariesByUrl, urlKey, summary);
 
 		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
 	}
 
 	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string, contentLengthHeader: string | undefined): string {
+		const urlKey = this.toUrlKey(url);
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
 		const onDiskBytes = this.readOnDiskByteCount(resolvedPath);
@@ -603,16 +606,17 @@ export class PlaywrightDriver {
 		const contentLengthSuffix = ` contentLength=${contentLengthHeader ?? 'unknown'}`;
 		const onDiskBytesSuffix = ` onDiskBytes=${onDiskBytes ?? 'unknown'}`;
 		const byteDeltaSuffix = ` contentLengthDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
-		const seenCount = (this.scriptResponseSeenCountsByUrl.get(url) ?? 0) + 1;
-		this.scriptResponseSeenCountsByUrl.set(url, seenCount);
-		this.scriptResponseCountByUrl.set(url, (this.scriptResponseCountByUrl.get(url) ?? 0) + 1);
+		const seenCount = (this.scriptResponseSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.scriptResponseSeenCountsByUrl.set(urlKey, seenCount);
+		this.scriptResponseCountByUrl.set(urlKey, (this.scriptResponseCountByUrl.get(urlKey) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
-		this.setLatestScriptResponseSummary(url, summary);
+		this.setLatestScriptResponseSummary(urlKey, summary);
 
 		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
 	}
 
 	private toCdpScriptLoadEntry(url: string, encodedDataLength: number): string {
+		const urlKey = this.toUrlKey(url);
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
 		const onDiskBytes = this.readOnDiskByteCount(resolvedPath);
@@ -622,11 +626,11 @@ export class PlaywrightDriver {
 		const encodedDataLengthSuffix = ` encodedDataLength=${encodedDataLengthNumber ?? 'unknown'}`;
 		const onDiskBytesSuffix = ` onDiskBytes=${onDiskBytes ?? 'unknown'}`;
 		const byteDeltaSuffix = ` encodedDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
-		const seenCount = (this.cdpScriptLoadSeenCountsByUrl.get(url) ?? 0) + 1;
-		this.cdpScriptLoadSeenCountsByUrl.set(url, seenCount);
-		this.cdpScriptLoadCountByUrl.set(url, (this.cdpScriptLoadCountByUrl.get(url) ?? 0) + 1);
+		const seenCount = (this.cdpScriptLoadSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.cdpScriptLoadSeenCountsByUrl.set(urlKey, seenCount);
+		this.cdpScriptLoadCountByUrl.set(urlKey, (this.cdpScriptLoadCountByUrl.get(urlKey) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount}${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
-		this.setLatestSummary(this.cdpScriptLoadSummariesByUrl, url, summary);
+		this.setLatestSummary(this.cdpScriptLoadSummariesByUrl, urlKey, summary);
 
 		return this.normalizeFailureText(`[cdp-script-load]${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
 	}
@@ -689,7 +693,8 @@ export class PlaywrightDriver {
 	}
 
 	private updateCdpScriptLifecycle(url: string, eventType: 'requestWillBeSent' | 'loadingFinished' | 'loadingFailed', latestOutcome: string): void {
-		const existing = this.cdpScriptLifecycleByUrl.get(url) ?? { requestWillBeSentCount: 0, loadingFinishedCount: 0, loadingFailedCount: 0, latestOutcome: 'unseen' };
+		const urlKey = this.toUrlKey(url);
+		const existing = this.cdpScriptLifecycleByUrl.get(urlKey) ?? { requestWillBeSentCount: 0, loadingFinishedCount: 0, loadingFailedCount: 0, latestOutcome: 'unseen' };
 		if (eventType === 'requestWillBeSent') {
 			existing.requestWillBeSentCount++;
 		} else if (eventType === 'loadingFinished') {
@@ -698,11 +703,20 @@ export class PlaywrightDriver {
 			existing.loadingFailedCount++;
 		}
 		existing.latestOutcome = latestOutcome;
-		this.cdpScriptLifecycleByUrl.set(url, existing);
+		this.cdpScriptLifecycleByUrl.set(urlKey, existing);
 	}
 
-	private setLatestScriptResponseSummary(url: string, summary: string): void {
-		this.setLatestSummary(this.scriptResponseSummariesByUrl, url, summary);
+	private toUrlKey(url: string): string {
+		try {
+			const parsed = new URL(url);
+			return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+		} catch {
+			return url;
+		}
+	}
+
+	private setLatestScriptResponseSummary(urlKey: string, summary: string): void {
+		this.setLatestSummary(this.scriptResponseSummariesByUrl, urlKey, summary);
 	}
 
 	private setLatestSummary(summaryMap: Map<string, string>, url: string, summary: string): void {

@@ -685,3 +685,11 @@
   - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
   Re-ran `make lint` (pass).
   **Why:** confirms total counters expose additional signal beyond truncated buffers (in this run, import target appeared in total script responses but not in retained tail window).
+- **URL-key normalization for import-target correlation (2026-02-14 PM)** Normalized diagnostics map keys across request-failure/script-response/CDP-load/lifecycle channels to `protocol://host/path` form (search/hash stripped) in `PlaywrightDriver`, and updated import-target recent-window matching in `Code` to compare normalized file-like URLs extracted from summary lines.
+  **Why:** prevents query/hash variance from fragmenting per-target correlation metrics and ensures channel comparisons are based on canonical module identity.
+- **URL-key normalization validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**) plus `make lint` (pass), verified import-target diagnostics remain coherent:
+  - latest script response still resolved
+  - latest request-failure / latest CDP script-load / lifecycle remain `unseen`
+  - recent-window counts remain `0/0/0`
+  - total counts remain `requestFailures=0, scriptResponses=1, cdpScriptLoads=0`.
+  **Why:** confirms canonicalization is active and non-regressive while indicating the observed channel asymmetry is not caused by URL query/hash mismatches.
