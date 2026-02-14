@@ -147,5 +147,7 @@
   **Why:** allows per-user chat routing control from the chat surface without manual settings edits.
 - **M4-08** Added chat stream protocol primitives in sidecar (`pointer/agent/src/chat/protocol.ts`) and wired extension chat send flow to consume streamed router events.
   **Why:** standardizes chat request/response streaming semantics between extension and router layers.
+- **M4-09** Added sidecar trace/log primitives (`chat/tracing.ts`) to capture chat request plan metadata with stable trace IDs and test coverage.
+  **Why:** provides auditable chat planning telemetry required for debugging and policy review.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
