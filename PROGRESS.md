@@ -241,3 +241,5 @@
   **Why:** captures another reproducible headless-environment limitation while preserving successful lint/unit/typecheck/build evidence as the reliable validation baseline.
 - **Pointer agent regression pass (2026-02-14 PM)** Re-ran `npm run typecheck && npm test` in `pointer/agent`; all 72 tests passed with no failures.
   **Why:** reconfirms sidecar router/providers/policy modules remain stable after repeated validation loops.
+- **Extension regression pass (2026-02-14 PM)** Re-ran `node --test test/*.test.js` in `extensions/pointer-ai`; all 16 tests passed.
+  **Why:** reconfirms Pointer extension chat/tab/patch/settings modules remain stable in the current branch state.
