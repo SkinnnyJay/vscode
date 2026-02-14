@@ -20,3 +20,4 @@ export * from './chat/tracing.js';
 export * from './patch/schema.js';
 export * from './policy/tool-gates.js';
 export * from './policy/prompt-injection.js';
+export * from './context/file-discovery.js';

@@ -176,7 +176,7 @@ Success metrics:
 - Indexed workspace updates reflect changes without full reindex.
 - Token estimation shown for all context chunks.
 Tasks:
-- [ ] - M5 - [sidecar] Implement file discovery respecting `.gitignore` and Pointer excludes.
+- [x] - M5 - [sidecar] Implement file discovery respecting `.gitignore` and Pointer excludes.
 - [ ] - M5 - [sidecar] Add incremental updates via watcher-based indexing.
 - [ ] - M5 - [sidecar] Store metadata in a local DB (embeddings optional for MVP).
 - [ ] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.

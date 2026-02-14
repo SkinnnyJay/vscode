@@ -159,5 +159,7 @@
   **Why:** establishes explicit defense-in-depth policy against instruction override and unsafe patch/tool payloads.
 - **M4-18** Added patch apply behavior tests in `extensions/pointer-ai/test/patch-review-store.test.js` covering apply/reject/apply-all/conflict outcomes.
   **Why:** validates the diff-first decision workflow expected for agent patch review.
+- **M5-01** Implemented context file discovery (`context/file-discovery.ts`) with `.gitignore`, `.pointer/excludes`, and explicit excludes support plus unit tests.
+  **Why:** provides deterministic workspace scope control for context indexing/retrieval.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
