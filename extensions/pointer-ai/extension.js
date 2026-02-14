@@ -10,6 +10,7 @@ const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
 const { toDiffPreview, groupPatchFiles, buildGroupedDiffPreview } = require('./chat/patch-groups.js');
 const { loadProjectBrief, saveProjectBrief } = require('./chat/project-brief.js');
+const { POINTER_SETTINGS_KEYS, normalizeAiSettings } = require('./settings-sync.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -505,6 +506,48 @@ function activate(context) {
 		await vscode.commands.executeCommand('workbench.action.openSettings', 'Pointer');
 	});
 
+	const exportAiSettings = vscode.commands.registerCommand('pointer.settings.exportAiConfig', async () => {
+		const target = await vscode.window.showSaveDialog({
+			defaultUri: vscode.Uri.file('pointer-ai-settings.json'),
+			filters: {
+				JSON: ['json']
+			}
+		});
+		if (!target) {
+			return;
+		}
+
+		const payload = {};
+		for (const key of POINTER_SETTINGS_KEYS) {
+			const [scope, ...rest] = key.split('.');
+			const setting = vscode.workspace.getConfiguration(scope).get(rest.join('.'));
+			if (typeof setting === 'string' || typeof setting === 'number' || typeof setting === 'boolean') {
+				payload[key] = setting;
+			}
+		}
+		await fs.writeFile(target.fsPath, JSON.stringify(payload, null, 2), 'utf8');
+		void vscode.window.showInformationMessage(`Exported Pointer AI settings to ${target.fsPath}`);
+	});
+
+	const importAiSettings = vscode.commands.registerCommand('pointer.settings.importAiConfig', async () => {
+		const file = await vscode.window.showOpenDialog({
+			canSelectMany: false,
+			filters: {
+				JSON: ['json']
+			}
+		});
+		if (!file || file.length === 0) {
+			return;
+		}
+		const payload = JSON.parse(await fs.readFile(file[0].fsPath, 'utf8'));
+		const normalized = normalizeAiSettings(payload);
+		for (const [key, value] of Object.entries(normalized)) {
+			const [scope, ...rest] = key.split('.');
+			await vscode.workspace.getConfiguration(scope).update(rest.join('.'), value, vscode.ConfigurationTarget.Global);
+		}
+		void vscode.window.showInformationMessage(`Imported ${Object.keys(normalized).length} Pointer AI settings.`);
+	});
+
 	const cancelTabCompletion = vscode.commands.registerCommand('pointer.tab.cancel', async () => {
 		inlineCompletion.cancelPending();
 	});
@@ -989,6 +1032,8 @@ function activate(context) {
 		selectChatProvider,
 		selectChatModel,
 		openSettings,
+		exportAiSettings,
+		importAiSettings,
 		cancelTabCompletion,
 		acceptPartialTabCompletion,
 		createChatSession,

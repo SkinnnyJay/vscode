@@ -223,5 +223,11 @@
   **Why:** defines baseline enterprise governance structures for policy enforcement and auditable action history.
 - **M9-07** Added provider allowlist/data-boundary evaluator (`enterprise/provider-boundary.ts`) with allowlist + boundary mismatch tests.
   **Why:** enforces enterprise provider access and data boundary constraints consistently.
+- **M9-08** Added AI settings sync-style export/import commands (`pointer.settings.exportAiConfig`, `pointer.settings.importAiConfig`) with normalized key filtering.
+  **Why:** provides portable AI config synchronization workflow in V2 track.
+- **M9-09** Added runtime experiment research doc (`docs/runtime-experiments-research.md`) covering web-first/light-shell/hybrid options and risk matrix.
+  **Why:** captures differentiator exploration track without blocking shipped core capabilities.
+- **M9-10** Added non-blocking rationale doc (`docs/runtime-experiments-non-blocking.md`) defining how experiments stay off critical path.
+  **Why:** protects delivery cadence while enabling strategic runtime exploration.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

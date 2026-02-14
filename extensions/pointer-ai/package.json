@@ -47,6 +47,8 @@
 		"onCommand:pointer.context.openExcludes",
 		"onCommand:pointer.rules.refresh",
 		"onCommand:pointer.mcp.refresh",
+		"onCommand:pointer.settings.exportAiConfig",
+		"onCommand:pointer.settings.importAiConfig",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -196,10 +198,30 @@
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
+			},
+			{
+				"command": "pointer.settings.exportAiConfig",
+				"title": "Pointer: Export AI Settings",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.settings.importAiConfig",
+				"title": "Pointer: Import AI Settings",
+				"category": "Pointer"
 			}
 		],
 		"menus": {
 			"view/title": [
+				{
+					"command": "pointer.settings.exportAiConfig",
+					"when": "view == pointer.home",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.settings.importAiConfig",
+					"when": "view == pointer.home",
+					"group": "navigation@2"
+				},
 				{
 					"command": "pointer.chat.newSession",
 					"when": "view == pointer.chatSessions",

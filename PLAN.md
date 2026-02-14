@@ -251,6 +251,6 @@ Tasks:
 - [x] - M9 - [cloud] Integrate with GitHub checks.
 - [x] - M9 - [sidecar] Add enterprise policy bundles and audit log schema.
 - [x] - M9 - [sidecar] Add provider allowlists and data boundary controls.
-- [ ] - M9 - [extension+sidecar] Add settings sync for AI config if approved in M8.
-- [ ] - M9 - [research] Explore alternative runtime experiments (web-first/light shell).
-- [ ] - M9 - [docs] Document why runtime experiments do not block core delivery.
+- [x] - M9 - [extension+sidecar] Add settings sync for AI config if approved in M8.
+- [x] - M9 - [research] Explore alternative runtime experiments (web-first/light shell).
+- [x] - M9 - [docs] Document why runtime experiments do not block core delivery.
