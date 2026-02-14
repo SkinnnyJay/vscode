@@ -26,3 +26,4 @@ export * from './context/metadata-db.js';
 export * from './context/retrieval.js';
 export * from './context/embedding-retrieval.js';
 export * from './rules/loader.js';
+export * from './hooks/dispatcher.js';

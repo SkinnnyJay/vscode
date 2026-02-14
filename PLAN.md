@@ -196,13 +196,13 @@ Tasks:
 - [x] - M6 - [sidecar] Implement `.pointer/rules/` loader.
 - [x] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
 - [x] - M6 - [extension] Display applied rules in UI.
-- [ ] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
-- [ ] - M6 - [sidecar] Run hooks sandboxed with timeouts.
-- [ ] - M6 - [sidecar] Allow hooks to block, redact, or modify prompts (policy-limited).
+- [x] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
+- [x] - M6 - [sidecar] Run hooks sandboxed with timeouts.
+- [x] - M6 - [sidecar] Allow hooks to block, redact, or modify prompts (policy-limited).
 - [ ] - M6 - [sidecar] Implement MCP client to connect to local servers.
 - [ ] - M6 - [sidecar] Add tool allowlist per workspace.
 - [ ] - M6 - [extension] Add UI for MCP servers, tools, and permissions.
-- [ ] - M6 - [tests] Add hook timeout and failure-mode tests.
+- [x] - M6 - [tests] Add hook timeout and failure-mode tests.
 
 ### M7 — Performance hardening
 Criteria (exit):

@@ -179,5 +179,7 @@
   **Why:** establishes predictable rules application order required for safe policy composition.
 - **M6-03** Added rules audit view (`pointer.rulesAudit`) and refresh command to display active workspace rule files with profile context.
   **Why:** surfaces applied rules visibility directly in the UI for policy transparency.
+- **M6-04/M6-05/M6-06/M6-10** Added hook dispatcher (`hooks/dispatcher.ts`) covering pre/post events, timeout sandboxing, block/modify/redact controls, and failure-mode tests.
+  **Why:** provides safe, policy-limited hook execution with explicit timeout/failure handling guarantees.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
