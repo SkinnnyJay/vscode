@@ -418,3 +418,7 @@
   - `End of recent request failures.`
   Re-ran `make lint` (pass).
   **Why:** confirms the refactor is behavior-preserving and lint-clean.
+- **Smoke recent-failure event counting (2026-02-14 PM)** Updated startup fail-fast diagnostics to preserve repeated request-failure events in `PlaywrightDriver` (bounded ring still capped at 25) and changed `Code` fail-fast rendering to show `events` vs `unique` counts in the header while grouping repeated lines via a formatter.
+  **Why:** keeps high-signal compact output but no longer hides repeated failure frequency, improving visibility into bursty startup failures.
+- **Event-count validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast block now reports `Recent request failures (8 events, 8 unique): ... End of recent request failures.`, and re-ran `make lint` (pass).
+  **Why:** confirms the new frequency-aware summary is active and non-regressive.

@@ -344,8 +344,9 @@ export class Code {
 				const pageError = this.driver.getLastPageError();
 				if (pageError?.includes('Failed to fetch dynamically imported module')) {
 					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
+					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${recentFailures.length}):\n${this.formatRecentRequestFailures(recentFailures)}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
@@ -381,15 +382,21 @@ export class Code {
 		}
 	}
 
-	private formatRecentRequestFailures(failures: readonly string[]): string {
+	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number } {
 		const counts = new Map<string, number>();
 		for (const failure of failures) {
 			counts.set(failure, (counts.get(failure) ?? 0) + 1);
 		}
 
-		return [...counts.entries()]
+		const formattedFailures = [...counts.entries()]
 			.map(([failure, count]) => count > 1 ? `[x${count}] ${failure}` : failure)
 			.join('\n');
+
+		return {
+			formattedFailures,
+			totalCount: failures.length,
+			uniqueCount: counts.size
+		};
 	}
 
 	private extractImportTargetPathFromError(errorText: string): string | undefined {

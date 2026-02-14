@@ -481,10 +481,6 @@ export class PlaywrightDriver {
 	}
 
 	private pushRecentRequestFailure(entry: string): void {
-		if (this.recentRequestFailures.includes(entry)) {
-			return;
-		}
-
 		this.recentRequestFailures.push(entry);
 		if (this.recentRequestFailures.length > 25) {
 			this.recentRequestFailures.shift();
