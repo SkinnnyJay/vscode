@@ -426,3 +426,7 @@
   **Why:** makes smoke startup diagnostics more immediately interpretable by showing whether failures are observed at Playwright level, CDP level, or both, while keeping output stable across reruns.
 - **Source-aware summary validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now reads `Recent request failures (8 events, 8 unique, cdp=4, requestfailed=4):`, and re-ran `make lint` (pass).
   **Why:** confirms enhanced breakdown signal is present and lint-clean.
+- **Unit dependency fetch-bytes diagnostics (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` dependency-summary failure entries to include per-edge `fetchStatus`, `fetchOk`, and `fetchedBytes` (captured via best-effort `fetch` after each failed dependency import).
+  **Why:** adds concrete transport/readability evidence for each failed dependency edge so we can distinguish parser/loader rejection from content-read failures without rerunning ad-hoc probes.
+- **Fetch-bytes diagnostics validation (2026-02-14 PM)** Re-ran isolated failing unit module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified `[ESM IMPORT FAILURE DEPS SUMMARY]` now includes populated per-edge fields such as `"fetchStatus":"200"`, `"fetchOk":true`, and non-zero `"fetchedBytes"`; re-ran `make lint` (pass).
+  **Why:** confirms the enhanced unit-edge observability is active and lint-safe.

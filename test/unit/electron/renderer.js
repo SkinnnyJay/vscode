@@ -173,6 +173,26 @@ function initLoadFn(opts) {
 		}
 	}
 
+	async function getImportFetchDiagnostics(url) {
+		let fetchStatus = 'unavailable';
+		let fetchOk = false;
+		let fetchedBytes = 0;
+
+		try {
+			const response = await fetch(url);
+			fetchStatus = String(response.status);
+			fetchOk = response.ok;
+			if (response.ok) {
+				const text = await response.text();
+				fetchedBytes = text.length;
+			}
+		} catch (fetchError) {
+			fetchStatus = String(fetchError);
+		}
+
+		return { fetchStatus, fetchOk, fetchedBytes };
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -207,6 +227,7 @@ function initLoadFn(opts) {
 							depExistsOnDisk = false;
 						}
 					}
+					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
 
 					failures.push({
 						module: moduleId,
@@ -214,7 +235,8 @@ function initLoadFn(opts) {
 						specifier,
 						resolved,
 						error: String(depErr),
-						existsOnDisk: depExistsOnDisk
+						existsOnDisk: depExistsOnDisk,
+						...fetchDiagnostics
 					});
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
