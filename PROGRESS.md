@@ -718,3 +718,15 @@
   - `Import target diagnostics signature: 30ca1af4`
   Re-ran `make lint` (pass).
   **Why:** confirms signature generation is active, stable for current failure shape, and lint-clean.
+- **Import-target channel coverage ratios (2026-02-14 PM)** Added a derived coverage line in smoke fail-fast output showing recent-window coverage against total per-channel counts:
+  - `requestFailures=<pct> (recent/total)`
+  - `scriptResponses=<pct> (recent/total)`
+  - `cdpScriptLoads=<pct> (recent/total)`.
+  **Why:** quantifies how much per-channel target evidence is retained in the bounded tail window versus only present in cumulative totals.
+- **Coverage-ratio validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target dropped event estimates: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target channel coverage: requestFailures=n/a (0/0), scriptResponses=0% (0/1), cdpScriptLoads=n/a (0/0)`
+  - `Import target diagnostics signature: 30ca1af4`
+  Re-ran `make lint` (pass).
+  **Why:** confirms coverage ratios are emitted correctly and align with existing totals/dropped estimates in the current failure mode.

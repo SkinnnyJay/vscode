@@ -435,6 +435,9 @@ export class Code {
 					const importTargetDroppedEventEstimatesStatus = importTargetUrl
 						? `\nImport target dropped event estimates: requestFailures=${importTargetDroppedEventEstimates?.requestFailures ?? 0}, scriptResponses=${importTargetDroppedEventEstimates?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetDroppedEventEstimates?.cdpScriptLoads ?? 0}`
 						: '';
+					const importTargetCoverageStatus = importTargetUrl
+						? `\nImport target channel coverage: requestFailures=${this.formatCoverage(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0)}, scriptResponses=${this.formatCoverage(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0)}, cdpScriptLoads=${this.formatCoverage(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)}`
+						: '';
 					const importTargetDiagnosticsSignature = importTargetUrl
 						? this.computeImportTargetDiagnosticsSignature(
 							importTargetUrl,
@@ -450,7 +453,7 @@ export class Code {
 						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -609,6 +612,15 @@ export class Code {
 		].join('|');
 
 		return this.computeStableSignature(payload);
+	}
+
+	private formatCoverage(recentCount: number, totalCount: number): string {
+		if (totalCount <= 0) {
+			return `n/a (${recentCount}/${totalCount})`;
+		}
+
+		const percent = Math.round((recentCount / totalCount) * 1000) / 10;
+		return `${percent}% (${recentCount}/${totalCount})`;
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {
