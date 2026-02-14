@@ -422,3 +422,7 @@
   **Why:** keeps high-signal compact output but no longer hides repeated failure frequency, improving visibility into bursty startup failures.
 - **Event-count validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast block now reports `Recent request failures (8 events, 8 unique): ... End of recent request failures.`, and re-ran `make lint` (pass).
   **Why:** confirms the new frequency-aware summary is active and non-regressive.
+- **Source-aware fail-fast summary enhancement (2026-02-14 PM)** Updated `test/automation/src/code.ts` recent-failure summarizer to include source breakdown (`cdp` vs `requestfailed`) in the header and to sort grouped failures deterministically (count desc, then lexical).
+  **Why:** makes smoke startup diagnostics more immediately interpretable by showing whether failures are observed at Playwright level, CDP level, or both, while keeping output stable across reruns.
+- **Source-aware summary validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now reads `Recent request failures (8 events, 8 unique, cdp=4, requestfailed=4):`, and re-ran `make lint` (pass).
+  **Why:** confirms enhanced breakdown signal is present and lint-clean.

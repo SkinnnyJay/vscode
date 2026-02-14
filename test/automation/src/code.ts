@@ -346,7 +346,7 @@ export class Code {
 					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
@@ -382,20 +382,35 @@ export class Code {
 		}
 	}
 
-	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number } {
+	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number; sourceSummary: string } {
 		const counts = new Map<string, number>();
+		const sourceCounts = new Map<string, number>();
 		for (const failure of failures) {
 			counts.set(failure, (counts.get(failure) ?? 0) + 1);
+			const source = failure.startsWith('[cdp] ') ? 'cdp' : 'requestfailed';
+			sourceCounts.set(source, (sourceCounts.get(source) ?? 0) + 1);
 		}
 
 		const formattedFailures = [...counts.entries()]
+			.sort(([leftFailure, leftCount], [rightFailure, rightCount]) => {
+				if (rightCount !== leftCount) {
+					return rightCount - leftCount;
+				}
+
+				return leftFailure.localeCompare(rightFailure);
+			})
 			.map(([failure, count]) => count > 1 ? `[x${count}] ${failure}` : failure)
 			.join('\n');
+		const sourceSummary = [...sourceCounts.entries()]
+			.sort(([leftSource], [rightSource]) => leftSource.localeCompare(rightSource))
+			.map(([source, count]) => `${source}=${count}`)
+			.join(', ');
 
 		return {
 			formattedFailures,
 			totalCount: failures.length,
-			uniqueCount: counts.size
+			uniqueCount: counts.size,
+			sourceSummary
 		};
 	}
 
