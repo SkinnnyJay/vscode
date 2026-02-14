@@ -1,0 +1,42 @@
+# Scripts
+
+Runnable scripts for setup, build, test, lint, and tooling. All are invoked via the **Makefile** (run `make help` at repo root). Scripts may call `package.json` scripts or Code-OSS/VS Code build steps.
+
+## Convention
+
+- **Location:** `./scripts/` (repo root).
+- **Invocation:** Prefer `make <target>`; or run `./scripts/<script>` from repo root.
+- **Adding a command:** 1) Add script under `scripts/`. 2) Add a Makefile target that runs it. 3) Use `target: ## Short description` so it appears in `make help`.
+
+## Reference
+
+| Make target | Script | Description |
+|-------------|--------|-------------|
+| **Setup and build** | | |
+| `make setup` | `setup.sh` | Install dependencies (Node 22.x). |
+| `make build` | `build.sh` | Compile the project (`npm run compile`). |
+| `make clean` | `clean.sh` | Remove build artifacts and caches. `make clean ALL=1` also removes `node_modules`. |
+| **Tests** | | |
+| `make test` | `test.sh` | Full Electron unit tests (requires build + Electron). |
+| `make test-unit` | `test-unit.sh` | Fast Node unit tests (no Electron). Optional: `./scripts/test-unit.sh --browser`. |
+| `make test-integration` | `test-integration.sh` | Electron integration tests (extensions, API). |
+| `make test-web-integration` | `test-web-integration.sh` | Web/browser integration tests (Playwright). |
+| `make test-smoke` | `test-smoke.sh` | Smoke tests (`npm run smoketest`). |
+| `make test-e2e` | `test-e2e.sh` | E2E/integration (delegates to `test-integration.sh`). |
+| **Lint and format** | | |
+| `make lint` | `lint.sh` | ESLint + Stylelint (no fix). |
+| `make fmt` | `fmt.sh` | Apply formatting fixes. |
+| `make fmt-check` | `fmt.sh --check` | Check formatting only (no write). |
+| `make typecheck` | `typecheck.sh` | TypeScript type checking. |
+| `make hygiene` | `hygiene.sh` | Full hygiene (indentation, copyright, lint); pre-commit style. |
+| **Tooling** | | |
+| `make commit` | `committer` | Atomic commit: `make commit FILES="path1 path2" MSG="feat: description"`. |
+| `make import-inspiration` | `import-inspiration-repos.sh` | Clone/update inspiration repos (optional `REPOS="name1 name2"`). |
+
+## For agents and CI
+
+- **Quick checks:** `make setup && make lint && make typecheck && make test-unit`
+- **Full gate:** `make build && make test && make test-integration` (and optionally `make test-smoke`).
+- **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
+
+Scripts are documented at the top of each file (purpose, usage, and what they delegate to).
