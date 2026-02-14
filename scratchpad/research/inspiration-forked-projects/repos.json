@@ -1,0 +1,26 @@
+[
+  {
+    "name": "code-oss",
+    "url": "https://github.com/microsoft/vscode",
+    "branch": "main",
+    "description": "Code - OSS: VS Code open source base; Pointer’s primary fork target."
+  },
+  {
+    "name": "codex-monitor",
+    "url": "https://github.com/Otmeal/codex-monitor",
+    "branch": "main",
+    "description": "VS Code extension: alerts when a single edit inserts a large chunk (AI completion detection)."
+  },
+  {
+    "name": "toad",
+    "url": "https://github.com/batrachianai/toad",
+    "branch": "main",
+    "description": "Unified terminal UI for AI coding agents (Claude Code, OpenHands, etc.); ACP, prompt editor, shell."
+  },
+  {
+    "name": "open-code",
+    "url": "https://github.com/opencode-hq/open-code",
+    "branch": "main",
+    "description": "OpenCode: open-source AI coding assistant; reference for CLI and integration patterns."
+  }
+]
