@@ -392,6 +392,9 @@ export class Code {
 					const importTargetLatestCdpScriptLoad = importTargetUrl
 						? this.driver.getLatestCdpScriptLoadSummaryForUrl(importTargetUrl)
 						: undefined;
+					const importTargetCdpScriptLifecycle = importTargetUrl
+						? this.driver.getCdpScriptLifecycleSummaryForUrl(importTargetUrl)
+						: undefined;
 					const importTargetScriptResponseStatus = importTargetUrl
 						? `\nImport target latest script response: ${importTargetLatestScriptResponse ?? 'unseen'}`
 						: '';
@@ -401,8 +404,11 @@ export class Code {
 					const importTargetCdpScriptLoadStatus = importTargetUrl
 						? `\nImport target latest CDP script load: ${importTargetLatestCdpScriptLoad ?? 'unseen'}`
 						: '';
+					const importTargetCdpScriptLifecycleStatus = importTargetUrl
+						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 

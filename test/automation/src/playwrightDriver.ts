@@ -83,6 +83,7 @@ export class PlaywrightDriver {
 	private readonly scriptResponseSeenCountsByUrl = new Map<string, number>();
 	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
 	private readonly cdpScriptLoadSeenCountsByUrl = new Map<string, number>();
+	private readonly cdpScriptLifecycleByUrl = new Map<string, { requestWillBeSentCount: number; loadingFinishedCount: number; loadingFailedCount: number; latestOutcome: string }>();
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -493,6 +494,15 @@ export class PlaywrightDriver {
 		return this.cdpScriptLoadSummariesByUrl.get(url);
 	}
 
+	getCdpScriptLifecycleSummaryForUrl(url: string): string | undefined {
+		const lifecycle = this.cdpScriptLifecycleByUrl.get(url);
+		if (!lifecycle) {
+			return undefined;
+		}
+
+		return `requestWillBeSent=${lifecycle.requestWillBeSentCount} loadingFinished=${lifecycle.loadingFinishedCount} loadingFailed=${lifecycle.loadingFailedCount} latestOutcome=${lifecycle.latestOutcome}`;
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -664,6 +674,19 @@ export class PlaywrightDriver {
 		return byteDelta === 0 ? 'byte-match' : 'byte-mismatch';
 	}
 
+	private updateCdpScriptLifecycle(url: string, eventType: 'requestWillBeSent' | 'loadingFinished' | 'loadingFailed', latestOutcome: string): void {
+		const existing = this.cdpScriptLifecycleByUrl.get(url) ?? { requestWillBeSentCount: 0, loadingFinishedCount: 0, loadingFailedCount: 0, latestOutcome: 'unseen' };
+		if (eventType === 'requestWillBeSent') {
+			existing.requestWillBeSentCount++;
+		} else if (eventType === 'loadingFinished') {
+			existing.loadingFinishedCount++;
+		} else {
+			existing.loadingFailedCount++;
+		}
+		existing.latestOutcome = latestOutcome;
+		this.cdpScriptLifecycleByUrl.set(url, existing);
+	}
+
 	private setLatestScriptResponseSummary(url: string, summary: string): void {
 		this.setLatestSummary(this.scriptResponseSummariesByUrl, url, summary);
 	}
@@ -732,6 +755,9 @@ export class PlaywrightDriver {
 				if (event.type) {
 					this.cdpRequestResourceTypes.set(event.requestId, event.type);
 				}
+				if (event.request?.url && event.type === 'Script' && event.request.url.startsWith('vscode-file://')) {
+					this.updateCdpScriptLifecycle(event.request.url, 'requestWillBeSent', 'requestWillBeSent');
+				}
 			});
 
 			cdpSession.on('Network.loadingFailed', event => {
@@ -746,6 +772,9 @@ export class PlaywrightDriver {
 				].filter(Boolean).join(' ');
 				const entry = this.toFailureEntry(`[cdp] ${event.errorText}`, url, details);
 				this.pushRecentRequestFailure(entry);
+				if (resourceType === 'Script' && url.startsWith('vscode-file://')) {
+					this.updateCdpScriptLifecycle(url, 'loadingFailed', 'loadingFailed');
+				}
 				this.cdpRequestUrls.delete(event.requestId);
 				this.cdpRequestResourceTypes.delete(event.requestId);
 			});
@@ -760,6 +789,7 @@ export class PlaywrightDriver {
 					return;
 				}
 
+				this.updateCdpScriptLifecycle(url, 'loadingFinished', 'loadingFinished');
 				const entry = this.toCdpScriptLoadEntry(url, event.encodedDataLength);
 				this.pushRecentCdpScriptLoad(entry);
 			});

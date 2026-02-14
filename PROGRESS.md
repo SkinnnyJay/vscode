@@ -660,3 +660,11 @@
   - `Import target latest CDP script load: unseen`
   Re-ran `make lint` (pass).
   **Why:** confirms the new import-target request-failure line is emitted and remains non-regressive.
+- **Import-target CDP lifecycle correlation (2026-02-14 PM)** Added URL-keyed CDP script lifecycle aggregation (`requestWillBeSent`, `loadingFinished`, `loadingFailed`, `latestOutcome`) in `PlaywrightDriver` and surfaced `Import target CDP script lifecycle: ...` in smoke fail-fast output.
+  **Why:** provides explicit protocol lifecycle visibility for the failing import target even when per-target request-failure or finished-load summaries are absent.
+- **Import-target CDP lifecycle validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target latest request failure: unseen`
+  - `Import target latest CDP script load: unseen`
+  - `Import target CDP script lifecycle: unseen`
+  Re-ran `make lint` (pass).
+  **Why:** confirms the lifecycle-correlation line is emitted and remains non-regressive in the same known VM failure mode.
