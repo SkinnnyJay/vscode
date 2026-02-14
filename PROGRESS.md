@@ -281,3 +281,7 @@
   **Why:** provides a reproducible lower-memory path to unblock build-mode test attempts when full mangling compile is resource-constrained.
 - **Build-mode test follow-up (2026-02-14 PM)** Re-ran `xvfb-run -a ./scripts/test.sh --build` after generating `out-build`; previous `nls.messages.json` missing-artifact failure is resolved, but the run still fails on the same renderer dynamic-import error (`file:///workspace/out-build/.../bracketMatching.test.js`).
   **Why:** sharpens the remaining blocker to renderer module loading only (not missing build artifacts).
+- **Full test rerun after out-build generation (2026-02-14 PM)** Re-ran `xvfb-run -a make test`; failure remains unchanged at renderer dynamic import (`file:///workspace/out/.../bracketMatching.test.js`) despite `out-build` now existing.
+  **Why:** confirms the primary `make test` blocker is independent from build-mode artifact generation.
+- **Smoke rerun + gate confirmation (2026-02-14 PM)** Re-ran `xvfb-run -a make test-smoke` (now 20 failing / 3 pending, still dominated by `.monaco-workbench` timeout, plus one `spawnSync /bin/sh ENOENT` in notebook cleanup), then re-ran `make test-unit` (7584 passing / 134 pending) and `xvfb-run -a ./scripts/code.sh --version` (pass).
+  **Why:** captures current smoke failure profile while reconfirming core unit/runtime gates stay green.
