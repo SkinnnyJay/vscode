@@ -50,6 +50,7 @@ export class PlaywrightDriver {
 	private static screenShotCounter = 1;
 	private static readonly recentRequestFailureCapacity = 25;
 	private static readonly recentScriptResponseCapacity = 25;
+	private static readonly scriptResponseSummaryCapacity = 200;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
 		cmd: 'Meta',
@@ -72,6 +73,8 @@ export class PlaywrightDriver {
 	private readonly recentScriptResponses: string[] = [];
 	private totalRecordedScriptResponses = 0;
 	private droppedRecentScriptResponses = 0;
+	private readonly scriptResponseSummariesByUrl = new Map<string, string>();
+	private readonly scriptResponseSeenCountsByUrl = new Map<string, number>();
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -453,6 +456,10 @@ export class PlaywrightDriver {
 		return this.droppedRecentScriptResponses;
 	}
 
+	getLatestScriptResponseSummaryForUrl(url: string): string | undefined {
+		return this.scriptResponseSummariesByUrl.get(url);
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -529,7 +536,25 @@ export class PlaywrightDriver {
 	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string): string {
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const seenCount = (this.scriptResponseSeenCountsByUrl.get(url) ?? 0) + 1;
+		this.scriptResponseSeenCountsByUrl.set(url, seenCount);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${fileExistsSuffix}`);
+		this.setLatestScriptResponseSummary(url, summary);
+
 		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl} ${url}${fileExistsSuffix}`);
+	}
+
+	private setLatestScriptResponseSummary(url: string, summary: string): void {
+		if (this.scriptResponseSummariesByUrl.has(url)) {
+			this.scriptResponseSummariesByUrl.delete(url);
+		} else if (this.scriptResponseSummariesByUrl.size >= PlaywrightDriver.scriptResponseSummaryCapacity) {
+			const oldestUrl = this.scriptResponseSummariesByUrl.keys().next().value;
+			if (oldestUrl) {
+				this.scriptResponseSummariesByUrl.delete(oldestUrl);
+			}
+		}
+
+		this.scriptResponseSummariesByUrl.set(url, summary);
 	}
 
 	private normalizeFailureText(value: string): string {

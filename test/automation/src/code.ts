@@ -367,12 +367,19 @@ export class Code {
 					const scriptResponseSummary = recentScriptResponses.length
 						? `\nRecent script responses (schemaVersion=${Code.recentScriptResponsesSummarySchemaVersion}, ${scriptResponseSummaryData.totalCount} events, ${scriptResponseSummaryData.uniqueCount} unique${scriptResponseWindowSuffix}, signature=${scriptResponseSummaryData.signature}):\n${scriptResponseSummaryData.formattedEntries}\nEnd of recent script responses.\n`
 						: '';
+					const importTargetUrl = this.extractImportTargetUrlFromError(pageError);
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
 						? `\nImport target on disk: ${importTargetFilePath} (exists=${existsSync(importTargetFilePath)})`
 						: '';
+					const importTargetLatestScriptResponse = importTargetUrl
+						? this.driver.getLatestScriptResponseSummaryForUrl(importTargetUrl)
+						: undefined;
+					const importTargetScriptResponseStatus = importTargetUrl
+						? `\nImport target latest script response: ${importTargetLatestScriptResponse ?? 'unseen'}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${failureSummary}${scriptResponseSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${failureSummary}${scriptResponseSummary}`);
 				}
 			}
 
@@ -466,23 +473,38 @@ export class Code {
 	}
 
 	private extractImportTargetPathFromError(errorText: string): string | undefined {
-		const match = /Failed to fetch dynamically imported module: ([^\s]+)/.exec(errorText);
-		if (!match?.[1]) {
+		const importTargetUrl = this.extractImportTargetUrlFromError(errorText);
+		if (!importTargetUrl) {
 			return undefined;
 		}
 
 		try {
-			const parsed = new URL(match[1]);
-			if (parsed.protocol !== 'vscode-file:' && parsed.protocol !== 'file:') {
-				return undefined;
-			}
-
+			const parsed = new URL(importTargetUrl);
 			let pathname = decodeURIComponent(parsed.pathname);
 			if (/^\/[a-zA-Z]:\//.test(pathname)) {
 				pathname = pathname.slice(1);
 			}
 
 			return pathname;
+		} catch {
+			return undefined;
+		}
+	}
+
+	private extractImportTargetUrlFromError(errorText: string): string | undefined {
+		const match = /Failed to fetch dynamically imported module: ([^\s]+)/.exec(errorText);
+		const importTargetUrl = match?.[1];
+		if (!importTargetUrl) {
+			return undefined;
+		}
+
+		try {
+			const parsed = new URL(importTargetUrl);
+			if (parsed.protocol !== 'vscode-file:' && parsed.protocol !== 'file:') {
+				return undefined;
+			}
+
+			return importTargetUrl;
 		} catch {
 			return undefined;
 		}

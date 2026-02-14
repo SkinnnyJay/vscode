@@ -619,3 +619,11 @@
   - terminating sentinel `End of recent script responses.`
   Re-ran `make lint` (pass).
   **Why:** confirms new response-level metadata is emitted and lint-clean without changing the known environment-limited failure mode.
+- **Import-target response correlation metadata (2026-02-14 PM)** Added URL-keyed latest script-response summaries in `PlaywrightDriver` (with bounded summary map + per-URL seen-count tracking) and surfaced an explicit fail-fast line in `test/automation/src/code.ts`: `Import target latest script response: ...`.
+  **Why:** directly correlates the failing dynamic-import target to its latest observed script response metadata, reducing ambiguity between network/protocol and loader-level failure symptoms.
+- **Import-target response correlation validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target on disk: /workspace/out/vs/workbench/workbench.desktop.main.js (exists=true)`
+  - `Import target latest script response: seenCount=1 status=200 contentType=text/javascript cacheControl=no-cache, no-store existsOnDisk=true`
+  - the existing `Recent script responses (...)` block.
+  Re-ran `make lint` (pass).
+  **Why:** confirms import-target response correlation is emitted correctly and remains non-regressive.
