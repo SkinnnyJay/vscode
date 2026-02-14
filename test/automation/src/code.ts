@@ -465,6 +465,14 @@ export class Code {
 						scriptResponses: this.buildChannelCoverageStats(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0),
 						cdpScriptLoads: this.buildChannelCoverageStats(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)
 					};
+					const importTargetChannelCoverageClasses = {
+						requestFailures: this.classifyCoverageVisibility(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0),
+						scriptResponses: this.classifyCoverageVisibility(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0),
+						cdpScriptLoads: this.classifyCoverageVisibility(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)
+					};
+					const importTargetChannelCoverageClassesStatus = importTargetUrl
+						? `\nImport target channel coverage classes: requestFailures=${importTargetChannelCoverageClasses.requestFailures}, scriptResponses=${importTargetChannelCoverageClasses.scriptResponses}, cdpScriptLoads=${importTargetChannelCoverageClasses.cdpScriptLoads}`
+						: '';
 					const importTargetDiagnosticsSchemaStatus = importTargetUrl
 						? `\nImport target diagnostics schemaVersion: ${Code.importTargetDiagnosticsSchemaVersion}`
 						: '';
@@ -521,6 +529,7 @@ export class Code {
 						importTargetVisibilityClass,
 						importTargetChannelStates,
 						importTargetChannelCoverage,
+						importTargetChannelCoverageClasses,
 						importTargetDiagnosticsSignature,
 						trial,
 						retryInterval,
@@ -533,7 +542,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -737,6 +746,11 @@ export class Code {
 			scriptResponses: { recent: number; total: number; percent: number | null };
 			cdpScriptLoads: { recent: number; total: number; percent: number | null };
 		},
+		channelCoverageClasses: {
+			requestFailures: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+			scriptResponses: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+			cdpScriptLoads: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+		},
 		signature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
@@ -755,6 +769,11 @@ export class Code {
 			requestFailures: { recent: number; total: number; percent: number | null };
 			scriptResponses: { recent: number; total: number; percent: number | null };
 			cdpScriptLoads: { recent: number; total: number; percent: number | null };
+		};
+		channelCoverageClasses: {
+			requestFailures: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+			scriptResponses: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+			cdpScriptLoads: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
 		};
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
@@ -779,6 +798,7 @@ export class Code {
 			visibilityClass,
 			channelStates,
 			channelCoverage,
+			channelCoverageClasses,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
@@ -805,6 +825,22 @@ export class Code {
 
 		const percent = Math.round((recentCount / totalCount) * 1000) / 10;
 		return { recent: recentCount, total: totalCount, percent };
+	}
+
+	private classifyCoverageVisibility(recentCount: number, totalCount: number): 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' {
+		if (totalCount <= 0) {
+			return 'n-a';
+		}
+
+		if (recentCount <= 0) {
+			return 'none-visible';
+		}
+
+		if (recentCount >= totalCount) {
+			return 'fully-visible';
+		}
+
+		return 'partial-visible';
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {

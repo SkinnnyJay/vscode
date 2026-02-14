@@ -795,3 +795,14 @@
   - JSON line includes `"channelCoverage":{"requestFailures":{"recent":0,"total":0,"percent":null},"scriptResponses":{"recent":0,"total":1,"percent":0},"cdpScriptLoads":{"recent":0,"total":0,"percent":null}}`
   Re-ran `make lint` (pass).
   **Why:** confirms structured coverage values are emitted correctly and aligned with existing textual diagnostics.
+- **Channel-coverage class labels (2026-02-14 PM)** Added per-channel coverage class labels in smoke fail-fast diagnostics:
+  - classes: `n-a`, `none-visible`, `partial-visible`, `fully-visible`
+  - emitted as text line `Import target channel coverage classes: ...`
+  - emitted in structured record as `channelCoverageClasses`.
+  **Why:** provides quick categorical interpretation of numeric coverage percentages for each channel.
+- **Coverage-class validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified:
+  - text line: `Import target channel coverage classes: requestFailures=n-a, scriptResponses=none-visible, cdpScriptLoads=n-a`
+  - JSON field: `"channelCoverageClasses":{"requestFailures":"n-a","scriptResponses":"none-visible","cdpScriptLoads":"n-a"}`
+  - existing coverage line and record remain present.
+  Re-ran `make lint` (pass).
+  **Why:** confirms class labels are emitted correctly and consistent with underlying coverage metrics.
