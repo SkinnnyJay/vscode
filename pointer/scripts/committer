@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# committer — Stage only the listed paths and create one commit with a non-empty message.
+# Usage: ./scripts/committer -m "feat: add X" path1 path2 ...
+#        ./scripts/committer -m "fix: Y" -- path1 path2
+# Exits 1 if message is empty or no files given. Use for atomic, reviewable commits (e.g. multi-agent workflows).
+set -e
+
+MSG=""
+FILES=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -m)
+      [[ -z "${2:-}" ]] && { echo "committer: -m requires a message" >&2; exit 1; }
+      MSG="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      FILES+=("$@")
+      break
+      ;;
+    *)
+      FILES+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "${MSG// }" ]]; then
+  echo "committer: -m \"message\" is required" >&2
+  exit 1
+fi
+
+if [[ ${#FILES[@]} -eq 0 ]]; then
+  echo "committer: at least one file path is required" >&2
+  exit 1
+fi
+
+git add "${FILES[@]}"
+git commit -m "${MSG}"
