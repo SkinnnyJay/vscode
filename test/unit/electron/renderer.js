@@ -307,6 +307,7 @@ function initLoadFn(opts) {
 			const source = await response.text();
 			const allSpecifiers = extractDirectImportSpecifiers(source);
 			const specifierLimit = 25;
+			const failureDetailsLimit = 12;
 			const specifiers = allSpecifiers.slice(0, specifierLimit);
 			const failures = [];
 			const failureFamilies = Object.create(null);
@@ -332,19 +333,21 @@ function initLoadFn(opts) {
 					const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
 					const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
 
-					failures.push({
-						module: moduleId,
-						parentUrl: moduleUrl,
-						specifier,
-						resolved,
-						resolvedKind,
-						error: String(depErr),
-						errorKind,
-						...fileDiagnostics,
-						...fetchDiagnostics,
-						fetchDiskByteDelta,
-						byteDeltaKind
-					});
+					if (failures.length < failureDetailsLimit) {
+						failures.push({
+							module: moduleId,
+							parentUrl: moduleUrl,
+							specifier,
+							resolved,
+							resolvedKind,
+							error: String(depErr),
+							errorKind,
+							...fileDiagnostics,
+							...fetchDiagnostics,
+							fetchDiskByteDelta,
+							byteDeltaKind
+						});
+					}
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
 					failureKinds[errorKind] = (failureKinds[errorKind] ?? 0) + 1;
@@ -357,7 +360,8 @@ function initLoadFn(opts) {
 
 			if (failures.length > 0) {
 				const dependencyAttemptedCount = specifiers.length;
-				const dependencyFailureRatePercent = toPercent(failures.length, dependencyAttemptedCount);
+				const totalFailedDependencyImportCount = Object.values(failureKinds).reduce((sum, count) => sum + count, 0);
+				const dependencyFailureRatePercent = toPercent(totalFailedDependencyImportCount, dependencyAttemptedCount);
 				const dependencySuccessRatePercent = toPercent(successfulDependencyImportCount, dependencyAttemptedCount);
 				const failureFamilyEntries = toSortedCountEntries(failureFamilies)
 					.map(entry => ({ family: entry.key, count: entry.count }));
@@ -387,12 +391,15 @@ function initLoadFn(opts) {
 					specifierLimit,
 					isSpecifierListTruncated: allSpecifiers.length > specifierLimit,
 					skippedSpecifierCount: allSpecifiers.length - specifiers.length,
+					failureDetailsLimit,
 					dependencyAttemptedCount,
 					successfulDependencyImportCount,
-					failedDependencyImportCount: failures.length,
+					failedDependencyImportCount: totalFailedDependencyImportCount,
 					dependencySuccessRatePercent,
 					dependencyFailureRatePercent,
-					failureCount: failures.length,
+					failureCount: totalFailedDependencyImportCount,
+					failureDetailsReturnedCount: failures.length,
+					failureDetailsDroppedCount: Math.max(0, totalFailedDependencyImportCount - failures.length),
 					failureFamilies,
 					failureFamilyEntries,
 					failureKinds,

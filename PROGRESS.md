@@ -531,3 +531,14 @@
   **Why:** enables quick equality checks of dependency-failure shape across reruns without diffing full JSON arrays.
 - **Failure-signature validation (2026-02-14 PM)** Re-ran the same isolated failing module twice (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and confirmed summary includes `failureSignature`; observed differing signatures across runs when one edge flipped from `fetchStatus=200` to `TypeError: Failed to fetch`, matching payload differences.
   **Why:** confirms signature responds to real failure-shape drift and is useful for flake characterization.
+- **Dependency failure-detail cap metadata (2026-02-14 PM)** Updated `test/unit/electron/renderer.js` dependency summaries to cap verbose `failures[]` details at 12 entries while preserving complete aggregate counts. Added:
+  - `failureDetailsLimit`,
+  - `failureDetailsReturnedCount`,
+  - `failureDetailsDroppedCount`.
+  Also aligned `failedDependencyImportCount`/rates with aggregate failure counts instead of returned detail length.
+  **Why:** prevents oversized payloads for high-fanout failures while retaining truthful totals for analysis.
+- **Failure-detail cap validation (2026-02-14 PM)** Re-ran isolated modules:
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js` (no truncation: dropped 0),
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/browser/view.js` (truncation active: failure count 16, returned 12, dropped 4).
+  Verified counts/rates remain coherent and re-ran `make lint` (pass).
+  **Why:** confirms capped details behave correctly in both small and large failure-frontier cases.
