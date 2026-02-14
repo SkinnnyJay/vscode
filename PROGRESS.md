@@ -748,3 +748,12 @@
   - `Import target diagnostics record: {"schemaVersion":1,"url":"vscode-file://vscode-app/workspace/out/vs/workbench/workbench.desktop.main.js","signalClass":"response-only-no-cdp-finish","recentEventCounts":{"requestFailures":0,"scriptResponses":0,"cdpScriptLoads":0},"totalEventCounts":{"requestFailures":0,"scriptResponses":1,"cdpScriptLoads":0},"droppedEventEstimates":{"requestFailures":0,"scriptResponses":1,"cdpScriptLoads":0},"signature":"30ca1af4"}`
   Re-ran `make lint` (pass).
   **Why:** confirms the new structured payload is emitted and consistent with existing scalar diagnostics.
+- **Import-target detection-timing metadata (2026-02-14 PM)** Extended fail-fast import-target diagnostics to include first-detection timing:
+  - scalar line: `Import target detection timing: trial=<N>, elapsedMs=<N>`
+  - structured record fields: `detectedAtTrial`, `detectedAtElapsedMs`.
+  **Why:** captures when startup failure is detected within the poll loop, helping compare failure onset timing across runs/configurations.
+- **Detection-timing validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target detection timing: trial=3, elapsedMs=200`
+  - diagnostics record with `"detectedAtTrial":3` and `"detectedAtElapsedMs":200`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms timing metadata is emitted correctly in both human-readable and structured forms.

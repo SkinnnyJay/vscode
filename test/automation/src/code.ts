@@ -466,13 +466,18 @@ export class Code {
 						},
 						importTargetDroppedEventEstimates,
 						importTargetSignalClass,
-						importTargetDiagnosticsSignature
+						importTargetDiagnosticsSignature,
+						trial,
+						retryInterval
 					);
 					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
 						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
 						: '';
+					const importTargetDetectionTimingStatus = importTargetUrl
+						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -639,11 +644,15 @@ export class Code {
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
 		signalClass: string,
-		signature: string
+		signature: string,
+		detectedAtTrial: number,
+		retryIntervalMs: number
 	): {
 		schemaVersion: number;
 		url: string;
 		signalClass: string;
+		detectedAtTrial: number;
+		detectedAtElapsedMs: number;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -657,6 +666,8 @@ export class Code {
 			schemaVersion: Code.importTargetDiagnosticsSchemaVersion,
 			url: importTargetUrl,
 			signalClass,
+			detectedAtTrial,
+			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
 			totalEventCounts: totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
