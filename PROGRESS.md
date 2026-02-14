@@ -506,3 +506,7 @@
   - dependency failures with `fetchStatus=200` report `fetchDiskByteDelta:0` and matching `onDiskBytes/fetchedBytes`.
   Re-ran `make lint` (pass).
   **Why:** confirms byte-level diagnostics are active and consistent with observed fetch behavior.
+- **Smoke fail-fast signature field (2026-02-14 PM)** Enhanced `test/automation/src/code.ts` recent-failure summarizer to compute and emit a stable hash signature (`signature=<hex>`) for the grouped recent-failure set.
+  **Why:** enables quick comparison of failure-shape identity across reruns without visually diffing full failure blocks.
+- **Signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast header now includes `signature=<8-hex>` (e.g. `signature=86c15b67`), and re-ran `make lint` (pass).
+  **Why:** confirms signature generation is active and non-regressive.

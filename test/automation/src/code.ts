@@ -346,7 +346,7 @@ export class Code {
 					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
@@ -382,7 +382,7 @@ export class Code {
 		}
 	}
 
-	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number; sourceSummary: string } {
+	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number; sourceSummary: string; signature: string } {
 		const counts = new Map<string, number>();
 		const sourceCounts = new Map<string, number>();
 		for (const failure of failures) {
@@ -405,13 +405,29 @@ export class Code {
 			.sort(([leftSource], [rightSource]) => leftSource.localeCompare(rightSource))
 			.map(([source, count]) => `${source}=${count}`)
 			.join(', ');
+		const signaturePayload = [...counts.entries()]
+			.sort(([leftFailure], [rightFailure]) => leftFailure.localeCompare(rightFailure))
+			.map(([failure, count]) => `${failure}::${count}`)
+			.join('|');
+		const signature = this.computeStableSignature(signaturePayload);
 
 		return {
 			formattedFailures,
 			totalCount: failures.length,
 			uniqueCount: counts.size,
-			sourceSummary
+			sourceSummary,
+			signature
 		};
+	}
+
+	private computeStableSignature(value: string): string {
+		let hash = 2166136261;
+		for (let index = 0; index < value.length; index++) {
+			hash ^= value.charCodeAt(index);
+			hash = Math.imul(hash, 16777619);
+		}
+
+		return (hash >>> 0).toString(16).padStart(8, '0');
 	}
 
 	private extractImportTargetPathFromError(errorText: string): string | undefined {
