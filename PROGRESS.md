@@ -163,5 +163,7 @@
   **Why:** provides deterministic workspace scope control for context indexing/retrieval.
 - **M5-02** Added watcher-capable context indexer (`context/indexer.ts`) with initial indexing and incremental file change/delete update support plus tests.
   **Why:** enables workspace context freshness without full reindex on every change.
+- **M5-03** Added local metadata DB (`context/metadata-db.ts`) persisted under `.pointer/context-metadata.json` with optional embedding vector storage and tests.
+  **Why:** establishes durable context metadata storage required by retrieval pipelines.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
