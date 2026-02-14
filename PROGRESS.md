@@ -490,3 +490,9 @@
   **Why:** provides at-a-glance normalized coverage of failing fronts across modules with different direct-import fanout sizes.
 - **Percentage metrics validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary includes coherent rates (`dependencyAttemptedCount: 10`, success `60`, failure `40`); re-ran `make lint` (pass).
   **Why:** confirms percent metrics are active, consistent with raw counts, and lint-clean.
+- **Dependency fetch-status rollup diagnostics (2026-02-14 PM)** Extended unit dependency summaries with fetch outcome aggregations:
+  - `failureFetchStatuses` + sorted `failureFetchStatusEntries`,
+  - `failureFetchOk` + sorted `failureFetchOkEntries`.
+  **Why:** highlights mixed transport behavior (e.g. mostly HTTP 200 fetches plus occasional `TypeError: Failed to fetch`) at a glance without scanning every failure entry.
+- **Fetch-rollup validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes fetch-status/fetchOk rollups (example observed: `200:3`, `TypeError: Failed to fetch:1`, `fetchOk true:3 / false:1`); re-ran `make lint` (pass).
+  **Why:** confirms the new transport rollup metrics are active and lint-safe.

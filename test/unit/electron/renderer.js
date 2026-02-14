@@ -259,6 +259,8 @@ function initLoadFn(opts) {
 			const failureFamilies = Object.create(null);
 			const failureKinds = Object.create(null);
 			const failureResolvedKinds = Object.create(null);
+			const failureFetchStatuses = Object.create(null);
+			const failureFetchOk = Object.create(null);
 			let successfulDependencyImportCount = 0;
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
@@ -293,6 +295,8 @@ function initLoadFn(opts) {
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
 					failureKinds[errorKind] = (failureKinds[errorKind] ?? 0) + 1;
 					failureResolvedKinds[resolvedKind] = (failureResolvedKinds[resolvedKind] ?? 0) + 1;
+					failureFetchStatuses[fetchDiagnostics.fetchStatus] = (failureFetchStatuses[fetchDiagnostics.fetchStatus] ?? 0) + 1;
+					failureFetchOk[String(fetchDiagnostics.fetchOk)] = (failureFetchOk[String(fetchDiagnostics.fetchOk)] ?? 0) + 1;
 				}
 			}
 
@@ -306,6 +310,10 @@ function initLoadFn(opts) {
 					.map(entry => ({ errorKind: entry.key, count: entry.count }));
 				const failureResolvedKindEntries = toSortedCountEntries(failureResolvedKinds)
 					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
+				const failureFetchStatusEntries = toSortedCountEntries(failureFetchStatuses)
+					.map(entry => ({ fetchStatus: entry.key, count: entry.count }));
+				const failureFetchOkEntries = toSortedCountEntries(failureFetchOk)
+					.map(entry => ({ fetchOk: entry.key === 'true', count: entry.count }));
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -327,6 +335,10 @@ function initLoadFn(opts) {
 					failureKindEntries,
 					failureResolvedKinds,
 					failureResolvedKindEntries,
+					failureFetchStatuses,
+					failureFetchStatusEntries,
+					failureFetchOk,
+					failureFetchOkEntries,
 					failures
 				}));
 			}
