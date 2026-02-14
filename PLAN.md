@@ -179,7 +179,7 @@ Tasks:
 - [x] - M5 - [sidecar] Implement file discovery respecting `.gitignore` and Pointer excludes.
 - [x] - M5 - [sidecar] Add incremental updates via watcher-based indexing.
 - [x] - M5 - [sidecar] Store metadata in a local DB (embeddings optional for MVP).
-- [ ] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.
+- [x] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.
 - [ ] - M5 - [sidecar] Add optional embeddings retrieval if configured.
 - [ ] - M5 - [extension] Add pinned context list per chat.
 - [ ] - M5 - [extension] Add workspace exclude UI and `.pointer/excludes` support.
