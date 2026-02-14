@@ -49,6 +49,7 @@ export class PlaywrightDriver {
 	private static traceCounter = 1;
 	private static screenShotCounter = 1;
 	private static readonly recentRequestFailureCapacity = 25;
+	private static readonly recentScriptResponseCapacity = 25;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
 		cmd: 'Meta',
@@ -68,6 +69,9 @@ export class PlaywrightDriver {
 	private readonly recentRequestFailures: string[] = [];
 	private totalRecordedRequestFailures = 0;
 	private droppedRecentRequestFailures = 0;
+	private readonly recentScriptResponses: string[] = [];
+	private totalRecordedScriptResponses = 0;
+	private droppedRecentScriptResponses = 0;
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -433,6 +437,22 @@ export class PlaywrightDriver {
 		return this.droppedRecentRequestFailures;
 	}
 
+	getRecentScriptResponses(): readonly string[] {
+		return this.recentScriptResponses;
+	}
+
+	getRecentScriptResponseCapacity(): number {
+		return PlaywrightDriver.recentScriptResponseCapacity;
+	}
+
+	getTotalRecordedScriptResponseCount(): number {
+		return this.totalRecordedScriptResponses;
+	}
+
+	getDroppedRecentScriptResponseCount(): number {
+		return this.droppedRecentScriptResponses;
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -454,6 +474,24 @@ export class PlaywrightDriver {
 			const url = request.url();
 			const entry = this.toFailureEntry(failureText, url);
 			this.pushRecentRequestFailure(entry);
+		});
+
+		page.on('response', response => {
+			const request = response.request();
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = response.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			const responseHeaders = response.headers();
+			const contentType = responseHeaders['content-type'] ?? 'unknown';
+			const cacheControl = responseHeaders['cache-control'] ?? 'unknown';
+			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl);
+			this.pushRecentScriptResponse(entry);
 		});
 
 		void this.attachCdpNetworkDiagnostics(page);
@@ -488,6 +526,12 @@ export class PlaywrightDriver {
 		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
 	}
 
+	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string): string {
+		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl} ${url}${fileExistsSuffix}`);
+	}
+
 	private normalizeFailureText(value: string): string {
 		return value
 			.replace(/\s+after\s+\d+ms\b/gi, '')
@@ -501,6 +545,15 @@ export class PlaywrightDriver {
 		if (this.recentRequestFailures.length > PlaywrightDriver.recentRequestFailureCapacity) {
 			this.droppedRecentRequestFailures++;
 			this.recentRequestFailures.shift();
+		}
+	}
+
+	private pushRecentScriptResponse(entry: string): void {
+		this.totalRecordedScriptResponses++;
+		this.recentScriptResponses.push(entry);
+		if (this.recentScriptResponses.length > PlaywrightDriver.recentScriptResponseCapacity) {
+			this.droppedRecentScriptResponses++;
+			this.recentScriptResponses.shift();
 		}
 	}
 

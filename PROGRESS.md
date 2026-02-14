@@ -611,3 +611,11 @@
   **Why:** makes historical event loss explicit when the bounded ring buffer overwrites older entries, improving confidence when interpreting `showingLast` diagnostics.
 - **Observed/drop counter validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `observedEvents=744` and `droppedEvents=719` alongside existing window/capacity fields; re-ran `make lint` (pass).
   **Why:** confirms the new counters are emitted and that formatting/lint behavior remains stable.
+- **Smoke script-response diagnostics block (2026-02-14 PM)** Extended `PlaywrightDriver` diagnostics to track recent `vscode-file://` script responses (status, content type, cache-control, existsOnDisk) with bounded-buffer counters (`observed`/`dropped`) and surfaced a new fail-fast `Recent script responses (...)` section in `test/automation/src/code.ts`.
+  **Why:** adds direct response-level evidence (including MIME/cache headers) alongside request-failure events, improving triage for dynamic-import startup failures.
+- **Script-response diagnostics validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Recent script responses (schemaVersion=1, ... observedEvents=<N>, droppedEvents=<N>, signature=<hex>)`
+  - per-entry fields `status=200`, `contentType=text/javascript`, `cacheControl=no-cache, no-store`, and `existsOnDisk=true`
+  - terminating sentinel `End of recent script responses.`
+  Re-ran `make lint` (pass).
+  **Why:** confirms new response-level metadata is emitted and lint-clean without changing the known environment-limited failure mode.

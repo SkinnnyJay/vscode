@@ -112,6 +112,7 @@ export async function launch(options: LaunchOptions): Promise<Code> {
 export class Code {
 
 	private static readonly recentFailuresSummarySchemaVersion = 1;
+	private static readonly recentScriptResponsesSummarySchemaVersion = 1;
 	private static readonly recentFailuresDisplayLimit = 8;
 
 	readonly driver: PlaywrightDriver;
@@ -351,17 +352,27 @@ export class Code {
 					const recentFailureCapacity = this.driver.getRecentRequestFailureCapacity();
 					const totalObservedRequestFailures = this.driver.getTotalRecordedRequestFailureCount();
 					const droppedRecentRequestFailures = this.driver.getDroppedRecentRequestFailureCount();
+					const allRecentScriptResponses = this.driver.getRecentScriptResponses();
+					const recentScriptResponses = allRecentScriptResponses.slice(-Code.recentFailuresDisplayLimit);
+					const recentScriptResponseCapacity = this.driver.getRecentScriptResponseCapacity();
+					const totalObservedScriptResponses = this.driver.getTotalRecordedScriptResponseCount();
+					const droppedRecentScriptResponses = this.driver.getDroppedRecentScriptResponseCount();
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
+					const scriptResponseSummaryData = this.summarizeRecentEntries(recentScriptResponses);
 					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}, observedEvents=${totalObservedRequestFailures}, droppedEvents=${droppedRecentRequestFailures}`;
+					const scriptResponseWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentScriptResponseCapacity}, showingLast=${recentScriptResponses.length}/${allRecentScriptResponses.length}, observedEvents=${totalObservedScriptResponses}, droppedEvents=${droppedRecentScriptResponses}`;
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						: '';
+					const scriptResponseSummary = recentScriptResponses.length
+						? `\nRecent script responses (schemaVersion=${Code.recentScriptResponsesSummarySchemaVersion}, ${scriptResponseSummaryData.totalCount} events, ${scriptResponseSummaryData.uniqueCount} unique${scriptResponseWindowSuffix}, signature=${scriptResponseSummaryData.signature}):\n${scriptResponseSummaryData.formattedEntries}\nEnd of recent script responses.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath
 						? `\nImport target on disk: ${importTargetFilePath} (exists=${existsSync(importTargetFilePath)})`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${failureSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${failureSummary}${scriptResponseSummary}`);
 				}
 			}
 
@@ -391,6 +402,7 @@ export class Code {
 	}
 
 	private summarizeRecentRequestFailures(failures: readonly string[]): { formattedFailures: string; totalCount: number; uniqueCount: number; sourceSummary: string; signature: string } {
+		const recentEntrySummary = this.summarizeRecentEntries(failures);
 		const counts = new Map<string, number>();
 		const sourceCounts = new Map<string, number>();
 		for (const failure of failures) {
@@ -399,31 +411,46 @@ export class Code {
 			sourceCounts.set(source, (sourceCounts.get(source) ?? 0) + 1);
 		}
 
-		const formattedFailures = [...counts.entries()]
-			.sort(([leftFailure, leftCount], [rightFailure, rightCount]) => {
-				if (rightCount !== leftCount) {
-					return rightCount - leftCount;
-				}
-
-				return leftFailure.localeCompare(rightFailure);
-			})
-			.map(([failure, count]) => count > 1 ? `[x${count}] ${failure}` : failure)
-			.join('\n');
 		const sourceSummary = [...sourceCounts.entries()]
 			.sort(([leftSource], [rightSource]) => leftSource.localeCompare(rightSource))
 			.map(([source, count]) => `${source}=${count}`)
 			.join(', ');
+
+		return {
+			formattedFailures: recentEntrySummary.formattedEntries,
+			totalCount: recentEntrySummary.totalCount,
+			uniqueCount: recentEntrySummary.uniqueCount,
+			sourceSummary,
+			signature: recentEntrySummary.signature
+		};
+	}
+
+	private summarizeRecentEntries(entries: readonly string[]): { formattedEntries: string; totalCount: number; uniqueCount: number; signature: string } {
+		const counts = new Map<string, number>();
+		for (const entry of entries) {
+			counts.set(entry, (counts.get(entry) ?? 0) + 1);
+		}
+
+		const formattedEntries = [...counts.entries()]
+			.sort(([leftEntry, leftCount], [rightEntry, rightCount]) => {
+				if (rightCount !== leftCount) {
+					return rightCount - leftCount;
+				}
+
+				return leftEntry.localeCompare(rightEntry);
+			})
+			.map(([entry, count]) => count > 1 ? `[x${count}] ${entry}` : entry)
+			.join('\n');
 		const signaturePayload = [...counts.entries()]
-			.sort(([leftFailure], [rightFailure]) => leftFailure.localeCompare(rightFailure))
-			.map(([failure, count]) => `${failure}::${count}`)
+			.sort(([leftEntry], [rightEntry]) => leftEntry.localeCompare(rightEntry))
+			.map(([entry, count]) => `${entry}::${count}`)
 			.join('|');
 		const signature = this.computeStableSignature(signaturePayload);
 
 		return {
-			formattedFailures,
-			totalCount: failures.length,
+			formattedEntries,
+			totalCount: entries.length,
 			uniqueCount: counts.size,
-			sourceSummary,
 			signature
 		};
 	}
