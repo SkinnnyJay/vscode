@@ -21,3 +21,5 @@
   **Why:** removes inherited product icon branding and aligns runtime/package assets with Pointer identity.
 - **M0-10** Updated packaging/product strings (desktop metadata, Linux package text, Windows display name) and added a Pointer update URL in `product.json`.  
   **Why:** aligns user-facing product metadata with Pointer branding and avoids stale Code - OSS/VS Code references in installer surfaces.
+- **M0-11** Added `pointer/BRANDING.md` with explicit allowed assets, forbidden trademarks, and branding review rules.  
+  **Why:** codifies clean-room branding boundaries so future contributions do not reintroduce prohibited marks.
