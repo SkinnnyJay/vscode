@@ -84,6 +84,9 @@ export class PlaywrightDriver {
 	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
 	private readonly cdpScriptLoadSeenCountsByUrl = new Map<string, number>();
 	private readonly cdpScriptLifecycleByUrl = new Map<string, { requestWillBeSentCount: number; loadingFinishedCount: number; loadingFailedCount: number; latestOutcome: string }>();
+	private readonly requestFailureCountByUrl = new Map<string, number>();
+	private readonly scriptResponseCountByUrl = new Map<string, number>();
+	private readonly cdpScriptLoadCountByUrl = new Map<string, number>();
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -503,6 +506,14 @@ export class PlaywrightDriver {
 		return `requestWillBeSent=${lifecycle.requestWillBeSentCount} loadingFinished=${lifecycle.loadingFinishedCount} loadingFailed=${lifecycle.loadingFailedCount} latestOutcome=${lifecycle.latestOutcome}`;
 	}
 
+	getImportTargetEventCounts(url: string): { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } {
+		return {
+			requestFailures: this.requestFailureCountByUrl.get(url) ?? 0,
+			scriptResponses: this.scriptResponseCountByUrl.get(url) ?? 0,
+			cdpScriptLoads: this.cdpScriptLoadCountByUrl.get(url) ?? 0
+		};
+	}
+
 	private registerPageDiagnostics(page: playwright.Page): void {
 		if (this.pagesWithDiagnostics.has(page)) {
 			return;
@@ -575,6 +586,7 @@ export class PlaywrightDriver {
 		const detailsSuffix = details ? ` ${details}` : '';
 		const seenCount = (this.requestFailureSeenCountsByUrl.get(url) ?? 0) + 1;
 		this.requestFailureSeenCountsByUrl.set(url, seenCount);
+		this.requestFailureCountByUrl.set(url, (this.requestFailureCountByUrl.get(url) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount} error=${normalizedErrorText}${fileExistsSuffix}${detailsSuffix}`);
 		this.setLatestSummary(this.requestFailureSummariesByUrl, url, summary);
 
@@ -593,6 +605,7 @@ export class PlaywrightDriver {
 		const byteDeltaSuffix = ` contentLengthDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
 		const seenCount = (this.scriptResponseSeenCountsByUrl.get(url) ?? 0) + 1;
 		this.scriptResponseSeenCountsByUrl.set(url, seenCount);
+		this.scriptResponseCountByUrl.set(url, (this.scriptResponseCountByUrl.get(url) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
 		this.setLatestScriptResponseSummary(url, summary);
 
@@ -611,6 +624,7 @@ export class PlaywrightDriver {
 		const byteDeltaSuffix = ` encodedDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
 		const seenCount = (this.cdpScriptLoadSeenCountsByUrl.get(url) ?? 0) + 1;
 		this.cdpScriptLoadSeenCountsByUrl.set(url, seenCount);
+		this.cdpScriptLoadCountByUrl.set(url, (this.cdpScriptLoadCountByUrl.get(url) ?? 0) + 1);
 		const summary = this.normalizeFailureText(`seenCount=${seenCount}${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
 		this.setLatestSummary(this.cdpScriptLoadSummariesByUrl, url, summary);
 

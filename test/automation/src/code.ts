@@ -395,6 +395,9 @@ export class Code {
 					const importTargetCdpScriptLifecycle = importTargetUrl
 						? this.driver.getCdpScriptLifecycleSummaryForUrl(importTargetUrl)
 						: undefined;
+					const importTargetTotalEventCounts = importTargetUrl
+						? this.driver.getImportTargetEventCounts(importTargetUrl)
+						: undefined;
 					const importTargetRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentFailures, importTargetUrl) : 0;
 					const importTargetScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentScriptResponses, importTargetUrl) : 0;
 					const importTargetCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentCdpScriptLoads, importTargetUrl) : 0;
@@ -413,8 +416,11 @@ export class Code {
 					const importTargetChannelEventCounts = importTargetUrl
 						? `\nImport target channel event counts: requestFailures=${importTargetRequestFailureEventCount}, scriptResponses=${importTargetScriptResponseEventCount}, cdpScriptLoads=${importTargetCdpScriptLoadEventCount}`
 						: '';
+					const importTargetTotalChannelEventCounts = importTargetUrl
+						? `\nImport target total event counts: requestFailures=${importTargetTotalEventCounts?.requestFailures ?? 0}, scriptResponses=${importTargetTotalEventCounts?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetTotalEventCounts?.cdpScriptLoads ?? 0}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 

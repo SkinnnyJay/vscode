@@ -678,3 +678,10 @@
   alongside existing import-target latest summary/lifecycle lines.
   Re-ran `make lint` (pass).
   **Why:** confirms per-channel event-count diagnostics emit correctly and remain non-regressive.
+- **Import-target total event counters (2026-02-14 PM)** Extended `PlaywrightDriver` with per-URL cumulative counters for request-failure, script-response, and CDP-script-load channels and surfaced `Import target total event counts: ...` in smoke fail-fast output.
+  **Why:** distinguishes bounded-window visibility (`channel event counts` from recent buffers) from total observed channel activity over the full run.
+- **Import-target total-counter validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target channel event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  Re-ran `make lint` (pass).
+  **Why:** confirms total counters expose additional signal beyond truncated buffers (in this run, import target appeared in total script responses but not in retained tail window).
