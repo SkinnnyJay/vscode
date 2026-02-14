@@ -47,3 +47,5 @@
   **Why:** enforces clean-room and repository hygiene constraints before code reaches version control history.
 - **M0-23** Added `docs/clean-room-contribution-rules.md` and linked it from `CONTRIBUTING.md`.  
   **Why:** gives contributors a single explicit policy source for legal-safe clean-room development.
+- **M0-24** Collected startup/idle-memory/synthetic-typing baselines and published budgets in `docs/perf/M0-baseline-and-budgets.md`.  
+  **Why:** establishes measurable M0 performance guardrails for later optimization and CI regression checks.
