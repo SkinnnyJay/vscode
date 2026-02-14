@@ -23,3 +23,5 @@
   **Why:** aligns user-facing product metadata with Pointer branding and avoids stale Code - OSS/VS Code references in installer surfaces.
 - **M0-11** Added `pointer/BRANDING.md` with explicit allowed assets, forbidden trademarks, and branding review rules.  
   **Why:** codifies clean-room branding boundaries so future contributions do not reintroduce prohibited marks.
+- **M0-12** Replaced inherited security policy text with Pointer reporting guidance and added `CODE_OF_CONDUCT.md`.  
+  **Why:** establishes project-owned security disclosure and community standards required for external contributors.
