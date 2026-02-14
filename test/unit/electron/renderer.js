@@ -123,6 +123,7 @@ function initLoadFn(opts) {
 	const seenDependencyDiagnostics = new Set();
 
 	function extractDirectImportSpecifiers(sourceText) {
+		staticImportRegex.lastIndex = 0;
 		const matches = [];
 		let match;
 		while ((match = staticImportRegex.exec(sourceText)) !== null) {

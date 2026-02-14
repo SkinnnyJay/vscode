@@ -378,3 +378,10 @@
   - previous per-edge spam absent.
   Re-ran `make lint` (pass).
   **Why:** verifies compaction behavior is active and non-regressive.
+- **Regex state hardening for dependency-specifier extraction (2026-02-14 PM)** Updated `test/unit/electron/renderer.js` to reset `staticImportRegex.lastIndex` before each parse in `extractDirectImportSpecifiers`.
+  **Why:** avoids cross-call global-regex state bleed that could intermittently drop specifiers when multiple failing modules are analyzed in one renderer run.
+- **Regex hardening validation (2026-02-14 PM)** Re-ran isolated failing modules back-to-back:
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/test/common/testTextModel.js`
+  and confirmed both emit populated `[ESM IMPORT FAILURE DEPS SUMMARY]` payloads (non-zero `specifierCount` / `failureCount`) after sequential runs; re-ran `make lint` (pass).
+  **Why:** confirms stable repeated parsing behavior across consecutive diagnostic invocations.
