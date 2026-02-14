@@ -500,49 +500,59 @@ function activate(context) {
 
 		activeChatAbortController?.abort();
 		activeChatAbortController = new AbortController();
+		chatMessageTree.message = 'Streaming response...';
 
 		chatSessionStore.addUserMessage(value);
 		const assistantMessageId = chatSessionStore.startAssistantMessage();
 		if (!assistantMessageId) {
+			chatMessageTree.message = 'Messages';
 			return;
 		}
 
-		const chatSelection = internalApi.getSelection('chat');
-		const stream = internalApi.streamChat({
-			surface: 'chat',
-			providerId: chatSelection.providerId,
-			modelId: chatSelection.modelId,
-			templateId: 'chat-default',
-			userPrompt: value,
-			context: chatSessionStore.listPinnedContext().map((item) => ({
-				kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
-				label: item.label,
-				tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
-			}))
-		});
+		try {
+			const chatSelection = internalApi.getSelection('chat');
+			const stream = internalApi.streamChat({
+				surface: 'chat',
+				providerId: chatSelection.providerId,
+				modelId: chatSelection.modelId,
+				templateId: 'chat-default',
+				userPrompt: value,
+				context: chatSessionStore.listPinnedContext().map((item) => ({
+					kind: item.source === 'selection' ? 'retrieved' : item.source === 'file' ? 'pinned' : 'rules',
+					label: item.label,
+					tokenEstimate: Math.max(1, Math.ceil(item.value.length / 4))
+				}))
+			});
 
-		for await (const event of stream) {
-			if (activeChatAbortController.signal.aborted) {
-				chatSessionStore.appendAssistantChunk(assistantMessageId, '\n[Cancelled]');
-				chatSessionStore.finalizeAssistantMessage(assistantMessageId);
-				return;
+			for await (const event of stream) {
+				if (activeChatAbortController.signal.aborted) {
+					chatSessionStore.appendAssistantChunk(assistantMessageId, '\n[Cancelled]');
+					chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+					chatMessageTree.message = 'Message cancelled';
+					return;
+				}
+				if (event.type === 'delta') {
+					chatSessionStore.appendAssistantChunk(assistantMessageId, event.text);
+					await delay(20);
+				}
 			}
-			if (event.type === 'delta') {
-				chatSessionStore.appendAssistantChunk(assistantMessageId, event.text);
-				await delay(20);
-			}
+
+			chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+			const preferredPatchFile = chatSessionStore.listPinnedContext().find((item) => item.source === 'file');
+			const targetPath = preferredPatchFile?.value ?? 'src/example.ts';
+			patchReviewStore.setProposal([
+				{
+					path: targetPath,
+					diff: '@@ -1,1 +1,1 @@\n-old\n+new',
+					rationale: 'Apply suggested refactor from chat response'
+				}
+			]);
+			chatMessageTree.message = 'Messages';
+		} catch (error) {
+			chatSessionStore.appendAssistantChunk(assistantMessageId, `\n[Error] ${error instanceof Error ? error.message : 'Unknown failure'}`);
+			chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+			chatMessageTree.message = 'Error during response streaming';
 		}
-
-		chatSessionStore.finalizeAssistantMessage(assistantMessageId);
-		const preferredPatchFile = chatSessionStore.listPinnedContext().find((item) => item.source === 'file');
-		const targetPath = preferredPatchFile?.value ?? 'src/example.ts';
-		patchReviewStore.setProposal([
-			{
-				path: targetPath,
-				diff: '@@ -1,1 +1,1 @@\n-old\n+new',
-				rationale: 'Apply suggested refactor from chat response'
-			}
-		]);
 	});
 
 	const cancelChatMessage = vscode.commands.registerCommand('pointer.chat.cancelMessage', async () => {
