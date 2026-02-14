@@ -161,5 +161,7 @@
   **Why:** validates the diff-first decision workflow expected for agent patch review.
 - **M5-01** Implemented context file discovery (`context/file-discovery.ts`) with `.gitignore`, `.pointer/excludes`, and explicit excludes support plus unit tests.
   **Why:** provides deterministic workspace scope control for context indexing/retrieval.
+- **M5-02** Added watcher-capable context indexer (`context/indexer.ts`) with initial indexing and incremental file change/delete update support plus tests.
+  **Why:** enables workspace context freshness without full reindex on every change.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
