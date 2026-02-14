@@ -7,6 +7,7 @@ export interface ProviderRequest {
 	readonly modelId: string;
 	readonly prompt: string;
 	readonly jsonMode?: boolean;
+	readonly outputFormat?: 'text' | 'json' | 'table';
 	readonly extraArgs?: readonly string[];
 }
 

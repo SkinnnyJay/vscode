@@ -119,5 +119,9 @@
   **Why:** brings a second provider into the common adapter contract for multi-provider parity.
 - **M2-19** Added Claude adapter unit coverage for streaming aggregation and cancellation interrupt behavior.
   **Why:** validates correctness of shared adapter mechanics across provider-specific implementations.
+- **M2-20** Implemented `OpenCodeAdapter` with selectable output modes (`text`/`json`/`table`) and streamed response handling.
+  **Why:** supports OpenCode-specific JSON/table interaction modes required by router capabilities.
+- **M2-21** Added OpenCode adapter tests validating JSON mode output argument wiring and table-mode argument support.
+  **Why:** locks adapter CLI argument behavior for structured output workflows.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
