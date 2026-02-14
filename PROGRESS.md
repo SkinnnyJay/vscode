@@ -43,3 +43,5 @@
   **Why:** introduces an explicit quality gate for Pointer-specific modifications without waiting for full-suite pipelines.
 - **M0-21** Updated `.gitignore` to exclude `scratchpad/` plus local binary artifacts (`*.vsix`, `*.core`, `*.dmp`).  
   **Why:** prevents accidental commits of ephemeral workspace notes and generated binary outputs.
+- **M0-22** Added `scripts/precommit-binary-guard.sh` and wired it into `package.json` `precommit` to block decompiled artifacts, risky binary extensions, and staged files >5MB.  
+  **Why:** enforces clean-room and repository hygiene constraints before code reaches version control history.
