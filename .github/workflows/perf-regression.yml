@@ -1,0 +1,39 @@
+name: perf-regression
+
+on:
+  pull_request:
+    paths:
+      - 'pointer/**'
+      - 'extensions/pointer-ai/**'
+      - 'scripts/perf-*.sh'
+      - '.github/workflows/perf-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  perf-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+      - name: Install dependencies
+        run: npm ci
+      - name: Capture baseline and leak harness
+        run: make perf-baseline && make perf-leak-harness
+      - name: Enforce leak harness threshold
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('docs/perf/M7-leak-harness.json', 'utf8'));
+          if (!report.passed) {
+            console.error(`Leak harness failed. growth=${report.rssGrowthBytes}, threshold=${report.thresholdBytes}`);
+            process.exit(1);
+          }
+          console.log(`Leak harness passed. growth=${report.rssGrowthBytes}, threshold=${report.thresholdBytes}`);
+          NODE
+      - name: Upload perf artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-artifacts
+          path: docs/perf/M7-*.json

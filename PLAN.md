@@ -214,12 +214,12 @@ Tasks:
 - [x] - M7 - [sidecar] Instrument request latency per surface and cancellation success.
 - [x] - M7 - [sidecar] Track time-to-first-token for chat.
 - [x] - M7 - [sidecar] Measure indexer CPU/memory and log locally (opt-in).
-- [ ] - M7 - [perf] Capture baseline memory snapshots after key scenarios.
-- [ ] - M7 - [perf] Build automated leak test harness and scenario runner.
-- [ ] - M7 - [core] Lazy-load heavy AI components.
-- [ ] - M7 - [core] Ensure indexer runs off UI critical path.
-- [ ] - M7 - [sidecar] Add backpressure on provider requests.
-- [ ] - M7 - [perf] Add perf regression thresholds to CI.
+- [x] - M7 - [perf] Capture baseline memory snapshots after key scenarios.
+- [x] - M7 - [perf] Build automated leak test harness and scenario runner.
+- [x] - M7 - [core] Lazy-load heavy AI components.
+- [x] - M7 - [core] Ensure indexer runs off UI critical path.
+- [x] - M7 - [sidecar] Add backpressure on provider requests.
+- [x] - M7 - [perf] Add perf regression thresholds to CI.
 
 ### M8 — Parity polish
 Criteria (exit):

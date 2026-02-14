@@ -189,5 +189,13 @@
   **Why:** creates measurable runtime telemetry for responsiveness and cancellation reliability.
 - **M7-03** Added opt-in indexer resource observer (`perf/indexer-observer.ts`) that captures CPU/memory samples and logs to local perf artifacts.
   **Why:** enables low-friction local profiling of indexing overhead without always-on instrumentation.
+- **M7-04/M7-05** Added perf baseline + leak harness scripts (`scripts/perf-capture-m7-baseline.sh`, `scripts/perf-leak-harness.sh`) and generated M7 artifacts in `docs/perf/`.
+  **Why:** provides repeatable runtime memory profiling and bounded-growth validation scenarios.
+- **M7-06/M7-07** Moved heavy extension module imports to activation-time lazy loading and added deferred indexer startup helper (`context/indexer-runtime.ts`).
+  **Why:** keeps AI/indexer initialization off startup/UI-critical path.
+- **M7-08** Added provider backpressure queue (`providers/backpressure.ts`) with concurrency enforcement tests.
+  **Why:** prevents unbounded provider request fan-out under high load.
+- **M7-09** Added CI perf regression workflow (`.github/workflows/perf-regression.yml`) enforcing leak-threshold pass/fail and artifact upload.
+  **Why:** gates performance regressions with automated threshold checks.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

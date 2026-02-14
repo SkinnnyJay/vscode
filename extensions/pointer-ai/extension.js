@@ -8,9 +8,6 @@ const fs = require('node:fs/promises');
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
-const { createInlineCompletionProvider } = require('./tab/inline-completion-provider.js');
-const { ChatSessionStore } = require('./chat/session-store.js');
-const { PatchReviewStore } = require('./chat/patch-review-store.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -308,6 +305,9 @@ function validatePointerDefaultsConfiguration() {
 function activate(context) {
 	void migratePointerSettings(context);
 	void vscode.commands.executeCommand('setContext', 'pointer.workspaceTrusted', vscode.workspace.isTrusted);
+	const { createInlineCompletionProvider } = require('./tab/inline-completion-provider.js');
+	const { ChatSessionStore } = require('./chat/session-store.js');
+	const { PatchReviewStore } = require('./chat/patch-review-store.js');
 	const routerClient = new PointerRouterClient();
 	const internalApi = createPointerInternalApi(routerClient);
 	const chatSessionStore = new ChatSessionStore();
