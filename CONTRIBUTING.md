@@ -4,6 +4,8 @@ Welcome, and thank you for your interest in contributing to VS Code!
 
 There are several ways in which you can contribute, beyond writing code. The goal of this document is to provide a high-level overview of how you can get involved.
 
+> Pointer-specific policy: all contributions must follow the clean-room rules in [`docs/clean-room-contribution-rules.md`](docs/clean-room-contribution-rules.md).
+
 ## Asking Questions
 
 

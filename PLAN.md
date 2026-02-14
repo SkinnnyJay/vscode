@@ -64,7 +64,7 @@ Tasks:
 - [x] - M0 - [ci] Add CI to run unit tests and lint for Pointer-owned packages.
 - [x] - M0 - [repo] Update `.gitignore` to include `scratchpad/` and local binaries.
 - [x] - M0 - [repo] Add pre-commit guard to block large binaries/decompiled output.
-- [ ] - M0 - [docs] Add clean-room contribution rules.
+- [x] - M0 - [docs] Add clean-room contribution rules.
 - [ ] - M0 - [perf] Baseline stock Code - OSS perf (startup, idle memory, typing latency) and set budgets.
 - [ ] - M0 - [perf] Capture baseline memory snapshots and store in `docs/perf/`.
 

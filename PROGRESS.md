@@ -45,3 +45,5 @@
   **Why:** prevents accidental commits of ephemeral workspace notes and generated binary outputs.
 - **M0-22** Added `scripts/precommit-binary-guard.sh` and wired it into `package.json` `precommit` to block decompiled artifacts, risky binary extensions, and staged files >5MB.  
   **Why:** enforces clean-room and repository hygiene constraints before code reaches version control history.
+- **M0-23** Added `docs/clean-room-contribution-rules.md` and linked it from `CONTRIBUTING.md`.  
+  **Why:** gives contributors a single explicit policy source for legal-safe clean-room development.
