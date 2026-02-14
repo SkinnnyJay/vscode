@@ -226,6 +226,14 @@ function initLoadFn(opts) {
 			.map(([key, count]) => ({ key, count }));
 	}
 
+	function toPercent(part, total) {
+		if (!total) {
+			return 0;
+		}
+
+		return Math.round((part / total) * 10000) / 100;
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -289,6 +297,9 @@ function initLoadFn(opts) {
 			}
 
 			if (failures.length > 0) {
+				const dependencyAttemptedCount = specifiers.length;
+				const dependencyFailureRatePercent = toPercent(failures.length, dependencyAttemptedCount);
+				const dependencySuccessRatePercent = toPercent(successfulDependencyImportCount, dependencyAttemptedCount);
 				const failureFamilyEntries = toSortedCountEntries(failureFamilies)
 					.map(entry => ({ family: entry.key, count: entry.count }));
 				const failureKindEntries = toSortedCountEntries(failureKinds)
@@ -304,8 +315,11 @@ function initLoadFn(opts) {
 					specifierLimit,
 					isSpecifierListTruncated: allSpecifiers.length > specifierLimit,
 					skippedSpecifierCount: allSpecifiers.length - specifiers.length,
+					dependencyAttemptedCount,
 					successfulDependencyImportCount,
 					failedDependencyImportCount: failures.length,
+					dependencySuccessRatePercent,
+					dependencyFailureRatePercent,
 					failureCount: failures.length,
 					failureFamilies,
 					failureFamilyEntries,
