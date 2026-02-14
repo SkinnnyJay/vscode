@@ -277,3 +277,7 @@
   **Why:** rules out basic Xvfb screen/GL backend tuning as a practical mitigation and confirms the failure is selective (not a universal renderer inability to run tests).
 - **Additional Chromium flag probe (2026-02-14 PM)** Retried isolated failing renderer case with further flags (`--disable-dev-shm-usage`, `--disable-dev-shm-usage --no-zygote`, `--in-process-gpu --disable-gpu`, `--disable-features=UseSkiaRenderer`); all variants still failed 3/3 with the same dynamic-import error.
   **Why:** extends the ruled-out mitigation set across shared-memory, process-model, and Skia renderer toggles.
+- **Build-mode compilation fallback success (2026-02-14 PM)** Ran `npm run gulp compile-build-without-mangling` successfully after repeated `compile-build-with-mangling` OOM kills; this generated `out-build` artifacts without hitting the mangler memory ceiling in this VM.
+  **Why:** provides a reproducible lower-memory path to unblock build-mode test attempts when full mangling compile is resource-constrained.
+- **Build-mode test follow-up (2026-02-14 PM)** Re-ran `xvfb-run -a ./scripts/test.sh --build` after generating `out-build`; previous `nls.messages.json` missing-artifact failure is resolved, but the run still fails on the same renderer dynamic-import error (`file:///workspace/out-build/.../bracketMatching.test.js`).
+  **Why:** sharpens the remaining blocker to renderer module loading only (not missing build artifacts).
