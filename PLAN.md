@@ -76,7 +76,7 @@ Success metrics:
 - Pointer view container opens with one click from Activity Bar.
 - No Copilot commands visible in default command palette.
 Tasks:
-- [ ] - M1 - [extension] Add Activity Bar icon and “Pointer” view container.
+- [x] - M1 - [extension] Add Activity Bar icon and “Pointer” view container.
 - [ ] - M1 - [extension] Create view container contribution in `package.json`.
 - [ ] - M1 - [extension] Wire placeholder view with empty state messaging.
 - [ ] - M1 - [extension] Register commands: Open Chat, Toggle Tab, Select Model, Open Settings.

@@ -1,0 +1,36 @@
+{
+	"name": "pointer-ai",
+	"displayName": "Pointer AI",
+	"description": "Pointer first-party AI surface integration.",
+	"version": "0.0.1",
+	"publisher": "pointer",
+	"engines": {
+		"vscode": "^1.110.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:pointer.home"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "pointer",
+					"title": "Pointer",
+					"icon": "media/pointer-activity.svg"
+				}
+			]
+		},
+		"views": {
+			"pointer": [
+				{
+					"id": "pointer.home",
+					"name": "Pointer"
+				}
+			]
+		}
+	}
+}

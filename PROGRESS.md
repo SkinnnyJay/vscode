@@ -51,3 +51,5 @@
   **Why:** establishes measurable M0 performance guardrails for later optimization and CI regression checks.
 - **M0-25** Stored baseline memory snapshots in `docs/perf/` (`perf-heap.txt`, `idle-memory-snapshot.txt`) for reproducible comparisons.  
   **Why:** preserves concrete memory artifacts required for future leak/perf regression analysis.
+- **M1-01** Added a new built-in extension scaffold at `extensions/pointer-ai/` with an Activity Bar icon and Pointer view container contribution.  
+  **Why:** establishes a first-class Pointer surface entry point in the editor shell.
