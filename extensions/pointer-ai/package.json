@@ -15,6 +15,7 @@
 		"onView:pointer.contextSent",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
+		"onCommand:pointer.tab.cancel",
 		"onCommand:pointer.selectModel",
 		"onCommand:pointer.openSettings"
 	],
@@ -29,6 +30,11 @@
 			{
 				"command": "pointer.toggleTab",
 				"title": "Pointer: Toggle Tab",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.tab.cancel",
+				"title": "Pointer: Cancel Tab Completion",
 				"category": "Pointer"
 			},
 			{
@@ -90,6 +96,28 @@
 						"type": "string",
 						"default": "auto",
 						"description": "Default model for Pointer agent surface."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Tab Completion",
+				"properties": {
+					"pointer.tab.enabled": {
+						"type": "boolean",
+						"default": true,
+						"description": "Enable or disable Pointer inline tab completions."
+					},
+					"pointer.tab.maxLatencyMs": {
+						"type": "number",
+						"default": 400,
+						"minimum": 50,
+						"description": "Maximum latency budget for tab completion responses before suggestions are dropped from cache."
+					},
+					"pointer.tab.debounceMs": {
+						"type": "number",
+						"default": 80,
+						"minimum": 0,
+						"description": "Debounce delay before sending tab completion requests."
 					}
 				}
 			},

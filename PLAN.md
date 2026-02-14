@@ -131,16 +131,16 @@ Success metrics:
 - p95 suggestion latency < 500ms on warm cache.
 - Cancellation success rate ≥ 95% within 200ms.
 Tasks:
-- [ ] - M3 - [extension] Implement inline completion provider (ghost text).
-- [ ] - M3 - [extension] Add provider request plumbing to router for tab surface.
-- [ ] - M3 - [extension] Support accept with Tab and cancel on Escape/typing.
-- [ ] - M3 - [extension] Handle multi-cursor safely (best-effort in MVP).
-- [ ] - M3 - [extension+sidecar] Add debounce strategy and end-to-end cancellation wiring.
-- [ ] - M3 - [sidecar] Add local cache keyed by uri/position/nearby text/provider/model/rules.
-- [ ] - M3 - [extension] Add settings: enable/disable, default provider/model, max latency.
-- [ ] - M3 - [sidecar] Enforce privacy: send only necessary snippets by default.
-- [ ] - M3 - [tests] Add basic tab completion integration test (happy path + cancel).
-- [ ] - M3 - [tests] Add perf smoke test for tab latency budget.
+- [x] - M3 - [extension] Implement inline completion provider (ghost text).
+- [x] - M3 - [extension] Add provider request plumbing to router for tab surface.
+- [x] - M3 - [extension] Support accept with Tab and cancel on Escape/typing.
+- [x] - M3 - [extension] Handle multi-cursor safely (best-effort in MVP).
+- [x] - M3 - [extension+sidecar] Add debounce strategy and end-to-end cancellation wiring.
+- [x] - M3 - [sidecar] Add local cache keyed by uri/position/nearby text/provider/model/rules.
+- [x] - M3 - [extension] Add settings: enable/disable, default provider/model, max latency.
+- [x] - M3 - [sidecar] Enforce privacy: send only necessary snippets by default.
+- [x] - M3 - [tests] Add basic tab completion integration test (happy path + cancel).
+- [x] - M3 - [tests] Add perf smoke test for tab latency budget.
 
 ### M4 — Chat + Agent edits MVP
 Criteria (exit):

@@ -6,6 +6,7 @@
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
+const { createInlineCompletionProvider } = require('./tab/inline-completion-provider.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -103,6 +104,11 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	contextSentTree.message = 'Shows explainability data from the last router plan.';
+	const inlineCompletion = createInlineCompletionProvider(internalApi);
+	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
+		{ scheme: 'file' },
+		inlineCompletion.provider
+	);
 
 	const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 110);
 	statusBarItem.name = 'Pointer Surface Model';
@@ -136,6 +142,10 @@ function activate(context) {
 
 	const openSettings = vscode.commands.registerCommand('pointer.openSettings', async () => {
 		await vscode.commands.executeCommand('workbench.action.openSettings', 'Pointer');
+	});
+
+	const cancelTabCompletion = vscode.commands.registerCommand('pointer.tab.cancel', async () => {
+		inlineCompletion.cancelPending();
 	});
 
 	const updateStatusBar = () => {
@@ -190,12 +200,28 @@ function activate(context) {
 			updateStatusBar();
 		}
 	});
+	const typingCancelWatcher = vscode.workspace.onDidChangeTextDocument(() => {
+		inlineCompletion.cancelPending();
+	});
 
 	const routerPlanWatcher = internalApi.onDidCreateRouterPlan((plan) => {
 		routerContextViewProvider.refreshFromPlan(plan);
 	});
 
-	context.subscriptions.push(pointerTree, contextSentTree, statusBarItem, configWatcher, routerPlanWatcher, openChat, toggleTab, selectModel, openSettings);
+	context.subscriptions.push(
+		pointerTree,
+		contextSentTree,
+		inlineCompletionRegistration,
+		statusBarItem,
+		configWatcher,
+		typingCancelWatcher,
+		routerPlanWatcher,
+		openChat,
+		toggleTab,
+		selectModel,
+		openSettings,
+		cancelTabCompletion
+	);
 	return internalApi;
 }
 

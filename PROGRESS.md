@@ -125,5 +125,15 @@
   **Why:** locks adapter CLI argument behavior for structured output workflows.
 - **M2-22** Documented ACP compatibility decision in `docs/acp-compatibility-decision.md` (defer ACP layer in M2; revisit with explicit triggers).
   **Why:** prevents premature abstraction while preserving a clear future decision checkpoint.
+- **M3-01/M3-02** Added inline completion plumbing (`tab/inline-completion-provider.js`) and wired tab-surface router requests through the internal API.
+  **Why:** establishes first ghost-text completion path using the shared router client contract.
+- **M3-03/M3-04/M3-05** Added typing cancellation, explicit cancel command (`pointer.tab.cancel`), multi-cursor safety guard, and debounce/AbortSignal wiring via `PointerTabCompletionEngine`.
+  **Why:** keeps inline suggestions responsive and interruption-safe in active editing flows.
+- **M3-06/M3-08** Added privacy-scoped prompt assembly and local tab cache keyed by URI/position/nearby text/provider/model/rules profile.
+  **Why:** reduces repeated request latency while minimizing context leakage.
+- **M3-07** Added tab completion settings (`pointer.tab.enabled`, `pointer.tab.maxLatencyMs`, `pointer.tab.debounceMs`) while reusing defaults for provider/model selection.
+  **Why:** enables user-level control over tab behavior and latency tradeoffs.
+- **M3-09/M3-10** Added tab completion engine integration/perf smoke tests (`tab-completion-engine.test.js`) covering happy path, cancellation, caching, and latency budget.
+  **Why:** verifies baseline correctness and responsiveness targets for the MVP tab flow.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
