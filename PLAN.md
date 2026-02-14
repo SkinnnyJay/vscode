@@ -160,9 +160,9 @@ Tasks:
 - [x] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
 - [x] - M4 - [sidecar] Add chat request plan logging and trace IDs.
 - [x] - M4 - [sidecar] Define patch schema and diff-first agent response format.
-- [ ] - M4 - [extension] Render per-file diff view with apply/reject/apply all.
-- [ ] - M4 - [extension] Add apply summary banner and conflict messaging.
-- [ ] - M4 - [extension] Track and show changed files with rationale.
+- [x] - M4 - [extension] Render per-file diff view with apply/reject/apply all.
+- [x] - M4 - [extension] Add apply summary banner and conflict messaging.
+- [x] - M4 - [extension] Track and show changed files with rationale.
 - [ ] - M4 - [sidecar] Gate terminal tool (confirm-by-default or disabled).
 - [ ] - M4 - [sidecar] Gate filesystem edits to diff apply only.
 - [ ] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).

@@ -16,6 +16,7 @@
 		"onView:pointer.chatSessions",
 		"onView:pointer.chatMessages",
 		"onView:pointer.chatContext",
+		"onView:pointer.patchReview",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -31,6 +32,10 @@
 		"onCommand:pointer.chat.attachSelection",
 		"onCommand:pointer.chat.pinContext",
 		"onCommand:pointer.chat.removePinnedContext",
+		"onCommand:pointer.patch.openDiff",
+		"onCommand:pointer.patch.applyFile",
+		"onCommand:pointer.patch.rejectFile",
+		"onCommand:pointer.patch.applyAll",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -112,6 +117,26 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.patch.openDiff",
+				"title": "Pointer: Open Patch Diff",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyFile",
+				"title": "Pointer: Apply Patch File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.rejectFile",
+				"title": "Pointer: Reject Patch File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyAll",
+				"title": "Pointer: Apply All Patch Files",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -158,6 +183,11 @@
 					"command": "pointer.chat.pinContext",
 					"when": "view == pointer.chatContext",
 					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.patch.applyAll",
+					"when": "view == pointer.patchReview",
+					"group": "navigation"
 				}
 			],
 			"view/item/context": [
@@ -174,6 +204,21 @@
 				{
 					"command": "pointer.chat.removePinnedContext",
 					"when": "view == pointer.chatContext && viewItem == pointerPinnedContext",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.openDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.applyFile",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.rejectFile",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
 					"group": "inline"
 				}
 			]
@@ -319,6 +364,10 @@
 				{
 					"id": "pointer.chatContext",
 					"name": "Context Chips"
+				},
+				{
+					"id": "pointer.patchReview",
+					"name": "Patch Review"
 				}
 			]
 		}

@@ -9,6 +9,7 @@ const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
 const { createInlineCompletionProvider } = require('./tab/inline-completion-provider.js');
 const { ChatSessionStore } = require('./chat/session-store.js');
+const { PatchReviewStore } = require('./chat/patch-review-store.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -149,6 +150,70 @@ class ChatContextChipTreeDataProvider {
 	}
 }
 
+class PatchReviewTreeDataProvider {
+	/**
+	 * @param {PatchReviewStore} patchReviewStore
+	 */
+	constructor(patchReviewStore) {
+		this.patchReviewStore = patchReviewStore;
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		this.storeWatcher = patchReviewStore.onDidChange(() => this.onDidChangeTreeDataEmitter.fire(undefined));
+	}
+
+	dispose() {
+		this.storeWatcher.dispose();
+		this.onDidChangeTreeDataEmitter.dispose();
+	}
+
+	getTreeItem(element) {
+		const icon = element.status === 'applied'
+			? '$(check)'
+			: element.status === 'rejected'
+				? '$(x)'
+				: element.status === 'conflict'
+					? '$(warning)'
+					: '$(diff)';
+		const item = new vscode.TreeItem(`${icon} ${element.path}`, vscode.TreeItemCollapsibleState.None);
+		item.id = element.path;
+		item.contextValue = 'pointerPatchFile';
+		item.description = `${element.status} - ${element.rationale}`;
+		item.tooltip = element.diff;
+		if (element.status === 'conflict' && element.conflictReason) {
+			item.tooltip = `${element.diff}\n\nConflict: ${element.conflictReason}`;
+		}
+		return item;
+	}
+
+	getChildren() {
+		return this.patchReviewStore.listFiles();
+	}
+}
+
+function toDiffPreview(diff) {
+	const lines = diff.split('\n');
+	const before = [];
+	const after = [];
+	for (const line of lines) {
+		if (line.startsWith('+++') || line.startsWith('---') || line.startsWith('@@')) {
+			continue;
+		}
+		if (line.startsWith('+')) {
+			after.push(line.slice(1));
+		} else if (line.startsWith('-')) {
+			before.push(line.slice(1));
+		} else if (line.startsWith(' ')) {
+			const text = line.slice(1);
+			before.push(text);
+			after.push(text);
+		}
+	}
+	return {
+		before: before.join('\n'),
+		after: after.join('\n')
+	};
+}
+
 function delay(milliseconds) {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -193,6 +258,7 @@ function activate(context) {
 	const routerClient = new PointerRouterClient();
 	const internalApi = createPointerInternalApi(routerClient);
 	const chatSessionStore = new ChatSessionStore();
+	const patchReviewStore = new PatchReviewStore();
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -224,6 +290,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	chatContextTree.message = 'Pinned context';
+	const patchReviewProvider = new PatchReviewTreeDataProvider(patchReviewStore);
+	const patchReviewTree = vscode.window.createTreeView('pointer.patchReview', {
+		treeDataProvider: patchReviewProvider,
+		showCollapseAll: false
+	});
+	patchReviewTree.message = 'Agent patch proposals';
 	let activeChatAbortController;
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
@@ -382,6 +454,15 @@ function activate(context) {
 		}
 
 		chatSessionStore.finalizeAssistantMessage(assistantMessageId);
+		const preferredPatchFile = chatSessionStore.listPinnedContext().find((item) => item.source === 'file');
+		const targetPath = preferredPatchFile?.value ?? 'src/example.ts';
+		patchReviewStore.setProposal([
+			{
+				path: targetPath,
+				diff: '@@ -1,1 +1,1 @@\n-old\n+new',
+				rationale: 'Apply suggested refactor from chat response'
+			}
+		]);
 	});
 
 	const cancelChatMessage = vscode.commands.registerCommand('pointer.chat.cancelMessage', async () => {
@@ -425,6 +506,55 @@ function activate(context) {
 		if (contextItem?.id) {
 			chatSessionStore.removePinnedContext(contextItem.id);
 		}
+	});
+
+	const openPatchDiff = vscode.commands.registerCommand('pointer.patch.openDiff', async (patchFile) => {
+		if (!patchFile?.diff || !patchFile?.path) {
+			return;
+		}
+		const preview = toDiffPreview(patchFile.diff);
+		const beforeDocument = await vscode.workspace.openTextDocument({ content: preview.before || '' });
+		const afterDocument = await vscode.workspace.openTextDocument({ content: preview.after || '' });
+		await vscode.commands.executeCommand(
+			'vscode.diff',
+			beforeDocument.uri,
+			afterDocument.uri,
+			`Patch Preview: ${patchFile.path}`
+		);
+	});
+
+	const applyPatchFile = vscode.commands.registerCommand('pointer.patch.applyFile', async (patchFile) => {
+		if (!patchFile?.path) {
+			return;
+		}
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			patchReviewStore.markConflict(patchFile.path, 'No workspace folder available for apply.');
+			void vscode.window.showWarningMessage(`Cannot apply patch for ${patchFile.path}: workspace folder unavailable.`);
+			return;
+		}
+		const candidatePath = path.isAbsolute(patchFile.path)
+			? patchFile.path
+			: path.join(workspaceFolder.uri.fsPath, patchFile.path);
+		try {
+			await vscode.workspace.fs.stat(vscode.Uri.file(candidatePath));
+		} catch {
+			patchReviewStore.markConflict(patchFile.path, 'Target file does not exist.');
+			void vscode.window.showWarningMessage(`Cannot apply patch for ${patchFile.path}: target file missing.`);
+			return;
+		}
+		patchReviewStore.applyFile(patchFile.path);
+	});
+
+	const rejectPatchFile = vscode.commands.registerCommand('pointer.patch.rejectFile', async (patchFile) => {
+		if (!patchFile?.path) {
+			return;
+		}
+		patchReviewStore.rejectFile(patchFile.path);
+	});
+
+	const applyAllPatchFiles = vscode.commands.registerCommand('pointer.patch.applyAll', async () => {
+		patchReviewStore.applyAll();
 	});
 
 	const updateStatusBar = () => {
@@ -492,6 +622,18 @@ function activate(context) {
 	const routerPlanWatcher = internalApi.onDidCreateRouterPlan((plan) => {
 		routerContextViewProvider.refreshFromPlan(plan);
 	});
+	const patchReviewWatcher = patchReviewStore.onDidChange(() => {
+		const summary = patchReviewStore.getSummary();
+		if (summary.total > 0) {
+			void vscode.window.setStatusBarMessage(
+				`Pointer patches - pending: ${summary.pending}, applied: ${summary.applied}, rejected: ${summary.rejected}, conflicts: ${summary.conflicts}`,
+				3000
+			);
+			if (summary.conflicts > 0) {
+				void vscode.window.showWarningMessage('Pointer patch apply conflicts detected. Review conflicted files before applying all.');
+			}
+		}
+	});
 
 	context.subscriptions.push(
 		pointerTree,
@@ -502,6 +644,8 @@ function activate(context) {
 		chatMessageProvider,
 		chatContextTree,
 		chatContextProvider,
+		patchReviewTree,
+		patchReviewProvider,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,
@@ -523,6 +667,11 @@ function activate(context) {
 		attachCurrentSelection,
 		pinCustomContext,
 		removePinnedContext,
+		openPatchDiff,
+		applyPatchFile,
+		rejectPatchFile,
+		applyAllPatchFiles,
+		patchReviewWatcher,
 		sessionSelectionWatcher
 	);
 	return internalApi;

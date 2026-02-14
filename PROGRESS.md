@@ -151,5 +151,7 @@
   **Why:** provides auditable chat planning telemetry required for debugging and policy review.
 - **M4-10** Added sidecar patch schema (`patch/schema.ts`) and validator for diff-first agent responses with unit tests.
   **Why:** enforces explicit, reviewable patch payload structure before editor-side apply workflows.
+- **M4-11/M4-12/M4-13** Added patch review store + view (`pointer.patchReview`) with per-file diff preview, apply/reject/apply-all actions, rationale display, and conflict/summary messaging.
+  **Why:** enforces diff-first review workflow and gives users transparent per-file decision control with conflict feedback.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
