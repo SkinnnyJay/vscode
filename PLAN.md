@@ -229,7 +229,7 @@ Success metrics:
 - Diff and session workflows have no “dead ends”.
 Tasks:
 - [x] - M8 - [extension] Add partial accept for tab suggestions.
-- [ ] - M8 - [extension] Add grouped diffs for multi-file refactors.
+- [x] - M8 - [extension] Add grouped diffs for multi-file refactors.
 - [x] - M8 - [extension] Add slash commands and structured workflows.
 - [ ] - M8 - [extension] Add workspace-level “intent/project brief” pinned context.
 - [x] - M8 - [extension+sidecar] Add session management: named sessions, export/import.

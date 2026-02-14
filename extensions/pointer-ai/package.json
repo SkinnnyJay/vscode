@@ -38,9 +38,11 @@
 		"onCommand:pointer.chat.pinContext",
 		"onCommand:pointer.chat.removePinnedContext",
 		"onCommand:pointer.patch.openDiff",
+		"onCommand:pointer.patch.openGroupDiff",
 		"onCommand:pointer.patch.applyFile",
 		"onCommand:pointer.patch.rejectFile",
 		"onCommand:pointer.patch.applyAll",
+		"onCommand:pointer.patch.applyGroup",
 		"onCommand:pointer.context.openExcludes",
 		"onCommand:pointer.rules.refresh",
 		"onCommand:pointer.mcp.refresh",
@@ -145,6 +147,11 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.patch.openGroupDiff",
+				"title": "Pointer: Open Patch Group Diff",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.patch.applyFile",
 				"title": "Pointer: Apply Patch File",
 				"category": "Pointer"
@@ -157,6 +164,11 @@
 			{
 				"command": "pointer.patch.applyAll",
 				"title": "Pointer: Apply All Patch Files",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyGroup",
+				"title": "Pointer: Apply Patch Group",
 				"category": "Pointer"
 			},
 			{
@@ -243,6 +255,11 @@
 					"group": "navigation"
 				},
 				{
+					"command": "pointer.patch.openGroupDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
+					"group": "navigation@2"
+				},
+				{
 					"command": "pointer.rules.refresh",
 					"when": "view == pointer.rulesAudit",
 					"group": "navigation"
@@ -282,6 +299,16 @@
 				{
 					"command": "pointer.patch.rejectFile",
 					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.openGroupDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.applyGroup",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
 					"group": "inline"
 				}
 			]

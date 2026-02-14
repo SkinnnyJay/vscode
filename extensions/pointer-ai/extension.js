@@ -8,6 +8,7 @@ const fs = require('node:fs/promises');
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
 const { PointerRouterClient } = require('./router-client.js');
+const { toDiffPreview, groupPatchFiles, buildGroupedDiffPreview } = require('./chat/patch-groups.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -165,6 +166,20 @@ class PatchReviewTreeDataProvider {
 	}
 
 	getTreeItem(element) {
+		if (element?.kind === 'group') {
+			const counts = {
+				pending: element.files.filter((file) => file.status === 'pending').length,
+				applied: element.files.filter((file) => file.status === 'applied').length,
+				rejected: element.files.filter((file) => file.status === 'rejected').length,
+				conflict: element.files.filter((file) => file.status === 'conflict').length
+			};
+			const item = new vscode.TreeItem(`$(folder) ${element.label}`, vscode.TreeItemCollapsibleState.Expanded);
+			item.id = `group:${element.id}`;
+			item.contextValue = 'pointerPatchGroup';
+			item.description = `pending ${counts.pending} | applied ${counts.applied} | rejected ${counts.rejected} | conflict ${counts.conflict}`;
+			return item;
+		}
+
 		const icon = element.status === 'applied'
 			? '$(check)'
 			: element.status === 'rejected'
@@ -183,8 +198,19 @@ class PatchReviewTreeDataProvider {
 		return item;
 	}
 
-	getChildren() {
-		return this.patchReviewStore.listFiles();
+	getChildren(element) {
+		if (element?.kind === 'group') {
+			return element.files.map((file) => ({
+				...file,
+				kind: 'file',
+				groupId: element.id
+			}));
+		}
+
+		return groupPatchFiles(this.patchReviewStore.listFiles()).map((group) => ({
+			...group,
+			kind: 'group'
+		}));
 	}
 }
 
@@ -238,30 +264,6 @@ class McpAuditTreeDataProvider {
 	getChildren() {
 		return this.items;
 	}
-}
-
-function toDiffPreview(diff) {
-	const lines = diff.split('\n');
-	const before = [];
-	const after = [];
-	for (const line of lines) {
-		if (line.startsWith('+++') || line.startsWith('---') || line.startsWith('@@')) {
-			continue;
-		}
-		if (line.startsWith('+')) {
-			after.push(line.slice(1));
-		} else if (line.startsWith('-')) {
-			before.push(line.slice(1));
-		} else if (line.startsWith(' ')) {
-			const text = line.slice(1);
-			before.push(text);
-			after.push(text);
-		}
-	}
-	return {
-		before: before.join('\n'),
-		after: after.join('\n')
-	};
 }
 
 function parseStructuredChatInput(rawInput) {
@@ -765,6 +767,21 @@ function activate(context) {
 		);
 	});
 
+	const openPatchGroupDiff = vscode.commands.registerCommand('pointer.patch.openGroupDiff', async (patchGroup) => {
+		if (!patchGroup?.files || patchGroup.files.length === 0) {
+			return;
+		}
+		const preview = buildGroupedDiffPreview(patchGroup.files);
+		const beforeDocument = await vscode.workspace.openTextDocument({ content: preview.before || '' });
+		const afterDocument = await vscode.workspace.openTextDocument({ content: preview.after || '' });
+		await vscode.commands.executeCommand(
+			'vscode.diff',
+			beforeDocument.uri,
+			afterDocument.uri,
+			`Patch Group Preview: ${patchGroup.label}`
+		);
+	});
+
 	const applyPatchFile = vscode.commands.registerCommand('pointer.patch.applyFile', async (patchFile) => {
 		if (!patchFile?.path) {
 			return;
@@ -797,6 +814,15 @@ function activate(context) {
 
 	const applyAllPatchFiles = vscode.commands.registerCommand('pointer.patch.applyAll', async () => {
 		patchReviewStore.applyAll();
+	});
+
+	const applyPatchGroup = vscode.commands.registerCommand('pointer.patch.applyGroup', async (patchGroup) => {
+		if (!patchGroup?.files || patchGroup.files.length === 0) {
+			return;
+		}
+		for (const file of patchGroup.files) {
+			patchReviewStore.applyFile(file.path);
+		}
 	});
 
 	const updateStatusBar = () => {
@@ -923,9 +949,11 @@ function activate(context) {
 		refreshRulesAudit,
 		refreshMcpAudit,
 		openPatchDiff,
+		openPatchGroupDiff,
 		applyPatchFile,
 		rejectPatchFile,
 		applyAllPatchFiles,
+		applyPatchGroup,
 		patchReviewWatcher,
 		sessionSelectionWatcher
 	);
