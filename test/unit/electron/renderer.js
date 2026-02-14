@@ -232,7 +232,9 @@ function initLoadFn(opts) {
 			}
 
 			const source = await response.text();
-			const specifiers = extractDirectImportSpecifiers(source).slice(0, 25);
+			const allSpecifiers = extractDirectImportSpecifiers(source);
+			const specifierLimit = 25;
+			const specifiers = allSpecifiers.slice(0, specifierLimit);
 			const failures = [];
 			const failureFamilies = Object.create(null);
 			const failureKinds = Object.create(null);
@@ -277,7 +279,10 @@ function initLoadFn(opts) {
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
 					url: moduleUrl,
+					totalSpecifierCount: allSpecifiers.length,
 					specifierCount: specifiers.length,
+					specifierLimit,
+					isSpecifierListTruncated: allSpecifiers.length > specifierLimit,
 					failureCount: failures.length,
 					failureFamilies,
 					failureFamilyEntries,

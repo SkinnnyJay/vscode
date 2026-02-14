@@ -453,3 +453,16 @@
   **Why:** complements family rollups with error-type aggregation, making it easier to quantify whether failures are homogeneous (e.g. all dynamic-import fetch failures) or mixed.
 - **Error-kind rollup validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes `failureKinds` + sorted `failureKindEntries`; re-ran `make lint` (pass).
   **Why:** confirms the new error-type rollups are active and lint-clean.
+- **Specifier truncation metadata in dependency summaries (2026-02-14 PM)** Enhanced `[ESM IMPORT FAILURE DEPS SUMMARY]` payloads in `test/unit/electron/renderer.js` with:
+  - `totalSpecifierCount`,
+  - `specifierLimit`,
+  - `isSpecifierListTruncated`.
+  **Why:** makes it explicit when the diagnostic walk intentionally caps analyzed direct imports, preventing misinterpretation of partial dependency snapshots.
+- **Specifier metadata validation (2026-02-14 PM)** Re-ran isolated failing modules:
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/test/common/testTextModel.js`
+  and confirmed:
+  - non-truncated case reports `totalSpecifierCount === specifierCount`,
+  - truncated case reports `totalSpecifierCount > specifierCount` with `isSpecifierListTruncated: true`.
+  Re-ran `make lint` (pass).
+  **Why:** validates the new fields accurately communicate diagnostic coverage depth.
