@@ -111,6 +111,8 @@ export async function launch(options: LaunchOptions): Promise<Code> {
 
 export class Code {
 
+	private static readonly recentFailuresDisplayLimit = 8;
+
 	readonly driver: PlaywrightDriver;
 
 	constructor(
@@ -343,10 +345,14 @@ export class Code {
 			if (isWorkbenchStartupWait) {
 				const pageError = this.driver.getLastPageError();
 				if (pageError?.includes('Failed to fetch dynamically imported module')) {
-					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
+					const allRecentFailures = this.driver.getRecentRequestFailures();
+					const recentFailures = allRecentFailures.slice(-Code.recentFailuresDisplayLimit);
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
+					const truncationSuffix = allRecentFailures.length > recentFailures.length
+						? `, showingLast=${recentFailures.length}/${allRecentFailures.length}`
+						: '';
 					const failureSummary = recentFailures.length
-						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
+						? `\nRecent request failures (${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${truncationSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
 					const importTargetStatus = importTargetFilePath

@@ -578,3 +578,9 @@
   **Why:** establishes explicit schema evolution tracking for downstream log parsers and future backward-compatible changes.
 - **Schema-version validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified both top-level and dependency-summary payloads include `"schemaVersion":1`; re-ran `make lint` (pass).
   **Why:** confirms schema metadata is consistently emitted and lint-clean.
+- **Smoke fail-fast display-window metadata (2026-02-14 PM)** Updated `test/automation/src/code.ts` to:
+  - define a shared `recentFailuresDisplayLimit` constant (8),
+  - include `showingLast=<displayed>/<recorded>` in the fail-fast header when the recent-failure ring is truncated.
+  **Why:** makes it explicit that the fail-fast summary shows a bounded tail of the diagnostics buffer rather than the full history.
+- **Display-window validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes truncation metadata (sample: `showingLast=8/25`), and re-ran `make lint` (pass).
+  **Why:** confirms bounded-window metadata is active and non-regressive.
