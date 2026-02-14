@@ -709,3 +709,12 @@
   - `Import target dropped event estimates: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
   Re-ran `make lint` (pass).
   **Why:** confirms target-level truncation estimate is emitted and consistent with recent-vs-total counters.
+- **Import-target diagnostics signature (2026-02-14 PM)** Added a derived `Import target diagnostics signature: <hex>` line in smoke fail-fast output, hashing target URL + signal class + recent/total/dropped per-channel counters.
+  **Why:** enables quick run-to-run comparison of import-target diagnostic shape without manually diffing multiple metadata lines.
+- **Diagnostics signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target signal class: response-only-no-cdp-finish`
+  - `Import target dropped event estimates: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target diagnostics signature: 30ca1af4`
+  Re-ran `make lint` (pass).
+  **Why:** confirms signature generation is active, stable for current failure shape, and lint-clean.

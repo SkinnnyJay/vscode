@@ -435,8 +435,22 @@ export class Code {
 					const importTargetDroppedEventEstimatesStatus = importTargetUrl
 						? `\nImport target dropped event estimates: requestFailures=${importTargetDroppedEventEstimates?.requestFailures ?? 0}, scriptResponses=${importTargetDroppedEventEstimates?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetDroppedEventEstimates?.cdpScriptLoads ?? 0}`
 						: '';
+					const importTargetDiagnosticsSignature = importTargetUrl
+						? this.computeImportTargetDiagnosticsSignature(
+							importTargetUrl,
+							importTargetSignalClass,
+							importTargetRequestFailureEventCount,
+							importTargetScriptResponseEventCount,
+							importTargetCdpScriptLoadEventCount,
+							importTargetTotalEventCounts,
+							importTargetDroppedEventEstimates
+						)
+						: 'no-import-target-url';
+					const importTargetDiagnosticsSignatureStatus = importTargetUrl
+						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetDiagnosticsSignatureStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -569,6 +583,32 @@ export class Code {
 		}
 
 		return 'mixed-all-channels';
+	}
+
+	private computeImportTargetDiagnosticsSignature(
+		importTargetUrl: string,
+		importTargetSignalClass: string,
+		recentRequestFailures: number,
+		recentScriptResponses: number,
+		recentCdpScriptLoads: number,
+		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined
+	): string {
+		const payload = [
+			`url=${importTargetUrl}`,
+			`signalClass=${importTargetSignalClass}`,
+			`recent.requestFailures=${recentRequestFailures}`,
+			`recent.scriptResponses=${recentScriptResponses}`,
+			`recent.cdpScriptLoads=${recentCdpScriptLoads}`,
+			`total.requestFailures=${totalEventCounts?.requestFailures ?? 0}`,
+			`total.scriptResponses=${totalEventCounts?.scriptResponses ?? 0}`,
+			`total.cdpScriptLoads=${totalEventCounts?.cdpScriptLoads ?? 0}`,
+			`dropped.requestFailures=${droppedEventEstimates?.requestFailures ?? 0}`,
+			`dropped.scriptResponses=${droppedEventEstimates?.scriptResponses ?? 0}`,
+			`dropped.cdpScriptLoads=${droppedEventEstimates?.cdpScriptLoads ?? 0}`
+		].join('|');
+
+		return this.computeStableSignature(payload);
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {
