@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-title VSCode Dev
+title Pointer Dev
 
 pushd %~dp0\..
 
