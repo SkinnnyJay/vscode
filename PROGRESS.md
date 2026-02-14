@@ -363,3 +363,10 @@
   **Why:** removes repetitive duplicate skip lines from smoke runner artifacts while still documenting that dedupe behavior is intentional.
 - **One-time dedupe validation (2026-02-14 PM)** Recompiled smoke/automation, re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified runner logs now include a single test-skip notice and a single suite-skip notice, and re-ran `make lint` (pass).
   **Why:** confirms log dedupe works as designed without altering failure semantics or lint health.
+- **Unit renderer direct-dependency import diagnostics (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` failure handling to parse the failed module’s direct static `import`/`export ... from` specifiers, attempt direct imports for those entries, and emit structured `[ESM IMPORT FAILURE DEP]` records (`specifier`, resolved URL, error, `existsOnDisk`).
+  **Why:** adds concrete dependency-edge visibility for otherwise opaque top-level dynamic-import failures, enabling faster narrowing of the first failing branch in large module graphs.
+- **Direct-dependency diagnostics validation (2026-02-14 PM)** Re-ran isolated failing modules:
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`
+  - `xvfb-run -a ./scripts/test.sh --run vs/editor/test/browser/testCodeEditor.js`
+  and confirmed new `[ESM IMPORT FAILURE DEP]` records are emitted with resolved file URLs and `existsOnDisk=true`; re-ran `make lint` (pass).
+  **Why:** verifies the new unit-level observability path is active and lint-safe while preserving existing failure behavior.

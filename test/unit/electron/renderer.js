@@ -119,6 +119,83 @@ function initLoadFn(opts) {
 	const baseUrl = pathToFileURL(path.join(__dirname, `../../../${outdir}/`));
 	globalThis._VSCODE_FILE_ROOT = baseUrl.href;
 
+	const staticImportRegex = /(?:import\s+(?:[^'"]+from\s*)?["']([^"']+)["'])|(?:export\s+[^'"]*from\s*["']([^"']+)["'])/g;
+	const seenDependencyDiagnostics = new Set();
+
+	function extractDirectImportSpecifiers(sourceText) {
+		const matches = [];
+		let match;
+		while ((match = staticImportRegex.exec(sourceText)) !== null) {
+			const specifier = match[1] || match[2];
+			if (specifier) {
+				matches.push(specifier);
+			}
+		}
+		return [...new Set(matches)];
+	}
+
+	function resolveImportSpecifier(specifier, parentUrl) {
+		if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(specifier)) {
+			return specifier;
+		}
+		if (specifier.startsWith('.') || specifier.startsWith('/')) {
+			return new URL(specifier, parentUrl).href;
+		}
+		return specifier;
+	}
+
+	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
+		if (seenDependencyDiagnostics.has(moduleUrl)) {
+			return;
+		}
+		seenDependencyDiagnostics.add(moduleUrl);
+
+		try {
+			const response = await fetch(moduleUrl);
+			if (!response.ok) {
+				console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+					module: moduleId,
+					url: moduleUrl,
+					error: `dependency source fetch failed (${response.status})`
+				}));
+				return;
+			}
+
+			const source = await response.text();
+			const specifiers = extractDirectImportSpecifiers(source).slice(0, 25);
+			for (const specifier of specifiers) {
+				const resolved = resolveImportSpecifier(specifier, moduleUrl);
+				try {
+					await import(resolved);
+				} catch (depErr) {
+					let depExistsOnDisk = false;
+					if (resolved.startsWith('file://')) {
+						try {
+							depExistsOnDisk = fs.existsSync(fileURLToPath(resolved));
+						} catch {
+							depExistsOnDisk = false;
+						}
+					}
+
+					console.error('[ESM IMPORT FAILURE DEP]', JSON.stringify({
+						module: moduleId,
+						parentUrl: moduleUrl,
+						specifier,
+						resolved,
+						error: String(depErr),
+						existsOnDisk: depExistsOnDisk
+					}));
+				}
+			}
+		} catch (diagnosticErr) {
+			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+				module: moduleId,
+				url: moduleUrl,
+				error: String(diagnosticErr)
+			}));
+		}
+	}
+
 	// set loader
 	function importModules(modules) {
 		const moduleArray = Array.isArray(modules) ? modules : [modules];
@@ -149,6 +226,7 @@ function initLoadFn(opts) {
 					fetchOk,
 					existsOnDisk
 				}));
+				await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);
 				console.log(err);
 				_loaderErrors.push(err);
