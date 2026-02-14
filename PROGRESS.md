@@ -261,3 +261,9 @@
   **Why:** rules out an additional Chromium GPU/compositor path as a practical workaround in this VM.
 - **Single-process runtime probe (2026-02-14 PM)** Retried isolated renderer test with `--single-process --in-process-gpu`; Electron exited early with trace/breakpoint trap (core dumped) before resolving the dynamic-import issue.
   **Why:** documents that single-process mode is not a viable stability workaround for this environment.
+- **Renderer loader flake characterization (2026-02-14 PM)** Ran repeated isolated Electron module probes and confirmed mixed behavior in this VM: lightweight modules still load (`viewEventHandler.js`), `view.js`/`bracketMatching.test.js` fail consistently with `TypeError: Failed to fetch dynamically imported module`, and `nativeEditContext.js` shows intermittent pass/fail behavior across repeated runs.
+  **Why:** sharpens the failure signature from “single file missing” to an environment-level renderer ESM instability pattern.
+- **Import-map + fetch verification pass (2026-02-14 PM)** Added temporary harness diagnostics and confirmed the CSS import-map includes `nativeEditContext.css` (`cssEntryCount: 301`, mapping present) and direct `fetch(file://...view.js)` returns `200` with expected byte length even when `import()` fails after retries.
+  **Why:** rules out missing CSS mappings and missing on-disk files, reinforcing that the unresolved issue is in runtime module loading rather than build outputs.
+- **Diagnostic rollback (2026-02-14 PM)** Reverted all temporary instrumentation/retry experiments in `test/unit/electron/renderer.html` and `test/unit/electron/renderer.js` after collecting evidence.
+  **Why:** keeps the branch clean and avoids landing speculative harness behavior changes.
