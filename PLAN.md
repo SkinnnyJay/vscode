@@ -195,7 +195,7 @@ Success metrics:
 Tasks:
 - [x] - M6 - [sidecar] Implement `.pointer/rules/` loader.
 - [x] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
-- [ ] - M6 - [extension] Display applied rules in UI.
+- [x] - M6 - [extension] Display applied rules in UI.
 - [ ] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
 - [ ] - M6 - [sidecar] Run hooks sandboxed with timeouts.
 - [ ] - M6 - [sidecar] Allow hooks to block, redact, or modify prompts (policy-limited).

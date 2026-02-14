@@ -17,6 +17,7 @@
 		"onView:pointer.chatMessages",
 		"onView:pointer.chatContext",
 		"onView:pointer.patchReview",
+		"onView:pointer.rulesAudit",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.tab.cancel",
@@ -37,6 +38,7 @@
 		"onCommand:pointer.patch.rejectFile",
 		"onCommand:pointer.patch.applyAll",
 		"onCommand:pointer.context.openExcludes",
+		"onCommand:pointer.rules.refresh",
 		"onCommand:pointer.openSettings"
 	],
 	"main": "./extension.js",
@@ -143,6 +145,11 @@
 				"category": "Pointer"
 			},
 			{
+				"command": "pointer.rules.refresh",
+				"title": "Pointer: Refresh Rules Audit",
+				"category": "Pointer"
+			},
+			{
 				"command": "pointer.openSettings",
 				"title": "Pointer: Open Settings",
 				"category": "Pointer"
@@ -198,6 +205,11 @@
 				{
 					"command": "pointer.patch.applyAll",
 					"when": "view == pointer.patchReview",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.rules.refresh",
+					"when": "view == pointer.rulesAudit",
 					"group": "navigation"
 				}
 			],
@@ -379,6 +391,10 @@
 				{
 					"id": "pointer.patchReview",
 					"name": "Patch Review"
+				},
+				{
+					"id": "pointer.rulesAudit",
+					"name": "Rules Audit"
 				}
 			]
 		}

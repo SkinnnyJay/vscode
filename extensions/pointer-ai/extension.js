@@ -191,6 +191,32 @@ class PatchReviewTreeDataProvider {
 	}
 }
 
+class RulesAuditTreeDataProvider {
+	constructor() {
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		/** @type {vscode.TreeItem[]} */
+		this.items = [
+			new vscode.TreeItem('No rules loaded', vscode.TreeItemCollapsibleState.None)
+		];
+	}
+
+	setRules(ruleItems) {
+		this.items = ruleItems.length > 0 ? ruleItems : [
+			new vscode.TreeItem('No rules found for active workspace/profile', vscode.TreeItemCollapsibleState.None)
+		];
+		this.onDidChangeTreeDataEmitter.fire(undefined);
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren() {
+		return this.items;
+	}
+}
+
 function toDiffPreview(diff) {
 	const lines = diff.split('\n');
 	const before = [];
@@ -297,6 +323,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	patchReviewTree.message = 'Agent patch proposals';
+	const rulesAuditProvider = new RulesAuditTreeDataProvider();
+	const rulesAuditTree = vscode.window.createTreeView('pointer.rulesAudit', {
+		treeDataProvider: rulesAuditProvider,
+		showCollapseAll: false
+	});
+	rulesAuditTree.message = 'Applied rules';
 	let activeChatAbortController;
 	const inlineCompletion = createInlineCompletionProvider(internalApi);
 	const inlineCompletionRegistration = vscode.languages.registerInlineCompletionItemProvider(
@@ -527,6 +559,30 @@ function activate(context) {
 		await vscode.window.showTextDocument(document);
 	});
 
+	const refreshRulesAudit = vscode.commands.registerCommand('pointer.rules.refresh', async () => {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+		if (!workspaceFolder) {
+			rulesAuditProvider.setRules([]);
+			return;
+		}
+		const rulesDirectory = path.join(workspaceFolder.uri.fsPath, '.pointer', 'rules');
+		const rulesProfile = vscode.workspace.getConfiguration('pointer.prompts').get('rulesProfile', 'workspace');
+		try {
+			const entries = await fs.readdir(rulesDirectory, { withFileTypes: true });
+			const ruleItems = entries
+				.filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+				.sort((left, right) => left.name.localeCompare(right.name))
+				.map((entry) => {
+					const item = new vscode.TreeItem(entry.name, vscode.TreeItemCollapsibleState.None);
+					item.description = `workspace | profile=${rulesProfile}`;
+					return item;
+				});
+			rulesAuditProvider.setRules(ruleItems);
+		} catch {
+			rulesAuditProvider.setRules([]);
+		}
+	});
+
 	const openPatchDiff = vscode.commands.registerCommand('pointer.patch.openDiff', async (patchFile) => {
 		if (!patchFile?.diff || !patchFile?.path) {
 			return;
@@ -610,6 +666,7 @@ function activate(context) {
 
 	syncSelectionsFromConfig();
 	updateStatusBar();
+	void refreshRulesAudit();
 
 	const invalidKeys = validatePointerDefaultsConfiguration();
 	if (invalidKeys.length > 0) {
@@ -626,6 +683,9 @@ function activate(context) {
 		}
 		if (event.affectsConfiguration('pointer.compatibility')) {
 			updateStatusBar();
+		}
+		if (event.affectsConfiguration('pointer.prompts.rulesProfile')) {
+			void refreshRulesAudit();
 		}
 	});
 	const typingCancelWatcher = vscode.workspace.onDidChangeTextDocument(() => {
@@ -665,6 +725,7 @@ function activate(context) {
 		chatContextProvider,
 		patchReviewTree,
 		patchReviewProvider,
+		rulesAuditTree,
 		inlineCompletionRegistration,
 		statusBarItem,
 		configWatcher,
@@ -687,6 +748,7 @@ function activate(context) {
 		pinCustomContext,
 		removePinnedContext,
 		openContextExcludes,
+		refreshRulesAudit,
 		openPatchDiff,
 		applyPatchFile,
 		rejectPatchFile,

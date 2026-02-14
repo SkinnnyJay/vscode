@@ -177,5 +177,7 @@
   **Why:** protects context engine correctness as retrieval evolves.
 - **M6-01/M6-02** Added rules loader (`rules/loader.ts`) for `.pointer/rules/` plus deterministic precedence resolution (global -> workspace -> session override) with tests.
   **Why:** establishes predictable rules application order required for safe policy composition.
+- **M6-03** Added rules audit view (`pointer.rulesAudit`) and refresh command to display active workspace rule files with profile context.
+  **Why:** surfaces applied rules visibility directly in the UI for policy transparency.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
