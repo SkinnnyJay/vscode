@@ -109,5 +109,7 @@
   **Why:** gives users immediate visibility into what context and policy decisions are being sent to the router.
 - **M2-14** Added provider health/test checks (`providers/health.ts`) with missing-binary classification and install hints, backed by unit tests.
   **Why:** enables deterministic provider readiness checks before routing requests to unavailable CLIs.
+- **M2-15** Added provider error classifier (`providers/errors.ts`) for missing binary/auth/rate-limit/timeout cases with retryability signals, plus unit coverage.
+  **Why:** standardizes downstream UX/retry behavior from heterogeneous CLI failure modes.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

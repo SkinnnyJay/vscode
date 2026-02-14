@@ -10,3 +10,4 @@ export * from './router/prompt-assembly.js';
 export * from './router/planner.js';
 export * from './providers/capabilities.js';
 export * from './providers/health.js';
+export * from './providers/errors.js';

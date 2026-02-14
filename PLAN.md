@@ -115,7 +115,7 @@ Tasks:
 - [x] - M2 - [extension] Render “context sent” panel from router plan.
 - [x] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
 - [x] - M2 - [sidecar] Add provider health checks, missing-binary detection, and “Test provider”.
-- [ ] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
+- [x] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
 - [ ] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
 - [ ] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
 - [ ] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
