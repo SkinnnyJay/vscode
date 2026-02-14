@@ -561,3 +561,13 @@
   **Why:** preserves correlation data with lower repeated diagnostic overhead and consistent reference payloads for duplicate failure events.
 - **Cache-path validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified top-level failure still carries `dependencyFailureSignature`/counts matching emitted summary; re-ran `make lint` (pass).
   **Why:** confirms cache introduction is behavior-preserving and lint-safe.
+- **Latest post-enhancement validation sweep (2026-02-14 PM)** Re-ran:
+  - `make lint` (pass),
+  - `make test-unit` (pass, 7584 passing / 134 pending),
+  - `xvfb-run -a make test` (expected renderer ESM failure persists),
+  - `xvfb-run -a make test-smoke` (expected **1 failing / 94 pending / 0 passing**).
+  Verified full-test logs now include:
+  - top-level `[ESM IMPORT FAILURE]` with inlined dependency reference fields (`dependencyFailureSignature`, counts),
+  - matching `[ESM IMPORT FAILURE DEPS SUMMARY]` rich rollups.
+  Verified smoke fail-fast header includes source rollups + stable signature (latest sample: `signature=7e2978ab`).
+  **Why:** reconfirms core green gates and preserves known environment-level blocker while validating that the latest diagnostics continue to surface as designed.
