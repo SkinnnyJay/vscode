@@ -309,3 +309,7 @@
   **Why:** confirms no behavioral masking: only diagnostics/timing improved while root issue remains transparently visible.
 - **Post-change quality gates (2026-02-14 PM)** Re-ran `make lint` and `make test-unit` (7584 passing / 134 pending) after automation diagnostics changes.
   **Why:** validates the test-automation code updates did not regress lint or core unit suites.
+- **Renderer unit harness import diagnostics (2026-02-14 PM)** Enhanced `test/unit/electron/renderer.js` import failure handling to emit a structured `[ESM IMPORT FAILURE]` record (module, URL, import error, and best-effort `fetch` status/ok) before surfacing the existing loader error.
+  **Why:** preserves existing behavior while making `make test` / isolated renderer failures substantially easier to triage from logs.
+- **Import diagnostic verification (2026-02-14 PM)** Re-ran isolated failing/passing renderer modules (`vs/workbench/workbench.desktop.main.js`, `vs/editor/common/viewEventHandler.js`) and confirmed new structured diagnostics appear only for failing imports; re-ran `make lint` (pass).
+  **Why:** confirms the new observability path is active and non-disruptive.

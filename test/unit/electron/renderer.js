@@ -124,7 +124,24 @@ function initLoadFn(opts) {
 		const moduleArray = Array.isArray(modules) ? modules : [modules];
 		const tasks = moduleArray.map(mod => {
 			const url = new URL(`./${mod}.js`, baseUrl).href;
-			return import(url).catch(err => {
+			return import(url).catch(async err => {
+				let fetchStatus = 'unavailable';
+				let fetchOk = false;
+				try {
+					const response = await fetch(url);
+					fetchStatus = String(response.status);
+					fetchOk = response.ok;
+				} catch (fetchError) {
+					fetchStatus = String(fetchError);
+				}
+
+				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
+					module: mod,
+					url,
+					error: String(err),
+					fetchStatus,
+					fetchOk
+				}));
 				console.log(mod, url);
 				console.log(err);
 				_loaderErrors.push(err);
