@@ -21,8 +21,8 @@ export function setup(logger: Logger) {
 		});
 
 		after(async function () {
-			const app = this.app as Application;
-			const workspacePathOrFolder = app.workspacePathOrFolder;
+			const app = this.app as Application | undefined;
+			const workspacePathOrFolder = app?.workspacePathOrFolder;
 			if (!workspacePathOrFolder || !fs.existsSync(workspacePathOrFolder)) {
 				return;
 			}

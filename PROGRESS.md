@@ -343,3 +343,9 @@
   **Why:** removes speculative production-path complexity that did not mitigate the renderer import failure.
 - **Rollback validation (2026-02-14 PM)** Rebuilt (`make build`), re-ran focused smoke startup case (still fails with the same import error and `existsOnDisk=true` diagnostics), then re-ran `make lint` and `make test-unit` (7584 passing / 134 pending).
   **Why:** confirms rollback is safe and keeps the known failure signature unchanged while preserving green core gates.
+- **Smoke duplicate-failure suppression for fatal startup import errors (2026-02-14 PM)** Updated `test/smoke/src/utils.ts` to track the first fatal `Workbench startup failed due to renderer module import error` and skip subsequent smoke tests/suites once that fatal startup condition is detected.
+  **Why:** avoids repeated low-value startup failures across unrelated suites, making smoke runs fail faster and more actionable in deterministic renderer-import failure environments.
+- **Notebook cleanup hook hardening for skipped suites (2026-02-14 PM)** Updated `test/smoke/src/areas/notebook/notebook.test.ts` `after` hook to guard `this.app` access before resolving `workspacePathOrFolder`.
+  **Why:** prevents secondary `TypeError` noise (`workspacePathOrFolder` on undefined) when the suite was skipped after a prior fatal startup failure.
+- **Smoke fail-fast suppression validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran full smoke runner (`xvfb-run -a node test/index.js`): run now completes in ~2s with **1 failing** / **94 pending** (down from repeated multi-suite failures), preserving the primary renderer import root-cause failure signal. Re-ran `make lint` (pass).
+  **Why:** confirms the suppression logic is active, non-regressive for lint, and materially improves signal-to-noise and runtime for repeated startup-failure loops.

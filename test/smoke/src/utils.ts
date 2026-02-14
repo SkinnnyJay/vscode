@@ -7,6 +7,12 @@ import { Suite, Context } from 'mocha';
 import { dirname, join } from 'path';
 import { Application, ApplicationOptions, Logger } from '../../automation';
 
+let fatalWorkbenchStartupFailure: string | undefined;
+
+function isWorkbenchStartupImportFailure(error: unknown): boolean {
+	return String(error).includes('Workbench startup failed due to renderer module import error');
+}
+
 export function describeRepeat(n: number, description: string, callback: (this: Suite) => void): void {
 	for (let i = 0; i < n; i++) {
 		describe(`${description} (iteration ${i})`, callback);
@@ -37,6 +43,12 @@ export function installDiagnosticsHandler(logger: Logger, appFn?: () => Applicat
 
 	// Before each test
 	beforeEach(async function () {
+		if (fatalWorkbenchStartupFailure) {
+			logger.log(`Skipping test due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailure}`);
+			this.skip();
+			return;
+		}
+
 		const testTitle = this.currentTest?.title;
 		logger.log('');
 		logger.log(`>>> Test start: '${testTitle ?? 'unknown'}' <<<`);
@@ -55,9 +67,13 @@ export function installDiagnosticsHandler(logger: Logger, appFn?: () => Applicat
 
 		const failed = currentTest.state === 'failed';
 		const testTitle = currentTest.title;
+		const currentTestError = currentTest.err;
 		logger.log('');
 		if (failed) {
 			logger.log(`>>> !!! FAILURE !!! Test end: '${testTitle}' !!! FAILURE !!! <<<`);
+			if (!fatalWorkbenchStartupFailure && isWorkbenchStartupImportFailure(currentTestError)) {
+				fatalWorkbenchStartupFailure = String(currentTestError);
+			}
 		} else {
 			logger.log(`>>> Test end: '${testTitle}' <<<`);
 		}
@@ -81,6 +97,12 @@ export function suiteCrashPath(options: ApplicationOptions, suiteName: string): 
 
 function installAppBeforeHandler(optionsTransform?: (opts: ApplicationOptions) => ApplicationOptions) {
 	before(async function () {
+		if (fatalWorkbenchStartupFailure) {
+			this.defaultOptions.logger.log(`Skipping suite startup due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailure}`);
+			this.skip();
+			return;
+		}
+
 		const suiteName = this.test?.parent?.title ?? 'unknown';
 
 		this.app = createApp({
@@ -88,7 +110,15 @@ function installAppBeforeHandler(optionsTransform?: (opts: ApplicationOptions) =
 			logsPath: suiteLogsPath(this.defaultOptions, suiteName),
 			crashesPath: suiteCrashPath(this.defaultOptions, suiteName)
 		}, optionsTransform);
-		await this.app.start();
+		try {
+			await this.app.start();
+		} catch (error) {
+			if (isWorkbenchStartupImportFailure(error)) {
+				fatalWorkbenchStartupFailure = String(error);
+			}
+
+			throw error;
+		}
 	});
 }
 
