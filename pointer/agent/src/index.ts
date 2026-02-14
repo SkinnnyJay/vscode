@@ -38,3 +38,6 @@ export * from './ci/headless-agent.js';
 export * from './cloud/annotations.js';
 export * from './cloud/checks.js';
 export * from './cloud/pr-review-bot.js';
+export * from './enterprise/policy-bundles.js';
+export * from './enterprise/audit-log.js';
+export * from './enterprise/provider-boundary.js';

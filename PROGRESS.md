@@ -219,5 +219,9 @@
   **Why:** introduces explicit CI policy and secret controls before automated headless execution.
 - **M9-03/M9-04/M9-05** Added PR review bot prototype and cloud outputs (`cloud/pr-review-bot.ts`, `cloud/annotations.ts`, `cloud/checks.ts`) with tests.
   **Why:** provides end-to-end PR review artifact generation (annotations + GitHub checks payloads) from headless agent output.
+- **M9-06** Added enterprise policy bundle + audit log schema modules (`enterprise/policy-bundles.ts`, `enterprise/audit-log.ts`) with tests.
+  **Why:** defines baseline enterprise governance structures for policy enforcement and auditable action history.
+- **M9-07** Added provider allowlist/data-boundary evaluator (`enterprise/provider-boundary.ts`) with allowlist + boundary mismatch tests.
+  **Why:** enforces enterprise provider access and data boundary constraints consistently.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
