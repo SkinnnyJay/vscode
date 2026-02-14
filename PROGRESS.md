@@ -115,5 +115,9 @@
   **Why:** provides the first concrete CLI adapter path required for end-to-end router execution.
 - **M2-17** Added Codex adapter unit tests validating streaming aggregation and cancellation behavior.
   **Why:** ensures adapter control-flow correctness under both happy path and interrupted requests.
+- **M2-18** Implemented `ClaudeAdapter` with streamed chunk handling and `AbortSignal` cancellation semantics parallel to Codex adapter behavior.
+  **Why:** brings a second provider into the common adapter contract for multi-provider parity.
+- **M2-19** Added Claude adapter unit coverage for streaming aggregation and cancellation interrupt behavior.
+  **Why:** validates correctness of shared adapter mechanics across provider-specific implementations.
 - **M2-13** Added provider capability registry/model in `pointer/agent/src/providers/capabilities.ts` (tab/tools/json/long-context/stream/cancel flags).
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.

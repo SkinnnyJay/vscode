@@ -118,8 +118,8 @@ Tasks:
 - [x] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
 - [x] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
 - [x] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
-- [ ] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
-- [ ] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
+- [x] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
+- [x] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
 - [ ] - M2 - [sidecar] Implement OpenCode adapter with JSON/table output support.
 - [ ] - M2 - [sidecar] Add OpenCode adapter unit tests (JSON mode).
 - [ ] - M2 - [sidecar] Decide on ACP compatibility layer and document decision.

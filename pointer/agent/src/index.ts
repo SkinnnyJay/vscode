@@ -13,3 +13,4 @@ export * from './providers/health.js';
 export * from './providers/errors.js';
 export * from './providers/adapter-types.js';
 export * from './providers/codex-adapter.js';
+export * from './providers/claude-adapter.js';
