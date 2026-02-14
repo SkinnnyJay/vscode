@@ -259,3 +259,5 @@
   **Why:** further narrows the unresolved full-suite failure by ruling out two common headless Electron mitigations.
 - **Extended GPU-stack probe (2026-02-14 PM)** Retried isolated renderer test with `--disable-gpu --disable-software-rasterizer --disable-features=VizDisplayCompositor`; dynamic import failure persisted unchanged.
   **Why:** rules out an additional Chromium GPU/compositor path as a practical workaround in this VM.
+- **Single-process runtime probe (2026-02-14 PM)** Retried isolated renderer test with `--single-process --in-process-gpu`; Electron exited early with trace/breakpoint trap (core dumped) before resolving the dynamic-import issue.
+  **Why:** documents that single-process mode is not a viable stability workaround for this environment.
