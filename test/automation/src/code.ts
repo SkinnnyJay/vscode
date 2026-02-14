@@ -419,8 +419,14 @@ export class Code {
 					const importTargetTotalChannelEventCounts = importTargetUrl
 						? `\nImport target total event counts: requestFailures=${importTargetTotalEventCounts?.requestFailures ?? 0}, scriptResponses=${importTargetTotalEventCounts?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetTotalEventCounts?.cdpScriptLoads ?? 0}`
 						: '';
+					const importTargetSignalClass = importTargetUrl && importTargetTotalEventCounts
+						? this.classifyImportTargetSignal(importTargetTotalEventCounts)
+						: 'no-import-target-url';
+					const importTargetSignalClassStatus = importTargetUrl
+						? `\nImport target signal class: ${importTargetSignalClass}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -519,6 +525,40 @@ export class Code {
 		}
 
 		return count;
+	}
+
+	private classifyImportTargetSignal(eventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number }): string {
+		const { requestFailures, scriptResponses, cdpScriptLoads } = eventCounts;
+
+		if (requestFailures === 0 && scriptResponses === 0 && cdpScriptLoads === 0) {
+			return 'no-channel-signals';
+		}
+
+		if (requestFailures > 0 && scriptResponses === 0 && cdpScriptLoads === 0) {
+			return 'request-failure-only';
+		}
+
+		if (requestFailures === 0 && scriptResponses > 0 && cdpScriptLoads === 0) {
+			return 'response-only-no-cdp-finish';
+		}
+
+		if (requestFailures === 0 && scriptResponses === 0 && cdpScriptLoads > 0) {
+			return 'cdp-finish-only';
+		}
+
+		if (requestFailures > 0 && scriptResponses > 0 && cdpScriptLoads === 0) {
+			return 'response-and-request-failure';
+		}
+
+		if (requestFailures === 0 && scriptResponses > 0 && cdpScriptLoads > 0) {
+			return 'response-and-cdp-finish';
+		}
+
+		if (requestFailures > 0 && scriptResponses === 0 && cdpScriptLoads > 0) {
+			return 'request-failure-and-cdp-finish';
+		}
+
+		return 'mixed-all-channels';
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {

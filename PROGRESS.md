@@ -693,3 +693,11 @@
   - recent-window counts remain `0/0/0`
   - total counts remain `requestFailures=0, scriptResponses=1, cdpScriptLoads=0`.
   **Why:** confirms canonicalization is active and non-regressive while indicating the observed channel asymmetry is not caused by URL query/hash mismatches.
+- **Import-target signal classification (2026-02-14 PM)** Added derived import-target signal classification in `test/automation/src/code.ts` based on cumulative per-channel counters (request failures, script responses, CDP script loads), surfaced as `Import target signal class: ...` in fail-fast output.
+  **Why:** provides a compact, machine-readable interpretation of channel evidence so repeated runs can be compared quickly without manually inferring patterns from raw counters.
+- **Signal-class validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast lines now include:
+  - `Import target channel event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target signal class: response-only-no-cdp-finish`
+  Re-ran `make lint` (pass).
+  **Why:** confirms derived classification works and remains aligned with existing counters in the known failure mode.
