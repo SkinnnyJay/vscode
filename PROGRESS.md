@@ -247,3 +247,5 @@
   **Why:** adds stronger root-cause evidence that the remaining `make test` issue is runtime-environment specific rather than missing build artifacts.
 - **Import-map scope experiment (2026-02-14 PM)** Tried extending the renderer import-map generation to add scoped mappings for relative `.css` imports discovered in compiled `out/**/*.js`; isolated renderer test still failed with the same dynamic import error, so the experiment was reverted.
   **Why:** rules out simple relative-css import-map scope gaps as the cause and keeps the branch free of speculative harness changes.
+- **Electron runtime switch probe (2026-02-14 PM)** Tested `app.commandLine.appendSwitch('allow-file-access-from-files')` in the Electron test harness for the isolated failing renderer case; the same dynamic import failure persisted and the probe was reverted.
+  **Why:** rules out file-scheme access policy as the primary cause and preserves a clean harness baseline.
