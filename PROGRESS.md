@@ -291,3 +291,9 @@
   **Why:** demonstrates that the smoke failureing entry module also fails under the unit Electron harness, and that switching `out` vs `out-build` does not mitigate.
 - **Single-smoke args probe (2026-02-14 PM)** Ran focused smoke case (`-g "verifies opened editors are restored"`) with and without `--electronArgs "--disable-gpu --no-sandbox"`; both runs still timed out waiting for `.monaco-workbench`.
   **Why:** rules out a straightforward smoke-launch mitigation via those common Electron runtime flags.
+- **Notebook smoke cleanup hardening (2026-02-14 PM)** Updated `test/smoke/src/areas/notebook/notebook.test.ts` to avoid shell-based `execSync` cleanup and skip git-reset cleanup when the workspace path is missing; now uses guarded `spawnSync('git', ...)`.
+  **Why:** removes spurious `/bin/sh ENOENT` after-hook failures when smoke startup fails before a valid workspace is ready.
+- **Smoke rerun after notebook cleanup fix (2026-02-14 PM)** Re-ran `xvfb-run -a make test-smoke`; failure count dropped from 20 to 19 (3 pending), with remaining failures still dominated by `.monaco-workbench` timeout and no notebook `/bin/sh ENOENT` cleanup error.
+  **Why:** confirms the cleanup hardening works and isolates remaining smoke failures to the broader renderer import/startup issue.
+- **Post-fix gate checks (2026-02-14 PM)** Re-ran `make test-unit` (7584 passing / 134 pending) and `make lint` (pass) after the smoke test code update.
+  **Why:** verifies the notebook smoke cleanup change did not regress core unit or lint gates.
