@@ -33,3 +33,5 @@
   **Why:** provides a concrete operational fallback when registry-based extension discovery is unavailable.
 - **M0-16** Hardened setup prerequisites (`scripts/setup.sh` now enforces Node 22.22.0+) and verified `make setup` succeeds after installing required Linux Kerberos headers.  
   **Why:** prevents false-positive setup attempts on incompatible Node patch versions and documents environment requirements for reproducible installs.
+- **M0-17** Ran `npm run watch` and confirmed client/extension watchers initialize, complete initial compilation, and remain active in watch mode.  
+  **Why:** validates the required iterative development loop for Pointer changes.

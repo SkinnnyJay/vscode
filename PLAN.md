@@ -58,7 +58,7 @@ Tasks:
 - [x] - M0 - [core] Point `product.json` at the chosen extension registry.
 - [x] - M0 - [core] Add documentation for VSIX sideloading fallback.
 - [x] - M0 - [core] Ensure `npm install` works on a clean machine.
-- [ ] - M0 - [core] Ensure `npm run watch` works and stays watching.
+- [x] - M0 - [core] Ensure `npm run watch` works and stays watching.
 - [ ] - M0 - [core] Ensure `./scripts/code.sh` and `./scripts/code.bat` launch a dev build.
 - [ ] - M0 - [ci] Add CI to build dev artifacts for macOS/Linux/Windows.
 - [ ] - M0 - [ci] Add CI to run unit tests and lint for Pointer-owned packages.
