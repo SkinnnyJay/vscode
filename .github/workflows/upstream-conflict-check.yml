@@ -1,0 +1,48 @@
+name: Upstream Conflict Check
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-upstream-merge-conflicts:
+    name: Detect upstream merge conflicts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Add and fetch upstream
+        run: |
+          git remote add upstream https://github.com/microsoft/vscode.git
+          git fetch --no-tags upstream main
+
+      - name: Checkout repository default branch
+        run: |
+          git checkout "${{ github.event.repository.default_branch }}"
+
+      - name: Attempt merge from upstream/main
+        shell: bash
+        run: |
+          set +e
+          git merge --no-commit --no-ff upstream/main
+          MERGE_EXIT_CODE=$?
+          set -e
+
+          if [[ ${MERGE_EXIT_CODE} -ne 0 ]]; then
+            echo "::error::Upstream merge conflicts detected when merging upstream/main into ${GITHUB_REPOSITORY}@${{ github.event.repository.default_branch }}."
+            git status --short
+            if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+              git merge --abort
+            fi
+            exit 1
+          fi
+
+          echo "No merge conflicts detected against upstream/main."
+          if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+            git merge --abort
+          fi

@@ -47,7 +47,7 @@ Tasks:
 - [x] - M0 - [repo] Add `upstream` remote and record upstream branch tracking.
 - [x] - M0 - [docs] Document upstream merge strategy (cadence + rebase/merge policy).
 - [x] - M0 - [docs] Add a short “merge playbook” with exact commands and conflict policy.
-- [ ] - M0 - [ci] Add CI check that reports upstream merge conflicts early.
+- [x] - M0 - [ci] Add CI check that reports upstream merge conflicts early.
 - [ ] - M0 - [ci] Add CI job to run smoke launch (`./scripts/code.sh`) on macOS/Linux.
 - [ ] - M0 - [core] Replace product branding in `product.json` (Pointer name/icons/URLs).
 - [ ] - M0 - [core] Replace product icons and ensure no VS Code/Cursor assets remain.

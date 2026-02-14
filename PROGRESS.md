@@ -11,3 +11,5 @@
   **Why:** defines a stable operating model for keeping the fork current while minimizing long-term merge friction.
 - **M0-05** Added `docs/upstream-merge-playbook.md` with executable sync commands and explicit conflict resolution policy.  
   **Why:** gives contributors a deterministic, repeatable upstream sync flow and reduces unsafe conflict handling.
+- **M0-06** Added `.github/workflows/upstream-conflict-check.yml` to detect merge conflicts against `upstream/main` on PRs and a weekly schedule.  
+  **Why:** surfaces upstream drift risk automatically before manual sync windows and shortens reaction time.
