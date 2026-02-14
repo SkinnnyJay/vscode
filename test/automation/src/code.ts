@@ -460,6 +460,11 @@ export class Code {
 					const importTargetCoverageStatus = importTargetUrl
 						? `\nImport target channel coverage: requestFailures=${this.formatCoverage(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0)}, scriptResponses=${this.formatCoverage(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0)}, cdpScriptLoads=${this.formatCoverage(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)}`
 						: '';
+					const importTargetChannelCoverage = {
+						requestFailures: this.buildChannelCoverageStats(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0),
+						scriptResponses: this.buildChannelCoverageStats(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0),
+						cdpScriptLoads: this.buildChannelCoverageStats(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)
+					};
 					const importTargetDiagnosticsSchemaStatus = importTargetUrl
 						? `\nImport target diagnostics schemaVersion: ${Code.importTargetDiagnosticsSchemaVersion}`
 						: '';
@@ -515,6 +520,7 @@ export class Code {
 						importTargetSignalClass,
 						importTargetVisibilityClass,
 						importTargetChannelStates,
+						importTargetChannelCoverage,
 						importTargetDiagnosticsSignature,
 						trial,
 						retryInterval,
@@ -726,6 +732,11 @@ export class Code {
 		signalClass: string,
 		visibilityClass: string,
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' },
+		channelCoverage: {
+			requestFailures: { recent: number; total: number; percent: number | null };
+			scriptResponses: { recent: number; total: number; percent: number | null };
+			cdpScriptLoads: { recent: number; total: number; percent: number | null };
+		},
 		signature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
@@ -740,6 +751,11 @@ export class Code {
 		signalClass: string;
 		visibilityClass: string;
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' };
+		channelCoverage: {
+			requestFailures: { recent: number; total: number; percent: number | null };
+			scriptResponses: { recent: number; total: number; percent: number | null };
+			cdpScriptLoads: { recent: number; total: number; percent: number | null };
+		};
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -762,6 +778,7 @@ export class Code {
 			signalClass,
 			visibilityClass,
 			channelStates,
+			channelCoverage,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
@@ -779,6 +796,15 @@ export class Code {
 
 		const percent = Math.round((recentCount / totalCount) * 1000) / 10;
 		return `${percent}% (${recentCount}/${totalCount})`;
+	}
+
+	private buildChannelCoverageStats(recentCount: number, totalCount: number): { recent: number; total: number; percent: number | null } {
+		if (totalCount <= 0) {
+			return { recent: recentCount, total: totalCount, percent: null };
+		}
+
+		const percent = Math.round((recentCount / totalCount) * 1000) / 10;
+		return { recent: recentCount, total: totalCount, percent };
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {

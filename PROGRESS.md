@@ -788,3 +788,10 @@
   - JSON record field `"channelStates":{"requestFailures":"unseen","scriptResponses":"truncated","cdpScriptLoads":"unseen"}`.
   Re-ran `make lint` (pass).
   **Why:** confirms channel-level state metadata is emitted correctly and consistent with existing totals/recent counters.
+- **Structured channel-coverage object in diagnostics record (2026-02-14 PM)** Extended import-target diagnostics JSON record with `channelCoverage` object containing per-channel `{ recent, total, percent }` fields (`percent` null when total is zero).
+  **Why:** provides machine-friendly numeric coverage values that match the human-readable coverage line, enabling easier downstream analysis.
+- **Channel-coverage record validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified:
+  - text line: `Import target channel coverage: requestFailures=n/a (0/0), scriptResponses=0% (0/1), cdpScriptLoads=n/a (0/0)`
+  - JSON line includes `"channelCoverage":{"requestFailures":{"recent":0,"total":0,"percent":null},"scriptResponses":{"recent":0,"total":1,"percent":0},"cdpScriptLoads":{"recent":0,"total":0,"percent":null}}`
+  Re-ran `make lint` (pass).
+  **Why:** confirms structured coverage values are emitted correctly and aligned with existing textual diagnostics.
