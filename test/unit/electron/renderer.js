@@ -254,12 +254,23 @@ function initLoadFn(opts) {
 			}
 
 			if (failures.length > 0) {
+				const failureFamilyEntries = Object.entries(failureFamilies)
+					.sort((left, right) => {
+						if (right[1] !== left[1]) {
+							return right[1] - left[1];
+						}
+
+						return left[0].localeCompare(right[0]);
+					})
+					.map(([family, count]) => ({ family, count }));
+
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
 					url: moduleUrl,
 					specifierCount: specifiers.length,
 					failureCount: failures.length,
 					failureFamilies,
+					failureFamilyEntries,
 					failures
 				}));
 			}
@@ -289,6 +300,7 @@ function initLoadFn(opts) {
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
 					module: mod,
 					url,
+					moduleFamily: deriveFailureFamily(url),
 					error: String(err),
 					errorKind: classifyImportError(err),
 					existsOnDisk,

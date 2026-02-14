@@ -437,3 +437,12 @@
   - dependency summary entries include per-edge `errorKind`.
   Re-ran `make lint` (pass).
   **Why:** confirms classification and shared fetch metrics are active and lint-clean.
+- **Unit family rollup ordering + module-family tagging (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` diagnostics further:
+  - top-level `[ESM IMPORT FAILURE]` now includes `moduleFamily`,
+  - dependency summary now includes `failureFamilyEntries` (count-sorted family rollups) alongside raw `failureFamilies`.
+  **Why:** makes logs easier to scan by surfacing the failing module’s family directly and providing a pre-sorted family ranking without requiring consumers to sort object maps.
+- **Family-tag validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - top-level payload includes `"moduleFamily":"vs/editor/contrib"`,
+  - summary includes sorted `failureFamilyEntries` (e.g. `vs/editor/test` first with count 2).
+  Re-ran `make lint` (pass).
+  **Why:** confirms new family-level observability fields are active and lint-safe.
