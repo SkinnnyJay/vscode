@@ -701,3 +701,11 @@
   - `Import target signal class: response-only-no-cdp-finish`
   Re-ran `make lint` (pass).
   **Why:** confirms derived classification works and remains aligned with existing counters in the known failure mode.
+- **Import-target dropped-event estimate line (2026-02-14 PM)** Extended smoke fail-fast diagnostics in `test/automation/src/code.ts` with derived import-target dropped-event estimates per channel (`total - recent-window`) to highlight likely truncation impact from bounded buffers.
+  **Why:** makes channel signal loss explicit at the import-target level, complementing global buffer dropped counters with target-specific visibility.
+- **Dropped-event estimate validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast lines now include:
+  - `Import target channel event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - `Import target dropped event estimates: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  Re-ran `make lint` (pass).
+  **Why:** confirms target-level truncation estimate is emitted and consistent with recent-vs-total counters.

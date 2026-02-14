@@ -425,8 +425,18 @@ export class Code {
 					const importTargetSignalClassStatus = importTargetUrl
 						? `\nImport target signal class: ${importTargetSignalClass}`
 						: '';
+					const importTargetDroppedEventEstimates = importTargetTotalEventCounts
+						? {
+							requestFailures: Math.max(0, importTargetTotalEventCounts.requestFailures - importTargetRequestFailureEventCount),
+							scriptResponses: Math.max(0, importTargetTotalEventCounts.scriptResponses - importTargetScriptResponseEventCount),
+							cdpScriptLoads: Math.max(0, importTargetTotalEventCounts.cdpScriptLoads - importTargetCdpScriptLoadEventCount)
+						}
+						: undefined;
+					const importTargetDroppedEventEstimatesStatus = importTargetUrl
+						? `\nImport target dropped event estimates: requestFailures=${importTargetDroppedEventEstimates?.requestFailures ?? 0}, scriptResponses=${importTargetDroppedEventEstimates?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetDroppedEventEstimates?.cdpScriptLoads ?? 0}`
+						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
