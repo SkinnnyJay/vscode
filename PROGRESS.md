@@ -476,3 +476,10 @@
   - summary includes `failureResolvedKinds` + sorted `failureResolvedKindEntries` (`file-url` count shown).
   Re-ran `make lint` (pass).
   **Why:** confirms resolved-kind diagnostics are active and lint-safe.
+- **Dependency success/skip count metrics (2026-02-14 PM)** Extended `[ESM IMPORT FAILURE DEPS SUMMARY]` in `test/unit/electron/renderer.js` with:
+  - `successfulDependencyImportCount`,
+  - `failedDependencyImportCount`,
+  - `skippedSpecifierCount` (when direct-import scan is truncated).
+  **Why:** quantifies how much of the direct dependency frontier succeeds vs fails (and whether anything was skipped), improving confidence in diagnostic coverage.
+- **Success/skip metrics validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now reports mixed success/failure counts (e.g. `successfulDependencyImportCount: 6`, `failedDependencyImportCount: 4`, `skippedSpecifierCount: 0`); re-ran `make lint` (pass).
+  **Why:** confirms the new coverage/quality metrics are active and lint-clean.

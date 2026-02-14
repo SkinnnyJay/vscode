@@ -251,10 +251,12 @@ function initLoadFn(opts) {
 			const failureFamilies = Object.create(null);
 			const failureKinds = Object.create(null);
 			const failureResolvedKinds = Object.create(null);
+			let successfulDependencyImportCount = 0;
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
 				try {
 					await import(resolved);
+					successfulDependencyImportCount++;
 				} catch (depErr) {
 					let depExistsOnDisk = false;
 					if (resolved.startsWith('file://')) {
@@ -301,6 +303,9 @@ function initLoadFn(opts) {
 					specifierCount: specifiers.length,
 					specifierLimit,
 					isSpecifierListTruncated: allSpecifiers.length > specifierLimit,
+					skippedSpecifierCount: allSpecifiers.length - specifiers.length,
+					successfulDependencyImportCount,
+					failedDependencyImportCount: failures.length,
 					failureCount: failures.length,
 					failureFamilies,
 					failureFamilyEntries,
