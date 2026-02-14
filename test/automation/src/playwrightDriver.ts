@@ -63,6 +63,10 @@ export class PlaywrightDriver {
 		esc: 'Escape'
 	};
 
+	private lastPageError: string | undefined;
+	private readonly recentRequestFailures: string[] = [];
+	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
+
 	constructor(
 		private readonly application: playwright.Browser | playwright.ElectronApplication,
 		private readonly context: playwright.BrowserContext,
@@ -71,6 +75,7 @@ export class PlaywrightDriver {
 		private readonly whenLoaded: Promise<unknown>,
 		private readonly options: LaunchOptions
 	) {
+		this.registerPageDiagnostics(this._currentPage);
 	}
 
 	get browserContext(): playwright.BrowserContext {
@@ -111,6 +116,7 @@ export class PlaywrightDriver {
 		if (typeof indexOrUrl === 'number') {
 			if (indexOrUrl >= 0 && indexOrUrl < windows.length) {
 				this._currentPage = windows[indexOrUrl];
+				this.registerPageDiagnostics(this._currentPage);
 				// Clear CDP session as it's attached to the previous page
 				this._cdpSession = undefined;
 				return this._currentPage;
@@ -123,6 +129,7 @@ export class PlaywrightDriver {
 			}
 			if (found) {
 				this._currentPage = found;
+				this.registerPageDiagnostics(this._currentPage);
 				// Clear CDP session as it's attached to the previous page
 				this._cdpSession = undefined;
 				return this._currentPage;
@@ -400,6 +407,44 @@ export class PlaywrightDriver {
 	}
 
 	private _cdpSession: playwright.CDPSession | undefined;
+
+	getLastPageError(): string | undefined {
+		return this.lastPageError;
+	}
+
+	getRecentRequestFailures(): readonly string[] {
+		return this.recentRequestFailures;
+	}
+
+	private registerPageDiagnostics(page: playwright.Page): void {
+		if (this.pagesWithDiagnostics.has(page)) {
+			return;
+		}
+		this.pagesWithDiagnostics.add(page);
+
+		page.on('pageerror', error => {
+			if (!this.lastPageError) {
+				this.lastPageError = String(error);
+			}
+		});
+
+		page.on('requestfailed', request => {
+			const failureText = request.failure()?.errorText;
+			if (!failureText) {
+				return;
+			}
+
+			const entry = `${failureText} ${request.url()}`;
+			if (this.recentRequestFailures.includes(entry)) {
+				return;
+			}
+
+			this.recentRequestFailures.push(entry);
+			if (this.recentRequestFailures.length > 25) {
+				this.recentRequestFailures.shift();
+			}
+		});
+	}
 
 	async startCDP() {
 		if (this._cdpSession) {

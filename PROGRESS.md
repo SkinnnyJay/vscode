@@ -301,3 +301,11 @@
   **Why:** eliminates a class of silent syntax-invalid shim modules in the renderer harness and makes bare-module import shims structurally safe.
 - **Blob-hardening verification (2026-02-14 PM)** Validated generated shim source across builtin/dependency module set (previously failing examples included `electron`/`open`), now parsing cleanly (`badCount: 0`); re-ran representative renderer probes (`workbench.desktop.main.js`, `bracketMatching.test.js`, control `viewEventHandler.js`) and focused smoke case to confirm no regression (failure pattern otherwise unchanged).
   **Why:** confirms the shim hardening landed correctly while isolating the remaining ESM loader issue as separate.
+- **Smoke startup fail-fast diagnostics (2026-02-14 PM)** Added renderer startup failure tracking in test automation (`test/automation/src/playwrightDriver.ts` + `test/automation/src/code.ts`): capture first page error and recent request-failed URLs, then abort `.monaco-workbench` wait early when dynamic-import failure is detected.
+  **Why:** replaces low-signal 20s timeouts with immediate, high-signal root-cause errors (module import failure + concrete failing URLs), making smoke failures faster to diagnose.
+- **Fail-fast behavior validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran focused smoke case (`-g "verifies opened editors are restored"`): failure now occurs in ~2s with explicit `Workbench startup failed due to renderer module import error` plus recent `vscode-file://...` `net::ERR_FAILED` request list.
+  **Why:** proves the new diagnostics are active and materially improve troubleshooting turnaround.
+- **Full smoke rerun after fail-fast change (2026-02-14 PM)** Re-ran `xvfb-run -a make test-smoke`; suite still fails on the same underlying renderer import issue, but now completes much faster (~27s) with explicit per-suite import-failure evidence instead of repeated 20-second selector timeouts.
+  **Why:** confirms no behavioral masking: only diagnostics/timing improved while root issue remains transparently visible.
+- **Post-change quality gates (2026-02-14 PM)** Re-ran `make lint` and `make test-unit` (7584 passing / 134 pending) after automation diagnostics changes.
+  **Why:** validates the test-automation code updates did not regress lint or core unit suites.

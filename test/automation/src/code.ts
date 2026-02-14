@@ -336,8 +336,21 @@ export class Code {
 	): Promise<T> {
 		let trial = 1;
 		let lastError: string = '';
+		const isWorkbenchStartupWait = timeoutMessage.includes(`get element '.monaco-workbench'`);
 
 		while (true) {
+			if (isWorkbenchStartupWait) {
+				const pageError = this.driver.getLastPageError();
+				if (pageError?.includes('Failed to fetch dynamically imported module')) {
+					const recentFailures = this.driver.getRecentRequestFailures().slice(-8);
+					const failureSummary = recentFailures.length
+						? `\nRecent request failures:\n${recentFailures.join('\n')}`
+						: '';
+
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${failureSummary}`);
+				}
+			}
+
 			if (trial > retryCount) {
 				this.logger.log('Timeout!');
 				this.logger.log(lastError);
