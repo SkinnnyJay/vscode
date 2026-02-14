@@ -43,7 +43,7 @@ Success metrics:
 - First dev watch build completes without manual edits.
 Tasks:
 - [x] - M0 - [repo] Fork `microsoft/vscode` into this repo (or subtree) and set upstream remote.
-- [ ] - M0 - [repo] Verify upstream tree lands (expects `src/`, `extensions/`, `product.json`, `package.json`).
+- [x] - M0 - [repo] Verify upstream tree lands (expects `src/`, `extensions/`, `product.json`, `package.json`).
 - [ ] - M0 - [repo] Add `upstream` remote and record upstream branch tracking.
 - [ ] - M0 - [docs] Document upstream merge strategy (cadence + rebase/merge policy).
 - [ ] - M0 - [docs] Add a short “merge playbook” with exact commands and conflict policy.
