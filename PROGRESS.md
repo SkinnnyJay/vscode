@@ -297,3 +297,7 @@
   **Why:** confirms the cleanup hardening works and isolates remaining smoke failures to the broader renderer import/startup issue.
 - **Post-fix gate checks (2026-02-14 PM)** Re-ran `make test-unit` (7584 passing / 134 pending) and `make lint` (pass) after the smoke test code update.
   **Why:** verifies the notebook smoke cleanup change did not regress core unit or lint gates.
+- **Renderer import-map blob hardening (2026-02-14 PM)** Updated `test/unit/electron/renderer.html` import-map blob generation to export only valid non-reserved identifier keys when shimming Node modules (`asRequireBlobUri`), avoiding invalid ESM like `export const default = ...` / numeric export names.
+  **Why:** eliminates a class of silent syntax-invalid shim modules in the renderer harness and makes bare-module import shims structurally safe.
+- **Blob-hardening verification (2026-02-14 PM)** Validated generated shim source across builtin/dependency module set (previously failing examples included `electron`/`open`), now parsing cleanly (`badCount: 0`); re-ran representative renderer probes (`workbench.desktop.main.js`, `bracketMatching.test.js`, control `viewEventHandler.js`) and focused smoke case to confirm no regression (failure pattern otherwise unchanged).
+  **Why:** confirms the shim hardening landed correctly while isolating the remaining ESM loader issue as separate.
