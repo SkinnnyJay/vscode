@@ -105,7 +105,7 @@ Tasks:
 - [x] - M2 - [research] Capture example transcripts for each CLI mode.
 - [x] - M2 - [docs] Document CLI findings and kill non-viable adapters early.
 - [x] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).
-- [ ] - M2 - [sidecar] Define config schema for router defaults and policies.
+- [x] - M2 - [sidecar] Define config schema for router defaults and policies.
 - [ ] - M2 - [sidecar] Implement resolution order (workspace overrides → user overrides → defaults).
 - [ ] - M2 - [extension] Expose stable internal API for UI surfaces.
 - [ ] - M2 - [extension] Add router client with request/response types.

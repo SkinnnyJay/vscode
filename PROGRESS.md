@@ -91,3 +91,5 @@
   **Why:** prevents premature adapter implementation against unavailable binaries and keeps execution focused on viable dependencies.
 - **M2-04** Created `pointer/agent` package scaffold and defined strongly-typed router contract interfaces (`surface/provider/model/template/policy`, request, plan, context sources).  
   **Why:** establishes the canonical sidecar contract foundation required by all later router/client integrations.
+- **M2-05** Added router config schema types/defaults plus `parseRouterConfig` validation+fallback logic for defaults and policy token budgets.  
+  **Why:** provides deterministic configuration loading behavior before implementing routing resolution logic.
