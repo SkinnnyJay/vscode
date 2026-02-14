@@ -253,3 +253,5 @@
   **Why:** captures deeper runtime evidence that module-loader failures are occurring beyond missing files and helps scope future environment/runtime debugging.
 - **Build-mode remediation attempt (2026-02-14 PM)** Tried `npm run compile-build` to generate `out-build` for `--build` test mode, but the compile-build process was killed during `compile-src` (resource limit/termination).
   **Why:** documents a concrete attempt to unblock `--build` testing and the current environment ceiling.
+- **Ongoing gate rerun (2026-02-14 PM)** Re-ran `make typecheck` (build + src) and `xvfb-run -a ./scripts/code.sh --version`; both succeeded (with expected headless DBus/GPU warnings on version smoke run).
+  **Why:** confirms the branch remains healthy on core compile/type/runtime smoke checks after repeated diagnostic iterations.
