@@ -26,6 +26,11 @@ function activate(context) {
 	});
 	pointerTree.message = 'Pointer AI is not configured yet. Open Command Palette and run Pointer commands to begin.';
 
+	const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 110);
+	statusBarItem.name = 'Pointer Surface Model';
+	statusBarItem.command = 'pointer.openSettings';
+	statusBarItem.show();
+
 	const openChat = vscode.commands.registerCommand('pointer.openChat', async () => {
 		await vscode.commands.executeCommand('workbench.view.extension.pointer');
 		await vscode.commands.executeCommand('pointer.home.focus');
@@ -43,7 +48,32 @@ function activate(context) {
 		await vscode.commands.executeCommand('workbench.action.openSettings', 'Pointer');
 	});
 
-	context.subscriptions.push(pointerTree, openChat, toggleTab, selectModel, openSettings);
+	const updateStatusBar = () => {
+		const config = vscode.workspace.getConfiguration('pointer.defaults');
+		const chatProvider = config.get('chat.provider', 'auto');
+		const chatModel = config.get('chat.model', 'auto');
+		const tabProvider = config.get('tab.provider', 'auto');
+		const tabModel = config.get('tab.model', 'auto');
+		const agentProvider = config.get('agent.provider', 'auto');
+		const agentModel = config.get('agent.model', 'auto');
+
+		statusBarItem.text = `$(sparkle) Pointer ${chatProvider}/${chatModel}`;
+		statusBarItem.tooltip = [
+			`Chat: ${chatProvider}/${chatModel}`,
+			`Tab: ${tabProvider}/${tabModel}`,
+			`Agent: ${agentProvider}/${agentModel}`
+		].join('\n');
+	};
+
+	updateStatusBar();
+
+	const configWatcher = vscode.workspace.onDidChangeConfiguration((event) => {
+		if (event.affectsConfiguration('pointer.defaults')) {
+			updateStatusBar();
+		}
+	});
+
+	context.subscriptions.push(pointerTree, statusBarItem, configWatcher, openChat, toggleTab, selectModel, openSettings);
 }
 
 function deactivate() {}

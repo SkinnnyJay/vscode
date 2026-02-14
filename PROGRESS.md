@@ -61,3 +61,5 @@
   **Why:** establishes stable command IDs and command-palette entry points for the Pointer UX shell.
 - **M1-05** Added explicit command palette labels with `Pointer` category prefixes in extension command contributions.  
   **Why:** keeps command discoverability clear and consistent in the global command palette.
+- **M1-06** Added a persistent status bar item that reflects active chat provider/model and refreshes on Pointer defaults configuration updates.  
+  **Why:** surfaces active model routing context without requiring users to open settings or deep UI panels.

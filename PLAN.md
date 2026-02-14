@@ -81,7 +81,7 @@ Tasks:
 - [x] - M1 - [extension] Wire placeholder view with empty state messaging.
 - [x] - M1 - [extension] Register commands: Open Chat, Toggle Tab, Select Model, Open Settings.
 - [x] - M1 - [extension] Add command palette labels and categories.
-- [ ] - M1 - [extension] Add status bar item showing active provider/model per surface.
+- [x] - M1 - [extension] Add status bar item showing active provider/model per surface.
 - [ ] - M1 - [extension] Add status item tooltip with surface-specific selection.
 - [ ] - M1 - [extension] Create settings categories: Providers, Models, Context, Tools and Safety, Prompts and Rules.
 - [ ] - M1 - [extension] Add settings schema defaults and descriptions.
