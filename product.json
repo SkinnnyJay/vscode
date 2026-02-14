@@ -139,5 +139,11 @@
 		"tokenEntitlementUrl": "https://github.com/SkinnnyJay/vscode",
 		"mcpRegistryDataUrl": "https://github.com/SkinnnyJay/vscode"
 	},
+	"configurationDefaults": {
+		"github.copilot.enable": {
+			"*": false
+		},
+		"github.copilot.nextEditSuggestions.enabled": false
+	},
 	"trustedExtensionAuthAccess": {}
 }

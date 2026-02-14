@@ -75,3 +75,5 @@
   **Why:** provides forward-compatibility hooks for future config evolution and early warning for malformed settings values.
 - **M1-12** Repointed `product.json` `defaultChatAgent` away from GitHub Copilot IDs/commands to Pointer-owned IDs and removed trusted Copilot auth access defaults.  
   **Why:** disables Copilot-first UI wiring by default and aligns chat/completions command surfaces with Pointer commands.
+- **M1-13** Added `configurationDefaults` entries that keep Copilot completions and next-edit suggestions disabled by default while remaining user-overridable.  
+  **Why:** preserves a core-level compatibility toggle path for users who explicitly opt back into Copilot visibility.
