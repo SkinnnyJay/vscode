@@ -1,78 +1,152 @@
-# Visual Studio Code - Open Source ("Code - OSS")
-[![Feature Requests](https://img.shields.io/github/issues/microsoft/vscode/feature-request.svg)](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-[![Bugs](https://img.shields.io/github/issues/microsoft/vscode/bug.svg)](https://github.com/microsoft/vscode/issues?utf8=✓&q=is%3Aissue+is%3Aopen+label%3Abug)
-[![Gitter](https://img.shields.io/badge/chat-on%20gitter-yellow.svg)](https://gitter.im/Microsoft/vscode)
+# Pointer
 
-## The Repository
+A Cursor-like, provider-agnostic AI IDE built by forking **Code - OSS** (the open source core of VS Code), with **CLI-first** model backends (Codex CLI, Claude Code, OpenCode, etc), optional API backends, optional local models, and first-class hooks.
 
-This repository ("`Code - OSS`") is where we (Microsoft) develop the [Visual Studio Code](https://code.visualstudio.com) product together with the community. Not only do we work on code and issues here, we also publish our [roadmap](https://github.com/microsoft/vscode/wiki/Roadmap), [monthly iteration plans](https://github.com/microsoft/vscode/wiki/Iteration-Plans), and our [endgame plans](https://github.com/microsoft/vscode/wiki/Running-the-Endgame). This source code is available to everyone under the standard [MIT license](https://github.com/microsoft/vscode/blob/main/LICENSE.txt).
+> Goal: **feature parity UX** with Cursor-style Tab, Chat, Agent edits, Rules, Hooks, MCP integrations, and performance focus, while keeping a clean-room implementation (no proprietary code or assets).
 
-## Visual Studio Code
+---
 
-<p align="center">
-  <img alt="VS Code in action" src="https://user-images.githubusercontent.com/35271042/118224532-3842c400-b438-11eb-923d-a5f66fa6785a.png">
-</p>
+## Table of contents
 
-[Visual Studio Code](https://code.visualstudio.com) is a distribution of the `Code - OSS` repository with Microsoft-specific customizations released under a traditional [Microsoft product license](https://code.visualstudio.com/License/).
+- [What is Pointer](#what-is-pointer)
+- [Project status](#project-status)
+- [Key goals](#key-goals)
+- [Non-goals](#non-goals)
+- [Legal, licensing, trademarks](#legal-licensing-trademarks)
+- [Quickstart (dev build)](#quickstart-dev-build)
+- [Provider setup (CLI-first)](#provider-setup-cli-first)
+  - [Codex CLI](#codex-cli)
+  - [Claude Code](#claude-code)
+  - [OpenCode](#opencode)
+  - [Cursor CLI](#cursor-cli)
+- [Configuration](#configuration)
+  - [Model router](#model-router)
+  - [Rules](#rules)
+  - [Hooks](#hooks)
+  - [MCP](#mcp)
+- [Architecture](#architecture)
+- [Feature parity roadmap](#feature-parity-roadmap)
+- [Performance](#performance)
+- [Extensions and marketplaces](#extensions-and-marketplaces)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Upstream PR strategy](#upstream-pr-strategy)
+- [Repo hygiene](#repo-hygiene)
+- [Credits](#credits)
 
-[Visual Studio Code](https://code.visualstudio.com) combines the simplicity of a code editor with what developers need for their core edit-build-debug cycle. It provides comprehensive code editing, navigation, and understanding support along with lightweight debugging, a rich extensibility model, and lightweight integration with existing tools.
+---
 
-Visual Studio Code is updated monthly with new features and bug fixes. You can download it for Windows, macOS, and Linux on [Visual Studio Code's website](https://code.visualstudio.com/Download). To get the latest releases every day, install the [Insiders build](https://code.visualstudio.com/insiders).
+## What is Pointer
 
-## Contributing
+Pointer is a **VS Code-compatible editor** that:
 
-There are many ways in which you can participate in this project, for example:
+- Forks **Code - OSS** as the base platform
+- Replaces Copilot branding/surfaces with a first-party **Pointer** AI surface
+- Routes all AI actions through a **Model Router** that can:
+  - Set defaults per feature (Tab vs Chat vs Agent)
+  - Disable models/providers globally or per workspace
+  - Enforce policy (tool execution, network, filesystem write boundaries)
+- Prefers **official provider CLIs** behind the scenes:
+  - Codex CLI
+  - Claude Code
+  - OpenCode
+  - (Optional) Cursor CLI
+- Adds **Hooks**, **Rules**, and **MCP** integrations as first-class concepts
 
-* [Submit bugs and feature requests](https://github.com/microsoft/vscode/issues), and help us verify as they are checked in
-* Review [source code changes](https://github.com/microsoft/vscode/pulls)
-* Review the [documentation](https://github.com/microsoft/vscode-docs) and make pull requests for anything from typos to additional and new content
+---
 
-If you are interested in fixing issues and contributing directly to the code base,
-please see the document [How to Contribute](https://github.com/microsoft/vscode/wiki/How-to-Contribute), which covers the following:
+## Project status
 
-* [How to build and run from source](https://github.com/microsoft/vscode/wiki/How-to-Contribute)
-* [The development workflow, including debugging and running tests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#debugging)
-* [Coding guidelines](https://github.com/microsoft/vscode/wiki/Coding-Guidelines)
-* [Submitting pull requests](https://github.com/microsoft/vscode/wiki/How-to-Contribute#pull-requests)
-* [Finding an issue to work on](https://github.com/microsoft/vscode/wiki/How-to-Contribute#where-to-contribute)
-* [Contributing to translations](https://aka.ms/vscodeloc)
+Pointer is **pre-alpha**.
 
-## Feedback
+MVP definition:
+- It launches
+- It looks like a Cursor-style UI (layout + keybindings + settings parity)
+- Your models/providers show up and work via CLI
+- Basic chat and basic tab completion function end-to-end
 
-* Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/vscode)
-* [Request a new feature](CONTRIBUTING.md)
-* Upvote [popular feature requests](https://github.com/microsoft/vscode/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
-* [File an issue](https://github.com/microsoft/vscode/issues)
-* Connect with the extension author community on [GitHub Discussions](https://github.com/microsoft/vscode-discussions/discussions) or [Slack](https://aka.ms/vscode-dev-community)
-* Follow [@code](https://x.com/code) and let us know what you think!
+---
 
-See our [wiki](https://github.com/microsoft/vscode/wiki/Feedback-Channels) for a description of each of these channels and information on some other available community-driven channels.
+## Key goals
 
-## Related Projects
+1) **Cursor-like UX parity**  
+Tab autocomplete, inline edits, chat, agent file edits, diff review, and context controls.
 
-Many of the core components and extensions to VS Code live in their own repositories on GitHub. For example, the [node debug adapter](https://github.com/microsoft/vscode-node-debug) and the [mono debug adapter](https://github.com/microsoft/vscode-mono-debug) repositories are separate from each other. For a complete list, please visit the [Related Projects](https://github.com/microsoft/vscode/wiki/Related-Projects) page on our [wiki](https://github.com/microsoft/vscode/wiki).
+2) **Provider-agnostic**  
+One UX across many backends. Switch providers without switching UI.
 
-## Bundled Extensions
+3) **CLI-first by default**  
+Avoid brittle direct SDK bindings when providers already ship mature CLIs.
 
-VS Code includes a set of built-in extensions located in the [extensions](extensions) folder, including grammars and snippets for many languages. Extensions that provide rich language support (inline suggestions, Go to Definition) for a language have the suffix `language-features`. For example, the `json` extension provides coloring for `JSON` and the `json-language-features` extension provides rich language support for `JSON`.
+4) **Fast, stable, low-memory**  
+Typing latency and editor responsiveness are non-negotiable.
 
-## Development Container
+5) **Clean implementation**  
+Strict TypeScript, DRY, no “patch spaghetti”, minimal invasive edits to upstream where possible.
 
-This repository includes a Visual Studio Code Dev Containers / GitHub Codespaces development container.
+---
 
-* For [Dev Containers](https://aka.ms/vscode-remote/download/containers), use the **Dev Containers: Clone Repository in Container Volume...** command which creates a Docker volume for better disk I/O on macOS and Windows.
-  * If you already have VS Code and Docker installed, you can also click [here](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/vscode) to get started. This will cause VS Code to automatically install the Dev Containers extension if needed, clone the source code into a container volume, and spin up a dev container for use.
+## Non-goals
 
-* For Codespaces, install the [GitHub Codespaces](https://marketplace.visualstudio.com/items?itemName=GitHub.codespaces) extension in VS Code, and use the **Codespaces: Create New Codespace** command.
+- Not a binary clone of Cursor.
+- No reverse engineering or inclusion of proprietary Cursor code, assets, or binaries.
+- No bundling Microsoft proprietary VS Code components or Marketplace integration that violates terms.
 
-Docker / the Codespace should have at least **4 Cores and 6 GB of RAM (8 GB recommended)** to run a full build. See the [development container README](.devcontainer/README.md) for more information.
+---
 
-## Code of Conduct
+## Legal, licensing, trademarks
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+Pointer is built on **Code - OSS** (MIT). The official “Visual Studio Code” distribution includes Microsoft-specific branding/assets and Marketplace integrations that are not part of Code - OSS. Do not copy their product name/icons or proprietary integrations.
 
-## License
+Important distribution note:
+- The **Visual Studio Marketplace** is not guaranteed for forks and is governed by separate terms.
+- Plan to use **Open VSX** or a private extension registry, or side-load VSIX.
 
-Copyright (c) Microsoft Corporation. All rights reserved.
+---
 
-Licensed under the [MIT](LICENSE.txt) license.
+## Quickstart (dev build)
+
+Pointer tracks upstream **VS Code build flows** unless explicitly documented otherwise.
+
+### Prerequisites
+
+- Git
+- Node.js 22.x (match the version pinned by the upstream repo via `.nvmrc`)
+- Enough RAM/CPU to build Code - OSS
+
+### Clone + install
+
+```bash
+git clone https://github.com/<your-org>/pointer.git
+cd pointer
+make setup
+```
+
+### Development commands
+
+All commands are run via the **Makefile** and delegate to scripts in `./scripts/`. Run `make help` to list them.
+
+| Command | Description |
+|---------|-------------|
+| `make setup` | Install dependencies (Node 22.x). |
+| `make build` | Compile the project. |
+| `make clean` | Remove build artifacts; `make clean ALL=1` also removes `node_modules`. |
+| `make test` | Run full Electron unit tests (requires build). |
+| `make test-unit` | Run fast Node unit tests (no Electron). |
+| `make test-integration` | Run Electron integration tests. |
+| `make test-web-integration` | Run web/browser integration tests. |
+| `make test-smoke` | Run smoke tests. |
+| `make test-e2e` | Run E2E/integration tests. |
+| `make lint` | Run ESLint and Stylelint. |
+| `make fmt` | Apply formatting fixes; `make fmt-check` to check only. |
+| `make typecheck` | Run TypeScript type checking. |
+| `make hygiene` | Run full pre-commit hygiene. |
+| `make commit FILES="path1 path2" MSG="feat: description"` | Atomic commit (for agents/reviewable changes). |
+
+See **scripts/README.md** for the full list and script details.
+
+---
+
+## Credits
+
+See [CREDITS.md](CREDITS.md) for sources and attribution (upstream Code - OSS/VS Code, provider CLIs, and protocols).
