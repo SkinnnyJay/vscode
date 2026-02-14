@@ -54,7 +54,7 @@ Tasks:
 - [x] - M0 - [core] Update product strings (about dialog, app name, update URL).
 - [x] - M0 - [docs] Add `pointer/BRANDING.md` describing allowed assets and forbidden trademarks.
 - [x] - M0 - [docs] Add `SECURITY.md` and `CODE_OF_CONDUCT.md`.
-- [ ] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.
+- [x] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.
 - [ ] - M0 - [core] Point `product.json` at the chosen extension registry.
 - [ ] - M0 - [core] Add documentation for VSIX sideloading fallback.
 - [ ] - M0 - [core] Ensure `npm install` works on a clean machine.

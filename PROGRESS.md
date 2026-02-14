@@ -25,3 +25,5 @@
   **Why:** codifies clean-room branding boundaries so future contributions do not reintroduce prohibited marks.
 - **M0-12** Replaced inherited security policy text with Pointer reporting guidance and added `CODE_OF_CONDUCT.md`.  
   **Why:** establishes project-owned security disclosure and community standards required for external contributors.
+- **M0-13** Added `docs/extension-distribution-strategy.md` selecting Open VSX + VSIX fallback (+ optional private registry).  
+  **Why:** formalizes a marketplace-legal distribution path for a Code - OSS fork and unblocks product gallery configuration.
