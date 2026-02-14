@@ -446,3 +446,10 @@
   - summary includes sorted `failureFamilyEntries` (e.g. `vs/editor/test` first with count 2).
   Re-ran `make lint` (pass).
   **Why:** confirms new family-level observability fields are active and lint-safe.
+- **Dependency error-kind rollup entries (2026-02-14 PM)** Extended unit dependency summaries in `test/unit/electron/renderer.js` with:
+  - raw `failureKinds` count map, and
+  - sorted `failureKindEntries` array.
+  Also extracted shared count-entry sorting helper for deterministic rollup ordering.
+  **Why:** complements family rollups with error-type aggregation, making it easier to quantify whether failures are homogeneous (e.g. all dynamic-import fetch failures) or mixed.
+- **Error-kind rollup validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now includes `failureKinds` + sorted `failureKindEntries`; re-ran `make lint` (pass).
+  **Why:** confirms the new error-type rollups are active and lint-clean.

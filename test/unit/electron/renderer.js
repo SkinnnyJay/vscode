@@ -202,6 +202,18 @@ function initLoadFn(opts) {
 		return 'other';
 	}
 
+	function toSortedCountEntries(counts) {
+		return Object.entries(counts)
+			.sort((left, right) => {
+				if (right[1] !== left[1]) {
+					return right[1] - left[1];
+				}
+
+				return left[0].localeCompare(right[0]);
+			})
+			.map(([key, count]) => ({ key, count }));
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -223,6 +235,7 @@ function initLoadFn(opts) {
 			const specifiers = extractDirectImportSpecifiers(source).slice(0, 25);
 			const failures = [];
 			const failureFamilies = Object.create(null);
+			const failureKinds = Object.create(null);
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
 				try {
@@ -237,6 +250,7 @@ function initLoadFn(opts) {
 						}
 					}
 					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
+					const errorKind = classifyImportError(depErr);
 
 					failures.push({
 						module: moduleId,
@@ -244,25 +258,21 @@ function initLoadFn(opts) {
 						specifier,
 						resolved,
 						error: String(depErr),
-						errorKind: classifyImportError(depErr),
+						errorKind,
 						existsOnDisk: depExistsOnDisk,
 						...fetchDiagnostics
 					});
 					const family = deriveFailureFamily(resolved);
 					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
+					failureKinds[errorKind] = (failureKinds[errorKind] ?? 0) + 1;
 				}
 			}
 
 			if (failures.length > 0) {
-				const failureFamilyEntries = Object.entries(failureFamilies)
-					.sort((left, right) => {
-						if (right[1] !== left[1]) {
-							return right[1] - left[1];
-						}
-
-						return left[0].localeCompare(right[0]);
-					})
-					.map(([family, count]) => ({ family, count }));
+				const failureFamilyEntries = toSortedCountEntries(failureFamilies)
+					.map(entry => ({ family: entry.key, count: entry.count }));
+				const failureKindEntries = toSortedCountEntries(failureKinds)
+					.map(entry => ({ errorKind: entry.key, count: entry.count }));
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -271,6 +281,8 @@ function initLoadFn(opts) {
 					failureCount: failures.length,
 					failureFamilies,
 					failureFamilyEntries,
+					failureKinds,
+					failureKindEntries,
 					failures
 				}));
 			}
