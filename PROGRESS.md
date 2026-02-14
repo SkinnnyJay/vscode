@@ -103,3 +103,5 @@
   **Why:** centralizes deterministic prompt composition for all surfaces around the required part sequence.
 - **M2-10** Added unit tests for prompt ordering/ordering stability/token estimation in `pointer/agent/test/prompt-assembly.test.ts`.
   **Why:** protects prompt composition invariants as router logic expands.
+- **M2-11** Added router planner budget enforcement (`planner.ts`) with per-request explainability metadata and context trimming under max input tokens.
+  **Why:** enforces deterministic safety limits across surfaces while preserving debuggable reasoning for dropped context.
