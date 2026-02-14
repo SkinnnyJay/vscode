@@ -249,3 +249,7 @@
   **Why:** rules out simple relative-css import-map scope gaps as the cause and keeps the branch free of speculative harness changes.
 - **Electron runtime switch probe (2026-02-14 PM)** Tested `app.commandLine.appendSwitch('allow-file-access-from-files')` in the Electron test harness for the isolated failing renderer case; the same dynamic import failure persisted and the probe was reverted.
   **Why:** rules out file-scheme access policy as the primary cause and preserves a clean harness baseline.
+- **Electron dependency-chain diagnostics (2026-02-14 PM)** Added temporary import probes in renderer test harness to localize failures: `bracketMatching.test.js` failed through `editor/test/browser/testCodeEditor.js`, then `editor/browser/widget/codeEditor/codeEditorWidget.js`, with multiple downstream modules reporting import failure despite direct file fetches usually returning `200 OK`; all instrumentation was reverted afterward.
+  **Why:** captures deeper runtime evidence that module-loader failures are occurring beyond missing files and helps scope future environment/runtime debugging.
+- **Build-mode remediation attempt (2026-02-14 PM)** Tried `npm run compile-build` to generate `out-build` for `--build` test mode, but the compile-build process was killed during `compile-src` (resource limit/termination).
+  **Why:** documents a concrete attempt to unblock `--build` testing and the current environment ceiling.
