@@ -233,3 +233,5 @@
   **Why:** provides a single source of truth for provider feature compatibility checks during routing.
 - **Final revalidation (2026-02-14 PM)** Re-ran release gates: `make lint`, `make test-unit` (7584 passing), `make build` (0 compile errors), and `xvfb-run -a ./scripts/code.sh --version`.
   **Why:** confirms the fully completed PLAN remains green end-to-end after final pass.
+- **Extended validation attempt (2026-02-14 PM)** Attempted `make test` and retried via `xvfb-run -a make test` plus `make build && xvfb-run -a make test`; electron renderer test import failed in this headless CI VM (`Failed to fetch dynamically imported module ... bracketMatching.test.js`) while lint/unit/build/smoke remain green.
+  **Why:** documents full-suite environment limitation transparently and preserves reproducible evidence of the failure mode.
