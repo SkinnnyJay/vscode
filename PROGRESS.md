@@ -17,3 +17,5 @@
   **Why:** creates a fast cross-platform launch signal that catches broken dev startup paths early in CI.
 - **M0-08** Rebranded core product identity values in `product.json` (app names, protocol, issue URL, platform IDs, server/tunnel names).  
   **Why:** establishes Pointer-specific product identity and removes Code - OSS defaults from runtime metadata.
+- **M0-09** Replaced product launcher icon assets across Linux/Windows/macOS and added pointer-named icon variants for packaging compatibility.  
+  **Why:** removes inherited product icon branding and aligns runtime/package assets with Pointer identity.
