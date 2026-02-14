@@ -456,6 +456,32 @@ export class Code {
 					const importTargetDiagnosticsSignatureStatus = importTargetUrl
 						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
 						: '';
+					const globalChannelBufferStats = {
+						requestFailures: {
+							displayed: recentFailures.length,
+							retained: allRecentFailures.length,
+							capacity: recentFailureCapacity,
+							observed: totalObservedRequestFailures,
+							dropped: droppedRecentRequestFailures
+						},
+						scriptResponses: {
+							displayed: recentScriptResponses.length,
+							retained: allRecentScriptResponses.length,
+							capacity: recentScriptResponseCapacity,
+							observed: totalObservedScriptResponses,
+							dropped: droppedRecentScriptResponses
+						},
+						cdpScriptLoads: {
+							displayed: recentCdpScriptLoads.length,
+							retained: allRecentCdpScriptLoads.length,
+							capacity: recentCdpScriptLoadCapacity,
+							observed: totalObservedCdpScriptLoads,
+							dropped: droppedRecentCdpScriptLoads
+						}
+					};
+					const globalChannelBufferStatsStatus = importTargetUrl
+						? `\nImport target global channel buffers: requestFailures=${globalChannelBufferStats.requestFailures.displayed}/${globalChannelBufferStats.requestFailures.retained} (capacity=${globalChannelBufferStats.requestFailures.capacity}, observed=${globalChannelBufferStats.requestFailures.observed}, dropped=${globalChannelBufferStats.requestFailures.dropped}), scriptResponses=${globalChannelBufferStats.scriptResponses.displayed}/${globalChannelBufferStats.scriptResponses.retained} (capacity=${globalChannelBufferStats.scriptResponses.capacity}, observed=${globalChannelBufferStats.scriptResponses.observed}, dropped=${globalChannelBufferStats.scriptResponses.dropped}), cdpScriptLoads=${globalChannelBufferStats.cdpScriptLoads.displayed}/${globalChannelBufferStats.cdpScriptLoads.retained} (capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}, observed=${globalChannelBufferStats.cdpScriptLoads.observed}, dropped=${globalChannelBufferStats.cdpScriptLoads.dropped})`
+						: '';
 					const importTargetDiagnosticsRecord = this.buildImportTargetDiagnosticsRecord(
 						importTargetUrl,
 						importTargetTotalEventCounts,
@@ -468,7 +494,8 @@ export class Code {
 						importTargetSignalClass,
 						importTargetDiagnosticsSignature,
 						trial,
-						retryInterval
+						retryInterval,
+						globalChannelBufferStats
 					);
 					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
 						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
@@ -477,7 +504,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -646,7 +673,12 @@ export class Code {
 		signalClass: string,
 		signature: string,
 		detectedAtTrial: number,
-		retryIntervalMs: number
+		retryIntervalMs: number,
+		globalChannelBufferStats: {
+			requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		}
 	): {
 		schemaVersion: number;
 		url: string;
@@ -656,6 +688,11 @@ export class Code {
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
+		globalChannelBufferStats: {
+			requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		};
 		signature: string;
 	} | undefined {
 		if (!importTargetUrl) {
@@ -671,6 +708,7 @@ export class Code {
 			recentEventCounts,
 			totalEventCounts: totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
+			globalChannelBufferStats,
 			signature
 		};
 	}

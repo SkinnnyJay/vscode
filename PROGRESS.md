@@ -757,3 +757,11 @@
   - diagnostics record with `"detectedAtTrial":3` and `"detectedAtElapsedMs":200`.
   Re-ran `make lint` (pass).
   **Why:** confirms timing metadata is emitted correctly in both human-readable and structured forms.
+- **Import-target global channel buffer stats (2026-02-14 PM)** Extended fail-fast diagnostics to include a concise global channel buffer line and mirrored `globalChannelBufferStats` in the structured import-target record:
+  - per channel: `displayed/retained`, `capacity`, `observed`, `dropped`.
+  **Why:** makes it explicit how heavily each diagnostics channel has been truncated at the time of failure, contextualizing target-level dropped estimates.
+- **Global-buffer stats validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target global channel buffers: requestFailures=8/25 (capacity=25, observed=710, dropped=685), scriptResponses=8/25 (capacity=25, observed=82, dropped=57), cdpScriptLoads=8/25 (capacity=25, observed=80, dropped=55)`
+  - structured record field `"globalChannelBufferStats":{...}` with matching values.
+  Re-ran `make lint` (pass).
+  **Why:** confirms global truncation context is emitted and consistent across human-readable and structured diagnostics.
