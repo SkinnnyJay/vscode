@@ -243,3 +243,5 @@
   **Why:** reconfirms sidecar router/providers/policy modules remain stable after repeated validation loops.
 - **Extension regression pass (2026-02-14 PM)** Re-ran `node --test test/*.test.js` in `extensions/pointer-ai`; all 16 tests passed.
   **Why:** reconfirms Pointer extension chat/tab/patch/settings modules remain stable in the current branch state.
+- **Electron loader deep-dive (2026-02-14 PM)** Rechecked the isolated renderer failure and verified the target module file is readable/fetchable (`200 OK`, expected byte size) while dynamic `import()` still fails in this VM; reverted temporary harness instrumentation after confirming no durable code fix.
+  **Why:** adds stronger root-cause evidence that the remaining `make test` issue is runtime-environment specific rather than missing build artifacts.
