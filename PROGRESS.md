@@ -627,3 +627,15 @@
   - the existing `Recent script responses (...)` block.
   Re-ran `make lint` (pass).
   **Why:** confirms import-target response correlation is emitted correctly and remains non-regressive.
+- **Script-response byte-integrity metadata (2026-02-14 PM)** Extended `PlaywrightDriver` script-response diagnostics to include byte-level fields:
+  - `contentLength` (response header),
+  - `onDiskBytes` (filesystem stat),
+  - `contentLengthDiskByteDelta`,
+  - `byteDeltaKind` classification.
+  Also propagated these fields into both per-entry `Recent script responses (...)` lines and the import-target latest response summary.
+  **Why:** increases fidelity when distinguishing loader failures from payload/header mismatches during dynamic-import startup diagnostics.
+- **Script-response byte-integrity validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes byte-level metadata, e.g.:
+  - `Import target latest script response: ... contentLength=unknown onDiskBytes=12816 contentLengthDiskByteDelta=unknown byteDeltaKind=content-length-unavailable ...`
+  - per-entry script-response lines with the same byte fields.
+  Re-ran `make lint` (pass).
+  **Why:** confirms byte-integrity diagnostics emit as designed and remain lint-clean/non-regressive.

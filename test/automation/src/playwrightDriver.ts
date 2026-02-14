@@ -6,7 +6,7 @@
 import * as playwright from '@playwright/test';
 import type { Protocol } from 'playwright-core/types/protocol';
 import { dirname, join } from 'path';
-import { existsSync, promises, readFileSync } from 'fs';
+import { existsSync, promises, readFileSync, statSync } from 'fs';
 import { IWindowDriver } from './driver';
 import { measureAndLog } from './logger';
 import { LaunchOptions } from './code';
@@ -497,7 +497,8 @@ export class PlaywrightDriver {
 			const responseHeaders = response.headers();
 			const contentType = responseHeaders['content-type'] ?? 'unknown';
 			const cacheControl = responseHeaders['cache-control'] ?? 'unknown';
-			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl);
+			const contentLength = responseHeaders['content-length'];
+			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl, contentLength);
 			this.pushRecentScriptResponse(entry);
 		});
 
@@ -533,15 +534,63 @@ export class PlaywrightDriver {
 		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
 	}
 
-	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string): string {
+	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string, contentLengthHeader: string | undefined): string {
 		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const onDiskBytes = this.readOnDiskByteCount(resolvedPath);
+		const parsedContentLength = this.parseByteCount(contentLengthHeader);
+		const byteDelta = parsedContentLength !== undefined && onDiskBytes !== undefined ? parsedContentLength - onDiskBytes : undefined;
+		const byteDeltaKind = this.classifyByteDelta(parsedContentLength, onDiskBytes, byteDelta);
+		const contentLengthSuffix = ` contentLength=${contentLengthHeader ?? 'unknown'}`;
+		const onDiskBytesSuffix = ` onDiskBytes=${onDiskBytes ?? 'unknown'}`;
+		const byteDeltaSuffix = ` contentLengthDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
 		const seenCount = (this.scriptResponseSeenCountsByUrl.get(url) ?? 0) + 1;
 		this.scriptResponseSeenCountsByUrl.set(url, seenCount);
-		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${fileExistsSuffix}`);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
 		this.setLatestScriptResponseSummary(url, summary);
 
-		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl} ${url}${fileExistsSuffix}`);
+		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
+	}
+
+	private readOnDiskByteCount(path: string | undefined): number | undefined {
+		if (!path) {
+			return undefined;
+		}
+
+		try {
+			return statSync(path).size;
+		} catch {
+			return undefined;
+		}
+	}
+
+	private parseByteCount(value: string | undefined): number | undefined {
+		if (!value) {
+			return undefined;
+		}
+
+		const parsed = Number.parseInt(value, 10);
+		if (!Number.isFinite(parsed)) {
+			return undefined;
+		}
+
+		return parsed;
+	}
+
+	private classifyByteDelta(contentLength: number | undefined, onDiskBytes: number | undefined, byteDelta: number | undefined): string {
+		if (contentLength === undefined) {
+			return 'content-length-unavailable';
+		}
+
+		if (onDiskBytes === undefined) {
+			return 'disk-bytes-unavailable';
+		}
+
+		if (byteDelta === undefined) {
+			return 'delta-unavailable';
+		}
+
+		return byteDelta === 0 ? 'byte-match' : 'byte-mismatch';
 	}
 
 	private setLatestScriptResponseSummary(url: string, summary: string): void {
