@@ -22,14 +22,17 @@ const vscode = require('vscode');
  *   getSelection(surface: PointerSurface): SurfaceSelection;
  *   setSelection(surface: PointerSurface, selection: SurfaceSelection): void;
  *   getAllSelections(): Readonly<Record<PointerSurface, SurfaceSelection>>;
+ *   requestRouterPlan(request: import('./router-client.js').RouterPlanRequest): Promise<import('./router-client.js').RouterPlanResponse>;
+ *   getLastRouterPlan(): import('./router-client.js').RouterPlanResponse | undefined;
  *   onDidChangeSelection(listener: (surface: PointerSurface, selection: SurfaceSelection) => void): vscode.Disposable;
  * }} PointerInternalApi
  */
 
 /**
+ * @param {import('./router-client.js').PointerRouterClient} routerClient
  * @returns {PointerInternalApi}
  */
-function createPointerInternalApi() {
+function createPointerInternalApi(routerClient) {
 	const onDidChangeSelectionEmitter = new vscode.EventEmitter();
 
 	/** @type {Record<PointerSurface, SurfaceSelection>} */
@@ -50,6 +53,12 @@ function createPointerInternalApi() {
 		},
 		getAllSelections() {
 			return selections;
+		},
+		requestRouterPlan(request) {
+			return routerClient.requestPlan(request);
+		},
+		getLastRouterPlan() {
+			return routerClient.getLastPlan();
 		},
 		onDidChangeSelection(listener) {
 			return onDidChangeSelectionEmitter.event((event) => {

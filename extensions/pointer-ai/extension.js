@@ -5,6 +5,7 @@
 
 const vscode = require('vscode');
 const { createPointerInternalApi } = require('./internal-api.js');
+const { PointerRouterClient } = require('./router-client.js');
 const SETTINGS_SCHEMA_VERSION_KEY = 'pointer.settingsSchemaVersion';
 const CURRENT_SETTINGS_SCHEMA_VERSION = 1;
 
@@ -55,7 +56,8 @@ function validatePointerDefaultsConfiguration() {
 function activate(context) {
 	void migratePointerSettings(context);
 	void vscode.commands.executeCommand('setContext', 'pointer.workspaceTrusted', vscode.workspace.isTrusted);
-	const internalApi = createPointerInternalApi();
+	const routerClient = new PointerRouterClient();
+	const internalApi = createPointerInternalApi(routerClient);
 
 	const pointerViewDataProvider = new PointerViewDataProvider();
 	const pointerTree = vscode.window.createTreeView('pointer.home', {
@@ -72,6 +74,15 @@ function activate(context) {
 	const openChat = vscode.commands.registerCommand('pointer.openChat', async () => {
 		await vscode.commands.executeCommand('workbench.view.extension.pointer');
 		await vscode.commands.executeCommand('pointer.home.focus');
+		const chatSelection = internalApi.getSelection('chat');
+		await internalApi.requestRouterPlan({
+			surface: 'chat',
+			providerId: chatSelection.providerId,
+			modelId: chatSelection.modelId,
+			templateId: 'chat-default',
+			userPrompt: '',
+			context: []
+		});
 	});
 
 	const toggleTab = vscode.commands.registerCommand('pointer.toggleTab', async () => {

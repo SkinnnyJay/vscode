@@ -97,3 +97,5 @@
   **Why:** codifies precedence semantics needed for predictable per-workspace model/provider behavior.
 - **M2-07** Added `extensions/pointer-ai/internal-api.js` stable API surface and returned it from extension activation for UI consumers (`getSelection`, `setSelection`, `onDidChangeSelection`, versioned API).  
   **Why:** gives Pointer UI surfaces a shared contract to consume routing selections without tight coupling.
+- **M2-08** Added `extensions/pointer-ai/router-client.js` with typed request/response contracts and integrated it through the internal API (`requestRouterPlan`, `getLastRouterPlan`).  
+  **Why:** establishes extension-side router client primitives ahead of real sidecar transport wiring.
