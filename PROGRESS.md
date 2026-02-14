@@ -571,3 +571,10 @@
   - matching `[ESM IMPORT FAILURE DEPS SUMMARY]` rich rollups.
   Verified smoke fail-fast header includes source rollups + stable signature (latest sample: `signature=7e2978ab`).
   **Why:** reconfirms core green gates and preserves known environment-level blocker while validating that the latest diagnostics continue to surface as designed.
+- **Diagnostics schema-version tagging (2026-02-14 PM)** Added `schemaVersion: 1` to unit ESM diagnostic payloads in `test/unit/electron/renderer.js`:
+  - `[ESM IMPORT FAILURE]`
+  - `[ESM IMPORT FAILURE DEPS]`
+  - `[ESM IMPORT FAILURE DEPS SUMMARY]`
+  **Why:** establishes explicit schema evolution tracking for downstream log parsers and future backward-compatible changes.
+- **Schema-version validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified both top-level and dependency-summary payloads include `"schemaVersion":1`; re-ran `make lint` (pass).
+  **Why:** confirms schema metadata is consistently emitted and lint-clean.

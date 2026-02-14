@@ -90,6 +90,7 @@ Object.assign(globalThis, {
 
 const IS_CI = !!process.env.BUILD_ARTIFACTSTAGINGDIRECTORY || !!process.env.GITHUB_WORKSPACE;
 const _tests_glob = '**/test/**/*.test.js';
+const ESM_DIAGNOSTIC_SCHEMA_VERSION = 1;
 
 
 /**
@@ -298,6 +299,7 @@ function initLoadFn(opts) {
 			const response = await fetch(moduleUrl);
 			if (!response.ok) {
 				console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
 					module: moduleId,
 					url: moduleUrl,
 					error: `dependency source fetch failed (${response.status})`
@@ -385,6 +387,7 @@ function initLoadFn(opts) {
 				const failureSignature = computeStableSignature(failureSignaturePayload);
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
 					module: moduleId,
 					url: moduleUrl,
 					totalSpecifierCount: allSpecifiers.length,
@@ -432,6 +435,7 @@ function initLoadFn(opts) {
 			}
 		} catch (diagnosticErr) {
 			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+				schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
 				module: moduleId,
 				url: moduleUrl,
 				error: String(diagnosticErr)
@@ -454,6 +458,7 @@ function initLoadFn(opts) {
 				const dependencyDiagnosticsSummary = await logDirectImportDiagnostics(mod, url);
 
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
 					module: mod,
 					url,
 					moduleFamily: deriveFailureFamily(url),
