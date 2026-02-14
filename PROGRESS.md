@@ -7,3 +7,5 @@
   **Why:** confirms fork integrity before layering merge policy, CI checks, and Pointer-specific code.
 - **M0-03** Recorded remote and branch tracking metadata in `docs/upstream-tracking.md`, including upstream default branch detection (`main`).  
   **Why:** creates an explicit, versioned reference for future merge operations and CI conflict detection steps.
+- **M0-04** Added `docs/upstream-merge-strategy.md` with merge cadence and rebase/merge branch policy.  
+  **Why:** defines a stable operating model for keeping the fork current while minimizing long-term merge friction.
