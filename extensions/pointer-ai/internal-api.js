@@ -25,6 +25,7 @@ const vscode = require('vscode');
  *   requestRouterPlan(request: import('./router-client.js').RouterPlanRequest): Promise<import('./router-client.js').RouterPlanResponse>;
  *   getLastRouterPlan(): import('./router-client.js').RouterPlanResponse | undefined;
  *   onDidChangeSelection(listener: (surface: PointerSurface, selection: SurfaceSelection) => void): vscode.Disposable;
+ *   onDidCreateRouterPlan(listener: (plan: import('./router-client.js').RouterPlanResponse) => void): vscode.Disposable;
  * }} PointerInternalApi
  */
 
@@ -34,6 +35,7 @@ const vscode = require('vscode');
  */
 function createPointerInternalApi(routerClient) {
 	const onDidChangeSelectionEmitter = new vscode.EventEmitter();
+	const onDidCreateRouterPlanEmitter = new vscode.EventEmitter();
 
 	/** @type {Record<PointerSurface, SurfaceSelection>} */
 	const selections = {
@@ -54,8 +56,10 @@ function createPointerInternalApi(routerClient) {
 		getAllSelections() {
 			return selections;
 		},
-		requestRouterPlan(request) {
-			return routerClient.requestPlan(request);
+		async requestRouterPlan(request) {
+			const plan = await routerClient.requestPlan(request);
+			onDidCreateRouterPlanEmitter.fire(plan);
+			return plan;
 		},
 		getLastRouterPlan() {
 			return routerClient.getLastPlan();
@@ -63,6 +67,11 @@ function createPointerInternalApi(routerClient) {
 		onDidChangeSelection(listener) {
 			return onDidChangeSelectionEmitter.event((event) => {
 				listener(event.surface, event.selection);
+			});
+		},
+		onDidCreateRouterPlan(listener) {
+			return onDidCreateRouterPlanEmitter.event((plan) => {
+				listener(plan);
 			});
 		}
 	};

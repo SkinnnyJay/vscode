@@ -19,6 +19,38 @@ class PointerViewDataProvider {
 	}
 }
 
+class RouterContextViewDataProvider {
+	constructor() {
+		this.onDidChangeTreeDataEmitter = new vscode.EventEmitter();
+		this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+		/** @type {vscode.TreeItem[]} */
+		this.items = [
+			new vscode.TreeItem('No router plan yet. Trigger a Pointer command to populate context.', vscode.TreeItemCollapsibleState.None)
+		];
+	}
+
+	refreshFromPlan(plan) {
+		const contextItems = plan.explainability.map((entry) => {
+			const item = new vscode.TreeItem(entry, vscode.TreeItemCollapsibleState.None);
+			item.tooltip = `plan:${plan.requestId}`;
+			return item;
+		});
+
+		this.items = contextItems.length > 0 ? contextItems : [
+			new vscode.TreeItem('Router plan had no explainability entries.', vscode.TreeItemCollapsibleState.None)
+		];
+		this.onDidChangeTreeDataEmitter.fire(undefined);
+	}
+
+	getTreeItem(element) {
+		return element;
+	}
+
+	getChildren() {
+		return this.items;
+	}
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -65,6 +97,12 @@ function activate(context) {
 		showCollapseAll: false
 	});
 	pointerTree.message = 'Pointer AI is not configured yet. Open Command Palette and run Pointer commands to begin.';
+	const routerContextViewProvider = new RouterContextViewDataProvider();
+	const contextSentTree = vscode.window.createTreeView('pointer.contextSent', {
+		treeDataProvider: routerContextViewProvider,
+		showCollapseAll: false
+	});
+	contextSentTree.message = 'Shows explainability data from the last router plan.';
 
 	const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 110);
 	statusBarItem.name = 'Pointer Surface Model';
@@ -80,8 +118,11 @@ function activate(context) {
 			providerId: chatSelection.providerId,
 			modelId: chatSelection.modelId,
 			templateId: 'chat-default',
-			userPrompt: '',
-			context: []
+			userPrompt: 'Open chat shell',
+			context: [
+				{ kind: 'system', label: 'pointer-system', tokenEstimate: 8 },
+				{ kind: 'user', label: 'pointer-user', tokenEstimate: 6 }
+			]
 		});
 	});
 
@@ -150,7 +191,11 @@ function activate(context) {
 		}
 	});
 
-	context.subscriptions.push(pointerTree, statusBarItem, configWatcher, openChat, toggleTab, selectModel, openSettings);
+	const routerPlanWatcher = internalApi.onDidCreateRouterPlan((plan) => {
+		routerContextViewProvider.refreshFromPlan(plan);
+	});
+
+	context.subscriptions.push(pointerTree, contextSentTree, statusBarItem, configWatcher, routerPlanWatcher, openChat, toggleTab, selectModel, openSettings);
 	return internalApi;
 }
 

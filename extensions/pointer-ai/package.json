@@ -12,6 +12,7 @@
 	],
 	"activationEvents": [
 		"onView:pointer.home",
+		"onView:pointer.contextSent",
 		"onCommand:pointer.openChat",
 		"onCommand:pointer.toggleTab",
 		"onCommand:pointer.selectModel",
@@ -144,6 +145,10 @@
 				{
 					"id": "pointer.home",
 					"name": "Pointer"
+				},
+				{
+					"id": "pointer.contextSent",
+					"name": "Context Sent"
 				}
 			]
 		}

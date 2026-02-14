@@ -105,3 +105,5 @@
   **Why:** protects prompt composition invariants as router logic expands.
 - **M2-11** Added router planner budget enforcement (`planner.ts`) with per-request explainability metadata and context trimming under max input tokens.
   **Why:** enforces deterministic safety limits across surfaces while preserving debuggable reasoning for dropped context.
+- **M2-12** Added `pointer.contextSent` view and renderer that subscribes to router plan events, showing plan explainability/context metadata in UI.
+  **Why:** gives users immediate visibility into what context and policy decisions are being sent to the router.
