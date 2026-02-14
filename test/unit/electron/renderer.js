@@ -163,6 +163,7 @@ function initLoadFn(opts) {
 
 			const source = await response.text();
 			const specifiers = extractDirectImportSpecifiers(source).slice(0, 25);
+			const failures = [];
 			for (const specifier of specifiers) {
 				const resolved = resolveImportSpecifier(specifier, moduleUrl);
 				try {
@@ -177,15 +178,25 @@ function initLoadFn(opts) {
 						}
 					}
 
-					console.error('[ESM IMPORT FAILURE DEP]', JSON.stringify({
+					failures.push({
 						module: moduleId,
 						parentUrl: moduleUrl,
 						specifier,
 						resolved,
 						error: String(depErr),
 						existsOnDisk: depExistsOnDisk
-					}));
+					});
 				}
+			}
+
+			if (failures.length > 0) {
+				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
+					module: moduleId,
+					url: moduleUrl,
+					specifierCount: specifiers.length,
+					failureCount: failures.length,
+					failures
+				}));
 			}
 		} catch (diagnosticErr) {
 			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({

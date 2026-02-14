@@ -370,3 +370,11 @@
   - `xvfb-run -a ./scripts/test.sh --run vs/editor/test/browser/testCodeEditor.js`
   and confirmed new `[ESM IMPORT FAILURE DEP]` records are emitted with resolved file URLs and `existsOnDisk=true`; re-ran `make lint` (pass).
   **Why:** verifies the new unit-level observability path is active and lint-safe while preserving existing failure behavior.
+- **Unit dependency diagnostics compaction (2026-02-14 PM)** Refined `test/unit/electron/renderer.js` direct-import diagnostics to aggregate failures into a single structured `[ESM IMPORT FAILURE DEPS SUMMARY]` payload per failed parent module (including `specifierCount`, `failureCount`, and detailed failure entries), replacing many per-edge log lines.
+  **Why:** keeps the same debugging signal while reducing log noise and making failing dependency fronts easier to parse in CI artifacts.
+- **Diagnostics compaction validation (2026-02-14 PM)** Re-ran isolated failing renderer module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and confirmed:
+  - base `[ESM IMPORT FAILURE]` still emitted,
+  - new single `[ESM IMPORT FAILURE DEPS SUMMARY]` record present,
+  - previous per-edge spam absent.
+  Re-ran `make lint` (pass).
+  **Why:** verifies compaction behavior is active and non-regressive.
