@@ -527,3 +527,7 @@
   **Why:** distinguishes the shape of *all attempted* direct imports from the subset that failed, helping identify whether failures are concentrated in one resolved-kind class.
 - **Attempted-kind validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified summary now reports attempted-kind coverage (example: `file-url:9`, `bare-specifier:1`) alongside failure-only resolved-kind rollups; re-ran `make lint` (pass).
   **Why:** confirms attempted-vs-failed resolved-kind comparison fields are active and lint-clean.
+- **Unit dependency failure signature field (2026-02-14 PM)** Added `failureSignature` (stable FNV-style hash) to `[ESM IMPORT FAILURE DEPS SUMMARY]` payloads in `test/unit/electron/renderer.js`, derived from sorted per-edge failure facts.
+  **Why:** enables quick equality checks of dependency-failure shape across reruns without diffing full JSON arrays.
+- **Failure-signature validation (2026-02-14 PM)** Re-ran the same isolated failing module twice (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and confirmed summary includes `failureSignature`; observed differing signatures across runs when one edge flipped from `fetchStatus=200` to `TypeError: Failed to fetch`, matching payload differences.
+  **Why:** confirms signature responds to real failure-shape drift and is useful for flake characterization.

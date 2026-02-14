@@ -277,6 +277,16 @@ function initLoadFn(opts) {
 		return Math.round((part / total) * 10000) / 100;
 	}
 
+	function computeStableSignature(value) {
+		let hash = 2166136261;
+		for (let index = 0; index < value.length; index++) {
+			hash ^= value.charCodeAt(index);
+			hash = Math.imul(hash, 16777619);
+		}
+
+		return (hash >>> 0).toString(16).padStart(8, '0');
+	}
+
 	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
 		if (seenDependencyDiagnostics.has(moduleUrl)) {
 			return;
@@ -363,6 +373,11 @@ function initLoadFn(opts) {
 					.map(entry => ({ byteDeltaKind: entry.key, count: entry.count }));
 				const attemptedResolvedKindEntries = toSortedCountEntries(attemptedResolvedKinds)
 					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
+				const failureSignaturePayload = failures
+					.map(failure => `${failure.specifier}|${failure.resolved}|${failure.errorKind}|${failure.fetchStatus}|${failure.fetchOk}|${failure.fetchedBytes}|${failure.onDiskBytes}|${failure.byteDeltaKind}`)
+					.sort()
+					.join('||');
+				const failureSignature = computeStableSignature(failureSignaturePayload);
 
 				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
 					module: moduleId,
@@ -392,6 +407,7 @@ function initLoadFn(opts) {
 					failureFetchOkEntries,
 					failureByteDeltaKinds,
 					failureByteDeltaKindEntries,
+					failureSignature,
 					failures
 				}));
 			}
