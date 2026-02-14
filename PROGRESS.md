@@ -59,3 +59,5 @@
   **Why:** provides immediate in-product onboarding context before chat/tab surfaces are wired.
 - **M1-04** Added command contributions and handlers for Open Chat, Toggle Tab, Select Model, and Open Settings in `extensions/pointer-ai`.  
   **Why:** establishes stable command IDs and command-palette entry points for the Pointer UX shell.
+- **M1-05** Added explicit command palette labels with `Pointer` category prefixes in extension command contributions.  
+  **Why:** keeps command discoverability clear and consistent in the global command palette.
