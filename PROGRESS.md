@@ -549,3 +549,11 @@
   - compact `[ESM IMPORT FAILURE DEP SUMMARY REF]` carrying matching signature/counts.
   Re-ran `make lint` (pass).
   **Why:** confirms summary-reference linkage is active and lint-safe.
+- **Inlined dependency summary references on top-level failures (2026-02-14 PM)** Refined `test/unit/electron/renderer.js` import-failure logging to inline dependency-summary reference fields directly into `[ESM IMPORT FAILURE]` (`dependencyFailureSignature`, `dependencyFailureCount`, `dependencyFailureDetailsReturnedCount`) and removed the extra standalone ref log record.
+  **Why:** keeps correlation metadata attached to the primary failure event while reducing redundant log lines.
+- **Inline-reference validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - `[ESM IMPORT FAILURE]` now includes dependency reference fields,
+  - `[ESM IMPORT FAILURE DEPS SUMMARY]` remains emitted with matching signature,
+  - standalone `[ESM IMPORT FAILURE DEP SUMMARY REF]` line is absent.
+  Re-ran `make lint` (pass).
+  **Why:** confirms tighter, less noisy correlation path is active and lint-clean.

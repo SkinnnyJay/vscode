@@ -447,6 +447,7 @@ function initLoadFn(opts) {
 				const fetchDiagnostics = await getImportFetchDiagnostics(url);
 				const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
 				const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
+				const dependencyDiagnosticsSummary = await logDirectImportDiagnostics(mod, url);
 
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
 					module: mod,
@@ -457,15 +458,14 @@ function initLoadFn(opts) {
 					...fileDiagnostics,
 					...fetchDiagnostics,
 					fetchDiskByteDelta,
-					byteDeltaKind
+					byteDeltaKind,
+					dependencyFailureSignature: dependencyDiagnosticsSummary?.failureSignature,
+					dependencyFailureCount: dependencyDiagnosticsSummary?.failureCount,
+					dependencyFailureDetailsReturnedCount: dependencyDiagnosticsSummary?.failureDetailsReturnedCount
 				}));
-				const dependencyDiagnosticsSummary = await logDirectImportDiagnostics(mod, url);
 				console.log(mod, url);
 				console.log(err);
 				_loaderErrors.push(err);
-				if (dependencyDiagnosticsSummary) {
-					console.error('[ESM IMPORT FAILURE DEP SUMMARY REF]', JSON.stringify(dependencyDiagnosticsSummary));
-				}
 				throw err;
 			});
 		});
