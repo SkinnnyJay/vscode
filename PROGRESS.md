@@ -27,3 +27,5 @@
   **Why:** establishes project-owned security disclosure and community standards required for external contributors.
 - **M0-13** Added `docs/extension-distribution-strategy.md` selecting Open VSX + VSIX fallback (+ optional private registry).  
   **Why:** formalizes a marketplace-legal distribution path for a Code - OSS fork and unblocks product gallery configuration.
+- **M0-14** Configured `product.json` `extensionsGallery` to Open VSX service/item/resource endpoints.  
+  **Why:** activates the chosen default extension registry directly in product runtime settings.
