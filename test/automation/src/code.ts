@@ -439,6 +439,14 @@ export class Code {
 					const importTargetVisibilityClassStatus = importTargetUrl
 						? `\nImport target visibility class: ${importTargetVisibilityClass}`
 						: '';
+					const importTargetChannelStates = {
+						requestFailures: this.classifyChannelVisibilityState(importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0),
+						scriptResponses: this.classifyChannelVisibilityState(importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0),
+						cdpScriptLoads: this.classifyChannelVisibilityState(importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)
+					};
+					const importTargetChannelStatesStatus = importTargetUrl
+						? `\nImport target channel states: requestFailures=${importTargetChannelStates.requestFailures}, scriptResponses=${importTargetChannelStates.scriptResponses}, cdpScriptLoads=${importTargetChannelStates.cdpScriptLoads}`
+						: '';
 					const importTargetDroppedEventEstimates = importTargetTotalEventCounts
 						? {
 							requestFailures: Math.max(0, importTargetTotalEventCounts.requestFailures - importTargetRequestFailureEventCount),
@@ -506,6 +514,7 @@ export class Code {
 						importTargetDroppedEventEstimates,
 						importTargetSignalClass,
 						importTargetVisibilityClass,
+						importTargetChannelStates,
 						importTargetDiagnosticsSignature,
 						trial,
 						retryInterval,
@@ -518,7 +527,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -671,6 +680,18 @@ export class Code {
 		return 'unseen-across-all-channels';
 	}
 
+	private classifyChannelVisibilityState(recentCount: number, totalCount: number): 'visible' | 'truncated' | 'unseen' {
+		if (recentCount > 0) {
+			return 'visible';
+		}
+
+		if (totalCount > 0) {
+			return 'truncated';
+		}
+
+		return 'unseen';
+	}
+
 	private computeImportTargetDiagnosticsSignature(
 		importTargetUrl: string,
 		importTargetSignalClass: string,
@@ -704,6 +725,7 @@ export class Code {
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
 		signalClass: string,
 		visibilityClass: string,
+		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' },
 		signature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
@@ -717,6 +739,7 @@ export class Code {
 		url: string;
 		signalClass: string;
 		visibilityClass: string;
+		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' };
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -738,6 +761,7 @@ export class Code {
 			url: importTargetUrl,
 			signalClass,
 			visibilityClass,
+			channelStates,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,

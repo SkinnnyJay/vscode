@@ -777,3 +777,14 @@
   - structured record field `"visibilityClass":"historical-only-truncated-from-window"`.
   Re-ran `make lint` (pass).
   **Why:** confirms visibility classification is emitted correctly and consistent with channel totals/recent counts in this run.
+- **Import-target per-channel visibility states (2026-02-14 PM)** Added fine-grained per-channel visibility states in smoke fail-fast output and structured diagnostics record:
+  - state values: `visible`, `truncated`, `unseen`
+  - emitted as text line `Import target channel states: ...`
+  - emitted in JSON as `channelStates`.
+  **Why:** complements aggregate visibility class with channel-specific status for faster triage across request-failure/script-response/CDP-load channels.
+- **Per-channel state validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target visibility class: historical-only-truncated-from-window`
+  - `Import target channel states: requestFailures=unseen, scriptResponses=truncated, cdpScriptLoads=unseen`
+  - JSON record field `"channelStates":{"requestFailures":"unseen","scriptResponses":"truncated","cdpScriptLoads":"unseen"}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms channel-level state metadata is emitted correctly and consistent with existing totals/recent counters.
