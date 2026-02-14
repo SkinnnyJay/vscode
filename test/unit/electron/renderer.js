@@ -68,7 +68,7 @@ const path = require('path');
 const glob = require('glob');
 const util = require('util');
 const coverage = require('../coverage');
-const { pathToFileURL } = require('url');
+const { fileURLToPath, pathToFileURL } = require('url');
 
 // Disabled custom inspect. See #38847
 if (util.inspect && util.inspect['defaultOptions']) {
@@ -127,6 +127,7 @@ function initLoadFn(opts) {
 			return import(url).catch(async err => {
 				let fetchStatus = 'unavailable';
 				let fetchOk = false;
+				let existsOnDisk = false;
 				try {
 					const response = await fetch(url);
 					fetchStatus = String(response.status);
@@ -134,13 +135,19 @@ function initLoadFn(opts) {
 				} catch (fetchError) {
 					fetchStatus = String(fetchError);
 				}
+				try {
+					existsOnDisk = fs.existsSync(fileURLToPath(url));
+				} catch {
+					existsOnDisk = false;
+				}
 
 				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
 					module: mod,
 					url,
 					error: String(err),
 					fetchStatus,
-					fetchOk
+					fetchOk,
+					existsOnDisk
 				}));
 				console.log(mod, url);
 				console.log(err);

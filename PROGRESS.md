@@ -329,3 +329,9 @@
   **Why:** augments Playwright’s coarse `net::ERR_FAILED` signal with lower-level network event context to tighten root-cause analysis.
 - **CDP diagnostics verification (2026-02-14 PM)** Recompiled smoke automation and re-ran focused smoke startup case; fail-fast output now includes entries like `[cdp] net::ERR_FAILED ... resourceType=Script` alongside existing `existsOnDisk=true` annotations. Re-ran `make lint` (pass).
   **Why:** confirms CDP enrichment is active and non-disruptive while preserving prior diagnostics.
+- **Focused smoke reproducibility check (2026-02-14 PM)** Re-ran the same focused smoke startup case (`-g "verifies opened editors are restored"`) 5 consecutive times; all 5/5 runs failed with the same renderer import-startup error path.
+  **Why:** confirms this environment failure mode is deterministic for the focused startup scenario, not a transient flake.
+- **Unit harness `existsOnDisk` import diagnostics (2026-02-14 PM)** Extended `test/unit/electron/renderer.js` structured `[ESM IMPORT FAILURE]` logging to include `existsOnDisk` by converting the failing module URL to a local file path (`fileURLToPath` + `fs.existsSync`).
+  **Why:** aligns unit-harness diagnostics with smoke diagnostics so both surfaces explicitly report whether failing import targets are physically present.
+- **Unit `existsOnDisk` verification (2026-02-14 PM)** Re-ran isolated failing module (`vs/workbench/workbench.desktop.main.js`) and verified new log payload includes `"existsOnDisk":true` while import still fails; re-ran `make lint` (pass).
+  **Why:** confirms the additional unit-level signal is active and supports the “not missing artifact” conclusion.
