@@ -592,3 +592,10 @@
   **Why:** aligns smoke diagnostics with versioned unit diagnostics so downstream parsers can evolve safely with explicit schema signals.
 - **Smoke schema-version validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified header now includes `schemaVersion=1` alongside counts/signature, and re-ran `make lint` (pass).
   **Why:** confirms schema-version tagging is active and non-regressive.
+- **Top-level dependency-schema linkage field (2026-02-14 PM)** Updated `test/unit/electron/renderer.js` so compact dependency summary metadata returned by `logDirectImportDiagnostics` carries `schemaVersion`, and top-level `[ESM IMPORT FAILURE]` now includes `dependencySummarySchemaVersion`.
+  **Why:** makes schema compatibility explicit when correlating top-level failure events to dependency-summary records.
+- **Dependency-schema linkage validation (2026-02-14 PM)** Re-ran isolated failing module (`xvfb-run -a ./scripts/test.sh --run vs/editor/contrib/bracketMatching/test/browser/bracketMatching.test.js`) and verified:
+  - dependency summary includes `"schemaVersion":1`,
+  - top-level payload includes `"dependencySummarySchemaVersion":1` with matching dependency signature/counts.
+  Re-ran `make lint` (pass).
+  **Why:** confirms schema-version correlation is emitted end-to-end and lint-safe.

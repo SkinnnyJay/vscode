@@ -423,6 +423,7 @@ function initLoadFn(opts) {
 				}));
 
 				const summary = {
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
 					module: moduleId,
 					url: moduleUrl,
 					failureSignature,
@@ -468,6 +469,7 @@ function initLoadFn(opts) {
 					...fetchDiagnostics,
 					fetchDiskByteDelta,
 					byteDeltaKind,
+					dependencySummarySchemaVersion: dependencyDiagnosticsSummary?.schemaVersion,
 					dependencyFailureSignature: dependencyDiagnosticsSummary?.failureSignature,
 					dependencyFailureCount: dependencyDiagnosticsSummary?.failureCount,
 					dependencyFailureDetailsReturnedCount: dependencyDiagnosticsSummary?.failureDetailsReturnedCount
