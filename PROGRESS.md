@@ -39,3 +39,5 @@
   **Why:** confirms both platform launch scripts resolve Pointer dev binaries and maintain product-consistent startup behavior.
 - **M0-19** Added `.github/workflows/dev-artifacts.yml` to build compile+electron outputs on Linux/macOS/Windows and upload per-OS dev artifacts.  
   **Why:** provides cross-platform artifact validation and reproducible developer runtime outputs in CI.
+- **M0-20** Added `.github/workflows/pointer-quality.yml` to run lint and fast unit tests on pointer-owned change paths.  
+  **Why:** introduces an explicit quality gate for Pointer-specific modifications without waiting for full-suite pipelines.
