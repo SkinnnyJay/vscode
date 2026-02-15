@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 4;
+const supportedSchemaVersion = 5;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -122,6 +122,8 @@ const lines = [
 	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,
 	`**Slowest executed gate:** ${sanitizeCell(summary.slowestExecutedGateId ?? 'n/a')}`,
 	`**Slowest executed gate duration:** ${summary.slowestExecutedGateDurationSeconds === null || summary.slowestExecutedGateDurationSeconds === undefined ? 'n/a' : `${summary.slowestExecutedGateDurationSeconds}s`}`,
+	`**Fastest executed gate:** ${sanitizeCell(summary.fastestExecutedGateId ?? 'n/a')}`,
+	`**Fastest executed gate duration:** ${summary.fastestExecutedGateDurationSeconds === null || summary.fastestExecutedGateDurationSeconds === undefined ? 'n/a' : `${summary.fastestExecutedGateDurationSeconds}s`}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,

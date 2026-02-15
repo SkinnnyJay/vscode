@@ -1632,6 +1632,27 @@
   - real success run (`--quick --only typecheck --retries 0`) confirmed `exitReason=success` and terminal parity.
   - `make lint` → **pass**.
   **Why:** confirms schema-v4 fields are stable and accurately represent run-termination behavior in all primary modes.
+- **Fastest executed gate telemetry + schema v5 (2026-02-15 AM)** Extended duration extremum metrics:
+  - bumped summary schema version to `5`
+  - `scripts/verify-gates.sh` now emits:
+    - `fastestExecutedGateId`
+    - `fastestExecutedGateDurationSeconds`
+  - terminal summary now prints `Fastest executed gate: ...`
+  - `scripts/publish-verify-gates-summary.sh` now renders fastest-gate metadata and updates supported schema version to 5.
+  **Why:** complements existing slowest-gate metric with best-case execution visibility and keeps schema evolution explicit.
+- **Fastest-gate + schema-v5 validation (2026-02-15 AM)** Verified new extremum fields and version behavior:
+  - dry run (`--quick --only lint --dry-run`) confirmed:
+    - `schemaVersion=5`
+    - `fastestExecutedGateId=null`, `fastestExecutedGateDurationSeconds=null`
+    - terminal line `Fastest executed gate: n/a`
+  - controlled continue-on-failure run (mock `lint` sleeps 2s + fails; `typecheck` sleeps 1s + passes) confirmed:
+    - `fastestExecutedGateId=typecheck`
+    - `fastestExecutedGateDurationSeconds >= 1`
+    - terminal and step-summary fastest-gate lines present.
+  - real run (`--quick --only typecheck --retries 0`) confirmed fastest gate values for single executed gate.
+  - future schema warning test (`schemaVersion=99`) confirmed renderer warning references supported version `5`.
+  - `make lint` → **pass**.
+  **Why:** confirms schema-v5 rollout and fastest-gate telemetry are consistent across dry/mock/real flows and compatibility warnings.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)

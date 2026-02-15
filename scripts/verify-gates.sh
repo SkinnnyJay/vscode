@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=4
+SUMMARY_SCHEMA_VERSION=5
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -340,6 +340,8 @@ print_summary() {
 	executed_duration_seconds="$(compute_executed_duration_seconds)"
 	local average_executed_duration_seconds
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_count")"
+	local fastest_executed_gate_index
+	fastest_executed_gate_index="$(find_fastest_executed_gate_index)"
 	local slowest_executed_gate_index
 	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
 	local total_retry_count
@@ -376,6 +378,13 @@ print_summary() {
 		echo "  Slowest executed gate: ${slowest_executed_gate_id} (${slowest_executed_gate_duration_seconds}s)"
 	else
 		echo "  Slowest executed gate: n/a"
+	fi
+	if ((fastest_executed_gate_index >= 0)); then
+		local fastest_executed_gate_id="${gate_ids[$fastest_executed_gate_index]}"
+		local fastest_executed_gate_duration_seconds="${gate_durations_seconds[$fastest_executed_gate_index]}"
+		echo "  Fastest executed gate: ${fastest_executed_gate_id} (${fastest_executed_gate_duration_seconds}s)"
+	else
+		echo "  Fastest executed gate: n/a"
 	fi
 	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
@@ -539,6 +548,25 @@ find_slowest_executed_gate_index() {
 	echo "$slowest_index"
 }
 
+find_fastest_executed_gate_index() {
+	local fastest_index="-1"
+	local fastest_duration="-1"
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" != "pass" ]] && [[ "${gate_results[$i]}" != "fail" ]]; then
+			continue
+		fi
+
+		local gate_duration="${gate_durations_seconds[$i]}"
+		if ((fastest_index == -1)) || ((gate_duration < fastest_duration)); then
+			fastest_duration="$gate_duration"
+			fastest_index="$i"
+		fi
+	done
+
+	echo "$fastest_index"
+}
+
 collect_failed_gate_labels() {
 	local labels=""
 	local i
@@ -671,6 +699,8 @@ write_summary_json() {
 	executed_duration_seconds="$(compute_executed_duration_seconds)"
 	local average_executed_duration_seconds
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_gate_count")"
+	local fastest_executed_gate_index
+	fastest_executed_gate_index="$(find_fastest_executed_gate_index)"
 	local slowest_executed_gate_index
 	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
 	local total_retry_count
@@ -715,6 +745,13 @@ write_summary_json() {
 		else
 			echo "  \"slowestExecutedGateId\": null,"
 			echo "  \"slowestExecutedGateDurationSeconds\": null,"
+		fi
+		if ((fastest_executed_gate_index >= 0)); then
+			echo "  \"fastestExecutedGateId\": \"$(json_escape "${gate_ids[$fastest_executed_gate_index]}")\","
+			echo "  \"fastestExecutedGateDurationSeconds\": ${gate_durations_seconds[$fastest_executed_gate_index]},"
+		else
+			echo "  \"fastestExecutedGateId\": null,"
+			echo "  \"fastestExecutedGateDurationSeconds\": null,"
 		fi
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","
