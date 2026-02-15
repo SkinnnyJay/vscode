@@ -1874,3 +1874,10 @@
   - test fails early if producer and renderer schema versions diverge.
   - future-schema warning assertion now validates against the dynamically discovered supported version.
   **Why:** prevents silent drift between producer and renderer schema baselines and avoids brittle test updates on future schema bumps.
+- **Publisher no-op path coverage in contract harness (2026-02-15 PM)** Expanded publisher failure/no-op assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - unknown option exits non-zero and emits an explicit `Unknown option` message
+    - missing summary file path is a no-op success and does not write a step-summary artifact
+    - empty/unset `GITHUB_STEP_SUMMARY` path is a no-op success with warning output
+  - `scripts/README.md` updated to document the broader no-op/failure-path coverage.
+  **Why:** locks in safe CI behavior for misconfiguration scenarios and guards user-facing error clarity.
