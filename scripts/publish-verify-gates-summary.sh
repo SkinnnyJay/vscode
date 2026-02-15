@@ -80,6 +80,15 @@ const normalizeBoolean = (value) => {
 	if (typeof value === 'boolean') {
 		return value;
 	}
+	if (typeof value === 'number') {
+		if (value === 1) {
+			return true;
+		}
+		if (value === 0) {
+			return false;
+		}
+		return null;
+	}
 	if (typeof value !== 'string') {
 		return null;
 	}

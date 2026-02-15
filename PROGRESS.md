@@ -2417,3 +2417,8 @@
   - `scripts/test-verify-gates-summary.sh` derived-counts sparse gate-row scenario now uses noisy statuses (`" PASS "`, `"FAIL"`, `"Skip"`, `" Not-Run "`) and padded IDs (`" lint "`, etc.) while preserving existing derived-count assertions and adding selected-gates/table normalization checks.
   - `scripts/README.md` updated to document gate-row status+ID normalization coverage.
   **Why:** prevents sparse producer case/whitespace differences in `gates[]` rows from degrading count/list/table derivation quality.
+- **Numeric boolean normalization for sparse run-state flags (2026-02-15 PM)** Hardened boolean parsing for numeric encodings:
+  - `scripts/publish-verify-gates-summary.sh` `normalizeBoolean` now accepts numeric `1`/`0` alongside booleans/strings.
+  - `scripts/test-verify-gates-summary.sh` adds `numeric_boolean_flags` scenario (`success: 1`, `dryRun: 0`, `continueOnFailure: 0`) and verifies normalized run-state rendering (`Success: true`, `Dry run: false`, `Continue on failure: false`, `Exit reason: success`, `Run classification: success-no-retries`).
+  - `scripts/README.md` updated to document numeric-boolean normalization coverage.
+  **Why:** keeps sparse summary derivation robust when producers encode booleans as numeric JSON fields.
