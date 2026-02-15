@@ -2007,6 +2007,15 @@
     - headings appear in write order (first publish before second publish)
   - `scripts/README.md` updated to include append-behavior coverage.
   **Why:** protects CI summary accumulation behavior and prevents regressions that could overwrite prior summary content.
+- **Full-mode dry-run metadata coverage (2026-02-15 PM)** Expanded contract assertions for mode-specific summary behavior:
+  - `scripts/test-verify-gates-summary.sh` now runs:
+    - `./scripts/verify-gates.sh --full --only build --dry-run`
+  - and verifies:
+    - `runId` prefix uses `full-` (while quick paths remain `quick-`)
+    - `mode` field is `full`
+    - `selectedGateIds` / `skippedGateIds` both resolve to `build` in dry-run mode.
+  - `scripts/README.md` updated to include mode-specific metadata coverage.
+  **Why:** ensures consumers can reliably distinguish quick/full runs from summary metadata and trust mode-specific partitions.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
