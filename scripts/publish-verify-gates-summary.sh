@@ -87,6 +87,7 @@ const lines = [
 	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
+	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,

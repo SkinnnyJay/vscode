@@ -1548,3 +1548,7 @@
     - failure run preserves expected `exitCode` / `failedGateExitCode` values.
   - `make lint` → **pass**.
   **Why:** confirms timestamp instrumentation is reliable in all primary execution modes without regressing existing exit-code telemetry.
+- **Summary schema versioning (2026-02-15 AM)** Added explicit versioning for verify summary payload consumers:
+  - `scripts/verify-gates.sh` now emits top-level `schemaVersion` (`2`) and prints it in terminal summary output
+  - `scripts/publish-verify-gates-summary.sh` now renders `Summary schema version` in step summaries.
+  **Why:** gives downstream parsers a stable compatibility contract as summary fields continue to evolve.

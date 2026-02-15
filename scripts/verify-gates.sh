@@ -18,6 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
+SUMMARY_SCHEMA_VERSION=2
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -333,6 +334,7 @@ print_summary() {
 	echo "Verification summary:"
 	echo "  Run ID: ${RUN_ID}"
 	echo "  Invocation: ${INVOCATION}"
+	echo "  Summary schema version: ${SUMMARY_SCHEMA_VERSION}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
@@ -397,6 +399,7 @@ write_summary_json() {
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
 		echo "{"
+		echo "  \"schemaVersion\": ${SUMMARY_SCHEMA_VERSION},"
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
