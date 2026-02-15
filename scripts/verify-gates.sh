@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=5
+SUMMARY_SCHEMA_VERSION=6
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -352,6 +352,10 @@ print_summary() {
 	retried_gate_count="$(count_retried_gates)"
 	local retried_gate_labels
 	retried_gate_labels="$(collect_retried_gate_labels)"
+	local retry_rate_percent
+	retry_rate_percent="$(compute_retry_rate_percent "$executed_count" "$retried_gate_count")"
+	local retry_backoff_share_percent
+	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -366,6 +370,16 @@ print_summary() {
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
 	echo "  Retry totals: retries=${total_retry_count} backoff=${total_retry_backoff_seconds}s"
 	echo "  Retried gates: ${retried_gate_count} (${retried_gate_labels})"
+	if ((retry_rate_percent >= 0)); then
+		echo "  Retry rate (executed gates): ${retry_rate_percent}%"
+	else
+		echo "  Retry rate (executed gates): n/a"
+	fi
+	if ((retry_backoff_share_percent >= 0)); then
+		echo "  Retry backoff share (executed duration): ${retry_backoff_share_percent}%"
+	else
+		echo "  Retry backoff share (executed duration): n/a"
+	fi
 	if ((pass_rate_percent >= 0)); then
 		echo "  Pass rate (executed gates): ${pass_rate_percent}%"
 	else
@@ -454,6 +468,28 @@ compute_pass_rate_percent() {
 	fi
 
 	echo $((passed_count * 100 / executed_count))
+}
+
+compute_retry_rate_percent() {
+	local executed_gate_count="$1"
+	local retried_gate_count="$2"
+	if ((executed_gate_count == 0)); then
+		echo "-1"
+		return 0
+	fi
+
+	echo $((retried_gate_count * 100 / executed_gate_count))
+}
+
+compute_retry_backoff_share_percent() {
+	local executed_duration_seconds="$1"
+	local total_retry_backoff_seconds="$2"
+	if ((executed_duration_seconds == 0)); then
+		echo "-1"
+		return 0
+	fi
+
+	echo $((total_retry_backoff_seconds * 100 / executed_duration_seconds))
 }
 
 compute_executed_duration_seconds() {
@@ -773,6 +809,10 @@ write_summary_json() {
 	total_retry_backoff_seconds="$(compute_total_retry_backoff_seconds)"
 	local retried_gate_count
 	retried_gate_count="$(count_retried_gates)"
+	local retry_rate_percent
+	retry_rate_percent="$(compute_retry_rate_percent "$executed_gate_count" "$retried_gate_count")"
+	local retry_backoff_share_percent
+	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -795,6 +835,16 @@ write_summary_json() {
 		echo "  \"totalRetryCount\": ${total_retry_count},"
 		echo "  \"totalRetryBackoffSeconds\": ${total_retry_backoff_seconds},"
 		echo "  \"retriedGateCount\": ${retried_gate_count},"
+		if ((retry_rate_percent >= 0)); then
+			echo "  \"retryRatePercent\": ${retry_rate_percent},"
+		else
+			echo "  \"retryRatePercent\": null,"
+		fi
+		if ((retry_backoff_share_percent >= 0)); then
+			echo "  \"retryBackoffSharePercent\": ${retry_backoff_share_percent},"
+		else
+			echo "  \"retryBackoffSharePercent\": null,"
+		fi
 		echo "  \"executedDurationSeconds\": ${executed_duration_seconds},"
 		if ((pass_rate_percent >= 0)); then
 			echo "  \"passRatePercent\": ${pass_rate_percent},"

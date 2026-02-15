@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 5;
+const supportedSchemaVersion = 6;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -123,6 +123,8 @@ const lines = [
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
 	`**Retried gate count:** ${summary.retriedGateCount ?? retriedGateIds.length}`,
 	`**Retried gates:** ${sanitizeCell(retriedGateIdsLabel)}`,
+	`**Retry rate (executed gates):** ${summary.retryRatePercent ?? 'n/a'}${summary.retryRatePercent === null || summary.retryRatePercent === undefined ? '' : '%'}`,
+	`**Retry backoff share (executed duration):** ${summary.retryBackoffSharePercent ?? 'n/a'}${summary.retryBackoffSharePercent === null || summary.retryBackoffSharePercent === undefined ? '' : '%'}`,
 	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
 	`**Executed duration total:** ${summary.executedDurationSeconds ?? 'unknown'}s`,
 	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,

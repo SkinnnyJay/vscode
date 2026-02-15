@@ -1670,6 +1670,30 @@
   - real run (`--quick --only typecheck --retries 0`) confirmed zero retried-gate rollups and terminal parity.
   - `make lint` → **pass**.
   **Why:** confirms retried-gate aggregates are accurate and consistently surfaced across JSON, terminal, and markdown outputs.
+- **Retry-rate + backoff-share metrics (2026-02-15 AM)** Added normalized retry pressure indicators:
+  - bumped summary schema version to `6`
+  - `scripts/verify-gates.sh` now emits:
+    - `retryRatePercent` (retried gates / executed gates)
+    - `retryBackoffSharePercent` (retry backoff seconds / executed duration seconds)
+  - terminal summary now prints:
+    - `Retry rate (executed gates): ...`
+    - `Retry backoff share (executed duration): ...`
+  - `scripts/publish-verify-gates-summary.sh` now renders both metrics and updates supported schema version to 6.
+  **Why:** provides normalized retry-cost signal that is easier to compare across runs with different gate counts and durations.
+- **Retry-rate/backoff-share validation (2026-02-15 AM)** Validated new normalized retry metrics across dry/retry/real flows:
+  - dry run (`--quick --only lint --dry-run`) confirmed:
+    - `schemaVersion=6`
+    - `retryRatePercent=null`, `retryBackoffSharePercent=null`
+    - terminal lines show `n/a` for both metrics
+  - controlled retry run (mock `lint` fails once then succeeds, `typecheck` sleeps and succeeds) confirmed:
+    - `totalRetryCount=1`, `retriedGateCount=1`
+    - `retryRatePercent=50`
+    - `retryBackoffSharePercent` is populated (integer >= 0)
+    - terminal and step summary both render matching percentage lines
+  - real run (`--quick --only typecheck --retries 0`) confirmed `retryRatePercent=0` and `retryBackoffSharePercent=0`
+  - schema-forward warning test (`schemaVersion=99`) confirmed renderer warning references supported version `6`
+  - `make lint` → **pass**.
+  **Why:** confirms normalized retry metrics are stable, correctly null/zero scoped by mode, and consistently surfaced across JSON, terminal, and markdown outputs.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
