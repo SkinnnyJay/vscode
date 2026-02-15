@@ -855,3 +855,23 @@
   - structured record includes `"displayWindowEventCounts":{"requestFailures":0,"scriptResponses":0,"cdpScriptLoads":0}`.
   Re-ran `make lint` (pass).
   **Why:** confirms the new split counters are emitted and make it explicit this failure’s import-target evidence is currently outside both display and retained windows, but still present in run-total counters.
+- **Per-channel window-state classification (2026-02-14 PM)** Extended smoke fail-fast diagnostics in `test/automation/src/code.ts` with a new per-channel tiered visibility classifier over `(display-window, retained-window, total)` counts:
+  - states: `displayed`, `retained-only`, `historical-only`, `unseen`
+  - emitted line:
+    - `Import target channel window states: requestFailures=..., scriptResponses=..., cdpScriptLoads=...`
+  - structured diagnostics record now includes:
+    - `channelWindowStates`
+  **Why:** makes it explicit which channels are visible in the printed tail, only retained in buffers, only historical totals, or entirely absent.
+- **Window-hierarchy consistency check (2026-02-14 PM)** Extended diagnostics consistency validation to include:
+  - `windowHierarchyMatchesCounts` (verifies `display-window <= retained-window <= total` per channel)
+  - added `windows=<bool>` in the human-readable consistency line
+  - added `windowHierarchyMatchesCounts` to `consistencyChecks` JSON and composite-signature input.
+  **Why:** guards against impossible/contradictory counter relationships as diagnostics complexity grows.
+- **Window-state consistency validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target channel window states: requestFailures=unseen, scriptResponses=historical-only, cdpScriptLoads=unseen`
+  - `Import target diagnostics consistency: pass (signal=true, visibility=true, deltas=true, coverage=true, windows=true)`
+  - structured record fields:
+    - `"channelWindowStates":{"requestFailures":"unseen","scriptResponses":"historical-only","cdpScriptLoads":"unseen"}`
+    - `"consistencyChecks":{"...","windowHierarchyMatchesCounts":true,"isConsistent":true}`
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new tiered window-state interpretation and hierarchy consistency checks are emitted and coherent.
