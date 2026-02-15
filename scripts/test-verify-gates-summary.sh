@@ -343,9 +343,8 @@ const payload = {
 	schemaVersion,
 	runId: 'duplicate-gate-rows-contract',
 	gates: [
-		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T020000Z', completedAt: '20260215T020001Z', notRunReason: null },
+		{ id: ' lint ', command: 'make lint', status: ' fail ', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 9, startedAt: '20260215T020000Z', completedAt: '20260215T020001Z', notRunReason: null },
 		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T020001Z', completedAt: '20260215T020002Z', notRunReason: null },
-		{ id: ' lint ', command: 'make lint', status: ' fail ', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 9, startedAt: '20260215T020002Z', completedAt: '20260215T020003Z', notRunReason: null },
 		{ id: ' typecheck ', command: 'make typecheck', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 2, startedAt: '20260215T020002Z', completedAt: '20260215T020004Z', notRunReason: null },
 	],
 };
@@ -1268,6 +1267,10 @@ if ! grep -Fq "**Failed gates list:** lint, typecheck" "$duplicate_gate_rows_ste
 fi
 if ! grep -Fq "**Gate status map:** {\"lint\":\"fail\",\"typecheck\":\"fail\"}" "$duplicate_gate_rows_step_summary"; then
 	echo "Expected duplicate-gate-rows summary to apply fail-over-pass status precedence in gate status map derivation." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate exit-code map:** {\"lint\":9,\"typecheck\":2}" "$duplicate_gate_rows_step_summary" || ! grep -Fq "**Failed gate exit codes:** 9, 2" "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary to align failed exit-code derivation with status-precedence-resolved rows." >&2
 	exit 1
 fi
 if ! grep -Fq "**Executed gates list:** lint, typecheck" "$duplicate_gate_rows_step_summary"; then

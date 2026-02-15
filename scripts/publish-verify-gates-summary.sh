@@ -339,6 +339,21 @@ const rowStatusByGateId = gates.reduce((statusByGateId, gate) => {
 	}
 	return statusByGateId;
 }, {});
+const resolvedRowByGateId = gates.reduce((rowsByGateId, gate) => {
+	const gateId = normalizeNonEmptyString(gate.id);
+	if (gateId === null) {
+		return rowsByGateId;
+	}
+	const candidateStatus = normalizeGateStatusValue(gate.status);
+	const candidatePriority = candidateStatus ? rowStatusPriority[candidateStatus] : 0;
+	const currentRow = rowsByGateId[gateId];
+	const currentStatus = currentRow ? normalizeGateStatusValue(currentRow.status) : null;
+	const currentPriority = currentStatus ? rowStatusPriority[currentStatus] : 0;
+	if (!currentRow || candidatePriority > currentPriority || candidatePriority === currentPriority) {
+		rowsByGateId[gateId] = gate;
+	}
+	return rowsByGateId;
+}, {});
 const derivedRowStatusCounts = Object.values(rowStatusByGateId).reduce((accumulator, status) => {
 	accumulator[status] += 1;
 	return accumulator;
@@ -360,7 +375,7 @@ const statusCounts = {
 const normalizeGateIdValue = (value) => normalizeNonEmptyString(value);
 const gateIdsFromRows = (predicate) => {
 	const gateIds = [];
-	for (const gate of gates) {
+	for (const gate of Object.values(resolvedRowByGateId)) {
 		if (!predicate(gate)) {
 			continue;
 		}
@@ -373,7 +388,7 @@ const gateIdsFromRows = (predicate) => {
 };
 const gateMapFromRows = (valueSelector) => {
 	const gateMap = {};
-	for (const gate of gates) {
+	for (const gate of Object.values(resolvedRowByGateId)) {
 		const gateId = normalizeGateIdValue(gate.id);
 		if (gateId === null) {
 			continue;

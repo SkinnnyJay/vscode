@@ -2442,6 +2442,14 @@
     - status map (`{"lint":"fail","typecheck":"fail"}`).
   - `scripts/README.md` updated to document duplicate conflicting-status precedence coverage.
   **Why:** prevents conflicting duplicate sparse rows from yielding inconsistent counter/list/map outcomes for the same normalized gate ID.
+- **Duplicate-row precedence alignment for per-gate maps (2026-02-15 PM)** Closed row-order inconsistency:
+  - `scripts/publish-verify-gates-summary.sh` now resolves one representative row per normalized gate ID (`resolvedRowByGateId`) using the same status-priority model (with deterministic tie handling), then derives row-based per-gate maps from those resolved rows.
+  - This prevents raw row order from overriding precedence in maps like `gateExitCodeById` when duplicate IDs contain conflicting statuses.
+  - `scripts/test-verify-gates-summary.sh` duplicate-row scenario now places a fail row before a pass row for the same gate and verifies:
+    - status map still resolves to `fail`
+    - exit-code map and failed-exit-code lists resolve to fail-row exit code (`lint:9`) rather than later pass-row code.
+  - `scripts/README.md` updated to document map-level precedence alignment coverage.
+  **Why:** keeps row-derived lists/counters/maps semantically consistent under duplicate conflicting rows, regardless of payload row order.
 - **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
   - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
   - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.

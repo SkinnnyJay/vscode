@@ -64,6 +64,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists/table rows while valid normalized rows still render correctly.
   - Includes duplicate gate-row checks proving row-derived gate counters stay aligned with deduplicated normalized gate IDs (no double-counted pass/fail totals).
   - Includes duplicate conflicting-status row checks proving status precedence is deterministic for repeated IDs (`fail` > `pass` > `skip` > `not-run`) across counters/lists/maps.
+  - Includes duplicate conflicting-status exit-code checks proving per-gate maps (e.g., `gateExitCodeById`/failed exit-code lists) are derived from status-precedence-resolved rows rather than raw row order.
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.
   - Includes unknown-status row-table checks proving unresolved row status tokens are normalized to `unknown` in markdown table output (no raw unknown-status leakage).
