@@ -1408,3 +1408,12 @@
   - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick --summary-json "<tmp>/summary.json"` → **pass**
   - validated via Node script that summary includes `startedAt`, `completedAt`, `totalDurationSeconds`, and expected gate entries.
   **Why:** confirms enriched summary metadata is emitted correctly and remains machine-consumable.
+- **Workflow step-summary publishing (2026-02-15 AM)** Updated verify-gates workflows to append machine-readable results into GitHub step summaries:
+  - `.github/workflows/pointer-quality.yml` now writes a markdown table from `VSCODE_VERIFY_SUMMARY_FILE`
+  - `.github/workflows/verify-gates-nightly.yml` now writes the same summary table for nightly full runs.
+  **Why:** surfaces pass/fail/attempt/duration data directly in run UI without requiring artifact downloads.
+- **Summary metadata + workflow rendering validation (2026-02-15 AM)** Validated end-to-end after workflow summary changes:
+  - `VSCODE_VERIFY_SUMMARY_FILE="/workspace/.build/logs/verify-gates/quick-summary.json" ./scripts/verify-gates.sh --quick` → **pass**
+  - local Node simulation of workflow summary renderer succeeded (`summary rows generated: 3`)
+  - observed retry behavior captured in summary (`make test-unit` attempts = 2) on transient flake.
+  **Why:** confirms summary JSON remains compatible with workflow rendering logic and accurately reports retry-adjusted metrics.
