@@ -618,6 +618,10 @@ export class Code {
 					const globalChannelBufferStatsStatus = importTargetUrl
 						? `\nImport target global channel buffers: requestFailures=${globalChannelBufferStats.requestFailures.displayed}/${globalChannelBufferStats.requestFailures.retained} (capacity=${globalChannelBufferStats.requestFailures.capacity}, observed=${globalChannelBufferStats.requestFailures.observed}, dropped=${globalChannelBufferStats.requestFailures.dropped}), scriptResponses=${globalChannelBufferStats.scriptResponses.displayed}/${globalChannelBufferStats.scriptResponses.retained} (capacity=${globalChannelBufferStats.scriptResponses.capacity}, observed=${globalChannelBufferStats.scriptResponses.observed}, dropped=${globalChannelBufferStats.scriptResponses.dropped}), cdpScriptLoads=${globalChannelBufferStats.cdpScriptLoads.displayed}/${globalChannelBufferStats.cdpScriptLoads.retained} (capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}, observed=${globalChannelBufferStats.cdpScriptLoads.observed}, dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}), consoleErrors=${globalChannelBufferStats.consoleErrors.displayed}/${globalChannelBufferStats.consoleErrors.retained} (capacity=${globalChannelBufferStats.consoleErrors.capacity}, observed=${globalChannelBufferStats.consoleErrors.observed}, dropped=${globalChannelBufferStats.consoleErrors.dropped})`
 						: '';
+					const globalChannelBufferCoverage = this.buildGlobalChannelBufferCoverage(globalChannelBufferStats);
+					const globalChannelBufferCoverageStatus = importTargetUrl
+						? `\nImport target global channel coverage: requestFailures=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.requestFailures)}, scriptResponses=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.scriptResponses)}, cdpScriptLoads=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.cdpScriptLoads)}, consoleErrors=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.consoleErrors)}`
+						: '';
 					const importTargetGlobalBufferSignature = this.computeGlobalBufferSignature(globalChannelBufferStats);
 					const importTargetGlobalBufferSignatureStatus = importTargetUrl
 						? `\nImport target global buffer signature: ${importTargetGlobalBufferSignature}`
@@ -665,7 +669,8 @@ export class Code {
 						},
 						trial,
 						retryInterval,
-						globalChannelBufferStats
+						globalChannelBufferStats,
+						globalChannelBufferCoverage
 					);
 					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
 						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
@@ -674,7 +679,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -947,6 +952,24 @@ export class Code {
 			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		},
+		globalChannelBufferCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			consoleErrors: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
 		}
 	): {
 		schemaVersion: number;
@@ -1015,6 +1038,24 @@ export class Code {
 			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 		};
+		globalChannelBufferCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			consoleErrors: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+		};
 		signature: string;
 	} | undefined {
 		if (!importTargetUrl) {
@@ -1045,6 +1086,7 @@ export class Code {
 			totalEventCounts: totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			globalChannelBufferStats,
+			globalChannelBufferCoverage,
 			signature
 		};
 	}
@@ -1082,6 +1124,37 @@ export class Code {
 		retainedInTotal: { recent: number; total: number; percent: number | null };
 	}): string {
 		return `display=${this.formatCoverage(channelWindowCoverage.displayInRetained.recent, channelWindowCoverage.displayInRetained.total)}, retained=${this.formatCoverage(channelWindowCoverage.retainedInTotal.recent, channelWindowCoverage.retainedInTotal.total)}`;
+	}
+
+	private buildGlobalChannelBufferCoverage(globalChannelBufferStats: {
+		requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+	}): {
+		requestFailures: {
+			displayInRetained: { recent: number; total: number; percent: number | null };
+			retainedInTotal: { recent: number; total: number; percent: number | null };
+		};
+		scriptResponses: {
+			displayInRetained: { recent: number; total: number; percent: number | null };
+			retainedInTotal: { recent: number; total: number; percent: number | null };
+		};
+		cdpScriptLoads: {
+			displayInRetained: { recent: number; total: number; percent: number | null };
+			retainedInTotal: { recent: number; total: number; percent: number | null };
+		};
+		consoleErrors: {
+			displayInRetained: { recent: number; total: number; percent: number | null };
+			retainedInTotal: { recent: number; total: number; percent: number | null };
+		};
+	} {
+		return {
+			requestFailures: this.buildChannelWindowCoverageStats(globalChannelBufferStats.requestFailures.displayed, globalChannelBufferStats.requestFailures.retained, globalChannelBufferStats.requestFailures.observed),
+			scriptResponses: this.buildChannelWindowCoverageStats(globalChannelBufferStats.scriptResponses.displayed, globalChannelBufferStats.scriptResponses.retained, globalChannelBufferStats.scriptResponses.observed),
+			cdpScriptLoads: this.buildChannelWindowCoverageStats(globalChannelBufferStats.cdpScriptLoads.displayed, globalChannelBufferStats.cdpScriptLoads.retained, globalChannelBufferStats.cdpScriptLoads.observed),
+			consoleErrors: this.buildChannelWindowCoverageStats(globalChannelBufferStats.consoleErrors.displayed, globalChannelBufferStats.consoleErrors.retained, globalChannelBufferStats.consoleErrors.observed)
+		};
 	}
 
 	private classifyCoverageVisibility(recentCount: number, totalCount: number): 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' {

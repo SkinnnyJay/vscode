@@ -1006,3 +1006,19 @@
     - `"consistencyChecks":{"...","consoleWindowCoverageMatchesCounts":true,"consoleWindowCoverageClassesMatchCounts":true,"consoleWindowStateMatchesCounts":true,"isConsistent":true}`.
   Re-ran `make lint` (pass).
   **Why:** confirms console coverage classes are emitted and validated against underlying coverage counters.
+- **Global channel buffer coverage ratios (2026-02-14 PM)** Extended import-target diagnostics with explicit global channel buffer coverage ratios in `test/automation/src/code.ts`:
+  - added line:
+    - `Import target global channel coverage: ...`
+  - per channel now reports:
+    - `displayInRetained` (`displayed/retained`)
+    - `retainedInObserved` (`retained/observed`)
+  - added structured record field:
+    - `globalChannelBufferCoverage`
+  - included console channel in this coverage object for parity.
+  **Why:** converts raw global buffer counts into normalized retention percentages, making truncation pressure easier to compare across channels/runs.
+- **Global channel coverage validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target global channel coverage: requestFailures=display=32% (8/25), retained=3.5% (25/718), scriptResponses=display=32% (8/25), retained=34.2% (25/73), cdpScriptLoads=display=32% (8/25), retained=34.7% (25/72), consoleErrors=display=32% (8/25), retained=6.9% (25/361)`
+  - structured record field:
+    - `"globalChannelBufferCoverage":{"requestFailures":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":718,"percent":3.5}},"scriptResponses":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":73,"percent":34.2}},"cdpScriptLoads":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":72,"percent":34.7}},"consoleErrors":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":361,"percent":6.9}}}`
+  Re-ran `make lint` (pass).
+  **Why:** confirms global coverage ratios are emitted and consistent with existing displayed/retained/observed channel counts.
