@@ -1518,3 +1518,18 @@
   - JSON summary now includes top-level `invocation`
   - `scripts/publish-verify-gates-summary.sh` now renders `Invocation` in GitHub step summaries.
   **Why:** makes it easier to reproduce CI/local runs exactly from summary artifacts without reconstructing flags manually.
+- **Per-gate exit code telemetry (2026-02-15 AM)** Extended verify summaries with command exit codes:
+  - `scripts/verify-gates.sh` now tracks per-gate `exitCode` values (including retries/final failure) and prints them in terminal summaries
+  - JSON summary now includes per-gate `exitCode` plus top-level `failedGateExitCode`
+  - `scripts/publish-verify-gates-summary.sh` now adds an `Exit code` column and `Failed gate exit code` metadata line.
+  **Why:** preserves high-signal failure cause data directly in summaries, reducing time-to-diagnosis when gates fail in CI.
+- **Exit code telemetry validation (2026-02-15 AM)** Validated both synthetic-failure and real-gate behavior:
+  - used exported mock `make` function (`lint` returns 7, `typecheck` returns 0) with `--continue-on-failure`
+  - assertions confirmed summary fields:
+    - `failedGateExitCode=7`
+    - per-gate exit codes: `lint=7`, `typecheck=0`
+    - terminal summary includes `exitCode=7`
+    - step summary includes `Exit code` table column + `Failed gate exit code: 7`
+  - after `unset -f make`, re-ran real `./scripts/verify-gates.sh --quick --only typecheck --retries 0` and confirmed exitCode `0` in JSON
+  - `make lint` → **pass**.
+  **Why:** proves exit-code telemetry is accurate in both controlled failure simulation and real command execution paths.

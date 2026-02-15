@@ -23,6 +23,7 @@ FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 DRY_RUN=0
 FAILED_GATE_ID=""
+FAILED_GATE_EXIT_CODE=""
 INVOCATION=""
 declare -a ORIGINAL_ARGS=("$@")
 
@@ -261,10 +262,12 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 declare -a gate_results
 declare -a gate_durations_seconds
 declare -a gate_attempt_counts
+declare -a gate_exit_codes
 for i in "${!gate_commands[@]}"; do
 	gate_results+=("not-run")
 	gate_durations_seconds+=("0")
 	gate_attempt_counts+=("0")
+	gate_exit_codes+=("0")
 done
 
 run_gate() {
@@ -283,21 +286,25 @@ run_gate() {
 			end_epoch_seconds="$(date +%s)"
 			RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
 			RUN_GATE_ATTEMPTS="$attempt"
+			RUN_GATE_EXIT_CODE="0"
 			return 0
-		fi
+		else
+			local attempt_exit_code="$?"
 
-		if ((attempt == max_attempts)); then
-			end_epoch_seconds="$(date +%s)"
-			RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
-			RUN_GATE_ATTEMPTS="$attempt"
-			echo "Gate failed after $max_attempts attempt(s): $command" >&2
-			return 1
-		fi
+			if ((attempt == max_attempts)); then
+				end_epoch_seconds="$(date +%s)"
+				RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
+				RUN_GATE_ATTEMPTS="$attempt"
+				RUN_GATE_EXIT_CODE="$attempt_exit_code"
+				echo "Gate failed after $max_attempts attempt(s): $command" >&2
+				return 1
+			fi
 
-		local backoff_seconds=$((2 ** (attempt - 1)))
-		echo "Gate failed, retrying in ${backoff_seconds}s: $command" >&2
-		sleep "$backoff_seconds"
-		attempt=$((attempt + 1))
+			local backoff_seconds=$((2 ** (attempt - 1)))
+			echo "Gate failed, retrying in ${backoff_seconds}s: $command" >&2
+			sleep "$backoff_seconds"
+			attempt=$((attempt + 1))
+		fi
 	done
 }
 
@@ -323,7 +330,7 @@ print_summary() {
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
 	for i in "${!gate_commands[@]}"; do
-		printf "  - %-20s status=%-4s attempts=%s duration=%ss command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_commands[$i]}"
+		printf "  - %-20s status=%-7s attempts=%s duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
 	done
 	echo "  Total duration: ${total_duration_seconds}s"
 	echo "  Log file: $LOG_FILE"
@@ -400,6 +407,11 @@ write_summary_json() {
 		else
 			echo "  \"failedGateId\": null,"
 		fi
+		if [[ -n "$FAILED_GATE_EXIT_CODE" ]]; then
+			echo "  \"failedGateExitCode\": ${FAILED_GATE_EXIT_CODE},"
+		else
+			echo "  \"failedGateExitCode\": null,"
+		fi
 		echo "  \"selectedGateIds\": ["
 		write_selected_gate_ids_json
 		echo "  ],"
@@ -413,7 +425,7 @@ write_summary_json() {
 			if ((i == ${#gate_commands[@]} - 1)); then
 				delimiter=""
 			fi
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
@@ -429,6 +441,7 @@ if [[ "$DRY_RUN" == "1" ]]; then
 		gate_results[$i]="skip"
 		gate_durations_seconds[$i]="0"
 		gate_attempt_counts[$i]="0"
+		gate_exit_codes[$i]="0"
 	done
 	print_summary
 	write_summary_json "true"
@@ -443,14 +456,17 @@ for i in "${!gate_commands[@]}"; do
 		gate_results[$i]="pass"
 		gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
 		gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
+		gate_exit_codes[$i]="$RUN_GATE_EXIT_CODE"
 		continue
 	fi
 
 	gate_results[$i]="fail"
 	gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
 	gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
+	gate_exit_codes[$i]="$RUN_GATE_EXIT_CODE"
 	if [[ -z "$FAILED_GATE_ID" ]]; then
 		FAILED_GATE_ID="${gate_ids[$i]}"
+		FAILED_GATE_EXIT_CODE="$RUN_GATE_EXIT_CODE"
 	fi
 	any_gate_failed=1
 	if [[ "$CONTINUE_ON_FAILURE" == "1" ]]; then

@@ -75,15 +75,16 @@ const gateRows = gates.map((gate) => {
 	const status = gate.status ?? 'unknown';
 	const attempts = gate.attempts ?? '-';
 	const durationSeconds = gate.durationSeconds ?? '-';
-	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(durationSeconds)} |`;
+	const exitCode = gate.exitCode ?? 'unknown';
+	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} |`;
 });
 
 const lines = [
 	`## ${heading}`,
 	'',
-	'| Gate ID | Command | Status | Attempts | Duration (s) |',
-	'| --- | --- | --- | ---: | ---: |',
-	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a |']),
+	'| Gate ID | Command | Status | Attempts | Duration (s) | Exit code |',
+	'| --- | --- | --- | ---: | ---: | ---: |',
+	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
@@ -97,6 +98,7 @@ const lines = [
 	`**Not-run gates:** ${summary.notRunGateCount ?? 'unknown'}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
+	`**Failed gate exit code:** ${sanitizeCell(summary.failedGateExitCode ?? 'none')}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
 	`**Started:** ${summary.startedAt ?? 'unknown'}`,
 	`**Completed:** ${summary.completedAt ?? 'unknown'}`,
