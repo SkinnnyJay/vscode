@@ -2143,3 +2143,8 @@
     - a dry-run fallback-rendering case (with `gateExitCodeById` removed) to verify derived map shows `{"lint":null}` and table row shows `exit code = n/a`.
   - `scripts/README.md` updated to document null exit-code semantics and corresponding contract coverage.
   **Why:** removes ambiguity between "not executed" and "successful exit code 0", improving machine-readability and CI triage clarity.
+- **Summary schema version bump to 18 (2026-02-15 PM)** Versioned the exit-code semantic change:
+  - `scripts/verify-gates.sh` now emits `schemaVersion: 18`.
+  - `scripts/publish-verify-gates-summary.sh` now supports schema version `18`.
+  - `scripts/README.md` now documents current summary schema version as `18`.
+  **Why:** treats the non-executed-exit-code shift (`0` -> `null`) as a schema-visible contract change for downstream consumers.

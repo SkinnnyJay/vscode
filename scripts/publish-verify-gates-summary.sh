@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 17;
+const supportedSchemaVersion = 18;
 const sanitizeHeading = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
 const sanitizeInlineCode = (value) => String(value ?? '').replace(/\r?\n/g, ' ').replace(/`/g, '\\`');
 const renderedHeading = sanitizeHeading(heading) || 'Verify Gates Summary';
