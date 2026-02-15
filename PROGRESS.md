@@ -2427,6 +2427,11 @@
   - `scripts/test-verify-gates-summary.sh` adds `duplicate_gate_rows` scenario with duplicate padded IDs (`" lint "` + `"lint"`) and verifies selected/passed/executed list rendering contains each normalized ID once.
   - `scripts/README.md` updated to document deduplication in row ID normalization coverage.
   **Why:** prevents malformed sparse payloads with repeated gate rows from producing duplicate gate IDs in rendered summary metadata.
+- **Duplicate row-ID counter alignment (2026-02-15 PM)** Extended dedupe semantics to counts:
+  - `scripts/publish-verify-gates-summary.sh` now derives pass/fail/skip/not-run fallback counters from deduplicated normalized row IDs when using `gates[]` data (instead of raw row tallies that could double-count duplicate IDs).
+  - `scripts/test-verify-gates-summary.sh` duplicate-row scenario now verifies `Gate count/Passed gates/Failed gates` counters align with deduplicated gate identity (`2/1/1`).
+  - `scripts/README.md` updated to document duplicate-row counter alignment coverage.
+  **Why:** prevents duplicate sparse rows from inflating derived gate counters while list/map metadata is already deduplicated.
 - **Malformed gate-row resilience coverage (2026-02-15 PM)** Extended sparse row hardening contract:
   - `scripts/test-verify-gates-summary.sh` now adds `malformed_gate_rows` scenario with mixed invalid `gates[]` entries (`null`, string, number) plus one valid padded row.
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.

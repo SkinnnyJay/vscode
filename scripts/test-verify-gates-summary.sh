@@ -1210,6 +1210,10 @@ if ! grep -Fq "**Selected gates:** lint, typecheck" "$duplicate_gate_rows_step_s
 	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in selected-gates list." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate count:** 2" "$duplicate_gate_rows_step_summary" || ! grep -Fq "**Passed gates:** 1" "$duplicate_gate_rows_step_summary" || ! grep -Fq "**Failed gates:** 1" "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary to keep gate counters aligned with deduplicated normalized row IDs." >&2
+	exit 1
+fi
 if ! grep -Fq "**Passed gates list:** lint" "$duplicate_gate_rows_step_summary"; then
 	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in passed-gates list." >&2
 	exit 1

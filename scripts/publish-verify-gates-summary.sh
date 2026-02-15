@@ -326,14 +326,28 @@ const rawStatusCounts = {
 	'not-run': normalizeNonNegativeInteger(rawStatusCountsInput?.['not-run']),
 };
 const rawStatusCountsHasValues = Object.values(rawStatusCounts).some((value) => value !== null);
+const dedupedRowGateIdsByStatus = (status) => uniqueGateIds(gates.reduce((gateIds, gate) => {
+	if (gate.status !== status) {
+		return gateIds;
+	}
+	const gateId = normalizeNonEmptyString(gate.id);
+	if (gateId !== null) {
+		gateIds.push(gateId);
+	}
+	return gateIds;
+}, []));
+const derivedRowPassedGateCount = dedupedRowGateIdsByStatus('pass').length;
+const derivedRowFailedGateCount = dedupedRowGateIdsByStatus('fail').length;
+const derivedRowSkippedGateCount = dedupedRowGateIdsByStatus('skip').length;
+const derivedRowNotRunGateCount = dedupedRowGateIdsByStatus('not-run').length;
 const passedGateCountFromSummary = normalizeNonNegativeInteger(summary.passedGateCount);
 const failedGateCountFromSummary = normalizeNonNegativeInteger(summary.failedGateCount);
 const skippedGateCountFromSummary = normalizeNonNegativeInteger(summary.skippedGateCount);
 const notRunGateCountFromSummary = normalizeNonNegativeInteger(summary.notRunGateCount);
-const passedGateCount = passedGateCountFromSummary ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? derivedStatusCounts.pass;
-const failedGateCount = failedGateCountFromSummary ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? derivedStatusCounts.fail;
-const skippedGateCount = skippedGateCountFromSummary ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? derivedStatusCounts.skip;
-const notRunGateCount = notRunGateCountFromSummary ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? derivedStatusCounts['not-run'];
+const passedGateCount = passedGateCountFromSummary ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? (gates.length > 0 ? derivedRowPassedGateCount : derivedStatusCounts.pass);
+const failedGateCount = failedGateCountFromSummary ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? (gates.length > 0 ? derivedRowFailedGateCount : derivedStatusCounts.fail);
+const skippedGateCount = skippedGateCountFromSummary ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? (gates.length > 0 ? derivedRowSkippedGateCount : derivedStatusCounts.skip);
+const notRunGateCount = notRunGateCountFromSummary ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? (gates.length > 0 ? derivedRowNotRunGateCount : derivedStatusCounts['not-run']);
 const statusCounts = {
 	pass: rawStatusCounts.pass ?? passedGateCount,
 	fail: rawStatusCounts.fail ?? failedGateCount,
