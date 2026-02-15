@@ -43,14 +43,14 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` (also accepts `true/yes/on`) or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
-  - Current summary schema version: `3`.
-  - Summary payload includes `schemaVersion`, `runId`, `invocation`, `startedAt`, `completedAt`, `totalDurationSeconds`, `continueOnFailure`, `dryRun`, `gateCount`, `passedGateCount`, `failedGateCount`, `skippedGateCount`, `notRunGateCount`, `executedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `passRatePercent`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `slowestExecutedGateId`, `slowestExecutedGateDurationSeconds`, `failedGateId`, `failedGateExitCode`, `failedGateIds`, `failedGateExitCodes`, `notRunGateIds`, plus per-gate `status`, `attempts`, `retryCount`, `retryBackoffSeconds`, `durationSeconds`, `exitCode`, `startedAt`, and `completedAt` (`null` when a gate was not run).
+  - Current summary schema version: `4`.
+  - Summary payload includes `schemaVersion`, `runId`, `exitReason`, `invocation`, `startedAt`, `completedAt`, `totalDurationSeconds`, `continueOnFailure`, `dryRun`, `gateCount`, `passedGateCount`, `failedGateCount`, `skippedGateCount`, `notRunGateCount`, `executedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `passRatePercent`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `slowestExecutedGateId`, `slowestExecutedGateDurationSeconds`, `failedGateId`, `failedGateExitCode`, `failedGateIds`, `failedGateExitCodes`, `notRunGateIds`, plus per-gate `status`, `attempts`, `retryCount`, `retryBackoffSeconds`, `durationSeconds`, `exitCode`, `startedAt`, `completedAt`, and `notRunReason` (`null` when not applicable).
 - **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.
   - The helper is fail-safe for CI `if: always()` steps: malformed/missing payload fields are rendered as warnings/placeholders instead of failing the workflow step.
   - Rendered metadata includes run mode context (`dryRun`, gate count, selected gates, failed gate) for faster CI triage.
   - Summary values are markdown-escaped to keep tables readable when commands/IDs contain special characters (pipes/backticks/newlines).
   - Rendered per-gate table includes retries/backoff and command exit code for faster root-cause triage.
-  - Failed/not-run metadata includes first-failure pointers plus complete failed-gate and not-run gate ID/exit-code lists.
+  - Failed/not-run metadata includes exit reason, first-failure pointers, complete failed/not-run gate lists, and per-gate not-run reasons.
   - Both helper scripts print usage and exit non-zero on unknown flags/missing required option values.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
 - **Dry-run planning:** use `--dry-run` to validate gate selection/filtering and emit summary/log metadata without executing gates.

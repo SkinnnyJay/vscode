@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 3;
+const supportedSchemaVersion = 4;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -91,19 +91,21 @@ const gateRows = gates.map((gate) => {
 	const retryBackoffSeconds = gate.retryBackoffSeconds ?? '-';
 	const durationSeconds = gate.durationSeconds ?? '-';
 	const exitCode = gate.exitCode ?? 'unknown';
-	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(retryCount)} | ${sanitizeCell(retryBackoffSeconds)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} |`;
+	const notRunReason = gate.notRunReason ?? 'n/a';
+	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(retryCount)} | ${sanitizeCell(retryBackoffSeconds)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} | ${sanitizeCell(notRunReason)} |`;
 });
 
 const lines = [
 	`## ${heading}`,
 	'',
-	'| Gate ID | Command | Status | Attempts | Retries | Retry backoff (s) | Duration (s) | Exit code |',
-	'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |',
-	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a |']),
+	'| Gate ID | Command | Status | Attempts | Retries | Retry backoff (s) | Duration (s) | Exit code | Not-run reason |',
+	'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |',
+	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
+	`**Exit reason:** ${sanitizeCell(summary.exitReason ?? 'unknown')}`,
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,

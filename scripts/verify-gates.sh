@@ -18,13 +18,14 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=3
+SUMMARY_SCHEMA_VERSION=4
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 DRY_RUN=0
 FAILED_GATE_ID=""
 FAILED_GATE_EXIT_CODE=""
+RUN_EXIT_REASON=""
 INVOCATION=""
 declare -a ORIGINAL_ARGS=("$@")
 
@@ -266,6 +267,7 @@ declare -a gate_attempt_counts
 declare -a gate_exit_codes
 declare -a gate_started_at
 declare -a gate_completed_at
+declare -a gate_not_run_reasons
 for i in "${!gate_commands[@]}"; do
 	gate_results+=("not-run")
 	gate_durations_seconds+=("0")
@@ -273,6 +275,7 @@ for i in "${!gate_commands[@]}"; do
 	gate_exit_codes+=("0")
 	gate_started_at+=("")
 	gate_completed_at+=("")
+	gate_not_run_reasons+=("")
 done
 
 run_gate() {
@@ -351,6 +354,7 @@ print_summary() {
 	echo "  Run ID: ${RUN_ID}"
 	echo "  Invocation: ${INVOCATION}"
 	echo "  Summary schema version: ${SUMMARY_SCHEMA_VERSION}"
+	echo "  Exit reason: ${RUN_EXIT_REASON}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
@@ -612,7 +616,28 @@ write_not_run_gate_ids_json() {
 	done
 }
 
+mark_remaining_not_run_reasons() {
+	local start_index="$1"
+	local reason="$2"
+	local i
+	for ((i = start_index; i < ${#gate_results[@]}; i++)); do
+		if [[ "${gate_results[$i]}" == "not-run" ]] && [[ -z "${gate_not_run_reasons[$i]}" ]]; then
+			gate_not_run_reasons[$i]="$reason"
+		fi
+	done
+}
+
 json_optional_timestamp() {
+	local value="$1"
+	if [[ -z "$value" ]]; then
+		echo "null"
+		return 0
+	fi
+
+	echo "\"$(json_escape "$value")\""
+}
+
+json_optional_string() {
 	local value="$1"
 	if [[ -z "$value" ]]; then
 		echo "null"
@@ -659,6 +684,7 @@ write_summary_json() {
 		echo "  \"schemaVersion\": ${SUMMARY_SCHEMA_VERSION},"
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
+		echo "  \"exitReason\": \"$(json_escape "$RUN_EXIT_REASON")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"continueOnFailure\": $([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"),"
@@ -726,11 +752,13 @@ write_summary_json() {
 			started_at_json="$(json_optional_timestamp "${gate_started_at[$i]}")"
 			local completed_at_json
 			completed_at_json="$(json_optional_timestamp "${gate_completed_at[$i]}")"
+			local not_run_reason_json
+			not_run_reason_json="$(json_optional_string "${gate_not_run_reasons[$i]}")"
 			local retry_count
 			retry_count="$(compute_gate_retry_count_by_index "$i")"
 			local retry_backoff_seconds
 			retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"retryCount\":${retry_count},\"retryBackoffSeconds\":${retry_backoff_seconds},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json}}${delimiter}"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"retryCount\":${retry_count},\"retryBackoffSeconds\":${retry_backoff_seconds},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json},\"notRunReason\":${not_run_reason_json}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
@@ -741,6 +769,7 @@ echo "Running '${MODE}' verification sweep with retries=$RETRIES continueOnFailu
 echo "Selected gates: ${gate_ids[*]}"
 
 if [[ "$DRY_RUN" == "1" ]]; then
+	RUN_EXIT_REASON="dry-run"
 	echo "Dry run mode enabled - commands will not be executed."
 	for i in "${!gate_commands[@]}"; do
 		gate_results[$i]="skip"
@@ -784,17 +813,21 @@ for i in "${!gate_commands[@]}"; do
 		continue
 	fi
 
+	RUN_EXIT_REASON="fail-fast"
+	mark_remaining_not_run_reasons "$((i + 1))" "blocked-by-fail-fast"
 	print_summary
 	write_summary_json "false"
 	exit 1
 done
 
 if [[ "$any_gate_failed" == "1" ]]; then
+	RUN_EXIT_REASON="completed-with-failures"
 	print_summary
 	write_summary_json "false"
 	exit 1
 fi
 
+RUN_EXIT_REASON="success"
 print_summary
 write_summary_json "true"
 echo

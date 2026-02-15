@@ -1612,6 +1612,26 @@
   - real run (`--quick --only typecheck --retries 0`) confirmed zero retry totals.
   - `make lint` → **pass**.
   **Why:** confirms retry metrics are accurate and consistently surfaced across JSON, terminal output, and markdown summaries.
+- **Exit-reason + not-run reason semantics (2026-02-15 AM)** Clarified run termination and gate skip causality:
+  - bumped summary schema to `4`
+  - `scripts/verify-gates.sh` now emits top-level `exitReason` (`success`, `dry-run`, `fail-fast`, `completed-with-failures`)
+  - per-gate payload now includes `notRunReason` (`blocked-by-fail-fast` when applicable)
+  - `scripts/publish-verify-gates-summary.sh` now shows `Exit reason` metadata and a `Not-run reason` table column.
+  **Why:** makes fail-fast behavior explicit for humans and machines, removing ambiguity around why gates were not executed.
+- **Exit-reason/not-run validation (2026-02-15 AM)** Validated new semantics across dry, fail-fast, continue, and success flows:
+  - dry run (`--quick --only lint --dry-run`) confirmed `schemaVersion=4` and `exitReason=dry-run`
+  - controlled fail-fast run (`lint` fails, `typecheck` blocked) confirmed:
+    - `exitReason=fail-fast`
+    - `notRunGateIds=["typecheck"]`
+    - blocked gate has `notRunReason="blocked-by-fail-fast"`
+    - terminal output includes `Exit reason: fail-fast`
+  - controlled continue-on-failure run confirmed:
+    - `exitReason=completed-with-failures`
+    - executed gates retain `notRunReason=null`
+  - rendered markdown summary includes `Exit reason` plus `Not-run reason` column/value
+  - real success run (`--quick --only typecheck --retries 0`) confirmed `exitReason=success` and terminal parity.
+  - `make lint` → **pass**.
+  **Why:** confirms schema-v4 fields are stable and accurately represent run-termination behavior in all primary modes.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
