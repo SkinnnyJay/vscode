@@ -870,6 +870,14 @@ const continueOnFailureValue = explicitContinueOnFailure !== null
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown';
+const runIdValue = normalizeNonEmptyString(summary.runId) ?? 'unknown';
+const resultSignatureAlgorithmValue = normalizeNonEmptyString(summary.resultSignatureAlgorithm) ?? 'unknown';
+const resultSignatureValue = normalizeNonEmptyString(summary.resultSignature) ?? 'unknown';
+const slowestExecutedGateIdFromSummary = normalizeNonEmptyString(summary.slowestExecutedGateId);
+const slowestExecutedGateDurationFromSummary = normalizeNonNegativeInteger(summary.slowestExecutedGateDurationSeconds);
+const fastestExecutedGateIdFromSummary = normalizeNonEmptyString(summary.fastestExecutedGateId);
+const fastestExecutedGateDurationFromSummary = normalizeNonNegativeInteger(summary.fastestExecutedGateDurationSeconds);
+const logFileValue = normalizeNonEmptyString(summary.logFile);
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
 const orderedRowsFromSelectedIds = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
@@ -898,10 +906,10 @@ const lines = [
 	'',
 	`**Success:** ${successValue}`,
 	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
-	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
+	`**Run ID:** ${sanitizeCell(runIdValue)}`,
 	`**Run classification:** ${sanitizeCell(derivedRunClassification)}`,
-	`**Result signature algorithm:** ${sanitizeCell(summary.resultSignatureAlgorithm ?? 'unknown')}`,
-	`**Result signature:** ${sanitizeCell(summary.resultSignature ?? 'unknown')}`,
+	`**Result signature algorithm:** ${sanitizeCell(resultSignatureAlgorithmValue)}`,
+	`**Result signature:** ${sanitizeCell(resultSignatureValue)}`,
 	`**Exit reason:** ${sanitizeCell(derivedExitReason)}`,
 	`**Invocation:** ${sanitizeCell(invocationValue)}`,
 	`**Continue on failure:** ${continueOnFailureValue}`,
@@ -931,10 +939,10 @@ const lines = [
 	`**Pass rate (executed gates):** ${passRatePercent === null ? 'n/a' : `${passRatePercent}%`}`,
 	`**Executed duration total:** ${executedDurationSeconds}s`,
 	`**Executed duration average:** ${averageExecutedDurationSeconds === null ? 'n/a' : `${averageExecutedDurationSeconds}s`}`,
-	`**Slowest executed gate:** ${sanitizeCell(summary.slowestExecutedGateId ?? slowestExecutedGate?.gateId ?? 'n/a')}`,
-	`**Slowest executed gate duration:** ${summary.slowestExecutedGateDurationSeconds === null || summary.slowestExecutedGateDurationSeconds === undefined ? (slowestExecutedGate ? `${slowestExecutedGate.durationSeconds}s` : 'n/a') : `${summary.slowestExecutedGateDurationSeconds}s`}`,
-	`**Fastest executed gate:** ${sanitizeCell(summary.fastestExecutedGateId ?? fastestExecutedGate?.gateId ?? 'n/a')}`,
-	`**Fastest executed gate duration:** ${summary.fastestExecutedGateDurationSeconds === null || summary.fastestExecutedGateDurationSeconds === undefined ? (fastestExecutedGate ? `${fastestExecutedGate.durationSeconds}s` : 'n/a') : `${summary.fastestExecutedGateDurationSeconds}s`}`,
+	`**Slowest executed gate:** ${sanitizeCell(slowestExecutedGateIdFromSummary ?? slowestExecutedGate?.gateId ?? 'n/a')}`,
+	`**Slowest executed gate duration:** ${slowestExecutedGateDurationFromSummary === null ? (slowestExecutedGate ? `${slowestExecutedGate.durationSeconds}s` : 'n/a') : `${slowestExecutedGateDurationFromSummary}s`}`,
+	`**Fastest executed gate:** ${sanitizeCell(fastestExecutedGateIdFromSummary ?? fastestExecutedGate?.gateId ?? 'n/a')}`,
+	`**Fastest executed gate duration:** ${fastestExecutedGateDurationFromSummary === null ? (fastestExecutedGate ? `${fastestExecutedGate.durationSeconds}s` : 'n/a') : `${fastestExecutedGateDurationFromSummary}s`}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
@@ -949,8 +957,8 @@ const lines = [
 	`**Completed:** ${completedAt ?? 'unknown'}`,
 ];
 
-if (summary.logFile) {
-	lines.push(`**Log file:** \`${sanitizeInlineCode(summary.logFile)}\``);
+if (logFileValue) {
+	lines.push(`**Log file:** \`${sanitizeInlineCode(logFileValue)}\``);
 }
 
 if (typeof summary.schemaVersion === 'number' && summary.schemaVersion > supportedSchemaVersion) {

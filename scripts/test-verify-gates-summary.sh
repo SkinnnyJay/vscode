@@ -81,6 +81,8 @@ selected_order_unmatched_rows_summary="$tmpdir/selected-order-unmatched-rows.jso
 selected_order_unmatched_rows_step_summary="$tmpdir/selected-order-unmatched-rows-step.md"
 invocation_whitespace_summary="$tmpdir/invocation-whitespace.json"
 invocation_whitespace_step_summary="$tmpdir/invocation-whitespace-step.md"
+metadata_whitespace_summary="$tmpdir/metadata-whitespace.json"
+metadata_whitespace_step_summary="$tmpdir/metadata-whitespace-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -560,6 +562,30 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$invocation_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$invocation_whitespace_summary" "Verify Gates Invocation Whitespace Contract Test"
+
+node - "$expected_schema_version" "$metadata_whitespace_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: '   ',
+	resultSignatureAlgorithm: '   ',
+	resultSignature: '   ',
+	slowestExecutedGateId: '   ',
+	slowestExecutedGateDurationSeconds: 'bad',
+	fastestExecutedGateId: '   ',
+	fastestExecutedGateDurationSeconds: '-1',
+	logFile: '   ',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$metadata_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$metadata_whitespace_summary" "Verify Gates Metadata Whitespace Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1555,6 +1581,30 @@ if ! grep -Fq "**Invocation:** unknown" "$invocation_whitespace_step_summary"; t
 fi
 if grep -q "\*\*Schema warning:\*\*" "$invocation_whitespace_step_summary"; then
 	echo "Did not expect schema warning for invocation-whitespace summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run ID:** unknown" "$metadata_whitespace_step_summary"; then
+	echo "Expected metadata-whitespace summary to normalize whitespace-only run ID values to unknown." >&2
+	exit 1
+fi
+if ! grep -Fq "**Result signature algorithm:** unknown" "$metadata_whitespace_step_summary" || ! grep -Fq "**Result signature:** unknown" "$metadata_whitespace_step_summary"; then
+	echo "Expected metadata-whitespace summary to normalize whitespace-only signature metadata to unknown." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate:** n/a" "$metadata_whitespace_step_summary" || ! grep -Fq "**Fastest executed gate:** n/a" "$metadata_whitespace_step_summary"; then
+	echo "Expected metadata-whitespace summary to normalize blank slow/fast gate IDs to n/a fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate duration:** n/a" "$metadata_whitespace_step_summary" || ! grep -Fq "**Fastest executed gate duration:** n/a" "$metadata_whitespace_step_summary"; then
+	echo "Expected metadata-whitespace summary to sanitize invalid slow/fast duration metadata to n/a fallback." >&2
+	exit 1
+fi
+if grep -Fq "**Log file:**" "$metadata_whitespace_step_summary"; then
+	echo "Expected metadata-whitespace summary to suppress blank log-file metadata lines." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$metadata_whitespace_step_summary"; then
+	echo "Did not expect schema warning for metadata-whitespace summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

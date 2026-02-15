@@ -2500,6 +2500,15 @@
   - `scripts/test-verify-gates-summary.sh` adds `invocation_whitespace` scenario and verifies rendered `Invocation: unknown`.
   - `scripts/README.md` updated to document invocation whitespace normalization coverage.
   **Why:** avoids low-signal blank invocation lines in CI summaries when sparse producers emit whitespace-only invocation strings.
+- **Whitespace sanitization for run/signature/log metadata (2026-02-15 PM)** Hardened summary metadata rendering:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes additional metadata fields:
+    - `runId`, `resultSignatureAlgorithm`, `resultSignature` => non-empty-string or `unknown`
+    - `slowestExecutedGateId` / `fastestExecutedGateId` => non-empty-string fallback to derived/n/a
+    - slow/fast duration fields => non-negative integer or derived/n/a fallback
+    - `logFile` => non-empty-string only (blank value suppresses line).
+  - `scripts/test-verify-gates-summary.sh` adds `metadata_whitespace` scenario with blank/invalid metadata and verifies unknown/n/a fallbacks plus log-file suppression.
+  - `scripts/README.md` updated to document metadata whitespace sanitization coverage.
+  **Why:** prevents sparse producers from rendering empty/invalid metadata values that reduce CI summary readability.
 - **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
   - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
   - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.
