@@ -53,18 +53,38 @@ while (($# > 0)); do
 			MODE="full"
 			;;
 		--retries)
+			if (($# < 2)); then
+				echo "Missing value for --retries." >&2
+				print_usage >&2
+				exit 1
+			fi
 			shift
 			RETRIES="${1:-}"
 			;;
 		--summary-json)
+			if (($# < 2)); then
+				echo "Missing value for --summary-json." >&2
+				print_usage >&2
+				exit 1
+			fi
 			shift
 			SUMMARY_FILE="${1:-}"
 			;;
 		--from)
+			if (($# < 2)); then
+				echo "Missing value for --from." >&2
+				print_usage >&2
+				exit 1
+			fi
 			shift
 			FROM_GATE_ID="${1:-}"
 			;;
 		--only)
+			if (($# < 2)); then
+				echo "Missing value for --only." >&2
+				print_usage >&2
+				exit 1
+			fi
 			shift
 			ONLY_GATE_IDS_RAW="${1:-}"
 			;;

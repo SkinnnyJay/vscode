@@ -24,6 +24,12 @@ if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
 	exit 0
 fi
 
+if [[ -n "${1:-}" ]] && [[ "${1:0:1}" == "-" ]]; then
+	echo "Unknown option: $1" >&2
+	print_usage >&2
+	exit 1
+fi
+
 SUMMARY_FILE_PATH="${1:-${VSCODE_VERIFY_SUMMARY_FILE:-}}"
 SUMMARY_HEADING="${2:-Verify Gates Summary}"
 

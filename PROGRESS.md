@@ -1446,3 +1446,7 @@
   - skips gate command execution while still producing terminal summary + JSON output
   - summary JSON now includes a top-level `dryRun` boolean for downstream consumers.
   **Why:** provides a fast planning/debugging path for CI and local operators to validate gate targeting and summary wiring without running heavy test/build commands.
+- **CLI argument validation hardening (2026-02-15 AM)** Tightened option parsing for verify helper scripts:
+  - `scripts/verify-gates.sh` now fails fast with usage output when `--retries`, `--summary-json`, `--from`, or `--only` are missing required values
+  - `scripts/publish-verify-gates-summary.sh` now fails fast for unknown flags (instead of silently treating them as file paths).
+  **Why:** reduces silent misconfiguration and makes command-line failures immediately actionable in local and CI usage.
