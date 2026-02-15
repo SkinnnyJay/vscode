@@ -2177,3 +2177,10 @@
     and asserts markdown reflects the derived counters/status map/executed count.
   - `scripts/README.md` updated to note fallback derivation from both `gates[]` and gate-id lists.
   **Why:** keeps summary output numerically useful for sparse payloads that provide partition lists but omit per-gate rows and scalar counters.
+- **Failed-exit-code list fallback derivation (2026-02-15 PM)** Hardened sparse-payload handling for failed exit-code metadata:
+  - `scripts/publish-verify-gates-summary.sh` now derives `failedGateExitCodes` from `failedGateIds` + `gateExitCodeById` when `failedGateExitCodes` is omitted.
+  - `scripts/test-verify-gates-summary.sh` list-only fallback scenario now omits `failedGateExitCodes` and asserts markdown still renders:
+    - `Failed gate exit codes: 2`
+    using the derived mapping.
+  - `scripts/README.md` updated to mention failed-exit-code derivation in sparse fallback coverage.
+  **Why:** preserves actionable failed-exit-code reporting for sparse summaries that carry gate partitions/maps but not the explicit failed-exit-code list.

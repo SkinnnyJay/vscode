@@ -304,7 +304,6 @@ const payload = {
 	skippedGateIds: ['test-unit'],
 	notRunGateIds: ['build'],
 	executedGateIds: ['lint', 'typecheck'],
-	failedGateExitCodes: [2],
 	gateStatusById: { lint: 'pass', typecheck: 'fail', 'test-unit': 'skip', build: 'not-run' },
 	gateExitCodeById: { lint: 0, typecheck: 2, 'test-unit': null, build: null },
 	gateRetryCountById: { lint: 0, typecheck: 0, 'test-unit': 0, build: 0 },
@@ -713,6 +712,10 @@ if ! grep -Fq "**Passed gates:** 1" "$derived_lists_step_summary"; then
 fi
 if ! grep -Fq "**Failed gates:** 1" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive failed gate count from failedGateIds." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit codes:** 2" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive failed gate exit codes from failedGateIds + gateExitCodeById." >&2
 	exit 1
 fi
 if ! grep -Fq "**Skipped gates:** 1" "$derived_lists_step_summary"; then

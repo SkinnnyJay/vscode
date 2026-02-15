@@ -103,10 +103,6 @@ const failedGateIds = failedGateIdsFromSummary
 	? failedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
-const failedGateExitCodes = Array.isArray(summary.failedGateExitCodes)
-	? summary.failedGateExitCodes
-	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.exitCode);
-const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
 const retriedGateIds = Array.isArray(summary.retriedGateIds)
 	? summary.retriedGateIds
 	: gates.filter((gate) => (gate.retryCount ?? 0) > 0).map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -157,6 +153,12 @@ const gateExitCodeById = summary.gateExitCodeById && typeof summary.gateExitCode
 			.filter((gate) => typeof gate.id === 'string')
 			.map((gate) => [gate.id, gate.exitCode ?? null]),
 	);
+const failedGateExitCodes = Array.isArray(summary.failedGateExitCodes)
+	? summary.failedGateExitCodes
+	: failedGateIds
+		.map((gateId) => gateExitCodeById[gateId])
+		.filter((exitCode) => exitCode !== null && exitCode !== undefined);
+const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
 const gateRetryCountById = summary.gateRetryCountById && typeof summary.gateRetryCountById === 'object' && !Array.isArray(summary.gateRetryCountById)
 	? summary.gateRetryCountById
 	: Object.fromEntries(
