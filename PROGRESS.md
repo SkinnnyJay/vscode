@@ -2388,3 +2388,12 @@
   - `scripts/test-verify-gates-summary.sh` adds a `success_reason_conflicts` scenario (`exitReason: success` + conflicting failure classification + no continue flag) and verifies coherent output (`Continue on failure: false`, `Run classification: success-no-retries`), and retains dry-run conflict coverage asserting explicit continue flag preservation.
   - `scripts/README.md` updated to document non-failure continue fallback + explicit-value preservation behavior.
   **Why:** improves non-failure summary clarity without hiding explicitly configured continue-on-failure settings.
+- **Success-reason contradiction + explicit continue preservation coverage (2026-02-15 PM)** Expanded non-failure sparse contracts:
+  - `scripts/test-verify-gates-summary.sh` now strengthens success-reason contradiction coverage by adding conflicting `dryRun: true` to the `success_reason_conflicts` payload and asserting `Dry run: false` is derived from explicit success reason.
+  - Added `success_reason_explicit_continue` scenario with:
+    - explicit `exitReason: success`
+    - conflicting `runClassification: failed-continued`
+    - explicit `continueOnFailure: "on"`
+    and verified renderer preserves explicit continue flag while still deriving success classification (`success-no-retries`).
+  - `scripts/README.md` updated to note boolean-like explicit continue-value preservation in non-failure scenarios.
+  **Why:** locks down distinction between contradiction normalization (reason/classification conflicts) and explicit non-failure configuration visibility (continue-on-failure flag preservation).

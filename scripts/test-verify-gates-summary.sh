@@ -87,6 +87,8 @@ dry_run_reason_conflicts_summary="$tmpdir/dry-run-reason-conflicts.json"
 dry_run_reason_conflicts_step_summary="$tmpdir/dry-run-reason-conflicts-step.md"
 success_reason_conflicts_summary="$tmpdir/success-reason-conflicts.json"
 success_reason_conflicts_step_summary="$tmpdir/success-reason-conflicts-step.md"
+success_reason_explicit_continue_summary="$tmpdir/success-reason-explicit-continue.json"
+success_reason_explicit_continue_step_summary="$tmpdir/success-reason-explicit-continue-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -629,12 +631,33 @@ const payload = {
 	exitReason: 'success',
 	runClassification: 'failed-continued',
 	success: false,
+	dryRun: true,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$success_reason_conflicts_step_summary" ./scripts/publish-verify-gates-summary.sh "$success_reason_conflicts_summary" "Verify Gates Success Reason Conflicts Contract Test"
+
+node - "$expected_schema_version" "$success_reason_explicit_continue_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'success-reason-explicit-continue-contract',
+	exitReason: 'success',
+	runClassification: 'failed-continued',
+	continueOnFailure: 'on',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$success_reason_explicit_continue_step_summary" ./scripts/publish-verify-gates-summary.sh "$success_reason_explicit_continue_summary" "Verify Gates Success Reason Explicit Continue Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1473,6 +1496,10 @@ if ! grep -Fq "**Success:** true" "$success_reason_conflicts_step_summary"; then
 	echo "Expected success-reason-conflicts summary to derive success=true from explicit success exitReason." >&2
 	exit 1
 fi
+if ! grep -Fq "**Dry run:** false" "$success_reason_conflicts_step_summary"; then
+	echo "Expected success-reason-conflicts summary to ignore conflicting dry-run flag and derive dryRun=false for explicit success reason." >&2
+	exit 1
+fi
 if ! grep -Fq "**Continue on failure:** false" "$success_reason_conflicts_step_summary"; then
 	echo "Expected success-reason-conflicts summary to derive continue-on-failure=false for success runs when explicit value is absent." >&2
 	exit 1
@@ -1487,6 +1514,23 @@ if ! grep -Fq "**Run classification:** success-no-retries" "$success_reason_conf
 fi
 if grep -q "\*\*Schema warning:\*\*" "$success_reason_conflicts_step_summary"; then
 	echo "Did not expect schema warning for success-reason-conflicts summary." >&2
+	exit 1
+fi
+
+if ! grep -Fq "**Success:** true" "$success_reason_explicit_continue_step_summary"; then
+	echo "Expected success-reason-explicit-continue summary to preserve explicit success reason semantics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$success_reason_explicit_continue_step_summary"; then
+	echo "Expected success-reason-explicit-continue summary to preserve explicit continue-on-failure configuration." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** success-no-retries" "$success_reason_explicit_continue_step_summary"; then
+	echo "Expected success-reason-explicit-continue summary to derive success classification despite conflicting explicit classification." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$success_reason_explicit_continue_step_summary"; then
+	echo "Did not expect schema warning for success-reason-explicit-continue summary." >&2
 	exit 1
 fi
 
