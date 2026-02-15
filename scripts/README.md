@@ -68,6 +68,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes duplicate-row table checks proving markdown rows are rendered from one precedence-resolved row per gate ID (no duplicate gate rows with conflicting statuses).
   - Includes equal-status duplicate row checks proving deterministic tie-breaking (latest row wins) for per-gate map/table values when repeated IDs share the same canonical status.
   - Includes explicit selected-gate order checks proving table row ordering follows `selectedGateIds` when sparse payloads provide both row data and explicit selection order.
+  - Includes selected-gate missing-row checks proving explicit `selectedGateIds` metadata is preserved even when some selected gates have no row data (table renders only available rows).
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.
   - Includes unknown-status row-table checks proving unresolved row status tokens are normalized to `unknown` in markdown table output (no raw unknown-status leakage).

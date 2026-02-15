@@ -2470,6 +2470,13 @@
   - `scripts/test-verify-gates-summary.sh` adds `selected_order_rows` scenario and verifies row order in markdown table follows `selectedGateIds` (`build` before `lint`) even when input row order differs.
   - `scripts/README.md` updated to document selected-order table coverage.
   **Why:** keeps rendered table order consistent with operator-selected gate ordering in sparse summaries.
+- **Selected-order missing-row coverage (2026-02-15 PM)** Added explicit sparse selection edge-case guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_order_missing_rows` scenario where `selectedGateIds` includes a gate without row data.
+  - Assertions verify:
+    - selected-gate metadata preserves full explicit selection (`missing, lint`)
+    - table renders only available row data (no synthetic/placeholder `missing` row).
+  - `scripts/README.md` updated to document missing-row behavior under explicit selection order.
+  **Why:** preserves operator-selected metadata while keeping rendered rows grounded in actual available gate-row data.
 - **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
   - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
   - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.

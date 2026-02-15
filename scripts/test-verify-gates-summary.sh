@@ -75,6 +75,8 @@ duplicate_same_status_rows_summary="$tmpdir/duplicate-same-status-rows.json"
 duplicate_same_status_rows_step_summary="$tmpdir/duplicate-same-status-rows-step.md"
 selected_order_rows_summary="$tmpdir/selected-order-rows.json"
 selected_order_rows_step_summary="$tmpdir/selected-order-rows-step.md"
+selected_order_missing_rows_summary="$tmpdir/selected-order-missing-rows.json"
+selected_order_missing_rows_step_summary="$tmpdir/selected-order-missing-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -496,6 +498,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_order_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_rows_summary" "Verify Gates Selected Order Rows Contract Test"
+
+node - "$expected_schema_version" "$selected_order_missing_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-order-missing-rows-contract',
+	selectedGateIds: ['missing', 'lint'],
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_order_missing_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_missing_rows_summary" "Verify Gates Selected Order Missing Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1447,6 +1469,18 @@ if [[ -z "$selected_order_build_line" || -z "$selected_order_lint_line" || "$sel
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_order_rows_step_summary"; then
 	echo "Did not expect schema warning for selected-order-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** missing, lint" "$selected_order_missing_rows_step_summary"; then
+	echo "Expected selected-order-missing-rows summary to preserve explicit selectedGateIds metadata." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_missing_rows_step_summary" || grep -Fq '| `missing` |' "$selected_order_missing_rows_step_summary"; then
+	echo "Expected selected-order-missing-rows summary table to include only available rows for explicit selectedGateIds." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_order_missing_rows_step_summary"; then
+	echo "Did not expect schema warning for selected-order-missing-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
