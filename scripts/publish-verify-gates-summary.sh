@@ -160,6 +160,18 @@ const normalizeGateIdList = (value) => {
 	}
 	return normalizedGateIds;
 };
+const normalizeGateIdArrayByIndex = (value) => {
+	if (!Array.isArray(value)) {
+		return null;
+	}
+	return value.map((gateIdValue) => {
+		if (typeof gateIdValue !== 'string') {
+			return null;
+		}
+		const normalizedGateId = gateIdValue.trim();
+		return normalizedGateId.length > 0 ? normalizedGateId : null;
+	});
+};
 const normalizeNonNegativeInteger = (value) => {
 	if (typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 0) {
 		return value;
@@ -277,6 +289,10 @@ const normalizeGateReasonMap = (value) => {
 };
 const selectedGateIdsFromSummary = normalizeGateIdList(summary.selectedGateIds);
 const selectedGateIdSetFromSummary = selectedGateIdsFromSummary ? new Set(selectedGateIdsFromSummary) : null;
+const failedGateIdsByIndexFromSummary = normalizeGateIdArrayByIndex(summary.failedGateIds);
+const failedGateExitCodesByIndexFromSummary = Array.isArray(summary.failedGateExitCodes)
+	? summary.failedGateExitCodes.map((value) => normalizeNonNegativeInteger(value))
+	: null;
 const scopeGateIdListToSelection = (gateIds) => {
 	if (gateIds === null || selectedGateIdSetFromSummary === null) {
 		return gateIds;
@@ -447,7 +463,24 @@ const failedGateIds = failedGateIdsFromSummary
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'fail').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'fail').map(([gateId]) => gateId));
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
-const failedGateExitCodesFromSummary = normalizeIntegerList(summary.failedGateExitCodes, normalizeNonNegativeInteger);
+const failedGateExitCodesFromSummary = (() => {
+	if (failedGateExitCodesByIndexFromSummary === null) {
+		return null;
+	}
+	if (failedGateIdsByIndexFromSummary === null || failedGateIdsFromSummary === null) {
+		return normalizeIntegerList(summary.failedGateExitCodes, normalizeNonNegativeInteger);
+	}
+	const failedGateExitCodeById = {};
+	for (let index = 0; index < failedGateIdsByIndexFromSummary.length; index += 1) {
+		const gateId = failedGateIdsByIndexFromSummary[index];
+		if (gateId === null || (selectedGateIdSetFromSummary !== null && !selectedGateIdSetFromSummary.has(gateId)) || gateId in failedGateExitCodeById) {
+			continue;
+		}
+		const failedGateExitCode = failedGateExitCodesByIndexFromSummary[index];
+		failedGateExitCodeById[gateId] = failedGateExitCode === undefined ? null : failedGateExitCode;
+	}
+	return failedGateIdsFromSummary.map((gateId) => failedGateExitCodeById[gateId] ?? null);
+})();
 const passedGateIds = passedGateIdsFromSummary
 	!== null
 	? passedGateIdsFromSummary

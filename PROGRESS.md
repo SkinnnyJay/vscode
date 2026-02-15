@@ -2560,6 +2560,7 @@
     - scalar counts (`gateCount`, `passed/failed/skipped/not-run/executed`)
     - `statusCounts` aggregate map.
   - Selected-scope counters now derive from scoped gate lists/status maps instead of unscoped scalar aggregates.
+  - Publisher now preserves failed exit-code pairing under selected scope by aligning `failedGateExitCodes` to the scoped `failedGateIds` identity set (instead of raw positional indexes from unscoped arrays).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
@@ -2567,6 +2568,7 @@
     - no non-selected `build` metadata leakage.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_failure_scope` scenario and verifies non-selected scalar failure metadata is suppressed (`Failed gate: none`, `Failed gate exit code: none`, `Blocked by gate: none`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_counts_scope` scenario and verifies conflicting scalar/status counters are ignored under explicit selection (`Gate count: 1`, pass/fail/skip/not-run + executed counts aligned to selected scope, scoped status-count map output).
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_failed_exit_code_alignment` scenario and verifies selected-scope failed exit-code output stays gate-ID aligned (`Failed gate exit codes: 2`, `gateExitCodeById.lint = 2`) even when unselected failed IDs precede selected IDs in raw arrays.
   - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.
   **Why:** preserves deterministic selected-scope semantics even when sparse producers include stale/extra gate IDs in explicit summary maps.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:

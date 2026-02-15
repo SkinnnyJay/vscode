@@ -105,6 +105,8 @@ selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.jso
 selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
 selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
 selected_scalar_counts_scope_step_summary="$tmpdir/selected-scalar-counts-scope-step.md"
+selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-alignment.json"
+selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -792,6 +794,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_scalar_counts_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_counts_scope_summary" "Verify Gates Selected Scalar Counts Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_failed_exit_code_alignment_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-failed-exit-code-alignment-contract',
+	selectedGateIds: ['lint'],
+	failedGateIds: ['build', 'lint'],
+	failedGateExitCodes: [9, 2],
+	gateStatusById: { lint: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_failed_exit_code_alignment_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_failed_exit_code_alignment_summary" "Verify Gates Selected Failed Exit-Code Alignment Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2053,6 +2076,22 @@ if ! grep -Fq "**Executed gates:** 1" "$selected_scalar_counts_scope_step_summar
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_counts_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-scalar-counts-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_code_alignment_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_code_alignment_step_summary"; then
+	echo "Expected selected-failed-exit-code-alignment summary to preserve selected-scope failed gate identity." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit codes:** 2" "$selected_failed_exit_code_alignment_step_summary" || ! grep -Fq '**Gate exit-code map:** {"lint":2}' "$selected_failed_exit_code_alignment_step_summary"; then
+	echo "Expected selected-failed-exit-code-alignment summary to align failed gate exit codes by selected gate ID, not original unscoped list position." >&2
+	exit 1
+fi
+if grep -Fq "9" "$selected_failed_exit_code_alignment_step_summary" || grep -Fq "build" "$selected_failed_exit_code_alignment_step_summary"; then
+	echo "Expected selected-failed-exit-code-alignment summary to exclude non-selected failed-gate IDs/exit codes from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_failed_exit_code_alignment_step_summary"; then
+	echo "Did not expect schema warning for selected-failed-exit-code-alignment summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
