@@ -205,6 +205,27 @@ if (dry.resultSignature !== dryRepeat.resultSignature) {
 if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
 }
+const timestampPattern = /^\d{8}T\d{6}Z$/;
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['fail-fast', failFast], ['retry', retry]]) {
+	if (typeof summary.runId !== 'string' || !summary.runId.startsWith('quick-')) {
+		throw new Error(`${label} summary runId should start with quick-.`);
+	}
+	if (!timestampPattern.test(String(summary.startedAt ?? '')) || !timestampPattern.test(String(summary.completedAt ?? ''))) {
+		throw new Error(`${label} summary timestamps should match YYYYMMDDTHHMMSSZ.`);
+	}
+	if (!Number.isInteger(summary.totalDurationSeconds) || summary.totalDurationSeconds < 0) {
+		throw new Error(`${label} summary totalDurationSeconds should be a non-negative integer.`);
+	}
+	if (!Number.isInteger(summary.gateCount) || !Array.isArray(summary.selectedGateIds) || summary.gateCount !== summary.selectedGateIds.length) {
+		throw new Error(`${label} summary gateCount/selectedGateIds mismatch.`);
+	}
+}
+if (!Array.isArray(failFast.executedGateIds) || failFast.executedGateCount !== failFast.executedGateIds.length) {
+	throw new Error('Fail-fast executed gate count/list mismatch.');
+}
+if (!Array.isArray(retry.executedGateIds) || retry.executedGateCount !== retry.executedGateIds.length) {
+	throw new Error('Retry-success executed gate count/list mismatch.');
+}
 for (const [label, summary] of [['dry', dry], ['fail-fast', failFast], ['retry', retry]]) {
 	if (typeof summary.logFile !== 'string' || summary.logFile.length === 0) {
 		throw new Error(`${label} summary missing logFile path.`);

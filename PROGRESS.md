@@ -1992,6 +1992,15 @@
     - usage text block (`Usage:`)
   - `scripts/README.md` updated to call out unknown-option failure with usage output coverage.
   **Why:** ensures CLI failures remain immediately actionable instead of requiring users to re-run with `--help`.
+- **Run/timing metadata coverage (2026-02-15 PM)** Expanded top-level summary contract assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies for dry/dedupe/from/fail-fast/retry summaries:
+    - `runId` has expected mode prefix (`quick-`)
+    - `startedAt` / `completedAt` match `YYYYMMDDTHHMMSSZ` format
+    - `totalDurationSeconds` is a non-negative integer
+    - `gateCount` equals `selectedGateIds.length`
+  - additionally verifies `executedGateCount === executedGateIds.length` for fail-fast and retry-success scenarios.
+  - `scripts/README.md` updated to include run/timing metadata coverage.
+  **Why:** guards key metadata integrity used by automation and diagnostics dashboards.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
