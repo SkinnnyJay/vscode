@@ -2035,6 +2035,11 @@
   - `scripts/test-verify-gates-summary.sh` now verifies multiline heading input renders as a single markdown heading line.
   - `scripts/README.md` updated to include heading sanitization coverage.
   **Why:** prevents malformed multi-line headings from breaking step-summary structure while preserving custom heading usability.
+- **Blank-heading fallback coverage (2026-02-15 PM)** Expanded heading contract checks:
+  - `scripts/test-verify-gates-summary.sh` now verifies that whitespace-only heading input falls back to default heading:
+    - `## Verify Gates Summary`
+  - `scripts/README.md` updated to document blank-heading fallback behavior in coverage notes.
+  **Why:** guarantees stable heading output even when callers pass empty/whitespace heading values.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

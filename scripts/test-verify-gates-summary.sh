@@ -49,6 +49,7 @@ scalar_summary="$tmpdir/scalar.json"
 scalar_step_summary="$tmpdir/scalar-step.md"
 append_step_summary="$tmpdir/append-step.md"
 multiline_heading_step_summary="$tmpdir/multiline-heading-step.md"
+blank_heading_step_summary="$tmpdir/blank-heading-step.md"
 array_summary="$tmpdir/array.json"
 array_step_summary="$tmpdir/array-step.md"
 
@@ -697,6 +698,12 @@ fi
 GITHUB_STEP_SUMMARY="$multiline_heading_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" $'Multiline Heading\nSecond Line'
 if ! grep -q "^## Multiline Heading Second Line$" "$multiline_heading_step_summary"; then
 	echo "Expected multiline heading to be sanitized into a single heading line." >&2
+	exit 1
+fi
+
+GITHUB_STEP_SUMMARY="$blank_heading_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "   "
+if ! grep -q "^## Verify Gates Summary$" "$blank_heading_step_summary"; then
+	echo "Expected blank heading to fall back to default heading." >&2
 	exit 1
 fi
 
