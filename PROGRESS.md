@@ -2311,6 +2311,14 @@
     - invalid explicit `exitReason` fallback to derived fail-fast semantics with preserved failed-gate pointers.
   - `scripts/README.md` updated to document explicit-exit-reason normalization + invalid-value fallback behavior.
   **Why:** prevents malformed explicit reason strings from forcing ambiguous run-state output while preserving intended precedence for valid explicit reasons.
+- **Failed-exit-code list alignment to failed-gate IDs (2026-02-15 PM)** Tightened failed-code list fallback semantics:
+  - `scripts/publish-verify-gates-summary.sh` now derives rendered `failedGateExitCodes` by iterating failed gate IDs in order and selecting:
+    - explicit failed-code list value at the same index (if present), else
+    - fallback from `gateExitCodeById` for that failed gate.
+  - Extra trailing entries in sparse `failedGateExitCodes` lists are now ignored when no matching failed gate exists.
+  - `scripts/test-verify-gates-summary.sh` now asserts noisy extra failed-code entries are not rendered in markdown output.
+  - `scripts/README.md` updated to document failed-code alignment to failed-gate ordering.
+  **Why:** prevents stale/extra failed-code list entries from polluting summary output when sparse payload partitions and code lists are out of sync.
 - **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
   - `scripts/publish-verify-gates-summary.sh` now:
     - treats exit codes as non-negative integers (invalid/negative values ignored)

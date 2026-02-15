@@ -873,6 +873,10 @@ if ! grep -Fq "**Failed gate exit codes:** 2" "$derived_lists_step_summary"; the
 	echo "Expected derived-list fallback summary to derive failed gate exit codes from failedGateIds + gateExitCodeById." >&2
 	exit 1
 fi
+if grep -Fq "999" "$derived_lists_step_summary"; then
+	echo "Did not expect extra failed gate exit codes beyond failed gate IDs." >&2
+	exit 1
+fi
 if ! grep -Fq "**Skipped gates:** 1" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive skipped gate count from skippedGateIds." >&2
 	exit 1

@@ -426,11 +426,16 @@ const gateExitCodeById = gateExitCodeByIdFromSummary
 				.map((gate) => [gate.id, normalizeNonNegativeInteger(gate.exitCode) ?? null]),
 		)
 		: buildGateExitCodeMapFromSparseData());
-const failedGateExitCodes = failedGateExitCodesFromSummary !== null
-	? failedGateExitCodesFromSummary
-	: failedGateIds
-		.map((gateId) => gateExitCodeById[gateId])
-		.filter((exitCode) => exitCode !== null && exitCode !== undefined);
+const failedGateExitCodes = failedGateIds
+	.map((gateId, index) => {
+		const explicitExitCode = failedGateExitCodesFromSummary?.[index];
+		if (explicitExitCode !== null && explicitExitCode !== undefined) {
+			return explicitExitCode;
+		}
+		const mappedExitCode = gateExitCodeById[gateId];
+		return mappedExitCode === null || mappedExitCode === undefined ? null : mappedExitCode;
+	})
+	.filter((exitCode) => exitCode !== null && exitCode !== undefined);
 const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
 const gateRetryCountByIdFromSummary = normalizeGateRetryCountMap(summary.gateRetryCountById);
 const buildRetryCountMapFromSparseData = () => {
