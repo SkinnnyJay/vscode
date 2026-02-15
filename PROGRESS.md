@@ -2280,3 +2280,12 @@
   - `scripts/test-verify-gates-summary.sh` list-only sparse payload now injects invalid scalar metric/status-count values and verifies derived metrics remain correct (counts, retries, backoff share, durations) via fallback sources.
   - `scripts/README.md` updated to document scalar-metric sanitization coverage in the summary contract harness.
   **Why:** prevents malformed scalar fields from overriding trustworthy derived metrics and producing inconsistent CI summaries.
+- **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
+  - `scripts/publish-verify-gates-summary.sh` now:
+    - treats exit codes as non-negative integers (invalid/negative values ignored)
+    - applies known-gate defaults when sparse maps are partial (`gateExitCodeById`, retry/duration/attempt/reason maps), so missing known gates still render deterministic defaults.
+  - Status-map sparse contract scenario now verifies:
+    - invalid negative exit codes are sanitized to `null`
+    - known gates remain present in derived maps even when omitted from partial inputs.
+  - List-only sparse scenario assertions were made order-insensitive for JSON map rendering while still validating all expected key/value pairs.
+  **Why:** avoids propagating invalid exit codes and keeps rendered map diagnostics complete for all known selected/partitioned gates.

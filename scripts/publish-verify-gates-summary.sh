@@ -113,13 +113,13 @@ const normalizeInteger = (value) => {
 	}
 	return null;
 };
-const normalizeIntegerList = (value) => {
+const normalizeIntegerList = (value, normalizeValue = normalizeInteger) => {
 	if (!Array.isArray(value)) {
 		return null;
 	}
 	const normalizedValues = [];
 	for (const item of value) {
-		const normalizedValue = normalizeInteger(item);
+		const normalizedValue = normalizeValue(item);
 		if (normalizedValue === null) {
 			continue;
 		}
@@ -281,7 +281,7 @@ const failedGateIds = failedGateIdsFromSummary
 		? gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'fail').map(([gateId]) => gateId));
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
-const failedGateExitCodesFromSummary = normalizeIntegerList(summary.failedGateExitCodes);
+const failedGateExitCodesFromSummary = normalizeIntegerList(summary.failedGateExitCodes, normalizeNonNegativeInteger);
 const passedGateIds = passedGateIdsFromSummary
 	? passedGateIdsFromSummary
 	: (gates.length > 0
@@ -308,6 +308,24 @@ const notRunGateIds = notRunGateIdsFromSummary
 		? gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'not-run').map(([gateId]) => gateId));
 const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
+const knownGateIdsForMaps = uniqueGateIds([
+	...selectedGateIds,
+	...passedGateIds,
+	...failedGateIds,
+	...skippedGateIds,
+	...notRunGateIds,
+	...executedGateIds,
+	...gates.map((gate) => (typeof gate.id === 'string' ? gate.id : '')),
+]);
+const applyKnownGateDefaults = (mapValue, defaultValue) => {
+	const normalizedMap = { ...mapValue };
+	for (const gateId of knownGateIdsForMaps) {
+		if (!(gateId in normalizedMap)) {
+			normalizedMap[gateId] = defaultValue;
+		}
+	}
+	return normalizedMap;
+};
 const buildStatusMapFromGateIdLists = () => {
 	const statusPriority = { 'not-run': 1, skip: 2, pass: 3, fail: 4 };
 	const statusByGateId = {};
@@ -356,27 +374,27 @@ const buildGateExitCodeMapFromSparseData = () => {
 			if (typeof failedGateId !== 'string' || failedGateId.length === 0) {
 				continue;
 			}
-			const normalizedFailedExitCode = normalizeInteger(failedExitCode);
+			const normalizedFailedExitCode = normalizeNonNegativeInteger(failedExitCode);
 			if (normalizedFailedExitCode !== null) {
 				gateExitCodeMap[failedGateId] = normalizedFailedExitCode;
 			}
 		}
 	}
 	const summaryFailedGateId = normalizeNonEmptyString(summary.failedGateId);
-	const summaryFailedGateExitCode = normalizeInteger(summary.failedGateExitCode);
+	const summaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
 	if (summaryFailedGateId && summaryFailedGateExitCode !== null) {
 		gateExitCodeMap[summaryFailedGateId] = summaryFailedGateExitCode;
 	}
 	return gateExitCodeMap;
 };
-const gateExitCodeByIdFromSummary = normalizeGateIntegerMap(summary.gateExitCodeById, { allowNullValues: true, normalizeValue: normalizeInteger });
+const gateExitCodeByIdFromSummary = normalizeGateIntegerMap(summary.gateExitCodeById, { allowNullValues: true, normalizeValue: normalizeNonNegativeInteger });
 const gateExitCodeById = gateExitCodeByIdFromSummary
-	? gateExitCodeByIdFromSummary
+	? applyKnownGateDefaults(gateExitCodeByIdFromSummary, null)
 	: (gates.length > 0
 		? Object.fromEntries(
 			gates
 				.filter((gate) => typeof gate.id === 'string')
-				.map((gate) => [gate.id, normalizeInteger(gate.exitCode) ?? null]),
+				.map((gate) => [gate.id, normalizeNonNegativeInteger(gate.exitCode) ?? null]),
 		)
 		: buildGateExitCodeMapFromSparseData());
 const failedGateExitCodes = failedGateExitCodesFromSummary !== null
@@ -408,7 +426,7 @@ const buildRetryCountMapFromSparseData = () => {
 	return retryCountByGateId;
 };
 const gateRetryCountById = gateRetryCountByIdFromSummary
-	? gateRetryCountByIdFromSummary
+	? applyKnownGateDefaults(gateRetryCountByIdFromSummary, 0)
 	: (gates.length > 0
 		? Object.fromEntries(
 			gates
@@ -418,7 +436,7 @@ const gateRetryCountById = gateRetryCountByIdFromSummary
 		: buildRetryCountMapFromSparseData());
 const gateDurationSecondsByIdFromSummary = normalizeGateIntegerMap(summary.gateDurationSecondsById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger });
 const gateDurationSecondsById = gateDurationSecondsByIdFromSummary
-	? gateDurationSecondsByIdFromSummary
+	? applyKnownGateDefaults(gateDurationSecondsByIdFromSummary, 0)
 	: Object.fromEntries(
 		gates
 			.filter((gate) => typeof gate.id === 'string')
@@ -426,7 +444,7 @@ const gateDurationSecondsById = gateDurationSecondsByIdFromSummary
 	);
 const gateNotRunReasonByIdFromSummary = normalizeGateReasonMap(summary.gateNotRunReasonById);
 const gateNotRunReasonById = gateNotRunReasonByIdFromSummary
-	? gateNotRunReasonByIdFromSummary
+	? applyKnownGateDefaults(gateNotRunReasonByIdFromSummary, null)
 	: Object.fromEntries(
 		gates
 			.filter((gate) => typeof gate.id === 'string')
@@ -434,7 +452,7 @@ const gateNotRunReasonById = gateNotRunReasonByIdFromSummary
 	);
 const gateAttemptCountByIdFromSummary = normalizeGateIntegerMap(summary.gateAttemptCountById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger });
 const gateAttemptCountById = gateAttemptCountByIdFromSummary
-	? gateAttemptCountByIdFromSummary
+	? applyKnownGateDefaults(gateAttemptCountByIdFromSummary, 0)
 	: Object.fromEntries(
 		gates
 			.filter((gate) => typeof gate.id === 'string')
@@ -533,7 +551,7 @@ const fastestExecutedGate = executedGateDurations.reduce((fastestGate, gateDurat
 	return gateDuration.durationSeconds < fastestGate.durationSeconds ? gateDuration : fastestGate;
 }, null);
 const failedGateId = normalizeNonEmptyString(summary.failedGateId) ?? failedGateIds[0] ?? 'none';
-const failedGateExitCode = normalizeInteger(summary.failedGateExitCode) ?? failedGateExitCodes[0] ?? 'none';
+const failedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode) ?? failedGateExitCodes[0] ?? 'none';
 const blockedByGateId = normalizeNonEmptyString(summary.blockedByGateId) ?? (() => {
 	for (const reason of Object.values(gateNotRunReasonById)) {
 		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {

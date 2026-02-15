@@ -349,7 +349,9 @@ const payload = {
 	schemaVersion,
 	runId: 'derived-status-map-contract',
 	gateStatusById: { ' lint ': 'pass', typecheck: 'fail', build: 'not-run', ignored: 'unknown', '': 'pass' },
-	gateExitCodeById: { ' lint ': '0', typecheck: '5', build: null, bad: 'x' },
+	gateExitCodeById: { ' lint ': '-7', typecheck: '5', build: null, bad: 'x' },
+	failedGateId: 'typecheck',
+	failedGateExitCode: '-2',
 	gateRetryCountById: { ' lint ': '2', typecheck: '0', build: 0, bad: -1 },
 	gateDurationSecondsById: { ' lint ': '1', typecheck: '2', build: 0, bad: -1 },
 	gateAttemptCountById: { ' lint ': '1', typecheck: 1, build: 0, bad: 'oops' },
@@ -843,8 +845,8 @@ if ! grep -Fq "\"lint\":\"pass\"" "$derived_lists_step_summary" || ! grep -Fq "\
 	echo "Expected derived-list fallback summary to derive gate status map from gate-id partitions." >&2
 	exit 1
 fi
-if ! grep -Fq "**Gate exit-code map:** {\"lint\":null,\"typecheck\":2,\"test-unit\":null,\"build\":null}" "$derived_lists_step_summary"; then
-	echo "Expected derived-list fallback summary to derive gate exit-code map from failedGateIds + failedGateExitCodes." >&2
+if ! grep -Fq "\"lint\":null" "$derived_lists_step_summary" || ! grep -Fq "\"typecheck\":2" "$derived_lists_step_summary" || ! grep -Fq "\"test-unit\":null" "$derived_lists_step_summary" || ! grep -Fq "\"build\":null" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive normalized gate exit-code map values from failedGateIds + failedGateExitCodes." >&2
 	exit 1
 fi
 if ! grep -Fq "**Executed gates:** 2" "$derived_lists_step_summary"; then
@@ -963,7 +965,7 @@ if ! grep -Fq "\"lint\":\"pass\"" "$derived_status_map_step_summary" || ! grep -
 	echo "Expected derived-status-map fallback summary to normalize status-map keys and values." >&2
 	exit 1
 fi
-if ! grep -Fq "**Gate exit-code map:** {\"lint\":0,\"typecheck\":5,\"build\":null}" "$derived_status_map_step_summary"; then
+if ! grep -Fq "\"lint\":null" "$derived_status_map_step_summary" || ! grep -Fq "\"typecheck\":5" "$derived_status_map_step_summary" || ! grep -Fq "\"build\":null" "$derived_status_map_step_summary"; then
 	echo "Expected derived-status-map fallback summary to normalize gate exit-code map values and keys." >&2
 	exit 1
 fi
