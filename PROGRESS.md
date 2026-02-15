@@ -2213,3 +2213,12 @@
     - sparse continued-failure payload derives `success=false`, `continueOnFailure=true`, `exitReason=completed-with-failures`, `runClassification=failed-continued`, plus correct failed/blocked pointers.
   - `scripts/README.md` updated to document inferred fail-fast/continued-failure run-state coverage.
   **Why:** preserves accurate triage semantics for sparse summaries that omit explicit run-state booleans/strings but provide enough partition evidence to infer them safely.
+- **Partition-driven status/non-success/attention derivation (2026-02-15 PM)** Improved sparse payload rendering without `gates[]` rows:
+  - `scripts/publish-verify-gates-summary.sh` now derives `gateStatusById` from partition lists (`passed/failed/skipped/not-run`) when both explicit status map and gate rows are missing.
+  - Non-success and attention list fallbacks now derive from partition/status data plus retried gates while preserving selected-gate order when available.
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload case now omits `gateStatusById` and asserts markdown still includes:
+    - gate status map entries for all listed gates
+    - `Non-success gates list: typecheck, test-unit, build`
+    - `Attention gates list: lint, typecheck, test-unit, build`.
+  - `scripts/README.md` updated to document partition-driven status/non-success/attention fallback coverage.
+  **Why:** keeps fallback summaries complete and ordered for sparse producers that emit partitions/maps but omit per-gate rows.
