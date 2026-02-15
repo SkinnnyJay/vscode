@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # verify-gates - Run a deterministic validation sweep.
-# Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>]
+# Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>]
 # Delegates to: make lint/typecheck/test-* and make build targets.
 # Emits run logs to .build/logs/verify-gates (configurable via VSCODE_VERIFY_LOG_DIR).
 set -euo pipefail
@@ -15,6 +15,7 @@ fi
 MODE="full"
 RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+SUMMARY_FILE=""
 
 while (($# > 0)); do
 	case "$1" in
@@ -28,9 +29,13 @@ while (($# > 0)); do
 			shift
 			RETRIES="${1:-}"
 			;;
+		--summary-json)
+			shift
+			SUMMARY_FILE="${1:-}"
+			;;
 		*)
 			echo "Unknown option: $1" >&2
-			echo "Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>]" >&2
+			echo "Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>]" >&2
 			exit 1
 			;;
 	esac
@@ -40,6 +45,10 @@ done
 if ! [[ "$RETRIES" =~ ^[0-9]+$ ]]; then
 	echo "Invalid retries value '$RETRIES' (expected non-negative integer)." >&2
 	exit 1
+fi
+
+if [[ -z "$SUMMARY_FILE" ]]; then
+	SUMMARY_FILE="${VSCODE_VERIFY_SUMMARY_FILE:-}"
 fi
 
 cd "$ROOT"
@@ -68,6 +77,9 @@ fi
 LOG_DIR="${VSCODE_VERIFY_LOG_DIR:-$ROOT/.build/logs/verify-gates}"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${MODE}-${RUN_TIMESTAMP}.log"
+if [[ -z "$SUMMARY_FILE" ]]; then
+	SUMMARY_FILE="$LOG_DIR/${MODE}-${RUN_TIMESTAMP}.json"
+fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 declare -a gate_results
@@ -115,6 +127,31 @@ print_summary() {
 		printf "  - %-26s status=%-4s attempts=%s duration=%ss\n" "${gates[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}"
 	done
 	echo "  Log file: $LOG_FILE"
+	echo "  Summary file: $SUMMARY_FILE"
+}
+
+write_summary_json() {
+	local run_success="$1"
+
+	mkdir -p "$(dirname "$SUMMARY_FILE")"
+	{
+		echo "{"
+		echo "  \"mode\": \"${MODE}\","
+		echo "  \"retries\": ${RETRIES},"
+		echo "  \"success\": ${run_success},"
+		echo "  \"timestamp\": \"${RUN_TIMESTAMP}\","
+		echo "  \"logFile\": \"${LOG_FILE}\","
+		echo "  \"gates\": ["
+		for i in "${!gates[@]}"; do
+			local delimiter=","
+			if ((i == ${#gates[@]} - 1)); then
+				delimiter=""
+			fi
+			echo "    {\"command\":\"${gates[$i]}\",\"status\":\"${gate_results[$i]}\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
+		done
+		echo "  ]"
+		echo "}"
+	} > "$SUMMARY_FILE"
 }
 
 echo "Running '${MODE}' verification sweep with retries=$RETRIES"
@@ -130,9 +167,11 @@ for gate in "${gates[@]}"; do
 	gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
 	gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
 	print_summary
+	write_summary_json "false"
 	exit 1
 done
 
 print_summary
+write_summary_json "true"
 echo
 echo "Verification sweep completed successfully."

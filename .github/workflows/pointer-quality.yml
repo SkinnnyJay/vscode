@@ -59,3 +59,11 @@ jobs:
 
       - name: Run quick verification sweep
         run: ./scripts/verify-gates.sh --quick
+
+      - name: Upload verify-gates logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: verify-gates-pointer-quality-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/logs/verify-gates
+          if-no-files-found: ignore

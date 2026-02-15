@@ -23,7 +23,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 | `make test-web-integration` | `test-web-integration.sh` | Web/browser integration tests (Playwright). |
 | `make test-smoke` | `test-smoke.sh` | Smoke tests (`npm run smoketest`). |
 | `make test-e2e` | `test-e2e.sh` | E2E/integration (delegates to `test-integration.sh`). |
-| `./scripts/verify-gates.sh` | `verify-gates.sh` | Deterministic validation sweep across lint/typecheck/tests/build with retry support. Use `./scripts/verify-gates.sh --quick` for lighter checks. |
+| `./scripts/verify-gates.sh` | `verify-gates.sh` | Deterministic validation sweep across lint/typecheck/tests/build with retry support and per-run log/summary output. Use `./scripts/verify-gates.sh --quick` for lighter checks. |
 | **Lint and format** | | |
 | `make lint` | `lint.sh` | ESLint + Stylelint (no fix). |
 | `make fmt` | `fmt.sh` | Apply formatting fixes. |
@@ -40,6 +40,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Full gate:** `make build && make test && make test-integration` (and optionally `make test-smoke`).
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
+- **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
 
 ## Linux headless stability note

@@ -1390,3 +1390,12 @@
   - confirmed summary output includes per-gate durations and attempts
   - confirmed log file is created in override directory (e.g. `quick-<timestamp>.log`).
   **Why:** proves logging/summary enhancements work end-to-end without regressing gate execution.
+- **Workflow artifacts for verification runs (2026-02-15 AM)** Extended verification workflows to upload script outputs:
+  - `.github/workflows/pointer-quality.yml` now uploads `.build/logs/verify-gates` as an artifact on every run
+  - `.github/workflows/verify-gates-nightly.yml` now uploads `.build/logs/verify-gates` as an artifact on every run.
+  **Why:** preserves verification logs/summaries for post-mortem debugging and trend analysis across CI runs.
+- **Summary-file override validation (2026-02-15 AM)** Validated `--summary-json` support and artifact-friendly output:
+  - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick --summary-json "<tmp>/summary.json"` → **pass**
+  - verified JSON summary parses and includes expected gate count/status fields
+  - verified both log file and summary file are created in the configured output directory.
+  **Why:** confirms machine-readable output works for downstream CI/artifact processing without changing gate behavior.

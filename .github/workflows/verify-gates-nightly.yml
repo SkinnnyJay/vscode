@@ -37,3 +37,11 @@ jobs:
 
       - name: Run full verification sweep
         run: ./scripts/verify-gates.sh --full
+
+      - name: Upload verify-gates logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: verify-gates-nightly-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .build/logs/verify-gates
+          if-no-files-found: ignore
