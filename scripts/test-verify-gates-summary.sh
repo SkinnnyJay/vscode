@@ -53,6 +53,8 @@ blank_heading_step_summary="$tmpdir/blank-heading-step.md"
 whitespace_heading_step_summary="$tmpdir/whitespace-heading-step.md"
 array_summary="$tmpdir/array.json"
 array_step_summary="$tmpdir/array-step.md"
+null_summary="$tmpdir/null.json"
+null_step_summary="$tmpdir/null-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -663,6 +665,21 @@ if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "
 fi
 if ! grep -q "\*\*Summary schema version:\*\* unknown" "$array_step_summary"; then
 	echo "Expected array summary rendering to use unknown schema placeholder." >&2
+	exit 1
+fi
+
+printf 'null\n' > "$null_summary"
+GITHUB_STEP_SUMMARY="$null_step_summary" ./scripts/publish-verify-gates-summary.sh "$null_summary" "Verify Gates Null Summary Contract Test"
+if ! grep -q "^## Verify Gates Null Summary Contract Test" "$null_step_summary"; then
+	echo "Expected null summary heading to be rendered." >&2
+	exit 1
+fi
+if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$null_step_summary"; then
+	echo "Expected null summary rendering to include placeholder gate row." >&2
+	exit 1
+fi
+if ! grep -q "\*\*Summary schema version:\*\* unknown" "$null_step_summary"; then
+	echo "Expected null summary rendering to use unknown schema placeholder." >&2
 	exit 1
 fi
 

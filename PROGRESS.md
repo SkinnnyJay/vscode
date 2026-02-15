@@ -2045,6 +2045,14 @@
   - `scripts/test-verify-gates-summary.sh` now verifies mixed tab/multi-space heading input renders as a clean single-space heading.
   - `scripts/README.md` updated to mention mixed-whitespace normalization coverage.
   **Why:** avoids irregular markdown headings from varied caller formatting while preserving readable custom heading text.
+- **Null-payload rendering resilience (2026-02-15 PM)** Hardened publisher handling for valid-but-null JSON:
+  - `scripts/publish-verify-gates-summary.sh` now treats parsed `null` payloads as empty summaries instead of attempting property access on `null`.
+  - `scripts/test-verify-gates-summary.sh` now verifies `null` payload rendering produces:
+    - heading
+    - placeholder gate row
+    - `Summary schema version: unknown`
+  - `scripts/README.md` updated to include null payload coverage in sparse-payload checks.
+  **Why:** prevents runtime crashes for edge-case JSON inputs while preserving fail-safe summary output.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

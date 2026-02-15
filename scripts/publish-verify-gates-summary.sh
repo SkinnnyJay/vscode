@@ -56,14 +56,16 @@ if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
 }
 
-let summary;
+let parsedSummary;
 try {
-	summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+	parsedSummary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
 } catch (error) {
 	const message = error instanceof Error ? error.message : String(error);
 	fs.appendFileSync(summaryOutputPath, `## ${renderedHeading}\n\nUnable to parse verify-gates summary at \`${summaryPath}\`: ${message}\n`);
 	process.exit(0);
 }
+
+const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
 const selectedGateIds = Array.isArray(summary.selectedGateIds)
