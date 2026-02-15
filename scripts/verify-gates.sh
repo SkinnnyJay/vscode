@@ -263,11 +263,15 @@ declare -a gate_results
 declare -a gate_durations_seconds
 declare -a gate_attempt_counts
 declare -a gate_exit_codes
+declare -a gate_started_at
+declare -a gate_completed_at
 for i in "${!gate_commands[@]}"; do
 	gate_results+=("not-run")
 	gate_durations_seconds+=("0")
 	gate_attempt_counts+=("0")
 	gate_exit_codes+=("0")
+	gate_started_at+=("")
+	gate_completed_at+=("")
 done
 
 run_gate() {
@@ -278,6 +282,7 @@ run_gate() {
 	local end_epoch_seconds
 
 	start_epoch_seconds="$(date +%s)"
+	RUN_GATE_STARTED_AT="$(date -u +"%Y%m%dT%H%M%SZ")"
 
 	while ((attempt <= max_attempts)); do
 		echo
@@ -287,6 +292,7 @@ run_gate() {
 			RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
 			RUN_GATE_ATTEMPTS="$attempt"
 			RUN_GATE_EXIT_CODE="0"
+			RUN_GATE_COMPLETED_AT="$(date -u +"%Y%m%dT%H%M%SZ")"
 			return 0
 		else
 			local attempt_exit_code="$?"
@@ -296,6 +302,7 @@ run_gate() {
 				RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
 				RUN_GATE_ATTEMPTS="$attempt"
 				RUN_GATE_EXIT_CODE="$attempt_exit_code"
+				RUN_GATE_COMPLETED_AT="$(date -u +"%Y%m%dT%H%M%SZ")"
 				echo "Gate failed after $max_attempts attempt(s): $command" >&2
 				return 1
 			fi
@@ -425,7 +432,7 @@ write_summary_json() {
 			if ((i == ${#gate_commands[@]} - 1)); then
 				delimiter=""
 			fi
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]}}${delimiter}"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":\"$(json_escape "${gate_started_at[$i]}")\",\"completedAt\":\"$(json_escape "${gate_completed_at[$i]}")\"}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
@@ -442,6 +449,8 @@ if [[ "$DRY_RUN" == "1" ]]; then
 		gate_durations_seconds[$i]="0"
 		gate_attempt_counts[$i]="0"
 		gate_exit_codes[$i]="0"
+		gate_started_at[$i]="$RUN_TIMESTAMP"
+		gate_completed_at[$i]="$RUN_TIMESTAMP"
 	done
 	print_summary
 	write_summary_json "true"
@@ -457,6 +466,8 @@ for i in "${!gate_commands[@]}"; do
 		gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
 		gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
 		gate_exit_codes[$i]="$RUN_GATE_EXIT_CODE"
+		gate_started_at[$i]="$RUN_GATE_STARTED_AT"
+		gate_completed_at[$i]="$RUN_GATE_COMPLETED_AT"
 		continue
 	fi
 
@@ -464,6 +475,8 @@ for i in "${!gate_commands[@]}"; do
 	gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
 	gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
 	gate_exit_codes[$i]="$RUN_GATE_EXIT_CODE"
+	gate_started_at[$i]="$RUN_GATE_STARTED_AT"
+	gate_completed_at[$i]="$RUN_GATE_COMPLETED_AT"
 	if [[ -z "$FAILED_GATE_ID" ]]; then
 		FAILED_GATE_ID="${gate_ids[$i]}"
 		FAILED_GATE_EXIT_CODE="$RUN_GATE_EXIT_CODE"

@@ -1533,3 +1533,18 @@
   - after `unset -f make`, re-ran real `./scripts/verify-gates.sh --quick --only typecheck --retries 0` and confirmed exitCode `0` in JSON
   - `make lint` → **pass**.
   **Why:** proves exit-code telemetry is accurate in both controlled failure simulation and real command execution paths.
+- **Per-gate timing timestamps (2026-02-15 AM)** Extended gate-level summary payload with wall-clock timestamps:
+  - each gate entry now includes `startedAt` and `completedAt` (UTC compact format)
+  - dry-run gates reuse run timestamp for both fields
+  - run execution paths populate these fields from actual gate start/end moments.
+  **Why:** allows downstream tooling to correlate individual gate windows with external logs/artifacts without inferring from durations.
+- **Per-gate timestamp validation (2026-02-15 AM)** Verified new timestamp fields across dry-run, real, and failure paths:
+  - dry run: `./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "<tmp>/dry.json"` → pass
+  - real run: `./scripts/verify-gates.sh --quick --only typecheck --retries 0 --summary-json "<tmp>/real.json"` → pass
+  - controlled failure run with mock `make` (`lint` exits 9, `typecheck` exits 0) and `--continue-on-failure` → exits 1
+  - Node assertions confirmed:
+    - all gate `startedAt`/`completedAt` fields match expected UTC format
+    - dry-run gate has `startedAt === completedAt`
+    - failure run preserves expected `exitCode` / `failedGateExitCode` values.
+  - `make lint` → **pass**.
+  **Why:** confirms timestamp instrumentation is reliable in all primary execution modes without regressing existing exit-code telemetry.
