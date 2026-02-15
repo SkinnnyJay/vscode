@@ -1809,3 +1809,9 @@
   - schema baseline bumped to `13` in producer/renderer
   - `scripts/README.md` updated to schema version `13` and field list includes `gateExitCodeById`.
   **Why:** allows downstream consumers to query exit codes by gate id without scanning arrays or joining multiple fields.
+- **Retry-count map + schema v14 (2026-02-15 AM)** Added direct gate-id→retry-count lookup:
+  - `scripts/verify-gates.sh` now emits `gateRetryCountById` object for all selected gates
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate retry-count map` and derives fallback from `gates[]` when missing
+  - schema baseline bumped to `14` in producer/renderer
+  - `scripts/README.md` updated to schema version `14` and field list includes `gateRetryCountById`.
+  **Why:** gives downstream tooling a constant-time view of retry pressure by gate without recomputing from attempt counts.

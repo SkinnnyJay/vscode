@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=13
+SUMMARY_SCHEMA_VERSION=14
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -896,6 +896,19 @@ write_gate_exit_code_by_id_json() {
 	done
 }
 
+write_gate_retry_count_by_id_json() {
+	local i
+	for i in "${!gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		echo "    \"$(json_escape "${gate_ids[$i]}")\": ${retry_count}${delimiter}"
+	done
+}
+
 compute_result_signature() {
 	local algorithm="${1:-$(compute_result_signature_algorithm)}"
 	local payload=""
@@ -1038,6 +1051,9 @@ write_summary_json() {
 		echo "  },"
 		echo "  \"gateExitCodeById\": {"
 		write_gate_exit_code_by_id_json
+		echo "  },"
+		echo "  \"gateRetryCountById\": {"
+		write_gate_retry_count_by_id_json
 		echo "  },"
 		echo "  \"executedGateCount\": ${executed_gate_count},"
 		echo "  \"totalRetryCount\": ${total_retry_count},"
