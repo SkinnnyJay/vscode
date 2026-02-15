@@ -329,6 +329,32 @@ if ! grep -q "Missing value for --retries" "$tmpdir/missing-retries-value.out"; 
 fi
 
 set +e
+./scripts/verify-gates.sh --quick --retries abc --dry-run > "$tmpdir/invalid-retries-alpha.out" 2>&1
+invalid_retries_alpha_status=$?
+set -e
+if [[ "$invalid_retries_alpha_status" -eq 0 ]]; then
+	echo "Expected non-numeric --retries value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Invalid retries value 'abc'" "$tmpdir/invalid-retries-alpha.out"; then
+	echo "Expected non-numeric --retries validation message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --quick --retries -1 --dry-run > "$tmpdir/invalid-retries-negative.out" 2>&1
+invalid_retries_negative_status=$?
+set -e
+if [[ "$invalid_retries_negative_status" -eq 0 ]]; then
+	echo "Expected negative --retries value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Invalid retries value '-1'" "$tmpdir/invalid-retries-negative.out"; then
+	echo "Expected negative --retries validation message." >&2
+	exit 1
+fi
+
+set +e
 ./scripts/verify-gates.sh --quick --only lint,unknown --dry-run > "$tmpdir/unknown-gate.out" 2>&1
 unknown_gate_status=$?
 set -e

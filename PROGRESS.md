@@ -1934,6 +1934,12 @@
     - CLI flag `--continue-on-failure` -> summary field `true`
   - `scripts/README.md` updated to include continue-on-failure normalization coverage.
   **Why:** protects environment/flag normalization behavior that directly controls fail-fast vs. continue execution policy.
+- **Retries value validation coverage (2026-02-15 PM)** Expanded contract harness for retries argument guardrails:
+  - `scripts/test-verify-gates-summary.sh` now verifies `verify-gates.sh` fails with explicit messages for:
+    - non-numeric `--retries abc`
+    - negative `--retries -1`
+  - `scripts/README.md` updated to include missing/invalid retries validation coverage.
+  **Why:** ensures retry-policy input validation remains strict and user-facing error messages stay clear.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
