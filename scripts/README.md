@@ -55,6 +55,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes success/dry-run continue-on-failure checks proving non-failure outcomes derive `continueOnFailure=false` when explicit values are absent, while explicit configured values (including boolean-like strings) remain preserved.
   - Includes classification-driven success contradiction checks proving conflicting explicit `success`/`dryRun` values are ignored while explicit `continueOnFailure` remains visible for non-failure summaries.
   - Includes status-map case/whitespace normalization checks proving sparse `gateStatusById` values are normalized case-insensitively (`PASS`/`FAIL`/`Not-Run`) before derivation.
+  - Includes gate-row status case/whitespace normalization checks proving sparse `gates[].status` values are normalized case-insensitively before counter/list derivation.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` (also accepts `true/yes/on`) or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.

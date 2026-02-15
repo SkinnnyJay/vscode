@@ -68,7 +68,7 @@ try {
 
 const summary = parsedSummary ?? {};
 
-const gates = Array.isArray(summary.gates) ? summary.gates : [];
+const gatesFromSummary = Array.isArray(summary.gates) ? summary.gates : [];
 const normalizeNonEmptyString = (value) => {
 	if (typeof value !== 'string') {
 		return null;
@@ -100,6 +100,14 @@ const normalizeKnownValue = (value, allowedValues) => {
 	const canonicalValue = normalizedValue.toLowerCase();
 	return allowedValues.includes(canonicalValue) ? canonicalValue : null;
 };
+const normalizeGateStatusValue = (value) => normalizeKnownValue(value, ['pass', 'fail', 'skip', 'not-run']);
+const gates = gatesFromSummary.map((gate) => {
+	const gateObject = gate && typeof gate === 'object' ? gate : {};
+	return {
+		...gateObject,
+		status: normalizeGateStatusValue(gateObject.status) ?? gateObject.status,
+	};
+});
 const normalizeGateIdList = (value) => {
 	if (!Array.isArray(value)) {
 		return null;
