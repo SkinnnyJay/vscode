@@ -482,6 +482,10 @@ if ! grep -q "^Usage:" "$tmpdir/verify-help.out"; then
 	echo "Expected verify-gates --help output to include usage text." >&2
 	exit 1
 fi
+if ! grep -q "^Gate IDs:" "$tmpdir/verify-help.out"; then
+	echo "Expected verify-gates --help output to include gate ID listing." >&2
+	exit 1
+fi
 
 set +e
 ./scripts/verify-gates.sh --not-a-real-option > "$tmpdir/verify-unknown-option.out" 2>&1
@@ -495,6 +499,49 @@ if ! grep -q "Unknown option: --not-a-real-option" "$tmpdir/verify-unknown-optio
 	echo "Expected unknown verify-gates option validation message." >&2
 	exit 1
 fi
+if ! grep -q "^Usage:" "$tmpdir/verify-unknown-option.out"; then
+	echo "Expected unknown verify-gates option output to include usage text." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --summary-json > "$tmpdir/missing-summary-json-value.out" 2>&1
+missing_summary_json_value_status=$?
+set -e
+if [[ "$missing_summary_json_value_status" -eq 0 ]]; then
+	echo "Expected --summary-json without value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Missing value for --summary-json." "$tmpdir/missing-summary-json-value.out"; then
+	echo "Expected missing --summary-json value message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --only > "$tmpdir/missing-only-value.out" 2>&1
+missing_only_value_status=$?
+set -e
+if [[ "$missing_only_value_status" -eq 0 ]]; then
+	echo "Expected --only without value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Missing value for --only." "$tmpdir/missing-only-value.out"; then
+	echo "Expected missing --only value message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --from > "$tmpdir/missing-from-value.out" 2>&1
+missing_from_value_status=$?
+set -e
+if [[ "$missing_from_value_status" -eq 0 ]]; then
+	echo "Expected --from without value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Missing value for --from." "$tmpdir/missing-from-value.out"; then
+	echo "Expected missing --from value message." >&2
+	exit 1
+fi
 
 set +e
 ./scripts/publish-verify-gates-summary.sh --help > "$tmpdir/help.out" 2>&1
@@ -506,6 +553,10 @@ if [[ "$help_status" -ne 0 ]]; then
 fi
 if ! grep -q "^Usage:" "$tmpdir/help.out"; then
 	echo "Expected --help output to include usage text." >&2
+	exit 1
+fi
+if ! grep -q "^GITHUB_STEP_SUMMARY" "$tmpdir/help.out"; then
+	echo "Expected publisher --help output to include GITHUB_STEP_SUMMARY documentation." >&2
 	exit 1
 fi
 

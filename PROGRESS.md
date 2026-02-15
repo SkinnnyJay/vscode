@@ -1967,6 +1967,17 @@
     - `Failed gates list` / `Not-run gates list`
   - `scripts/README.md` updated to clarify that fallback checks cover both maps and lists.
   **Why:** ensures backward-compatible rendering for partial payloads stays complete, not just map fields.
+- **Missing-option value + help-content coverage (2026-02-15 PM)** Expanded CLI contract checks for clearer operator guidance:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `verify-gates.sh --help` includes both usage text and gate ID listing
+    - unknown verify-gates option output includes usage text
+    - missing required option values fail with explicit messages for:
+      - `--summary-json`
+      - `--only`
+      - `--from`
+    - publisher `--help` includes `GITHUB_STEP_SUMMARY` env documentation
+  - `scripts/README.md` updated to include missing-option-value and help-content coverage.
+  **Why:** protects CLI usability/documentation quality and prevents regressions in actionable error output.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
