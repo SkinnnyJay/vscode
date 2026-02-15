@@ -1163,3 +1163,8 @@
   - `xvfb-run -a make test` → **pass** (Electron unit target exits 0)
   - `make lint` → **pass**
   **Why:** confirms the new configurability did not regress the stabilized default behavior.
+- **Mitigation discoverability docs (2026-02-15 AM)** Updated `scripts/README.md` with a dedicated Linux headless stability note:
+  - documents default `--disable-dev-shm-usage` behavior for Electron test/smoke paths
+  - documents opt-out env var `VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1`
+  - lists affected entry points (`make test`, automation smoke/electron launches)
+  **Why:** makes the reliability workaround and override explicit for contributors/CI operators, reducing hidden behavior and debugging time.

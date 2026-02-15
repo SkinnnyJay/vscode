@@ -39,4 +39,13 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Full gate:** `make build && make test && make test-integration` (and optionally `make test-smoke`).
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
 
+## Linux headless stability note
+
+- Electron test/smoke launchers auto-apply `--disable-dev-shm-usage` on Linux to reduce `/dev/shm` exhaustion failures in container/headless environments.
+- To intentionally disable this mitigation for local experiments, set:
+  - `VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1`
+- Applies to:
+  - `make test` (`scripts/test.sh`)
+  - smoke/electron automation launches (`test/automation/src/electron.ts`)
+
 Scripts are documented at the top of each file (purpose, usage, and what they delegate to).
