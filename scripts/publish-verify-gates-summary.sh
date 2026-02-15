@@ -671,6 +671,13 @@ const runClassificationFromSummary = explicitRunClassification !== null
 	&& exitReasonFromRunClassification !== explicitExitReason
 	? null
 	: explicitRunClassification;
+const explicitDryRunFromSummary = explicitDryRun !== null
+	&& (
+		(explicitExitReason !== null && explicitDryRun !== (explicitExitReason === 'dry-run'))
+		|| (explicitExitReason === null && runClassificationFromSummary !== null && explicitDryRun !== (runClassificationFromSummary === 'dry-run'))
+	)
+	? null
+	: explicitDryRun;
 const successForExplicitExitReason = (() => {
 	switch (explicitExitReason) {
 		case 'dry-run':
@@ -684,7 +691,7 @@ const successForExplicitExitReason = (() => {
 	}
 })();
 const successForRunClassification = (() => {
-	switch (explicitRunClassification) {
+	switch (runClassificationFromSummary) {
 		case 'dry-run':
 		case 'success-no-retries':
 		case 'success-with-retries':
@@ -696,10 +703,18 @@ const successForRunClassification = (() => {
 			return null;
 	}
 })();
-const explicitSuccess = normalizeBoolean(summary.success);
+const explicitSuccessFromSummary = normalizeBoolean(summary.success);
+const explicitSuccess = explicitSuccessFromSummary !== null
+	&& (
+		(successForExplicitExitReason !== null && explicitSuccessFromSummary !== successForExplicitExitReason)
+		|| (successForExplicitExitReason === null && successForRunClassification !== null && explicitSuccessFromSummary !== successForRunClassification)
+		|| (successForExplicitExitReason === null && successForRunClassification === null && explicitDryRunFromSummary === true && explicitSuccessFromSummary !== true)
+	)
+	? null
+	: explicitSuccessFromSummary;
 const successValue = explicitSuccess !== null
 	? explicitSuccess
-	: (explicitDryRun === true
+	: (explicitDryRunFromSummary === true
 		? true
 		: (successForExplicitExitReason !== null
 			? successForExplicitExitReason
@@ -735,10 +750,37 @@ const derivedRunClassification = runClassificationFromSummary ?? (() => {
 			return 'unknown';
 	}
 })();
-const dryRunValue = explicitDryRun !== null
-	? explicitDryRun
+const dryRunValue = explicitDryRunFromSummary !== null
+	? explicitDryRunFromSummary
 	: (derivedExitReason === 'unknown' ? 'unknown' : derivedExitReason === 'dry-run');
-const explicitContinueOnFailure = normalizeBoolean(summary.continueOnFailure);
+const continueOnFailureForExplicitExitReason = (() => {
+	switch (explicitExitReason) {
+		case 'completed-with-failures':
+			return true;
+		case 'fail-fast':
+			return false;
+		default:
+			return null;
+	}
+})();
+const continueOnFailureForRunClassification = (() => {
+	switch (runClassificationFromSummary) {
+		case 'failed-continued':
+			return true;
+		case 'failed-fail-fast':
+			return false;
+		default:
+			return null;
+	}
+})();
+const explicitContinueOnFailureFromSummary = normalizeBoolean(summary.continueOnFailure);
+const explicitContinueOnFailure = explicitContinueOnFailureFromSummary !== null
+	&& (
+		(continueOnFailureForExplicitExitReason !== null && explicitContinueOnFailureFromSummary !== continueOnFailureForExplicitExitReason)
+		|| (continueOnFailureForExplicitExitReason === null && continueOnFailureForRunClassification !== null && explicitContinueOnFailureFromSummary !== continueOnFailureForRunClassification)
+	)
+	? null
+	: explicitContinueOnFailureFromSummary;
 const continueOnFailureValue = explicitContinueOnFailure !== null
 	? explicitContinueOnFailure
 	: (derivedExitReason === 'completed-with-failures'

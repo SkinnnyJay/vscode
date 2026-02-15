@@ -2343,3 +2343,13 @@
     - `Run classification: failed-fail-fast`.
   - `scripts/README.md` updated to document this precedence/consistency contract.
   **Why:** prevents contradictory CI summary metadata when sparse producers emit mismatched reason/classification fields.
+- **Authoritative exit-reason normalization across conflicting run-state flags (2026-02-15 PM)** Closed remaining sparse contradiction paths:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes contradictory explicit run-state flags against authoritative explicit `exitReason` (and consistent classification):
+    - conflicting explicit `success`, `dryRun`, and `continueOnFailure` are ignored instead of rendering contradictory metadata.
+  - `scripts/test-verify-gates-summary.sh` now adds a sparse conflict payload with:
+    - `exitReason: fail-fast`
+    - conflicting `runClassification: success-with-retries`
+    - conflicting `success: true`, `dryRun: true`, `continueOnFailure: true`
+    and verifies rendered summary remains consistent (`Success: false`, `Dry run: false`, `Continue on failure: false`, `Run classification: failed-fail-fast`).
+  - `scripts/README.md` updated to document this conflicting-flag contract coverage.
+  **Why:** prevents malformed sparse producers from emitting internally contradictory CI summary signals that mislead triage.
