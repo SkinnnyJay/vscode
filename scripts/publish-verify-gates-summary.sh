@@ -69,6 +69,7 @@ try {
 const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
+const normalizeNonEmptyString = (value) => (typeof value === 'string' && value.length > 0 ? value : null);
 const passedGateIdsFromSummary = Array.isArray(summary.passedGateIds) ? summary.passedGateIds : null;
 const failedGateIdsFromSummary = Array.isArray(summary.failedGateIds) ? summary.failedGateIds : null;
 const skippedGateIdsFromSummary = Array.isArray(summary.skippedGateIds) ? summary.skippedGateIds : null;
@@ -246,6 +247,54 @@ const blockedByGateId = summary.blockedByGateId ?? (() => {
 	}
 	return 'none';
 })();
+const hasOutcomeEvidence = gates.length > 0
+	|| passedGateIdsFromSummary !== null
+	|| failedGateIdsFromSummary !== null
+	|| skippedGateIdsFromSummary !== null
+	|| notRunGateIdsFromSummary !== null
+	|| typeof summary.passedGateCount === 'number'
+	|| typeof summary.failedGateCount === 'number'
+	|| typeof summary.skippedGateCount === 'number'
+	|| typeof summary.notRunGateCount === 'number'
+	|| Object.keys(rawStatusCounts).length > 0;
+const explicitDryRun = typeof summary.dryRun === 'boolean' ? summary.dryRun : null;
+const successValue = typeof summary.success === 'boolean'
+	? summary.success
+	: (explicitDryRun === true ? true : (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'));
+const explicitExitReason = normalizeNonEmptyString(summary.exitReason);
+const derivedExitReason = explicitExitReason ?? (() => {
+	if (explicitDryRun === true) {
+		return 'dry-run';
+	}
+	if (successValue === 'unknown') {
+		return 'unknown';
+	}
+	if (successValue === true) {
+		return 'success';
+	}
+	if (blockedByGateId !== 'none') {
+		return 'fail-fast';
+	}
+	return 'completed-with-failures';
+})();
+const explicitRunClassification = normalizeNonEmptyString(summary.runClassification);
+const derivedRunClassification = explicitRunClassification ?? (() => {
+	switch (derivedExitReason) {
+		case 'dry-run':
+			return 'dry-run';
+		case 'success':
+			return totalRetryCount > 0 ? 'success-with-retries' : 'success-no-retries';
+		case 'fail-fast':
+			return 'failed-fail-fast';
+		case 'completed-with-failures':
+			return 'failed-continued';
+		default:
+			return 'unknown';
+	}
+})();
+const dryRunValue = explicitDryRun !== null
+	? explicitDryRun
+	: (derivedExitReason === 'unknown' ? 'unknown' : derivedExitReason === 'dry-run');
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
@@ -270,16 +319,16 @@ const lines = [
 	'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |',
 	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |']),
 	'',
-	`**Success:** ${summary.success ?? 'unknown'}`,
+	`**Success:** ${successValue}`,
 	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
-	`**Run classification:** ${sanitizeCell(summary.runClassification ?? 'unknown')}`,
+	`**Run classification:** ${sanitizeCell(derivedRunClassification)}`,
 	`**Result signature algorithm:** ${sanitizeCell(summary.resultSignatureAlgorithm ?? 'unknown')}`,
 	`**Result signature:** ${sanitizeCell(summary.resultSignature ?? 'unknown')}`,
-	`**Exit reason:** ${sanitizeCell(summary.exitReason ?? 'unknown')}`,
+	`**Exit reason:** ${sanitizeCell(derivedExitReason)}`,
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
-	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
+	`**Dry run:** ${dryRunValue}`,
 	`**Gate count:** ${gateCount}`,
 	`**Passed gates:** ${passedGateCount}`,
 	`**Failed gates:** ${failedGateCount}`,

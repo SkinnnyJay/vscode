@@ -2195,3 +2195,11 @@
   - `scripts/test-verify-gates-summary.sh` list-only sparse payload case now validates all of the above derived markdown values (including retry-backoff share math and fastest/slowest gate selection) without top-level scalar metric fields.
   - `scripts/README.md` updated to document expanded scalar-metric derivation coverage.
   **Why:** ensures step summaries remain operationally useful for sparse payload producers that provide partition/map data but omit aggregate scalar metrics.
+- **Dry-run metadata inference for sparse payloads (2026-02-15 PM)** Hardened run-state derivation when explicit run metadata is omitted:
+  - `scripts/publish-verify-gates-summary.sh` now infers:
+    - `success=true` when `dryRun=true` and `success` is omitted
+    - `exitReason=dry-run` when `dryRun=true` and `exitReason` is omitted
+    - `runClassification=dry-run` from the derived exit reason.
+  - `scripts/test-verify-gates-summary.sh` adds a sparse dry-run payload case (list/map-only, no scalar run metadata) and asserts the rendered summary includes inferred dry-run success/exit/classification lines.
+  - `scripts/README.md` updated to include inferred dry-run run-state derivation in contract coverage notes.
+  **Why:** keeps sparse dry-run summaries semantically accurate and avoids misleading `unknown` run-state metadata when dry-run intent is explicit.

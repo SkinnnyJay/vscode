@@ -61,6 +61,8 @@ derived_counts_summary="$tmpdir/derived-counts.json"
 derived_counts_step_summary="$tmpdir/derived-counts-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
+derived_dry_run_summary="$tmpdir/derived-dry-run.json"
+derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -316,6 +318,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_lists_summary" "Verify Gates Derived List Fallback Contract Test"
+
+node - "$expected_schema_version" "$derived_dry_run_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'derived-dry-run-contract',
+	dryRun: true,
+	selectedGateIds: ['lint'],
+	skippedGateIds: ['lint'],
+	gateStatusById: { lint: 'skip' },
+	gateExitCodeById: { lint: null },
+	gateRetryCountById: { lint: 0 },
+	gateDurationSecondsById: { lint: 0 },
+	gateAttemptCountById: { lint: 0 },
+	gateNotRunReasonById: { lint: null },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$derived_dry_run_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_dry_run_summary" "Verify Gates Derived Dry-Run Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -792,6 +820,26 @@ if ! grep -Fq "**Failed gate exit code:** 2" "$derived_lists_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then
 	echo "Did not expect schema warning for derived-list fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** true" "$derived_dry_run_step_summary"; then
+	echo "Expected derived-dry-run fallback summary to infer success=true when dryRun=true and success is omitted." >&2
+	exit 1
+fi
+if ! grep -Fq "**Dry run:** true" "$derived_dry_run_step_summary"; then
+	echo "Expected derived-dry-run fallback summary to preserve dry-run flag." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** dry-run" "$derived_dry_run_step_summary"; then
+	echo "Expected derived-dry-run fallback summary to derive dry-run exit reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** dry-run" "$derived_dry_run_step_summary"; then
+	echo "Expected derived-dry-run fallback summary to derive dry-run classification." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$derived_dry_run_step_summary"; then
+	echo "Did not expect schema warning for derived-dry-run fallback summary." >&2
 	exit 1
 fi
 
