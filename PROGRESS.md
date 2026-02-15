@@ -2374,3 +2374,11 @@
     and verifies renderer output remains reason-driven and coherent (`Success: false`, `Continue on failure: true`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`).
   - `scripts/README.md` updated to document unknown-classification + explicit-reason fallback coverage.
   **Why:** prevents malformed explicit classification values from suppressing valid explicit-reason semantics in sparse CI payloads.
+- **Dry-run exitReason contradiction fallback coverage (2026-02-15 PM)** Added sparse dry-run precedence guard:
+  - `scripts/test-verify-gates-summary.sh` now adds a payload with:
+    - explicit `exitReason: dry-run`
+    - conflicting explicit `runClassification: failed-fail-fast`
+    - conflicting explicit `success: false` and `dryRun: false`
+    and verifies renderer output remains dry-run consistent (`Success: true`, `Dry run: true`, `Exit reason: dry-run`, `Run classification: dry-run`).
+  - `scripts/README.md` updated to document dry-run contradiction coverage in summary-contract checks.
+  **Why:** prevents contradictory explicit flags/classification from overriding authoritative dry-run reason semantics in sparse CI payloads.
