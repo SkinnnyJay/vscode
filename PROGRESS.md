@@ -2083,6 +2083,13 @@
     - `selectedGateIds/skippedGateIds` align to `build`.
   - `scripts/README.md` updated to include default-mode full-run coverage.
   **Why:** guarantees callers relying on implicit defaults receive deterministic full-mode metadata and partitions.
+- **CRLF markdown normalization coverage (2026-02-15 PM)** Tightened cell sanitization for cross-platform strings:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes both LF and CRLF line breaks in cell values (`\\r?\\n` -> space).
+  - `scripts/test-verify-gates-summary.sh` now feeds CRLF in a gate command and asserts:
+    - rendered command is single-line
+    - no raw carriage-return characters appear in output.
+  - `scripts/README.md` updated to include CRLF normalization coverage in markdown escaping checks.
+  **Why:** prevents hidden carriage returns from breaking markdown rendering when payload fields originate from Windows-style line endings.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

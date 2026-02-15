@@ -798,7 +798,7 @@ const payload = {
 	gates: [
 		{
 			id: 'id|with`pipe',
-			command: 'echo line1\nline2 | `',
+			command: 'echo line1\r\nline2 | `',
 			status: 'pass',
 			attempts: 1,
 			retryCount: 0,
@@ -823,6 +823,9 @@ if (!escapeStep.includes('id\\|with\\`pipe')) {
 }
 if (!escapeStep.includes('line1 line2 \\| \\`')) {
 	throw new Error('Expected escaped/single-line command in markdown table output.');
+}
+if (escapeStep.includes('\r')) {
+	throw new Error('Expected carriage returns to be normalized from markdown output.');
 }
 NODE
 
