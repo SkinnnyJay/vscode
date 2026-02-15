@@ -357,6 +357,8 @@ print_summary() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local run_classification
+	run_classification="$(compute_run_classification)"
 	local result_signature_algorithm
 	result_signature_algorithm="$(compute_result_signature_algorithm)"
 	local result_signature
@@ -370,6 +372,7 @@ print_summary() {
 	echo "  Invocation: ${INVOCATION}"
 	echo "  Summary schema version: ${SUMMARY_SCHEMA_VERSION}"
 	echo "  Exit reason: ${RUN_EXIT_REASON}"
+	echo "  Run classification: ${run_classification}"
 	echo "  Result signature algorithm: ${result_signature_algorithm}"
 	echo "  Result signature: ${result_signature}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
@@ -497,6 +500,33 @@ compute_retry_backoff_share_percent() {
 	fi
 
 	echo $((total_retry_backoff_seconds * 100 / executed_duration_seconds))
+}
+
+compute_run_classification() {
+	local total_retry_count
+	total_retry_count="$(compute_total_retry_count)"
+
+	case "$RUN_EXIT_REASON" in
+		dry-run)
+			echo "dry-run"
+			;;
+		success)
+			if ((total_retry_count > 0)); then
+				echo "success-with-retries"
+			else
+				echo "success-no-retries"
+			fi
+			;;
+		fail-fast)
+			echo "failed-fail-fast"
+			;;
+		completed-with-failures)
+			echo "failed-continued"
+			;;
+		*)
+			echo "unknown"
+			;;
+	esac
 }
 
 compute_executed_duration_seconds() {
@@ -860,6 +890,8 @@ write_summary_json() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_gate_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local run_classification
+	run_classification="$(compute_run_classification)"
 	local result_signature_algorithm
 	result_signature_algorithm="$(compute_result_signature_algorithm)"
 	local result_signature
@@ -872,6 +904,7 @@ write_summary_json() {
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
 		echo "  \"exitReason\": \"$(json_escape "$RUN_EXIT_REASON")\","
+		echo "  \"runClassification\": \"$(json_escape "$run_classification")\","
 		echo "  \"resultSignatureAlgorithm\": \"$(json_escape "$result_signature_algorithm")\","
 		echo "  \"resultSignature\": \"$(json_escape "$result_signature")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","

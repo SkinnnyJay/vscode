@@ -1717,6 +1717,24 @@
   - `scripts/verify-gates.sh` now emits `resultSignatureAlgorithm` (e.g. `sha256sum`, `shasum-256`, `cksum`) and prints it in terminal summary
   - `scripts/publish-verify-gates-summary.sh` now renders `Result signature algorithm` in step summaries.
   **Why:** makes signature provenance explicit for cross-platform comparisons and downstream parser confidence.
+- **Run classification taxonomy (2026-02-15 AM)** Added normalized run-classification metadata:
+  - `scripts/verify-gates.sh` now emits/prints `runClassification` with values:
+    - `dry-run`
+    - `success-no-retries`
+    - `success-with-retries`
+    - `failed-fail-fast`
+    - `failed-continued`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Run classification` in markdown summaries.
+  **Why:** provides an immediate high-signal run outcome label for dashboards and human triage without interpreting multiple fields manually.
+- **Run classification validation (2026-02-15 AM)** Verified classification correctness across key execution modes:
+  - dry run (`--quick --only lint --dry-run`) -> `runClassification=dry-run`
+  - controlled fail-fast run (`lint` fail, `typecheck` blocked) -> `runClassification=failed-fail-fast`
+  - controlled continue-on-failure run (`lint` fail, `typecheck` pass) -> `runClassification=failed-continued`
+  - controlled retry-success run (`lint` fails once then passes, `typecheck` pass) -> `runClassification=success-with-retries`
+  - real success run (`--quick --only typecheck --retries 0`) -> `runClassification=success-no-retries`
+  - terminal output and markdown summary include the expected classification string for each validated path.
+  - `make lint` → **pass**.
+  **Why:** confirms taxonomy values are deterministic and correctly mapped to run behavior in dry/fail/continue/retry/success scenarios.
 - **Deterministic result signature telemetry (2026-02-15 AM)** Added run-shape fingerprinting:
   - `scripts/verify-gates.sh` now computes `resultSignature` (sha256 over ordered gate outcome facts) and includes it in terminal + JSON summary
   - `scripts/publish-verify-gates-summary.sh` now renders `Result signature` in step summaries.
