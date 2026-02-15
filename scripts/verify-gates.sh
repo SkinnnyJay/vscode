@@ -18,13 +18,14 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=6
+SUMMARY_SCHEMA_VERSION=7
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 DRY_RUN=0
 FAILED_GATE_ID=""
 FAILED_GATE_EXIT_CODE=""
+BLOCKING_GATE_ID=""
 RUN_EXIT_REASON=""
 INVOCATION=""
 declare -a ORIGINAL_ARGS=("$@")
@@ -880,6 +881,11 @@ write_summary_json() {
 		else
 			echo "  \"failedGateExitCode\": null,"
 		fi
+		if [[ -n "$BLOCKING_GATE_ID" ]]; then
+			echo "  \"blockedByGateId\": \"$(json_escape "$BLOCKING_GATE_ID")\","
+		else
+			echo "  \"blockedByGateId\": null,"
+		fi
 		echo "  \"failedGateIds\": ["
 		write_failed_gate_ids_json
 		echo "  ],"
@@ -971,7 +977,8 @@ for i in "${!gate_commands[@]}"; do
 	fi
 
 	RUN_EXIT_REASON="fail-fast"
-	mark_remaining_not_run_reasons "$((i + 1))" "blocked-by-fail-fast"
+	BLOCKING_GATE_ID="${gate_ids[$i]}"
+	mark_remaining_not_run_reasons "$((i + 1))" "blocked-by-fail-fast:${BLOCKING_GATE_ID}"
 	print_summary
 	write_summary_json "false"
 	exit 1

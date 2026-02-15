@@ -1694,6 +1694,25 @@
   - schema-forward warning test (`schemaVersion=99`) confirmed renderer warning references supported version `6`
   - `make lint` → **pass**.
   **Why:** confirms normalized retry metrics are stable, correctly null/zero scoped by mode, and consistently surfaced across JSON, terminal, and markdown outputs.
+- **Blocked-by gate metadata + schema v7 (2026-02-15 AM)** Extended fail-fast causality metadata:
+  - bumped summary schema version to `7`
+  - `scripts/verify-gates.sh` now emits top-level `blockedByGateId` for fail-fast exits
+  - fail-fast not-run gates now use contextual `notRunReason` (`blocked-by-fail-fast:<gate-id>`)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Blocked by gate` metadata and updates supported schema warning baseline to `7`.
+  **Why:** gives precise causal linkage from blocked gates to the gate that triggered fail-fast termination.
+- **Blocked-by/schema-v7 validation (2026-02-15 AM)** Validated new fail-fast-causality fields and warning baseline:
+  - dry run confirmed `schemaVersion=7` with `exitReason=dry-run`
+  - controlled fail-fast run (`lint` fails, `typecheck` blocked) confirmed:
+    - `exitReason=fail-fast`
+    - `blockedByGateId=lint`
+    - blocked gate has `notRunReason=blocked-by-fail-fast:lint`
+    - terminal includes `Exit reason: fail-fast`
+  - controlled continue-on-failure run confirmed `exitReason=completed-with-failures` and `blockedByGateId=null`
+  - markdown summary includes `Blocked by gate: lint` and per-gate blocked reason value
+  - real success run confirmed `exitReason=success` and `blockedByGateId=null`
+  - future-schema warning test (`schemaVersion=99`) confirmed warning references supported version `7`
+  - `make lint` → **pass**.
+  **Why:** confirms schema-v7 causality semantics are accurate in dry/fail-fast/continue/success flows and renderer compatibility checks.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)

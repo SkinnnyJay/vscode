@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 6;
+const supportedSchemaVersion = 7;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -136,6 +136,7 @@ const lines = [
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
 	`**Not-run gates list:** ${sanitizeCell(notRunGateIdsLabel)}`,
+	`**Blocked by gate:** ${sanitizeCell(summary.blockedByGateId ?? 'none')}`,
 	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
 	`**Failed gate exit code:** ${sanitizeCell(summary.failedGateExitCode ?? 'none')}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
