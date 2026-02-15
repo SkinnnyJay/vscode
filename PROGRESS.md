@@ -2504,6 +2504,7 @@
     - `gateExitCodeById.missing = null`.
     - missing gate appears with `0` defaults in retry/duration/attempt maps.
   - Added assertions that missing selected IDs remain visible in `Non-success` / `Attention` lists.
+  - Scenario now includes additional non-selected row data and verifies table remains selected-scope strict (renders matched selected rows only; omits missing and non-selected rows).
   - `scripts/README.md` updated to document missing-selected-gate map-default coverage.
   **Why:** ensures explicit selected gates remain visible in derived diagnostics maps even when no row data is provided.
 - **Selected-order unmatched-row fallback (2026-02-15 PM)** Hardened table rendering when selection mismatches rows:

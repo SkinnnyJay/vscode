@@ -536,6 +536,7 @@ const payload = {
 	selectedGateIds: ['missing', 'lint'],
 	gates: [
 		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
+		{ id: ' build ', command: 'make build', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 8, startedAt: '20260215T080001Z', completedAt: '20260215T080002Z', notRunReason: null },
 	],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1704,8 +1705,8 @@ if ! grep -Fq "\"missing\":0" "$selected_order_missing_rows_step_summary"; then
 	echo "Expected selected-order-missing-rows summary to default missing selected gates to zero-valued retry/duration/attempt map entries." >&2
 	exit 1
 fi
-if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_missing_rows_step_summary" || grep -Fq '| `missing` |' "$selected_order_missing_rows_step_summary"; then
-	echo "Expected selected-order-missing-rows summary table to include only available rows for explicit selectedGateIds." >&2
+if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_missing_rows_step_summary" || grep -Fq '| `missing` |' "$selected_order_missing_rows_step_summary" || grep -Fq '| `build` | `make build` |' "$selected_order_missing_rows_step_summary"; then
+	echo "Expected selected-order-missing-rows summary table to include only matched selected rows and exclude missing/non-selected rows." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_order_missing_rows_step_summary"; then
