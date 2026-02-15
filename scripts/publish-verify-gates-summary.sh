@@ -63,6 +63,10 @@ try {
 }
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
+const selectedGateIds = Array.isArray(summary.selectedGateIds)
+	? summary.selectedGateIds
+	: gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
 const gateRows = gates.map((gate) => {
 	const gateId = gate.id ?? 'unknown';
 	const command = gate.command ?? 'unknown';
@@ -82,6 +86,7 @@ const lines = [
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
 	`**Gate count:** ${summary.gateCount ?? gates.length}`,
+	`**Selected gates:** ${selectedGateIdsLabel}`,
 	`**Failed gate:** ${summary.failedGateId ?? 'none'}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
 	`**Started:** ${summary.startedAt ?? 'unknown'}`,

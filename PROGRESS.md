@@ -1470,3 +1470,7 @@
   - `./scripts/publish-verify-gates-summary.sh` output now includes `Dry run`, `Gate count`, and `Failed gate` lines.
   - `make lint` → **pass**.
   **Why:** confirms payload schema evolution and step-summary rendering remain accurate and lint-clean.
+- **Step-summary selected-gates visibility (2026-02-15 AM)** Updated `scripts/publish-verify-gates-summary.sh` to render `Selected gates` in GitHub step summaries.
+  - Uses `selectedGateIds` when present in summary JSON, with fallback to gate-row IDs.
+  - Displays `none` when no selected IDs are available.
+  **Why:** provides immediate confirmation of the exact gate subset executed (or dry-run planned) without opening raw JSON artifacts.
