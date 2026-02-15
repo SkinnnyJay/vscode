@@ -1264,3 +1264,13 @@
   - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
   - `make test-smoke` (second run) → **pass** (`34 passing`, `61 pending`)
   **Why:** confirms the new preflight logic is non-regressive and stable under repeated smoke execution.
+- **Launcher helper consolidation (2026-02-15 AM)** Reduced duplicated shell logic by introducing `scripts/electron-launcher-utils.sh` and wiring it into `scripts/test.sh`, `scripts/code.sh`, and `scripts/test-smoke.sh`.
+  - centralized `maybe_reexec_with_xvfb` (Linux DISPLAY/Xvfb fallback)
+  - centralized `ensure_electron_binary_with_retry` (binary preflight + one retry).
+  **Why:** keeps launcher hardening behavior consistent across entrypoints and lowers maintenance risk from script drift.
+- **Consolidation validation (2026-02-15 AM)** Re-ran affected suites after helper extraction:
+  - `./scripts/test.sh --runGlob "**/ipc.cp.integrationTest.js"` → **pass**
+  - `make test-smoke` → **pass**
+  - `make test-integration` → **pass**
+  - `make lint` → **pass**
+  **Why:** confirms refactor-only changes preserved behavior while keeping all launcher paths green.

@@ -13,17 +13,9 @@ else
 	fi
 fi
 
-DISPLAY_UNAVAILABLE=0
-if [[ -z "${DISPLAY:-}" ]]; then
-	DISPLAY_UNAVAILABLE=1
-elif command -v xdpyinfo > /dev/null 2>&1 && ! xdpyinfo > /dev/null 2>&1; then
-	DISPLAY_UNAVAILABLE=1
-fi
+source "$ROOT/scripts/electron-launcher-utils.sh"
 
-if [[ "$OSTYPE" != "darwin"* ]] && [[ "$DISPLAY_UNAVAILABLE" == "1" ]] && command -v xvfb-run > /dev/null 2>&1 && [[ "${VSCODE_SKIP_XVFB_WRAPPER:-0}" != "1" ]]; then
-	VSCODE_SKIP_XVFB_WRAPPER=1 xvfb-run -a "$0" "$@"
-	exit $?
-fi
+maybe_reexec_with_xvfb "$0" "$@"
 
 function code() {
 	cd "$ROOT"
@@ -42,13 +34,7 @@ function code() {
 		node build/lib/preLaunch.ts
 	fi
 
-	if [[ ! -x "$CODE" ]]; then
-		echo "Electron binary '$CODE' missing, retrying setup..."
-		npm run electron
-	fi
-
-	if [[ ! -x "$CODE" ]]; then
-		echo "ERROR: Electron binary '$CODE' not found after setup."
+	if ! ensure_electron_binary_with_retry "$CODE"; then
 		exit 1
 	fi
 

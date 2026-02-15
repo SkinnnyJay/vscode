@@ -52,8 +52,8 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - `make test-smoke` (`scripts/test-smoke.sh`)
   - integration extension launches via `scripts/code.sh`
   - smoke/electron automation launches (`test/automation/src/electron.ts`)
-- `scripts/test.sh` also performs a binary preflight check and rebuild retry before launching tests: if `./.build/electron/<applicationName>` is missing or not executable, it reruns `npm run electron` once and fails fast with a clear error if the binary is still unavailable.
-- `scripts/code.sh` uses the same preflight pattern before launching the dev app/integration runs, reducing transient ENOENT launch failures in long test loops.
-- `scripts/test-smoke.sh` now uses the same preflight-and-retry path so smoke runs recover from transient missing Electron binaries automatically.
+- `scripts/test.sh`, `scripts/code.sh`, and `scripts/test-smoke.sh` share launcher resilience helpers from `scripts/electron-launcher-utils.sh`:
+  - auto-fallback to `xvfb-run -a` when `DISPLAY` is missing/stale (Linux)
+  - binary preflight check + one-time `npm run electron` retry when Electron binary is missing/non-executable.
 
 Scripts are documented at the top of each file (purpose, usage, and what they delegate to).
