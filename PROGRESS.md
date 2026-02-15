@@ -2488,6 +2488,7 @@
   - `scripts/test-verify-gates-summary.sh` selected-missing-row scenario now also verifies per-gate map defaults for missing selected gates:
     - `gateStatusById.missing = unknown`
     - `gateExitCodeById.missing = null`.
+    - missing gate appears with `0` defaults in retry/duration/attempt maps.
   - Added assertions that missing selected IDs remain visible in `Non-success` / `Attention` lists.
   - `scripts/README.md` updated to document missing-selected-gate map-default coverage.
   **Why:** ensures explicit selected gates remain visible in derived diagnostics maps even when no row data is provided.

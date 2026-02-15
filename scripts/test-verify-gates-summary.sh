@@ -1627,6 +1627,10 @@ if ! grep -Fq "\"lint\":0" "$selected_order_missing_rows_step_summary" || ! grep
 	echo "Expected selected-order-missing-rows summary to default missing selected gates to null exit codes in gate exit-code map output." >&2
 	exit 1
 fi
+if ! grep -Fq "\"missing\":0" "$selected_order_missing_rows_step_summary"; then
+	echo "Expected selected-order-missing-rows summary to default missing selected gates to zero-valued retry/duration/attempt map entries." >&2
+	exit 1
+fi
 if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_missing_rows_step_summary" || grep -Fq '| `missing` |' "$selected_order_missing_rows_step_summary"; then
 	echo "Expected selected-order-missing-rows summary table to include only available rows for explicit selectedGateIds." >&2
 	exit 1
