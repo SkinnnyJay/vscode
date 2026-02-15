@@ -339,7 +339,7 @@ const rowStatusByGateId = gates.reduce((statusByGateId, gate) => {
 	}
 	return statusByGateId;
 }, {});
-const rowStatusByGateIdForSelection = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
+const rowStatusByGateIdForSelection = selectedGateIdsFromSummary !== null
 	? selectedGateIdsFromSummary.reduce((statusByGateId, gateId) => {
 		statusByGateId[gateId] = rowStatusByGateId[gateId] ?? 'unknown';
 		return statusByGateId;
@@ -380,7 +380,7 @@ const statusCounts = {
 	'not-run': rawStatusCounts['not-run'] ?? notRunGateCount,
 };
 const normalizeGateIdValue = (value) => normalizeNonEmptyString(value);
-const resolvedRowsForSelectionScope = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
+const resolvedRowsForSelectionScope = selectedGateIdsFromSummary !== null
 	? selectedGateIdsFromSummary.map((gateId) => resolvedRowByGateId[gateId]).filter((gate) => gate !== undefined)
 	: Object.values(resolvedRowByGateId);
 const gateIdsFromRows = (predicate) => {
@@ -408,12 +408,14 @@ const gateMapFromRows = (valueSelector) => {
 	return gateMap;
 };
 const selectedGateIds = selectedGateIdsFromSummary
+	!== null
 	? selectedGateIdsFromSummary
 	: (gates.length > 0
 		? gateIdsFromRows(() => true)
 		: Object.keys(gateStatusByIdFromSummary ?? {}));
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
 const failedGateIds = failedGateIdsFromSummary
+	!== null
 	? failedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'fail').map(([gateId]) => gateId)
@@ -421,18 +423,21 @@ const failedGateIds = failedGateIdsFromSummary
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
 const failedGateExitCodesFromSummary = normalizeIntegerList(summary.failedGateExitCodes, normalizeNonNegativeInteger);
 const passedGateIds = passedGateIdsFromSummary
+	!== null
 	? passedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass').map(([gateId]) => gateId));
 const passedGateIdsLabel = passedGateIds.length > 0 ? passedGateIds.join(', ') : 'none';
 const skippedGateIds = skippedGateIdsFromSummary
+	!== null
 	? skippedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'skip').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'skip').map(([gateId]) => gateId));
 const skippedGateIdsLabel = skippedGateIds.length > 0 ? skippedGateIds.join(', ') : 'none';
 const executedGateIds = executedGateIdsFromSummary
+	!== null
 	? executedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId)
@@ -441,6 +446,7 @@ const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join('
 const executedGateCount = normalizeNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
 const gateCount = normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
 const notRunGateIds = notRunGateIdsFromSummary
+	!== null
 	? notRunGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'not-run').map(([gateId]) => gateId)
@@ -622,11 +628,13 @@ const sumIntegerValues = (values) => values.reduce((total, value) => {
 	return total + normalizedValue;
 }, 0);
 const retriedGateIds = retriedGateIdsFromSummary
+	!== null
 	? retriedGateIdsFromSummary
 	: Object.entries(gateRetryCountById)
 		.filter(([gateId, retryCount]) => gateId.length > 0 && (toIntegerOrNull(retryCount) ?? 0) > 0)
 		.map(([gateId]) => gateId);
 const nonSuccessGateIds = nonSuccessGateIdsFromSummary
+	!== null
 	? nonSuccessGateIdsFromSummary
 	: (() => {
 		if (gates.length > 0) {
@@ -641,6 +649,7 @@ const nonSuccessGateIds = nonSuccessGateIdsFromSummary
 		return uniqueGateIds([...failedGateIds, ...skippedGateIds, ...notRunGateIds]);
 	})();
 const attentionGateIds = attentionGateIdsFromSummary
+	!== null
 	? attentionGateIdsFromSummary
 	: (() => {
 		if (selectedGateIds.length > 0) {
@@ -892,10 +901,15 @@ const fastestExecutedGateDurationFromSummary = normalizeNonNegativeInteger(summa
 const logFileValue = normalizeNonEmptyString(summary.logFile);
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
-const orderedRowsFromSelectedIds = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
+const orderedRowsFromSelectedIds = selectedGateIdsFromSummary !== null
 	? selectedGateIdsFromSummary.map((gateId) => resolvedRowByGateId[gateId]).filter((gate) => gate !== undefined)
 	: [];
-const gateRowsSource = orderedRowsFromSelectedIds.length > 0 ? orderedRowsFromSelectedIds : Object.values(resolvedRowByGateId);
+const shouldFallbackToAvailableRowsForUnmatchedSelection = selectedGateIdsFromSummary !== null
+	&& selectedGateIdsFromSummary.length > 0
+	&& orderedRowsFromSelectedIds.length === 0;
+const gateRowsSource = selectedGateIdsFromSummary !== null
+	? (shouldFallbackToAvailableRowsForUnmatchedSelection ? Object.values(resolvedRowByGateId) : orderedRowsFromSelectedIds)
+	: Object.values(resolvedRowByGateId);
 const gateRows = gateRowsSource.map((gate) => {
 	const gateId = normalizeGateIdValue(gate.id) ?? 'unknown';
 	const command = gate.command ?? 'unknown';

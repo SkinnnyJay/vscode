@@ -87,6 +87,8 @@ selected_order_unmatched_rows_summary="$tmpdir/selected-order-unmatched-rows.jso
 selected_order_unmatched_rows_step_summary="$tmpdir/selected-order-unmatched-rows-step.md"
 selected_subset_rows_summary="$tmpdir/selected-subset-rows.json"
 selected_subset_rows_step_summary="$tmpdir/selected-subset-rows-step.md"
+selected_empty_rows_summary="$tmpdir/selected-empty-rows.json"
+selected_empty_rows_step_summary="$tmpdir/selected-empty-rows-step.md"
 invocation_whitespace_summary="$tmpdir/invocation-whitespace.json"
 invocation_whitespace_step_summary="$tmpdir/invocation-whitespace-step.md"
 metadata_whitespace_summary="$tmpdir/metadata-whitespace.json"
@@ -584,6 +586,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_subset_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_subset_rows_summary" "Verify Gates Selected Subset Rows Contract Test"
+
+node - "$expected_schema_version" "$selected_empty_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-empty-rows-contract',
+	selectedGateIds: [],
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_empty_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_empty_rows_summary" "Verify Gates Selected Empty Rows Contract Test"
 
 node - "$expected_schema_version" "$invocation_whitespace_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1763,6 +1785,26 @@ if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$sele
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_subset_rows_step_summary"; then
 	echo "Did not expect schema warning for selected-subset-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$selected_empty_rows_step_summary" || ! grep -Fq "**Gate count:** 0" "$selected_empty_rows_step_summary"; then
+	echo "Expected selected-empty-rows summary to preserve explicit empty selected-gate scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate status map:** {}" "$selected_empty_rows_step_summary" || ! grep -Fq "**Non-success gates list:** none" "$selected_empty_rows_step_summary"; then
+	echo "Expected selected-empty-rows summary to keep row-derived maps/lists empty under explicit empty selection." >&2
+	exit 1
+fi
+if ! grep -Fq '| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |' "$selected_empty_rows_step_summary"; then
+	echo "Expected selected-empty-rows summary table to render placeholder row under explicit empty selection." >&2
+	exit 1
+fi
+if grep -Fq '| `lint` | `make lint` | pass |' "$selected_empty_rows_step_summary"; then
+	echo "Expected selected-empty-rows summary table to exclude non-selected rows under explicit empty selection." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_empty_rows_step_summary"; then
+	echo "Did not expect schema warning for selected-empty-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Invocation:** unknown" "$invocation_whitespace_step_summary"; then

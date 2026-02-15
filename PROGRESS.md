@@ -2516,6 +2516,14 @@
     - counters/maps remain selected-scope (`Passed/Failed/Executed = 0`, per-gate maps scoped to `missing-only`).
   - `scripts/README.md` updated to document unmatched selected-order table fallback coverage.
   **Why:** avoids hiding valid row diagnostics behind empty table placeholders when explicit selections are stale or mismatched.
+- **Explicit empty selected-gate scope coverage (2026-02-15 PM)** Added empty-selection regression guard:
+  - `scripts/publish-verify-gates-summary.sh` now treats explicit empty `selectedGateIds` as authoritative selection scope (no row/map/list fallback to available rows).
+  - `scripts/test-verify-gates-summary.sh` adds `selected_empty_rows` scenario (`selectedGateIds: []`, row data present) and verifies:
+    - selected metadata/counters remain empty scope (`Selected gates: none`, `Gate count: 0`)
+    - maps/lists remain empty
+    - table renders placeholder row only.
+  - `scripts/README.md` updated to document explicit empty selection behavior.
+  **Why:** distinguishes intentional empty selection from unmatched non-empty selections, preserving explicit operator intent.
 - **Selected subset-row scoping coverage (2026-02-15 PM)** Added explicit-selection subset guard:
   - `scripts/test-verify-gates-summary.sh` now adds `selected_subset_rows` scenario (`selectedGateIds: ['lint']`) with extra non-selected rows present.
   - Assertions verify selected metadata/counts remain scoped (`Gate count: 1`) and table output includes only selected matching rows (non-selected `build` row omitted).
