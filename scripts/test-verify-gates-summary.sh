@@ -63,6 +63,8 @@ derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_dry_run_summary="$tmpdir/derived-dry-run.json"
 derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
+derived_continued_failure_summary="$tmpdir/derived-continued-failure.json"
+derived_continued_failure_step_summary="$tmpdir/derived-continued-failure-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -344,6 +346,33 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_dry_run_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_dry_run_summary" "Verify Gates Derived Dry-Run Contract Test"
+
+node - "$expected_schema_version" "$derived_continued_failure_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'derived-continued-failure-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	passedGateIds: ['typecheck'],
+	failedGateIds: ['lint'],
+	executedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateExitCodeById: { lint: 7, typecheck: 0 },
+	gateRetryCountById: { lint: 0, typecheck: 0 },
+	gateDurationSecondsById: { lint: 2, typecheck: 1 },
+	gateAttemptCountById: { lint: 1, typecheck: 1 },
+	gateNotRunReasonById: { lint: null, typecheck: null },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$derived_continued_failure_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_continued_failure_summary" "Verify Gates Derived Continued-Failure Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -818,6 +847,18 @@ if ! grep -Fq "**Failed gate exit code:** 2" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive failed gate exit code from failedGateIds + gateExitCodeById." >&2
 	exit 1
 fi
+if ! grep -Fq "**Continue on failure:** false" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive continue-on-failure=false for fail-fast runs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** fail-fast" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive fail-fast exit reason from blocked gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** failed-fail-fast" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive failed-fail-fast run classification." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then
 	echo "Did not expect schema warning for derived-list fallback summary." >&2
 	exit 1
@@ -840,6 +881,38 @@ if ! grep -Fq "**Run classification:** dry-run" "$derived_dry_run_step_summary";
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_dry_run_step_summary"; then
 	echo "Did not expect schema warning for derived-dry-run fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive success=false from failed gate evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive continue-on-failure=true for completed failures." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** completed-with-failures" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive completed-with-failures exit reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** failed-continued" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive failed-continued classification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate:** lint" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive failed gate pointer from failedGateIds." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit code:** 7" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to derive failed gate exit code from gateExitCodeById." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** none" "$derived_continued_failure_step_summary"; then
+	echo "Expected derived-continued-failure summary to keep blocked-by as none." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$derived_continued_failure_step_summary"; then
+	echo "Did not expect schema warning for derived-continued-failure summary." >&2
 	exit 1
 fi
 

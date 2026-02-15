@@ -295,6 +295,11 @@ const derivedRunClassification = explicitRunClassification ?? (() => {
 const dryRunValue = explicitDryRun !== null
 	? explicitDryRun
 	: (derivedExitReason === 'unknown' ? 'unknown' : derivedExitReason === 'dry-run');
+const continueOnFailureValue = typeof summary.continueOnFailure === 'boolean'
+	? summary.continueOnFailure
+	: (derivedExitReason === 'completed-with-failures'
+		? true
+		: (derivedExitReason === 'fail-fast' ? false : 'unknown'));
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
@@ -327,7 +332,7 @@ const lines = [
 	`**Result signature:** ${sanitizeCell(summary.resultSignature ?? 'unknown')}`,
 	`**Exit reason:** ${sanitizeCell(derivedExitReason)}`,
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
-	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
+	`**Continue on failure:** ${continueOnFailureValue}`,
 	`**Dry run:** ${dryRunValue}`,
 	`**Gate count:** ${gateCount}`,
 	`**Passed gates:** ${passedGateCount}`,

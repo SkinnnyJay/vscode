@@ -2203,3 +2203,13 @@
   - `scripts/test-verify-gates-summary.sh` adds a sparse dry-run payload case (list/map-only, no scalar run metadata) and asserts the rendered summary includes inferred dry-run success/exit/classification lines.
   - `scripts/README.md` updated to include inferred dry-run run-state derivation in contract coverage notes.
   **Why:** keeps sparse dry-run summaries semantically accurate and avoids misleading `unknown` run-state metadata when dry-run intent is explicit.
+- **Sparse fail-fast/continued-failure run-state inference (2026-02-15 PM)** Extended derived run-state semantics beyond dry runs:
+  - `scripts/publish-verify-gates-summary.sh` now derives `continueOnFailure` when omitted:
+    - `false` for derived `fail-fast`
+    - `true` for derived `completed-with-failures`.
+  - Run-state derivation now consistently infers `success`, `exitReason`, and `runClassification` for sparse payloads using partition/reason evidence.
+  - `scripts/test-verify-gates-summary.sh` now validates:
+    - list-only fail-fast payload derives `continueOnFailure=false`, `exitReason=fail-fast`, `runClassification=failed-fail-fast`
+    - sparse continued-failure payload derives `success=false`, `continueOnFailure=true`, `exitReason=completed-with-failures`, `runClassification=failed-continued`, plus correct failed/blocked pointers.
+  - `scripts/README.md` updated to document inferred fail-fast/continued-failure run-state coverage.
+  **Why:** preserves accurate triage semantics for sparse summaries that omit explicit run-state booleans/strings but provide enough partition evidence to infer them safely.
