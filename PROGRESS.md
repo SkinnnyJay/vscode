@@ -1552,3 +1552,18 @@
   - `scripts/verify-gates.sh` now emits top-level `schemaVersion` (`2`) and prints it in terminal summary output
   - `scripts/publish-verify-gates-summary.sh` now renders `Summary schema version` in step summaries.
   **Why:** gives downstream parsers a stable compatibility contract as summary fields continue to evolve.
+- **Complete failed-gate list telemetry (2026-02-15 AM)** Extended failure metadata beyond first-failure pointers:
+  - `scripts/verify-gates.sh` now emits `failedGateIds` and `failedGateExitCodes` arrays
+  - terminal summary now prints compact `Failed gates` details (`gateId(exitCode=<n>)`)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Failed gates list` and `Failed gate exit codes` metadata.
+  **Why:** improves triage for continue-on-failure/nightly runs by surfacing the full failure set directly in one summary artifact.
+- **Failed-gate list validation (2026-02-15 AM)** Validated full-failure metadata across failure and success paths:
+  - controlled mock run (`lint` exits 7, `typecheck` exits 9) with `--continue-on-failure` → exits 1
+  - Node assertions confirmed:
+    - first-failure pointers remain `failedGateId=lint`, `failedGateExitCode=7`
+    - aggregate arrays include all failures (`failedGateIds=["lint","typecheck"]`, `failedGateExitCodes=[7,9]`)
+    - terminal summary includes `Failed gates: lint(exitCode=7), typecheck(exitCode=9)`
+    - step summary includes `Failed gates list` + `Failed gate exit codes`
+  - real success run (`./scripts/verify-gates.sh --quick --only typecheck --retries 0`) confirmed empty failure arrays.
+  - `make lint` → **pass**.
+  **Why:** confirms aggregate failure telemetry is accurate without regressing existing first-failure semantics or success-path payloads.

@@ -329,6 +329,8 @@ print_summary() {
 	skip_count="$(count_gate_status "skip")"
 	local not_run_count
 	not_run_count="$(count_gate_status "not-run")"
+	local failed_gate_labels
+	failed_gate_labels="$(collect_failed_gate_labels)"
 
 	echo
 	echo "Verification summary:"
@@ -338,6 +340,7 @@ print_summary() {
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
+	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
 		printf "  - %-20s status=%-7s attempts=%s duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
 	done
@@ -377,6 +380,65 @@ count_gate_status() {
 		fi
 	done
 	echo "$count"
+}
+
+collect_failed_gate_labels() {
+	local labels=""
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" != "fail" ]]; then
+			continue
+		fi
+
+		local label="${gate_ids[$i]}(exitCode=${gate_exit_codes[$i]})"
+		if [[ -n "$labels" ]]; then
+			labels+=", "
+		fi
+		labels+="$label"
+	done
+
+	if [[ -z "$labels" ]]; then
+		echo "none"
+		return 0
+	fi
+
+	echo "$labels"
+}
+
+write_failed_gate_ids_json() {
+	local -a failed_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "fail" ]]; then
+			failed_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!failed_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#failed_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${failed_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
+write_failed_gate_exit_codes_json() {
+	local -a failed_gate_exit_codes=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "fail" ]]; then
+			failed_gate_exit_codes+=("${gate_exit_codes[$i]}")
+		fi
+	done
+
+	for i in "${!failed_gate_exit_codes[@]}"; do
+		local delimiter=","
+		if ((i == ${#failed_gate_exit_codes[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    ${failed_gate_exit_codes[$i]}${delimiter}"
+	done
 }
 
 write_summary_json() {
@@ -422,6 +484,12 @@ write_summary_json() {
 		else
 			echo "  \"failedGateExitCode\": null,"
 		fi
+		echo "  \"failedGateIds\": ["
+		write_failed_gate_ids_json
+		echo "  ],"
+		echo "  \"failedGateExitCodes\": ["
+		write_failed_gate_exit_codes_json
+		echo "  ],"
 		echo "  \"selectedGateIds\": ["
 		write_selected_gate_ids_json
 		echo "  ],"
