@@ -1791,3 +1791,9 @@
   - schema baseline bumped to `10` in both producer/renderer
   - `scripts/README.md` updated to current schema version `10` and field list includes `gateStatusById`.
   **Why:** allows downstream tooling to read gate statuses in O(1) by gate id without scanning arrays, while keeping schema compatibility explicit.
+- **Non-success gate partition + schema v11 (2026-02-15 AM)** Added a direct list for all non-pass gate IDs:
+  - `scripts/verify-gates.sh` now emits `nonSuccessGateIds` (union of `fail`, `skip`, and `not-run`, preserving selected-gate order)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Non-success gates list` and can derive it from `gates[]` when absent
+  - schema baseline bumped to `11` in producer/renderer
+  - `scripts/README.md` updated to current schema version `11` and field list includes `nonSuccessGateIds`.
+  **Why:** gives dashboards and post-processing a single high-signal list for anything that was not a successful gate.

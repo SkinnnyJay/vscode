@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=10
+SUMMARY_SCHEMA_VERSION=11
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -835,6 +835,24 @@ write_not_run_gate_ids_json() {
 	done
 }
 
+write_non_success_gate_ids_json() {
+	local -a non_success_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" != "pass" ]]; then
+			non_success_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!non_success_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#non_success_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${non_success_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
 write_gate_status_by_id_json() {
 	local i
 	for i in "${!gate_ids[@]}"; do
@@ -1060,6 +1078,9 @@ write_summary_json() {
 		echo "  ],"
 		echo "  \"notRunGateIds\": ["
 		write_not_run_gate_ids_json
+		echo "  ],"
+		echo "  \"nonSuccessGateIds\": ["
+		write_non_success_gate_ids_json
 		echo "  ],"
 		echo "  \"selectedGateIds\": ["
 		write_selected_gate_ids_json

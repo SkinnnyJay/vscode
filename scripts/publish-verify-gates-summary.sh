@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 10;
+const supportedSchemaVersion = 11;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -96,6 +96,13 @@ const notRunGateIds = Array.isArray(summary.notRunGateIds)
 	? summary.notRunGateIds
 	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
+const nonSuccessGateIds = Array.isArray(summary.nonSuccessGateIds)
+	? summary.nonSuccessGateIds
+	: gates
+		.filter((gate) => gate.status !== 'pass')
+		.map((gate) => gate.id)
+		.filter((gateId) => typeof gateId === 'string');
+const nonSuccessGateIdsLabel = nonSuccessGateIds.length > 0 ? nonSuccessGateIds.join(', ') : 'none';
 const gateStatusById = summary.gateStatusById && typeof summary.gateStatusById === 'object' && !Array.isArray(summary.gateStatusById)
 	? summary.gateStatusById
 	: Object.fromEntries(
@@ -163,6 +170,7 @@ const lines = [
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
 	`**Not-run gates list:** ${sanitizeCell(notRunGateIdsLabel)}`,
+	`**Non-success gates list:** ${sanitizeCell(nonSuccessGateIdsLabel)}`,
 	`**Blocked by gate:** ${sanitizeCell(summary.blockedByGateId ?? 'none')}`,
 	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
 	`**Failed gate exit code:** ${sanitizeCell(summary.failedGateExitCode ?? 'none')}`,
