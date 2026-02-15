@@ -52,6 +52,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes invalid-`exitReason` + explicit-`runClassification` sparse checks proving unknown reasons are ignored while normalized classification still drives `success`/`exitReason` derivation.
   - Includes invalid-`runClassification` + explicit-`exitReason` sparse checks proving unknown classifications are ignored while explicit reason still drives `success`/`continueOnFailure`/classification derivation.
   - Includes dry-run `exitReason` contradiction checks proving conflicting explicit `success`/`dryRun`/`runClassification` values are ignored in favor of dry-run semantics.
+  - Includes success/dry-run continue-on-failure checks proving non-failure outcomes derive `continueOnFailure=false` when explicit values are absent, while explicit configured values remain preserved.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` (also accepts `true/yes/on`) or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.

@@ -2378,7 +2378,13 @@
   - `scripts/test-verify-gates-summary.sh` now adds a payload with:
     - explicit `exitReason: dry-run`
     - conflicting explicit `runClassification: failed-fail-fast`
-    - conflicting explicit `success: false` and `dryRun: false`
-    and verifies renderer output remains dry-run consistent (`Success: true`, `Dry run: true`, `Exit reason: dry-run`, `Run classification: dry-run`).
+    - conflicting explicit `success: false`, `dryRun: false`, and `continueOnFailure: true`
+    and verifies renderer output remains dry-run consistent (`Success: true`, `Dry run: true`, `Continue on failure: true`, `Exit reason: dry-run`, `Run classification: dry-run`).
   - `scripts/README.md` updated to document dry-run contradiction coverage in summary-contract checks.
   **Why:** prevents contradictory explicit flags/classification from overriding authoritative dry-run reason semantics in sparse CI payloads.
+- **Success/dry-run continueOnFailure fallback semantics (2026-02-15 PM)** Normalized non-failure defaults without overriding explicit config:
+  - `scripts/publish-verify-gates-summary.sh` now derives `continueOnFailure=false` for non-failure outcomes (`success`/`dry-run`) when an explicit continue flag is absent, instead of rendering `unknown`.
+  - Existing explicit continue-on-failure values remain preserved for dry-run/success payloads (configuration visibility), while failure-state contradictions continue to be normalized by explicit reason/classification consistency checks.
+  - `scripts/test-verify-gates-summary.sh` adds a `success_reason_conflicts` scenario (`exitReason: success` + conflicting failure classification + no continue flag) and verifies coherent output (`Continue on failure: false`, `Run classification: success-no-retries`), and retains dry-run conflict coverage asserting explicit continue flag preservation.
+  - `scripts/README.md` updated to document non-failure continue fallback + explicit-value preservation behavior.
+  **Why:** improves non-failure summary clarity without hiding explicitly configured continue-on-failure settings.

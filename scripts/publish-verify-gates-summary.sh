@@ -785,7 +785,7 @@ const continueOnFailureValue = explicitContinueOnFailure !== null
 	? explicitContinueOnFailure
 	: (derivedExitReason === 'completed-with-failures'
 		? true
-		: (derivedExitReason === 'fail-fast' ? false : 'unknown'));
+		: (derivedExitReason === 'fail-fast' || derivedExitReason === 'success' || derivedExitReason === 'dry-run' ? false : 'unknown'));
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
