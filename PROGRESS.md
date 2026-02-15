@@ -1921,6 +1921,12 @@
     - unknown option (`--not-a-real-option`) fails non-zero with explicit `Unknown option` messaging
   - `scripts/README.md` updated to include verify-gates help/unknown-option coverage.
   **Why:** keeps CLI discoverability and failure clarity guarded for both local and CI/operator usage.
+- **Publisher env-path + minimal-payload coverage (2026-02-15 PM)** Expanded contract harness for additional renderer no-op/fallback behavior:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - running `publish-verify-gates-summary.sh` with no args uses `VSCODE_VERIFY_SUMMARY_FILE` and default heading (`Verify Gates Summary`)
+    - minimal payload (`{ schemaVersion, success }`) renders a placeholder `n/a` gate row instead of failing
+  - `scripts/README.md` updated to include env-path and minimal-payload coverage.
+  **Why:** hardens backward compatibility and ensures summary publication still behaves predictably with sparse payloads and env-driven invocation.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`

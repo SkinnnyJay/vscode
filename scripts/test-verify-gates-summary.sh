@@ -37,6 +37,9 @@ escape_summary="$tmpdir/escape.json"
 escape_step_summary="$tmpdir/escape-step.md"
 fallback_summary="$tmpdir/fallback.json"
 fallback_step_summary="$tmpdir/fallback-step.md"
+minimal_summary="$tmpdir/minimal.json"
+minimal_step_summary="$tmpdir/minimal-step.md"
+env_path_step_summary="$tmpdir/env-path-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -408,6 +411,32 @@ if [[ "$help_status" -ne 0 ]]; then
 fi
 if ! grep -q "^Usage:" "$tmpdir/help.out"; then
 	echo "Expected --help output to include usage text." >&2
+	exit 1
+fi
+
+node - "$expected_schema_version" "$minimal_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+fs.writeFileSync(summaryPath, JSON.stringify({ schemaVersion, success: true }, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$minimal_step_summary" ./scripts/publish-verify-gates-summary.sh "$minimal_summary" "Verify Gates Minimal Summary Contract Test"
+if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$minimal_step_summary"; then
+	echo "Expected minimal summary rendering to include placeholder gate row." >&2
+	exit 1
+fi
+
+set +e
+VSCODE_VERIFY_SUMMARY_FILE="$retry_summary" GITHUB_STEP_SUMMARY="$env_path_step_summary" ./scripts/publish-verify-gates-summary.sh > "$tmpdir/env-path.out" 2>&1
+env_path_status=$?
+set -e
+if [[ "$env_path_status" -ne 0 ]]; then
+	echo "Expected publish script without args to succeed when VSCODE_VERIFY_SUMMARY_FILE is set." >&2
+	exit 1
+fi
+if ! grep -q "^## Verify Gates Summary" "$env_path_step_summary"; then
+	echo "Expected default heading when summary heading argument is omitted." >&2
 	exit 1
 fi
 
