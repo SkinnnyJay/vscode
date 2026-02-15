@@ -1302,3 +1302,10 @@
   - `make typecheck` → **pass**
   - `make test-web-integration` → **pass**
   **Why:** reconfirms full e2e flow plus static and browser integration gates remain green after ongoing launcher resilience refinements.
+- **Launcher binary permission self-heal (2026-02-15 AM)** Improved `scripts/electron-launcher-utils.sh` preflight logic to attempt `chmod +x` when the Electron binary exists but is non-executable, both before and after the one-time `npm run electron` retry.
+  **Why:** avoids unnecessary Electron rebuild/rebootstrap work for permission-only failures and keeps startup recovery fast in flaky VM/filesystem scenarios.
+- **Post-self-heal validation (2026-02-15 AM)** Verified the permission self-heal change across focused and end-to-end launcher paths:
+  - `./scripts/test.sh --runGlob "**/ipc.cp.integrationTest.js"` → **pass**
+  - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
+  - `make lint` → **pass**
+  **Why:** confirms helper behavior remains non-regressive while preserving green test and lint gates.

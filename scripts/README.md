@@ -54,6 +54,6 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - smoke/electron automation launches (`test/automation/src/electron.ts`)
 - `scripts/test.sh`, `scripts/code.sh`, and `scripts/test-smoke.sh` share launcher resilience helpers from `scripts/electron-launcher-utils.sh`:
   - auto-fallback to `xvfb-run -a` when `DISPLAY` is missing/stale (Linux)
-  - binary preflight check + one-time `npm run electron` retry when Electron binary is missing/non-executable.
+  - binary preflight check that first attempts `chmod +x` recovery, then does a one-time `npm run electron` retry when Electron binary is missing/non-executable.
 
 Scripts are documented at the top of each file (purpose, usage, and what they delegate to).

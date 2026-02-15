@@ -20,12 +20,20 @@ function maybe_reexec_with_xvfb() {
 function ensure_electron_binary_with_retry() {
 	local binary_path="$1"
 
+	if [[ -e "$binary_path" ]] && [[ ! -x "$binary_path" ]]; then
+		chmod +x "$binary_path" 2>/dev/null || true
+	fi
+
 	if [[ -x "$binary_path" ]]; then
 		return 0
 	fi
 
 	echo "Electron binary '$binary_path' missing, retrying setup..."
 	npm run electron
+
+	if [[ -e "$binary_path" ]] && [[ ! -x "$binary_path" ]]; then
+		chmod +x "$binary_path" 2>/dev/null || true
+	fi
 
 	if [[ ! -x "$binary_path" ]]; then
 		echo "ERROR: Electron binary '$binary_path' not found after setup."
