@@ -307,10 +307,10 @@ const payload = {
 	schemaVersion,
 	runId: 'derived-counts-contract',
 	gates: [
-		{ id: 'lint', command: 'make lint', status: ' PASS ', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T010000Z', completedAt: '20260215T010001Z', notRunReason: null },
-		{ id: 'typecheck', command: 'make typecheck', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 2, startedAt: '20260215T010001Z', completedAt: '20260215T010003Z', notRunReason: null },
-		{ id: 'test-unit', command: 'make test-unit', status: 'Skip', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: '20260215T010003Z', completedAt: '20260215T010003Z', notRunReason: null },
-		{ id: 'build', command: 'make build', status: ' Not-Run ', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:typecheck' },
+		{ id: ' lint ', command: 'make lint', status: ' PASS ', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T010000Z', completedAt: '20260215T010001Z', notRunReason: null },
+		{ id: ' typecheck ', command: 'make typecheck', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 2, startedAt: '20260215T010001Z', completedAt: '20260215T010003Z', notRunReason: null },
+		{ id: ' test-unit ', command: 'make test-unit', status: 'Skip', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: '20260215T010003Z', completedAt: '20260215T010003Z', notRunReason: null },
+		{ id: ' build ', command: 'make build', status: ' Not-Run ', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:typecheck' },
 	],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1057,6 +1057,14 @@ if ! grep -Fq "**Not-run gates:** 1" "$derived_counts_step_summary"; then
 fi
 if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":1,\"skip\":1,\"not-run\":1}" "$derived_counts_step_summary"; then
 	echo "Expected derived-count fallback summary to derive statusCounts map from gate rows." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, test-unit, build" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to normalize gate-row IDs when deriving selected-gates list." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass |' "$derived_counts_step_summary" || ! grep -Fq '| `typecheck` | `make typecheck` | fail |' "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary table to normalize gate-row IDs and statuses." >&2
 	exit 1
 fi
 if ! grep -Fq "**Executed gates:** 2" "$derived_counts_step_summary"; then

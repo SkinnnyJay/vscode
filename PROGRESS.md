@@ -2410,8 +2410,10 @@
   - `scripts/test-verify-gates-summary.sh` derived-status-map sparse scenario now supplies noisy status values (`" PASS "`, `"FAIL"`, `" Not-Run "`) and keeps existing derived-count/state assertions unchanged.
   - `scripts/README.md` updated to document case/whitespace status-map normalization coverage.
   **Why:** prevents sparse producer formatting differences from silently dropping valid gate statuses during summary derivation.
-- **Case/whitespace normalization for sparse gate rows (2026-02-15 PM)** Hardened `gates[]` status ingestion:
-  - `scripts/publish-verify-gates-summary.sh` now normalizes each gate-row `status` value using the same canonical enum normalization (`pass`/`fail`/`skip`/`not-run`) before derived counters/lists are computed.
-  - `scripts/test-verify-gates-summary.sh` derived-counts sparse gate-row scenario now uses noisy statuses (`" PASS "`, `"FAIL"`, `"Skip"`, `" Not-Run "`) while preserving existing derived-count assertions.
-  - `scripts/README.md` updated to document gate-row status normalization coverage.
-  **Why:** prevents sparse producer case/whitespace differences in `gates[]` rows from degrading count/list derivation quality.
+- **Case/whitespace normalization for sparse gate rows (2026-02-15 PM)** Hardened `gates[]` status/ID ingestion:
+  - `scripts/publish-verify-gates-summary.sh` now:
+    - normalizes each gate-row `status` value with canonical enum normalization (`pass`/`fail`/`skip`/`not-run`) before derived counters/lists are computed
+    - trims gate-row IDs before list/map/table derivation so padded IDs do not leak into rendered metadata.
+  - `scripts/test-verify-gates-summary.sh` derived-counts sparse gate-row scenario now uses noisy statuses (`" PASS "`, `"FAIL"`, `"Skip"`, `" Not-Run "`) and padded IDs (`" lint "`, etc.) while preserving existing derived-count assertions and adding selected-gates/table normalization checks.
+  - `scripts/README.md` updated to document gate-row status+ID normalization coverage.
+  **Why:** prevents sparse producer case/whitespace differences in `gates[]` rows from degrading count/list/table derivation quality.
