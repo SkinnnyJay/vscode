@@ -1815,3 +1815,9 @@
   - schema baseline bumped to `14` in producer/renderer
   - `scripts/README.md` updated to schema version `14` and field list includes `gateRetryCountById`.
   **Why:** gives downstream tooling a constant-time view of retry pressure by gate without recomputing from attempt counts.
+- **Duration map + schema v15 (2026-02-15 AM)** Added direct gate-id→duration-seconds lookup:
+  - `scripts/verify-gates.sh` now emits `gateDurationSecondsById` object for all selected gates
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate duration map (s)` and derives fallback from `gates[]` when missing
+  - schema baseline bumped to `15` in producer/renderer
+  - `scripts/README.md` updated to schema version `15` and field list includes `gateDurationSecondsById`.
+  **Why:** allows downstream tooling to access per-gate durations by id directly without scanning the gate array.
