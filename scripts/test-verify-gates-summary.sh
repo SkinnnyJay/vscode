@@ -22,6 +22,9 @@ trap cleanup EXIT
 
 dry_summary="$tmpdir/dry.json"
 dry_repeat_summary="$tmpdir/dry-repeat.json"
+continue_true_summary="$tmpdir/continue-true.json"
+continue_false_summary="$tmpdir/continue-false.json"
+continue_flag_summary="$tmpdir/continue-flag.json"
 dedupe_summary="$tmpdir/dedupe.json"
 from_summary="$tmpdir/from.json"
 fail_fast_summary="$tmpdir/fail-fast.json"
@@ -61,6 +64,9 @@ fi
 
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_summary" > "$tmpdir/dry.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_repeat_summary" > "$tmpdir/dry-repeat.out"
+VSCODE_VERIFY_CONTINUE_ON_FAILURE=true VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$continue_true_summary" > "$tmpdir/continue-true.out"
+VSCODE_VERIFY_CONTINUE_ON_FAILURE=off VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$continue_false_summary" > "$tmpdir/continue-false.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --continue-on-failure --dry-run --summary-json "$continue_flag_summary" > "$tmpdir/continue-flag.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only " lint , lint , typecheck " --dry-run --summary-json "$dedupe_summary" > "$tmpdir/dedupe.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --from typecheck --dry-run --summary-json "$from_summary" > "$tmpdir/from.out"
 
@@ -137,15 +143,18 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$dedupe_summary" "$from_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, dedupePath, fromPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
 }
 const dry = JSON.parse(fs.readFileSync(dryPath, 'utf8'));
 const dryRepeat = JSON.parse(fs.readFileSync(dryRepeatPath, 'utf8'));
+const continueTrue = JSON.parse(fs.readFileSync(continueTruePath, 'utf8'));
+const continueFalse = JSON.parse(fs.readFileSync(continueFalsePath, 'utf8'));
+const continueFlag = JSON.parse(fs.readFileSync(continueFlagPath, 'utf8'));
 const dedupe = JSON.parse(fs.readFileSync(dedupePath, 'utf8'));
 const from = JSON.parse(fs.readFileSync(fromPath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
@@ -157,7 +166,7 @@ const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
 }
-if (dryRepeat.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion) {
+if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
 if (typeof dry.resultSignatureAlgorithm !== 'string' || dry.resultSignatureAlgorithm.length === 0) {
@@ -168,6 +177,15 @@ if (dry.resultSignature !== dryRepeat.resultSignature) {
 }
 if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
+}
+if (continueTrue.continueOnFailure !== true) {
+	throw new Error('continue-on-failure env=true normalization mismatch.');
+}
+if (continueFalse.continueOnFailure !== false) {
+	throw new Error('continue-on-failure env=off normalization mismatch.');
+}
+if (continueFlag.continueOnFailure !== true) {
+	throw new Error('continue-on-failure CLI flag normalization mismatch.');
 }
 
 if (dry.gateAttemptCountById.lint !== 0 || dry.gateRetryCountById.lint !== 0) {

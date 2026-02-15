@@ -1927,6 +1927,13 @@
     - minimal payload (`{ schemaVersion, success }`) renders a placeholder `n/a` gate row instead of failing
   - `scripts/README.md` updated to include env-path and minimal-payload coverage.
   **Why:** hardens backward compatibility and ensures summary publication still behaves predictably with sparse payloads and env-driven invocation.
+- **Continue-on-failure normalization coverage (2026-02-15 PM)** Expanded contract harness for boolean normalization semantics:
+  - `scripts/test-verify-gates-summary.sh` now verifies `continueOnFailure` resolution across:
+    - `VSCODE_VERIFY_CONTINUE_ON_FAILURE=true` -> summary field `true`
+    - `VSCODE_VERIFY_CONTINUE_ON_FAILURE=off` -> summary field `false`
+    - CLI flag `--continue-on-failure` -> summary field `true`
+  - `scripts/README.md` updated to include continue-on-failure normalization coverage.
+  **Why:** protects environment/flag normalization behavior that directly controls fail-fast vs. continue execution policy.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
