@@ -2442,6 +2442,14 @@
     - status map (`{"lint":"fail","typecheck":"fail"}`).
   - `scripts/README.md` updated to document duplicate conflicting-status precedence coverage.
   **Why:** prevents conflicting duplicate sparse rows from yielding inconsistent counter/list/map outcomes for the same normalized gate ID.
+- **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
+  - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
+  - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.
+  - `scripts/test-verify-gates-summary.sh` now adds `unknown_status_duplicate_rows` scenario and verifies:
+    - resolved pass counts remain intact
+    - `Non-success gates list` and `Attention gates list` stay `none`.
+  - `scripts/README.md` updated to document unknown-status duplicate filtering coverage.
+  **Why:** avoids non-success/attention list pollution from malformed duplicate statuses once gate-level canonical status has been resolved.
 - **Malformed gate-row resilience coverage (2026-02-15 PM)** Extended sparse row hardening contract:
   - `scripts/test-verify-gates-summary.sh` now adds `malformed_gate_rows` scenario with mixed invalid `gates[]` entries (`null`, string, number) plus one valid padded row.
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.

@@ -599,7 +599,7 @@ const nonSuccessGateIds = nonSuccessGateIdsFromSummary
 	? nonSuccessGateIdsFromSummary
 	: (() => {
 		if (gates.length > 0) {
-			return gateIdsFromRows((gate) => gate.status !== 'pass');
+			return selectedGateIds.filter((gateId) => (rowStatusByGateId[gateId] ?? 'unknown') !== 'pass');
 		}
 		if (selectedGateIds.length > 0) {
 			return selectedGateIds.filter((gateId) => {

@@ -67,6 +67,8 @@ row_not_run_reason_type_summary="$tmpdir/row-not-run-reason-type.json"
 row_not_run_reason_type_step_summary="$tmpdir/row-not-run-reason-type-step.md"
 row_command_type_summary="$tmpdir/row-command-type.json"
 row_command_type_step_summary="$tmpdir/row-command-type-step.md"
+unknown_status_duplicate_rows_summary="$tmpdir/unknown-status-duplicate-rows.json"
+unknown_status_duplicate_rows_step_summary="$tmpdir/unknown-status-duplicate-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -409,6 +411,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$row_command_type_step_summary" ./scripts/publish-verify-gates-summary.sh "$row_command_type_summary" "Verify Gates Row Command Type Contract Test"
+
+node - "$expected_schema_version" "$unknown_status_duplicate_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unknown-status-duplicate-rows-contract',
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T050000Z', completedAt: '20260215T050001Z', notRunReason: null },
+		{ id: 'lint', command: 'make lint', status: 'mystery-status', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T050001Z', completedAt: '20260215T050002Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unknown_status_duplicate_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$unknown_status_duplicate_rows_summary" "Verify Gates Unknown Status Duplicate Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1281,6 +1303,26 @@ if ! grep -Fq "**Selected gates:** lint" "$row_command_type_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$row_command_type_step_summary"; then
 	echo "Did not expect schema warning for row-command-type summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Expected unknown-status-duplicate-rows summary to preserve normalized row gate ID selection." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unknown_status_duplicate_rows_step_summary" || ! grep -Fq "**Failed gates:** 0" "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Expected unknown-status-duplicate-rows summary counters to be derived from valid canonical statuses only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Expected unknown-status-duplicate-rows summary to avoid marking pass-resolved duplicate IDs as non-success due to invalid duplicate statuses." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** none" "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Expected unknown-status-duplicate-rows summary to avoid attention-list pollution from invalid duplicate statuses." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Did not expect schema warning for unknown-status-duplicate-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
