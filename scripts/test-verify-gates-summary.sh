@@ -352,6 +352,9 @@ if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.t
 if (!failFastStep.includes('**Log file:** `') || !retryStep.includes('**Log file:** `')) {
 	throw new Error('Step summaries should include log-file metadata line.');
 }
+if (failFastStep.includes('**Schema warning:**') || retryStep.includes('**Schema warning:**') || continueFlagStep.includes('**Schema warning:**') || fallbackStep.includes('**Schema warning:**')) {
+	throw new Error('Did not expect schema warning for current-schema summaries.');
+}
 if (!continueFlagStep.includes('**Continue on failure:** true') || !continueFlagStep.includes('**Dry run:** true') || !continueFlagStep.includes('**Run classification:** dry-run')) {
 	throw new Error('Continue-on-failure dry-run step summary metadata mismatch.');
 }
@@ -398,6 +401,10 @@ if (!Number.isInteger(supportedSchemaVersion) || supportedSchemaVersion <= 0) {
 const futureStep = fs.readFileSync(futureStepPath, 'utf8');
 if (!futureStep.includes(`supported ${supportedSchemaVersion}`)) {
 	throw new Error(`Future-schema warning should reference supported schema ${supportedSchemaVersion}.`);
+}
+const warningMatches = futureStep.match(/\*\*Schema warning:\*\*/g) ?? [];
+if (warningMatches.length !== 1) {
+	throw new Error('Future-schema output should contain exactly one schema warning line.');
 }
 NODE
 
@@ -665,6 +672,10 @@ if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "
 	echo "Expected minimal summary rendering to include placeholder gate row." >&2
 	exit 1
 fi
+if grep -q "\*\*Schema warning:\*\*" "$minimal_step_summary"; then
+	echo "Did not expect schema warning for minimal summary payload." >&2
+	exit 1
+fi
 
 printf '%s\n' "$expected_schema_version" > "$scalar_summary"
 GITHUB_STEP_SUMMARY="$scalar_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_summary" "Verify Gates Scalar Summary Contract Test"
@@ -691,6 +702,10 @@ if ! grep -q "\*\*Summary schema version:\*\* unknown" "$array_step_summary"; th
 	echo "Expected array summary rendering to use unknown schema placeholder." >&2
 	exit 1
 fi
+if grep -q "\*\*Schema warning:\*\*" "$array_step_summary"; then
+	echo "Did not expect schema warning for array summary payload." >&2
+	exit 1
+fi
 
 printf 'null\n' > "$null_summary"
 GITHUB_STEP_SUMMARY="$null_step_summary" ./scripts/publish-verify-gates-summary.sh "$null_summary" "Verify Gates Null Summary Contract Test"
@@ -706,6 +721,10 @@ if ! grep -q "\*\*Summary schema version:\*\* unknown" "$null_step_summary"; the
 	echo "Expected null summary rendering to use unknown schema placeholder." >&2
 	exit 1
 fi
+if grep -q "\*\*Schema warning:\*\*" "$null_step_summary"; then
+	echo "Did not expect schema warning for null summary payload." >&2
+	exit 1
+fi
 
 set +e
 VSCODE_VERIFY_SUMMARY_FILE="$retry_summary" GITHUB_STEP_SUMMARY="$env_path_step_summary" ./scripts/publish-verify-gates-summary.sh > "$tmpdir/env-path.out" 2>&1
@@ -717,6 +736,10 @@ if [[ "$env_path_status" -ne 0 ]]; then
 fi
 if ! grep -q "^## Verify Gates Summary" "$env_path_step_summary"; then
 	echo "Expected default heading when summary heading argument is omitted." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$env_path_step_summary"; then
+	echo "Did not expect schema warning for current schema payload." >&2
 	exit 1
 fi
 

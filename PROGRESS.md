@@ -2068,6 +2068,12 @@
     - gate-id array lengths match corresponding scalar counters (`passedGateIds`, `failedGateIds`, `skippedGateIds`, `notRunGateIds`)
   - `scripts/README.md` updated to include count/partition consistency checks.
   **Why:** protects internal summary consistency so downstream consumers can trust either scalar counters or partition arrays interchangeably.
+- **Schema-warning emission rules coverage (2026-02-15 PM)** Expanded renderer warning-behavior assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - no schema-warning line for current-schema summaries (including sparse minimal/array/null payloads)
+    - exactly one schema-warning line for synthetic future-schema payloads
+  - `scripts/README.md` updated to include schema-warning emission coverage.
+  **Why:** prevents noisy or duplicated warnings while preserving explicit forward-compatibility signaling.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
