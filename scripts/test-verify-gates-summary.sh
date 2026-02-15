@@ -538,9 +538,9 @@ const payload = {
 	schemaVersion,
 	runId: 'conflicting-classification-flags-contract',
 	runClassification: 'failed-continued',
-	success: true,
-	dryRun: true,
-	continueOnFailure: false,
+	success: 'yes',
+	dryRun: 'ON',
+	continueOnFailure: '0',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));

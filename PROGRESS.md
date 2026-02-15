@@ -2356,7 +2356,7 @@
 - **Classification-only conflicting-flag contract coverage (2026-02-15 PM)** Extended sparse contradiction guard rails:
   - `scripts/test-verify-gates-summary.sh` now adds a classification-only contradiction case:
     - explicit `runClassification: failed-continued`
-    - conflicting explicit `success: true`, `dryRun: true`, `continueOnFailure: false`
+    - conflicting explicit `success: "yes"`, `dryRun: "ON"`, `continueOnFailure: "0"`
     and verifies rendered summary honors classification semantics (`Success: false`, `Dry run: false`, `Continue on failure: true`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`).
   - `scripts/README.md` updated to document classification-only conflicting-flag coverage in the summary contract harness.
   **Why:** ensures sparse payloads remain internally coherent even when producers emit contradictory boolean flags without an explicit exit reason.
