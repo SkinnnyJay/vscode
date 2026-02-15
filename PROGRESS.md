@@ -1280,3 +1280,9 @@
   - `make test` → transient first-run failure in this VM, immediate rerun **pass**
   - `make lint` → **pass**
   **Why:** provides extra confidence that shared launcher helpers remain stable under repeated long-running suites, while documenting observed nondeterministic VM flake behavior transparently.
+- **Extended stress verification (2026-02-15 AM)** Continued exercising launcher paths after consolidation:
+  - `make test-smoke` → **pass**
+  - `make test-integration` → **pass**
+  - `make test` → first run transiently failed in this VM, immediate rerun **pass**
+  - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
+  **Why:** confirms launcher hardening changes remain stable across repeated long/short suites and captures ongoing evidence of occasional environment-level flakiness with successful reruns.
