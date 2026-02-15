@@ -766,6 +766,8 @@ const payload = {
 	runId: 'duplicate-normalized-map-keys-contract',
 	gateStatusById: { ' lint ': 'pass' },
 	gateRetryCountById: { ' lint ': '1', lint: '4' },
+	gateDurationSecondsById: { ' lint ': '2', lint: '6' },
+	gateAttemptCountById: { ' lint ': '1', lint: '3' },
 	gateNotRunReasonById: { ' lint ': ' first ', lint: ' second ' },
 	gates: [],
 };
@@ -2038,8 +2040,16 @@ if ! grep -Fq "**Gate not-run reason map:** {\"lint\":\"second\"}" "$duplicate_n
 	echo "Expected duplicate-normalized-map-keys summary to apply deterministic last-write behavior for duplicate normalized reason map keys." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate duration map (s):** {\"lint\":6}" "$duplicate_normalized_map_keys_step_summary" || ! grep -Fq "**Gate attempt-count map:** {\"lint\":3}" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Expected duplicate-normalized-map-keys summary to apply deterministic last-write behavior for duplicate normalized duration/attempt map keys." >&2
+	exit 1
+fi
 if ! grep -Fq "**Total retries:** 4" "$duplicate_normalized_map_keys_step_summary" || ! grep -Fq "**Total retry backoff:** 15s" "$duplicate_normalized_map_keys_step_summary"; then
 	echo "Expected duplicate-normalized-map-keys summary to derive retry aggregates from normalized duplicate-map values." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 6s" "$duplicate_normalized_map_keys_step_summary" || ! grep -Fq "**Total duration:** 6s" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Expected duplicate-normalized-map-keys summary to derive duration aggregates from normalized duplicate-map values." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$duplicate_normalized_map_keys_step_summary"; then

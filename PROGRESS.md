@@ -2420,9 +2420,11 @@
 - **Duplicate normalized retry/reason map-key coverage (2026-02-15 PM)** Extended map-collision guard:
   - `scripts/test-verify-gates-summary.sh` now adds `duplicate_normalized_map_keys` scenario with duplicate normalized keys in:
     - `gateRetryCountById` (`' lint '` + `lint`)
+    - `gateDurationSecondsById` (`' lint '` + `lint`)
+    - `gateAttemptCountById` (`' lint '` + `lint`)
     - `gateNotRunReasonById` (`' lint '` + `lint`).
-  - Assertions verify deterministic last-write behavior (`retryCount=4`, reason=`second`) and derived retry aggregates (`Total retries: 4`, `Total retry backoff: 15s`).
-  - `scripts/README.md` updated to document duplicate normalized-key coverage for retry/reason maps.
+  - Assertions verify deterministic last-write behavior (`retryCount=4`, `duration=6`, `attempts=3`, reason=`second`) and derived aggregates (`Total retries: 4`, `Total retry backoff: 15s`, `Executed duration total: 6s`, `Total duration: 6s`).
+  - `scripts/README.md` updated to document duplicate normalized-key coverage across all per-gate map inputs.
   **Why:** ensures collision handling stays consistent across all normalized per-gate map inputs, not just status/exit-code maps.
 - **Case/whitespace normalization for sparse gate rows (2026-02-15 PM)** Hardened `gates[]` status/ID ingestion:
   - `scripts/publish-verify-gates-summary.sh` now:
