@@ -51,6 +51,7 @@ export class PlaywrightDriver {
 	private static readonly recentRequestFailureCapacity = 25;
 	private static readonly recentScriptResponseCapacity = 25;
 	private static readonly recentCdpScriptLoadCapacity = 25;
+	private static readonly recentConsoleErrorCapacity = 25;
 	private static readonly recentSummaryCapacity = 200;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
@@ -79,6 +80,9 @@ export class PlaywrightDriver {
 	private readonly recentCdpScriptLoads: string[] = [];
 	private totalRecordedCdpScriptLoads = 0;
 	private droppedRecentCdpScriptLoads = 0;
+	private readonly recentConsoleErrors: string[] = [];
+	private totalRecordedConsoleErrors = 0;
+	private droppedRecentConsoleErrors = 0;
 	private readonly scriptResponseSummariesByUrl = new Map<string, string>();
 	private readonly scriptResponseSeenCountsByUrl = new Map<string, number>();
 	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
@@ -493,6 +497,22 @@ export class PlaywrightDriver {
 		return this.droppedRecentCdpScriptLoads;
 	}
 
+	getRecentConsoleErrors(): readonly string[] {
+		return this.recentConsoleErrors;
+	}
+
+	getRecentConsoleErrorCapacity(): number {
+		return PlaywrightDriver.recentConsoleErrorCapacity;
+	}
+
+	getTotalRecordedConsoleErrorCount(): number {
+		return this.totalRecordedConsoleErrors;
+	}
+
+	getDroppedRecentConsoleErrorCount(): number {
+		return this.droppedRecentConsoleErrors;
+	}
+
 	getLatestCdpScriptLoadSummaryForUrl(url: string): string | undefined {
 		return this.cdpScriptLoadSummariesByUrl.get(this.toUrlKey(url));
 	}
@@ -555,6 +575,15 @@ export class PlaywrightDriver {
 			const contentLength = responseHeaders['content-length'];
 			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl, contentLength);
 			this.pushRecentScriptResponse(entry);
+		});
+
+		page.on('console', message => {
+			if (message.type() !== 'error') {
+				return;
+			}
+
+			const entry = this.toConsoleErrorEntry(message);
+			this.pushRecentConsoleError(entry);
 		});
 
 		void this.attachCdpNetworkDiagnostics(page);
@@ -633,6 +662,18 @@ export class PlaywrightDriver {
 		this.setLatestSummary(this.cdpScriptLoadSummariesByUrl, urlKey, summary);
 
 		return this.normalizeFailureText(`[cdp-script-load]${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
+	}
+
+	private toConsoleErrorEntry(message: playwright.ConsoleMessage): string {
+		const text = this.normalizeFailureText(message.text());
+		const location = message.location();
+		const locationUrl = location.url || undefined;
+		const locationSuffix = locationUrl
+			? ` url=${locationUrl} line=${location.lineNumber} column=${location.columnNumber}`
+			: '';
+		const resolvedPath = locationUrl ? this.toFilePathFromVscodeFileUrl(locationUrl) : undefined;
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		return this.normalizeFailureText(`[console-error] ${text}${locationSuffix}${fileExistsSuffix}`);
 	}
 
 	private readOnDiskByteCount(path: string | undefined): number | undefined {
@@ -763,6 +804,15 @@ export class PlaywrightDriver {
 		if (this.recentCdpScriptLoads.length > PlaywrightDriver.recentCdpScriptLoadCapacity) {
 			this.droppedRecentCdpScriptLoads++;
 			this.recentCdpScriptLoads.shift();
+		}
+	}
+
+	private pushRecentConsoleError(entry: string): void {
+		this.totalRecordedConsoleErrors++;
+		this.recentConsoleErrors.push(entry);
+		if (this.recentConsoleErrors.length > PlaywrightDriver.recentConsoleErrorCapacity) {
+			this.droppedRecentConsoleErrors++;
+			this.recentConsoleErrors.shift();
 		}
 	}
 

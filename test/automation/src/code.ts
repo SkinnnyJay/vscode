@@ -114,6 +114,7 @@ export class Code {
 	private static readonly recentFailuresSummarySchemaVersion = 1;
 	private static readonly recentScriptResponsesSummarySchemaVersion = 1;
 	private static readonly recentCdpScriptLoadsSummarySchemaVersion = 1;
+	private static readonly recentConsoleErrorsSummarySchemaVersion = 1;
 	private static readonly importTargetDiagnosticsSchemaVersion = 1;
 	private static readonly recentFailuresDisplayLimit = 8;
 
@@ -364,12 +365,19 @@ export class Code {
 					const recentCdpScriptLoadCapacity = this.driver.getRecentCdpScriptLoadCapacity();
 					const totalObservedCdpScriptLoads = this.driver.getTotalRecordedCdpScriptLoadCount();
 					const droppedRecentCdpScriptLoads = this.driver.getDroppedRecentCdpScriptLoadCount();
+					const allRecentConsoleErrors = this.driver.getRecentConsoleErrors();
+					const recentConsoleErrors = allRecentConsoleErrors.slice(-Code.recentFailuresDisplayLimit);
+					const recentConsoleErrorCapacity = this.driver.getRecentConsoleErrorCapacity();
+					const totalObservedConsoleErrors = this.driver.getTotalRecordedConsoleErrorCount();
+					const droppedRecentConsoleErrors = this.driver.getDroppedRecentConsoleErrorCount();
 					const failureSummaryData = this.summarizeRecentRequestFailures(recentFailures);
 					const scriptResponseSummaryData = this.summarizeRecentEntries(recentScriptResponses);
 					const cdpScriptLoadSummaryData = this.summarizeRecentEntries(recentCdpScriptLoads);
+					const consoleErrorSummaryData = this.summarizeRecentEntries(recentConsoleErrors);
 					const displayWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentFailureCapacity}, showingLast=${recentFailures.length}/${allRecentFailures.length}, observedEvents=${totalObservedRequestFailures}, droppedEvents=${droppedRecentRequestFailures}`;
 					const scriptResponseWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentScriptResponseCapacity}, showingLast=${recentScriptResponses.length}/${allRecentScriptResponses.length}, observedEvents=${totalObservedScriptResponses}, droppedEvents=${droppedRecentScriptResponses}`;
 					const cdpScriptLoadWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentCdpScriptLoadCapacity}, showingLast=${recentCdpScriptLoads.length}/${allRecentCdpScriptLoads.length}, observedEvents=${totalObservedCdpScriptLoads}, droppedEvents=${droppedRecentCdpScriptLoads}`;
+					const consoleErrorWindowSuffix = `, displayLimit=${Code.recentFailuresDisplayLimit}, bufferCapacity=${recentConsoleErrorCapacity}, showingLast=${recentConsoleErrors.length}/${allRecentConsoleErrors.length}, observedEvents=${totalObservedConsoleErrors}, droppedEvents=${droppedRecentConsoleErrors}`;
 					const failureSummary = recentFailures.length
 						? `\nRecent request failures (schemaVersion=${Code.recentFailuresSummarySchemaVersion}, ${failureSummaryData.totalCount} events, ${failureSummaryData.uniqueCount} unique, ${failureSummaryData.sourceSummary}${displayWindowSuffix}, signature=${failureSummaryData.signature}):\n${failureSummaryData.formattedFailures}\nEnd of recent request failures.\n`
 						: '';
@@ -378,6 +386,9 @@ export class Code {
 						: '';
 					const cdpScriptLoadSummary = recentCdpScriptLoads.length
 						? `\nRecent CDP script loads (schemaVersion=${Code.recentCdpScriptLoadsSummarySchemaVersion}, ${cdpScriptLoadSummaryData.totalCount} events, ${cdpScriptLoadSummaryData.uniqueCount} unique${cdpScriptLoadWindowSuffix}, signature=${cdpScriptLoadSummaryData.signature}):\n${cdpScriptLoadSummaryData.formattedEntries}\nEnd of recent CDP script loads.\n`
+						: '';
+					const consoleErrorSummary = recentConsoleErrors.length
+						? `\nRecent console errors (schemaVersion=${Code.recentConsoleErrorsSummarySchemaVersion}, ${consoleErrorSummaryData.totalCount} events, ${consoleErrorSummaryData.uniqueCount} unique${consoleErrorWindowSuffix}, signature=${consoleErrorSummaryData.signature}):\n${consoleErrorSummaryData.formattedEntries}\nEnd of recent console errors.\n`
 						: '';
 					const importTargetUrl = this.extractImportTargetUrlFromError(pageError);
 					const importTargetFilePath = this.extractImportTargetPathFromError(pageError);
@@ -405,6 +416,8 @@ export class Code {
 					const importTargetRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentFailures, importTargetUrl) : 0;
 					const importTargetScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentScriptResponses, importTargetUrl) : 0;
 					const importTargetCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentCdpScriptLoads, importTargetUrl) : 0;
+					const importTargetDisplayWindowConsoleErrorCount = importTargetUrl ? this.countEntriesContainingUrl(recentConsoleErrors, importTargetUrl) : 0;
+					const importTargetRetainedWindowConsoleErrorCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentConsoleErrors, importTargetUrl) : 0;
 					const importTargetScriptResponseStatus = importTargetUrl
 						? `\nImport target latest script response: ${importTargetLatestScriptResponse ?? 'unseen'}`
 						: '';
@@ -422,6 +435,9 @@ export class Code {
 						: '';
 					const importTargetChannelEventCounts = importTargetUrl
 						? `\nImport target retained-window event counts: requestFailures=${importTargetRequestFailureEventCount}, scriptResponses=${importTargetScriptResponseEventCount}, cdpScriptLoads=${importTargetCdpScriptLoadEventCount}`
+						: '';
+					const importTargetConsoleErrorCounts = importTargetUrl
+						? `\nImport target console error counts: displayWindow=${importTargetDisplayWindowConsoleErrorCount}, retainedWindow=${importTargetRetainedWindowConsoleErrorCount}`
 						: '';
 					const importTargetTotalChannelEventCounts = importTargetUrl
 						? `\nImport target total event counts: requestFailures=${importTargetTotalEventCounts?.requestFailures ?? 0}, scriptResponses=${importTargetTotalEventCounts?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetTotalEventCounts?.cdpScriptLoads ?? 0}`
@@ -596,6 +612,10 @@ export class Code {
 						importTargetDiagnosticsSignature,
 						importTargetGlobalBufferSignature,
 						importTargetCompositeSignature,
+						{
+							displayWindow: importTargetDisplayWindowConsoleErrorCount,
+							retainedWindow: importTargetRetainedWindowConsoleErrorCount
+						},
 						trial,
 						retryInterval,
 						globalChannelBufferStats
@@ -607,7 +627,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetChannelWindowCoverageStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetChannelWindowCoverageStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -860,6 +880,7 @@ export class Code {
 		signature: string,
 		globalBufferSignature: string,
 		compositeSignature: string,
+		consoleErrorCounts: { displayWindow: number; retainedWindow: number },
 		detectedAtTrial: number,
 		retryIntervalMs: number,
 		globalChannelBufferStats: {
@@ -911,6 +932,7 @@ export class Code {
 		detectedAtElapsedMs: number;
 		globalBufferSignature: string;
 		compositeSignature: string;
+		consoleErrorCounts: { displayWindow: number; retainedWindow: number };
 		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -939,6 +961,7 @@ export class Code {
 			consistencyChecks,
 			globalBufferSignature,
 			compositeSignature,
+			consoleErrorCounts,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			displayWindowEventCounts,

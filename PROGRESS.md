@@ -898,3 +898,26 @@
     - `"consistencyChecks":{"...","windowCoverageMatchesCounts":true,"windowHierarchyMatchesCounts":true,"isConsistent":true}`
   Re-ran `make lint` (pass).
   **Why:** confirms dual-window coverage metrics are emitted and internally consistent with all existing counters.
+- **Recent console-error diagnostics channel (2026-02-14 PM)** Added a fourth fail-fast diagnostics channel for runtime console errors in smoke automation:
+  - `test/automation/src/playwrightDriver.ts`
+    - capture `page.on('console')` entries with `type === 'error'`
+    - store normalized bounded ring (`recentConsoleErrors`, capacity 25)
+    - track observed/dropped counters and expose getters
+    - include location metadata (`url`, `line`, `column`) and `existsOnDisk` for `vscode-file://` locations
+  - `test/automation/src/code.ts`
+    - append summary block:
+      - `Recent console errors (...)`
+    - includes schemaVersion, events/unique, display window/capacity, observed/dropped, signature
+    - add target-specific line:
+      - `Import target console error counts: displayWindow=<N>, retainedWindow=<N>`
+    - add `consoleErrorCounts` to structured import-target diagnostics record.
+  **Why:** surfaces renderer-reported `Failed to load resource: net::ERR_FAILED` evidence that may not appear in retained request/CDP windows, improving correlation for intermittent startup failures.
+- **Console-channel validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target console error counts: displayWindow=0, retainedWindow=0`
+  - `Recent console errors (schemaVersion=1, 8 events, 8 unique, displayLimit=8, bufferCapacity=25, showingLast=8/25, observedEvents=370, droppedEvents=345, signature=cb547806):`
+  - console lines with source location + on-disk checks, e.g.:
+    - `[console-error] Failed to load resource: net::ERR_FAILED url=vscode-file://... line=0 column=0 existsOnDisk=true`
+  - structured record field:
+    - `"consoleErrorCounts":{"displayWindow":0,"retainedWindow":0}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new console-error channel is active, bounded, and correctly integrated into both text and structured diagnostics outputs.
