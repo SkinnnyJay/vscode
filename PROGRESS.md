@@ -1827,3 +1827,8 @@
   - schema baseline bumped to `16` in producer/renderer
   - `scripts/README.md` updated to schema version `16` and field list includes `gateNotRunReasonById`.
   **Why:** gives downstream tooling a constant-time way to inspect block reasons for not-run gates without scanning arrays.
+- **Compact not-run reason rendering (2026-02-15 AM)** Improved summary readability for the not-run reason map:
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate not-run reason map` with only non-null entries (`none` when no reasons exist)
+  - producer payload remains unchanged (`gateNotRunReasonById` still includes all selected gates with nullable values).
+  - `scripts/README.md` now documents the compact rendering behavior.
+  **Why:** removes noisy `null` entries from step summaries while preserving complete machine-readable JSON data.

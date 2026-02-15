@@ -52,6 +52,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Summary values are markdown-escaped to keep tables readable when commands/IDs contain special characters (pipes/backticks/newlines).
   - Rendered per-gate table includes retries/backoff and command exit code for faster root-cause triage.
   - Failed/not-run/retry metadata includes exit reason, first-failure pointers, blocking gate ID for fail-fast runs, complete failed/not-run/retried gate lists, and per-gate not-run reasons.
+  - The rendered `Gate not-run reason map` is compacted to non-null entries (`none` when empty) for cleaner fail-fast diagnostics.
   - Both helper scripts print usage and exit non-zero on unknown flags/missing required option values.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
 - **Dry-run planning:** use `--dry-run` to validate gate selection/filtering and emit summary/log metadata without executing gates.

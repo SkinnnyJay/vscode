@@ -145,6 +145,8 @@ const gateNotRunReasonById = summary.gateNotRunReasonById && typeof summary.gate
 			.filter((gate) => typeof gate.id === 'string')
 			.map((gate) => [gate.id, gate.notRunReason ?? null]),
 	);
+const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
+const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
 const gateRows = gates.map((gate) => {
@@ -187,7 +189,7 @@ const lines = [
 	`**Gate exit-code map:** ${sanitizeCell(JSON.stringify(gateExitCodeById))}`,
 	`**Gate retry-count map:** ${sanitizeCell(JSON.stringify(gateRetryCountById))}`,
 	`**Gate duration map (s):** ${sanitizeCell(JSON.stringify(gateDurationSecondsById))}`,
-	`**Gate not-run reason map:** ${sanitizeCell(JSON.stringify(gateNotRunReasonById))}`,
+	`**Gate not-run reason map:** ${sanitizeCell(gateNotRunReasonMapLabel)}`,
 	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
 	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
