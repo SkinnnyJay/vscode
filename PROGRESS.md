@@ -1213,3 +1213,6 @@
   - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
   - `make test` → **pass**
   **Why:** reconfirms the headless display fallback and `/dev/shm` mitigation remain stable on repeated end-to-end Electron executions.
+- **Full integration rerun after repeated smoke/electron passes (2026-02-15 AM)** Executed the complete integration gate once more on current head:
+  - `make test-integration` → **pass** (node integration, extension/API, css/html suites all green)
+  **Why:** confirms the broader extension/integration surface remains stable after multiple consecutive launcher and runtime hardening regression cycles.
