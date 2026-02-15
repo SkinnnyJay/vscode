@@ -2438,3 +2438,10 @@
   - `scripts/test-verify-gates-summary.sh` malformed-row scenario now additionally asserts no `unknown` gate rows are rendered.
   - `scripts/README.md` wording updated to explicitly include table-row filtering behavior.
   **Why:** prevents malformed sparse row payloads from leaking placeholder `unknown` entries into rendered summaries and diagnostics.
+- **Gate-row not-run reason trimming for sparse payloads (2026-02-15 PM)** Hardened row-level reason normalization:
+  - `scripts/publish-verify-gates-summary.sh` now trims `gates[].notRunReason` strings during row normalization (empty strings collapse to `null`).
+  - `scripts/test-verify-gates-summary.sh` derived-counts scenario now injects padded not-run reason text and verifies:
+    - `Gate not-run reason map` emits trimmed value
+    - markdown table not-run reason cell emits trimmed value.
+  - `scripts/README.md` updated to document row-level not-run-reason trimming coverage.
+  **Why:** prevents noisy whitespace in sparse row reason fields from polluting rendered diagnostics and map metadata.
