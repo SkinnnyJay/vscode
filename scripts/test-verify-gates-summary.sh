@@ -401,7 +401,7 @@ const payload = {
 	schemaVersion,
 	runId: 'row-command-type-contract',
 	gates: [
-		{ id: ' lint ', command: 9, status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T040000Z', completedAt: '20260215T040001Z', notRunReason: null },
+		{ id: ' lint ', command: 9, status: 'PASS', attempts: 'bad', retryCount: -1, retryBackoffSeconds: 'oops', durationSeconds: 'bad', exitCode: -1, startedAt: '20260215T040000Z', completedAt: '20260215T040001Z', notRunReason: null },
 	],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1258,8 +1258,8 @@ if grep -q "\*\*Schema warning:\*\*" "$row_not_run_reason_type_step_summary"; th
 	echo "Did not expect schema warning for row-not-run-reason-type summary." >&2
 	exit 1
 fi
-if ! grep -Fq '| `lint` | `unknown` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$row_command_type_step_summary"; then
-	echo "Expected row-command-type summary table to sanitize non-string row command values to unknown." >&2
+if ! grep -Fq '| `lint` | `unknown` | pass | 0 | 0 | 0 | 0 | n/a | n/a |' "$row_command_type_step_summary"; then
+	echo "Expected row-command-type summary table to sanitize non-string command and invalid numeric row fields." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$row_command_type_step_summary"; then

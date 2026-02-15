@@ -2459,3 +2459,10 @@
     - normalized gate-ID metadata remains intact (`Selected gates: lint`).
   - `scripts/README.md` updated to document row-command sanitization coverage.
   **Why:** prevents malformed sparse row command values from polluting markdown table readability while preserving gate identity derivation.
+- **Gate-row numeric field sanitization (2026-02-15 PM)** Hardened row-level numeric normalization:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes row numeric fields during `gates[]` ingestion:
+    - `attempts`, `retryCount`, `retryBackoffSeconds`, `durationSeconds` => non-negative integer (fallback `0`)
+    - `exitCode` => non-negative integer or `null`.
+  - `scripts/test-verify-gates-summary.sh` `row_command_type` scenario now injects invalid numeric noise (`attempts: "bad"`, negative retry/exit code, non-numeric duration/backoff) and verifies rendered row defaults to `0`/`n/a` values.
+  - `scripts/README.md` updated to document row numeric-field sanitization coverage.
+  **Why:** prevents malformed row numeric values from leaking inconsistent text into table cells and keeps row rendering aligned with normalized map derivations.

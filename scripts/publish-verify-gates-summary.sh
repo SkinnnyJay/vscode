@@ -110,6 +110,15 @@ const normalizeKnownValue = (value, allowedValues) => {
 	return allowedValues.includes(canonicalValue) ? canonicalValue : null;
 };
 const normalizeGateStatusValue = (value) => normalizeKnownValue(value, ['pass', 'fail', 'skip', 'not-run']);
+const normalizeRowNonNegativeInteger = (value) => {
+	if (typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 0) {
+		return value;
+	}
+	if (typeof value === 'string' && /^\d+$/.test(value.trim())) {
+		return Number.parseInt(value.trim(), 10);
+	}
+	return null;
+};
 const gates = gatesFromSummary.reduce((normalizedGates, gate) => {
 	const gateObject = gate && typeof gate === 'object' ? gate : {};
 	const gateId = normalizeNonEmptyString(gateObject.id);
@@ -121,6 +130,11 @@ const gates = gatesFromSummary.reduce((normalizedGates, gate) => {
 		id: gateId,
 		command: normalizeNonEmptyString(gateObject.command) ?? null,
 		status: normalizeGateStatusValue(gateObject.status) ?? gateObject.status,
+		attempts: normalizeRowNonNegativeInteger(gateObject.attempts) ?? 0,
+		retryCount: normalizeRowNonNegativeInteger(gateObject.retryCount) ?? 0,
+		retryBackoffSeconds: normalizeRowNonNegativeInteger(gateObject.retryBackoffSeconds) ?? 0,
+		durationSeconds: normalizeRowNonNegativeInteger(gateObject.durationSeconds) ?? 0,
+		exitCode: normalizeRowNonNegativeInteger(gateObject.exitCode),
 		notRunReason: typeof gateObject.notRunReason === 'string'
 			? (normalizeNonEmptyString(gateObject.notRunReason) ?? null)
 			: null,
