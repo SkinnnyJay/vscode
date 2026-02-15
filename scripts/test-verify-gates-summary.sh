@@ -373,6 +373,32 @@ if ! grep -q -- "--from requires a non-empty gate id." "$tmpdir/empty-from-value
 fi
 
 set +e
+./scripts/verify-gates.sh --help > "$tmpdir/verify-help.out" 2>&1
+verify_help_status=$?
+set -e
+if [[ "$verify_help_status" -ne 0 ]]; then
+	echo "Expected verify-gates.sh --help to succeed." >&2
+	exit 1
+fi
+if ! grep -q "^Usage:" "$tmpdir/verify-help.out"; then
+	echo "Expected verify-gates --help output to include usage text." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --not-a-real-option > "$tmpdir/verify-unknown-option.out" 2>&1
+verify_unknown_option_status=$?
+set -e
+if [[ "$verify_unknown_option_status" -eq 0 ]]; then
+	echo "Expected unknown verify-gates option to fail." >&2
+	exit 1
+fi
+if ! grep -q "Unknown option: --not-a-real-option" "$tmpdir/verify-unknown-option.out"; then
+	echo "Expected unknown verify-gates option validation message." >&2
+	exit 1
+fi
+
+set +e
 ./scripts/publish-verify-gates-summary.sh --help > "$tmpdir/help.out" 2>&1
 help_status=$?
 set -e

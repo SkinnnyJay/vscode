@@ -1915,6 +1915,12 @@
     - `--from "   "` fails with `--from requires a non-empty gate id`
   - `scripts/README.md` updated to include empty-list/empty-value validation coverage.
   **Why:** ensures argument trimming edge cases keep producing clear failures instead of ambiguous behavior.
+- **Verify-gates help/unknown-option coverage (2026-02-15 PM)** Expanded CLI UX checks in contract harness:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `./scripts/verify-gates.sh --help` exits zero and prints usage text
+    - unknown option (`--not-a-real-option`) fails non-zero with explicit `Unknown option` messaging
+  - `scripts/README.md` updated to include verify-gates help/unknown-option coverage.
+  **Why:** keeps CLI discoverability and failure clarity guarded for both local and CI/operator usage.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
