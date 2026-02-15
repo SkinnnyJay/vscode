@@ -1209,3 +1209,7 @@
   - `make typecheck` → **pass**
   - `make test-web-integration` → **pass** (API/ipynb/config suites green; expected informational 404/log noise only)
   **Why:** validates typed build consistency and browser-hosted integration paths after recent Linux headless hardening.
+- **Smoke + Electron regression rerun (2026-02-15 AM)** Re-verified the launcher and runtime stability paths with full default targets:
+  - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
+  - `make test` → **pass**
+  **Why:** reconfirms the headless display fallback and `/dev/shm` mitigation remain stable on repeated end-to-end Electron executions.
