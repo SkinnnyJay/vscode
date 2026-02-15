@@ -14,6 +14,7 @@ fi
 
 MODE="full"
 RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
+CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
@@ -31,6 +32,7 @@ Options:
 --quick                     Run quick gate set (lint, typecheck, test-unit).
 --full                      Run full gate set (default).
 --retries <n>               Retry count per gate (default: VSCODE_VERIFY_RETRIES or 1).
+--continue-on-failure       Execute remaining gates after a failure; exit non-zero at end if any gate failed.
 --summary-json <path>       Write run summary JSON to path.
 --from <gate-id>            Start execution from matching gate ID.
 --only <id[,id...]>         Run only listed gate IDs.
@@ -62,6 +64,9 @@ while (($# > 0)); do
 			fi
 			shift
 			RETRIES="${1:-}"
+			;;
+		--continue-on-failure)
+			CONTINUE_ON_FAILURE=1
 			;;
 		--summary-json)
 			if (($# < 2)); then
@@ -104,6 +109,11 @@ done
 
 if ! [[ "$RETRIES" =~ ^[0-9]+$ ]]; then
 	echo "Invalid retries value '$RETRIES' (expected non-negative integer)." >&2
+	exit 1
+fi
+
+if ! [[ "$CONTINUE_ON_FAILURE" =~ ^[01]$ ]]; then
+	echo "Invalid continue-on-failure value '$CONTINUE_ON_FAILURE' (expected 0 or 1)." >&2
 	exit 1
 fi
 
@@ -217,6 +227,11 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 declare -a gate_results
 declare -a gate_durations_seconds
 declare -a gate_attempt_counts
+for i in "${!gate_commands[@]}"; do
+	gate_results+=("not-run")
+	gate_durations_seconds+=("0")
+	gate_attempt_counts+=("0")
+done
 
 run_gate() {
 	local command="$1"
@@ -263,13 +278,15 @@ print_summary() {
 	fail_count="$(count_gate_status "fail")"
 	local skip_count
 	skip_count="$(count_gate_status "skip")"
+	local not_run_count
+	not_run_count="$(count_gate_status "not-run")"
 
 	echo
 	echo "Verification summary:"
 	echo "  Run ID: ${RUN_ID}"
-	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"))"
+	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
-	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count}"
+	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
 	for i in "${!gate_commands[@]}"; do
 		printf "  - %-20s status=%-4s attempts=%s duration=%ss command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_commands[$i]}"
 	done
@@ -325,6 +342,8 @@ write_summary_json() {
 	failed_gate_count="$(count_gate_status "fail")"
 	local skipped_gate_count
 	skipped_gate_count="$(count_gate_status "skip")"
+	local not_run_gate_count
+	not_run_gate_count="$(count_gate_status "not-run")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -332,12 +351,14 @@ write_summary_json() {
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
+		echo "  \"continueOnFailure\": $([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"),"
 		echo "  \"dryRun\": $([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"),"
 		echo "  \"success\": ${run_success},"
 		echo "  \"gateCount\": ${#gate_ids[@]},"
 		echo "  \"passedGateCount\": ${passed_gate_count},"
 		echo "  \"failedGateCount\": ${failed_gate_count},"
 		echo "  \"skippedGateCount\": ${skipped_gate_count},"
+		echo "  \"notRunGateCount\": ${not_run_gate_count},"
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","
 		else
@@ -363,15 +384,15 @@ write_summary_json() {
 	} > "$SUMMARY_FILE"
 }
 
-echo "Running '${MODE}' verification sweep with retries=$RETRIES"
+echo "Running '${MODE}' verification sweep with retries=$RETRIES continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false")"
 echo "Selected gates: ${gate_ids[*]}"
 
 if [[ "$DRY_RUN" == "1" ]]; then
 	echo "Dry run mode enabled - commands will not be executed."
 	for i in "${!gate_commands[@]}"; do
-		gate_results+=("skip")
-		gate_durations_seconds+=("0")
-		gate_attempt_counts+=("0")
+		gate_results[$i]="skip"
+		gate_durations_seconds[$i]="0"
+		gate_attempt_counts[$i]="0"
 	done
 	print_summary
 	write_summary_json "true"
@@ -380,22 +401,36 @@ if [[ "$DRY_RUN" == "1" ]]; then
 	exit 0
 fi
 
+any_gate_failed=0
 for i in "${!gate_commands[@]}"; do
 	if run_gate "${gate_commands[$i]}"; then
-		gate_results+=("pass")
-		gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
-		gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
+		gate_results[$i]="pass"
+		gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
+		gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
 		continue
 	fi
 
-	gate_results+=("fail")
-	gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
-	gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
-	FAILED_GATE_ID="${gate_ids[$i]}"
+	gate_results[$i]="fail"
+	gate_durations_seconds[$i]="$RUN_GATE_DURATION_SECONDS"
+	gate_attempt_counts[$i]="$RUN_GATE_ATTEMPTS"
+	if [[ -z "$FAILED_GATE_ID" ]]; then
+		FAILED_GATE_ID="${gate_ids[$i]}"
+	fi
+	any_gate_failed=1
+	if [[ "$CONTINUE_ON_FAILURE" == "1" ]]; then
+		continue
+	fi
+
 	print_summary
 	write_summary_json "false"
 	exit 1
 done
+
+if [[ "$any_gate_failed" == "1" ]]; then
+	print_summary
+	write_summary_json "false"
+	exit 1
+fi
 
 print_summary
 write_summary_json "true"

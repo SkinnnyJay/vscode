@@ -1490,3 +1490,18 @@
   - JSON summary now includes `passedGateCount`, `failedGateCount`, and `skippedGateCount`
   - `scripts/publish-verify-gates-summary.sh` now renders these counts in GitHub step summaries.
   **Why:** gives immediate high-signal run health at a glance without scanning every gate row, especially useful for long full sweeps.
+- **Continue-on-failure execution mode (2026-02-15 AM)** Extended `scripts/verify-gates.sh` with optional non-fail-fast behavior:
+  - new `--continue-on-failure` flag (and `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1`) runs all selected gates even after failures
+  - script now initializes per-gate statuses upfront, enabling deterministic summaries for fail-fast and continue-on-failure paths
+  - added `continueOnFailure` and `notRunGateCount` to JSON summaries
+  - terminal summary now includes `not-run` outcome count and continue-on-failure setting.
+  Also updated `scripts/publish-verify-gates-summary.sh` to render `Continue on failure` and `Not-run gates`.
+  **Why:** enables fuller failure reports in CI/nightly runs while preserving fail-fast as default for quick feedback loops.
+- **Continue-on-failure validation (2026-02-15 AM)** Verified both execution strategies and summary/rendering fields:
+  - used an exported mock `make` shell function to force deterministic outcomes (`lint` fails, `typecheck` passes) without running full gates
+  - fail-fast run (`--quick --only lint,typecheck --retries 0`) exits after first failure with summary counts `pass=0 fail=1 not-run=1`
+  - continue-on-failure run (`--continue-on-failure`) executes both gates and exits non-zero with counts `pass=1 fail=1 not-run=0`
+  - JSON assertions confirmed `continueOnFailure` + `notRunGateCount` correctness in both runs
+  - GitHub summary renderer output includes `Continue on failure` and `Not-run gates`
+  - after unsetting mock function, real `./scripts/verify-gates.sh --quick --only typecheck --retries 0` and `make lint` both passed.
+  **Why:** demonstrates behavior under controlled failure and real gate execution while preventing false positives from shell-state test doubles.
