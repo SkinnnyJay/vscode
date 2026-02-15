@@ -2367,3 +2367,10 @@
     and verifies renderer behavior stays consistent (`Success: false`, `Exit reason: fail-fast`, `Run classification: failed-fail-fast`).
   - `scripts/README.md` updated to document unknown-reason + explicit-classification fallback coverage.
   **Why:** prevents malformed explicit reasons from suppressing otherwise valid explicit classification semantics in sparse CI payloads.
+- **Invalid runClassification + explicit exitReason fallback coverage (2026-02-15 PM)** Added inverse sparse precedence guard:
+  - `scripts/test-verify-gates-summary.sh` now adds a payload with:
+    - explicit `exitReason: completed-with-failures`
+    - unknown `runClassification: totally-invalid`
+    and verifies renderer output remains reason-driven and coherent (`Success: false`, `Continue on failure: true`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`).
+  - `scripts/README.md` updated to document unknown-classification + explicit-reason fallback coverage.
+  **Why:** prevents malformed explicit classification values from suppressing valid explicit-reason semantics in sparse CI payloads.
