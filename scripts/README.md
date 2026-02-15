@@ -71,6 +71,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes explicit selected-gate order checks proving table row ordering follows `selectedGateIds` when sparse payloads provide both row data and explicit selection order.
   - Includes selected-gate missing-row checks proving explicit `selectedGateIds` metadata is preserved even when some selected gates have no row data (table renders only available rows).
   - Includes selected-gate missing-row map-default checks proving missing selected gates still appear in per-gate maps with safe defaults (`unknown` status, `null` exit code).
+  - Includes selected-gate missing-row visibility checks proving missing selected IDs surface in non-success/attention lists even when table rows are unavailable.
   - Includes row-derived map-default parity checks proving missing selected gates receive safe defaults in row-derived maps too (`null`/`0`), not just explicit summary maps.
   - Includes selected-gate unmatched-row table fallback checks proving table rendering falls back to available rows when explicit `selectedGateIds` match no row IDs.
   - Includes selected-gate subset-row checks proving counters/non-success lists and table rendering all scope to explicit selected IDs when at least one selected row exists.

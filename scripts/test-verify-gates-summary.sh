@@ -1619,6 +1619,10 @@ if ! grep -Fq "**Gate status map:** {\"missing\":\"unknown\",\"lint\":\"pass\"}"
 	echo "Expected selected-order-missing-rows summary to default missing selected gates to unknown status in gate status map." >&2
 	exit 1
 fi
+if ! grep -Fq "**Non-success gates list:** missing" "$selected_order_missing_rows_step_summary" || ! grep -Fq "**Attention gates list:** missing" "$selected_order_missing_rows_step_summary"; then
+	echo "Expected selected-order-missing-rows summary to surface missing selected gates in non-success and attention lists." >&2
+	exit 1
+fi
 if ! grep -Fq "\"lint\":0" "$selected_order_missing_rows_step_summary" || ! grep -Fq "\"missing\":null" "$selected_order_missing_rows_step_summary"; then
 	echo "Expected selected-order-missing-rows summary to default missing selected gates to null exit codes in gate exit-code map output." >&2
 	exit 1
@@ -1633,6 +1637,10 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_order_missing_rows_step_summary"
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_order_unmatched_rows_step_summary"; then
 	echo "Expected selected-order-unmatched-rows summary to preserve explicit unmatched selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** missing-only" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Attention gates list:** missing-only" "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary to keep unmatched selected gates visible in non-success and attention metadata." >&2
 	exit 1
 fi
 if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_unmatched_rows_step_summary"; then
