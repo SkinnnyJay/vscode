@@ -32,6 +32,8 @@ malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
 escape_summary="$tmpdir/escape.json"
 escape_step_summary="$tmpdir/escape-step.md"
+fallback_summary="$tmpdir/fallback.json"
+fallback_step_summary="$tmpdir/fallback-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -101,9 +103,34 @@ unset -f make
 GITHUB_STEP_SUMMARY="$fail_fast_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_summary" "Verify Gates Fail-fast Contract Test"
 GITHUB_STEP_SUMMARY="$retry_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Verify Gates Retry Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" <<'NODE'
+node - "$retry_summary" "$fallback_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, failFastPath, retryPath, failFastStepPath, retryStepPath] = process.argv.slice(2);
+const [sourcePath, fallbackPath] = process.argv.slice(2);
+const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+delete payload.gateStatusById;
+delete payload.gateExitCodeById;
+delete payload.gateRetryCountById;
+delete payload.gateDurationSecondsById;
+delete payload.gateNotRunReasonById;
+delete payload.gateAttemptCountById;
+delete payload.attentionGateIds;
+delete payload.nonSuccessGateIds;
+delete payload.notRunGateIds;
+delete payload.failedGateIds;
+delete payload.failedGateExitCodes;
+delete payload.passedGateIds;
+delete payload.skippedGateIds;
+delete payload.executedGateIds;
+delete payload.retriedGateIds;
+delete payload.selectedGateIds;
+fs.writeFileSync(fallbackPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
+
+node - "$expected_schema_version" "$dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [expectedSchemaVersionRaw, dryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -113,6 +140,7 @@ const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
 const retryStep = fs.readFileSync(retryStepPath, 'utf8');
+const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
@@ -150,6 +178,15 @@ if (!/\*\*Gate attempt-count map:\*\* \{[^\n]*lint[^\n]*2[^\n]*typecheck[^\n]*1/
 }
 if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.test(retryStep)) {
 	throw new Error('Retry step summary missing retry-count map.');
+}
+if (!/\*\*Gate status map:\*\* \{[^\n]*lint[^\n]*pass[^\n]*typecheck[^\n]*pass/.test(fallbackStep)) {
+	throw new Error('Fallback summary did not derive gate status map from gate rows.');
+}
+if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.test(fallbackStep)) {
+	throw new Error('Fallback summary did not derive retry-count map from gate rows.');
+}
+if (!fallbackStep.includes('**Attention gates list:** lint')) {
+	throw new Error('Fallback summary did not derive attention-gate list from gate rows.');
 }
 NODE
 

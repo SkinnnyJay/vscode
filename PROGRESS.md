@@ -1887,3 +1887,11 @@
     - markdown escaping for gate IDs/commands containing pipes, backticks, and newlines (ensuring table-safe output)
   - `scripts/README.md` updated to mention markdown escaping coverage in the contract script.
   **Why:** prevents regressions in user-facing summary readability and keeps CLI UX behavior explicitly guarded.
+- **Renderer fallback-field derivation coverage (2026-02-15 PM)** Expanded contract harness for backwards-compatible payload parsing:
+  - `scripts/test-verify-gates-summary.sh` now creates a synthetic summary with top-level map/list fields removed and verifies the renderer derives them from `gates[]`.
+  - assertions cover derived:
+    - `Gate status map`
+    - `Gate retry-count map`
+    - `Attention gates list`
+  - `scripts/README.md` updated to document fallback derivation coverage.
+  **Why:** protects compatibility with partial/older summary payloads and prevents regressions in renderer fallback logic.
