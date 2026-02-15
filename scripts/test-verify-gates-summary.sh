@@ -77,6 +77,8 @@ conflicting_reason_classification_summary="$tmpdir/conflicting-reason-classifica
 conflicting_reason_classification_step_summary="$tmpdir/conflicting-reason-classification-step.md"
 conflicting_run_state_flags_summary="$tmpdir/conflicting-run-state-flags.json"
 conflicting_run_state_flags_step_summary="$tmpdir/conflicting-run-state-flags-step.md"
+conflicting_classification_flags_summary="$tmpdir/conflicting-classification-flags.json"
+conflicting_classification_flags_step_summary="$tmpdir/conflicting-classification-flags-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -524,6 +526,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$conflicting_run_state_flags_step_summary" ./scripts/publish-verify-gates-summary.sh "$conflicting_run_state_flags_summary" "Verify Gates Conflicting Run-State Flags Contract Test"
+
+node - "$expected_schema_version" "$conflicting_classification_flags_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'conflicting-classification-flags-contract',
+	runClassification: 'failed-continued',
+	success: true,
+	dryRun: true,
+	continueOnFailure: false,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$conflicting_classification_flags_step_summary" ./scripts/publish-verify-gates-summary.sh "$conflicting_classification_flags_summary" "Verify Gates Conflicting Classification Flags Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1267,6 +1290,31 @@ if ! grep -Fq "**Run classification:** failed-fail-fast" "$conflicting_run_state
 fi
 if grep -q "\*\*Schema warning:\*\*" "$conflicting_run_state_flags_step_summary"; then
 	echo "Did not expect schema warning for conflicting run-state flags summary." >&2
+	exit 1
+fi
+
+if ! grep -Fq "**Success:** false" "$conflicting_classification_flags_step_summary"; then
+	echo "Expected conflicting classification-flags summary to ignore conflicting explicit success value." >&2
+	exit 1
+fi
+if ! grep -Fq "**Dry run:** false" "$conflicting_classification_flags_step_summary"; then
+	echo "Expected conflicting classification-flags summary to ignore conflicting explicit dry-run value." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$conflicting_classification_flags_step_summary"; then
+	echo "Expected conflicting classification-flags summary to ignore conflicting explicit continue-on-failure value." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** completed-with-failures" "$conflicting_classification_flags_step_summary"; then
+	echo "Expected conflicting classification-flags summary to derive exit reason from explicit runClassification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** failed-continued" "$conflicting_classification_flags_step_summary"; then
+	echo "Expected conflicting classification-flags summary to preserve explicit runClassification when internally consistent." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$conflicting_classification_flags_step_summary"; then
+	echo "Did not expect schema warning for conflicting classification-flags summary." >&2
 	exit 1
 fi
 
