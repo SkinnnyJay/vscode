@@ -1253,3 +1253,5 @@
   - `make test-web-integration` → **pass**
   - `make test-e2e` → **pass**
   **Why:** confirms no regressions and demonstrates the preflight parity works across Electron and browser-hosted test entrypoints.
+- **Smoke regression after launcher parity (2026-02-15 AM)** Ran `make test-smoke` after the `code.sh` preflight update and observed a clean pass (`34 passing`, `61 pending`).
+  **Why:** closes the remaining major launcher path by confirming smoke automation remains stable alongside unit/integration/e2e/web gates.
