@@ -2498,6 +2498,11 @@
     - empty placeholder row is not emitted.
   - `scripts/README.md` updated to document unmatched selected-order table fallback coverage.
   **Why:** avoids hiding valid row diagnostics behind empty table placeholders when explicit selections are stale or mismatched.
+- **Selected subset-row scoping coverage (2026-02-15 PM)** Added explicit-selection subset guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_subset_rows` scenario (`selectedGateIds: ['lint']`) with extra non-selected rows present.
+  - Assertions verify selected metadata/counts remain scoped (`Gate count: 1`) and table output includes only selected matching rows (non-selected `build` row omitted).
+  - `scripts/README.md` updated to document selected-subset row scoping behavior.
+  **Why:** ensures table rendering respects explicit selected-gate scope when selection matches at least one available row.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:
   - `scripts/publish-verify-gates-summary.sh` now treats parsed payload as summary data only when the root JSON value is a plain object; scalar/array/null roots are normalized to an empty summary object before derivation.
   - Existing scalar/array/null contract scenarios continue to pass with deterministic placeholder rendering and warnings.
