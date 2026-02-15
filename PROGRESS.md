@@ -1895,3 +1895,10 @@
     - `Attention gates list`
   - `scripts/README.md` updated to document fallback derivation coverage.
   **Why:** protects compatibility with partial/older summary payloads and prevents regressions in renderer fallback logic.
+- **Verify-gates CLI validation coverage in contract harness (2026-02-15 PM)** Expanded deterministic checks for argument/env validation paths:
+  - `scripts/test-verify-gates-summary.sh` now verifies `verify-gates.sh` fails with explicit messages for:
+    - missing option value (`--retries` without a value)
+    - unknown `--only` gate id
+    - invalid `VSCODE_VERIFY_CONTINUE_ON_FAILURE` value (`maybe`)
+  - `scripts/README.md` updated to include verify-gates CLI validation coverage in harness description.
+  **Why:** locks in error clarity and prevents regression in preflight argument/env validation behavior.

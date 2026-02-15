@@ -265,6 +265,45 @@ if ! grep -q "GITHUB_STEP_SUMMARY is not set; skipping summary publication." "$t
 fi
 
 set +e
+./scripts/verify-gates.sh --retries > "$tmpdir/missing-retries-value.out" 2>&1
+missing_retries_value_status=$?
+set -e
+if [[ "$missing_retries_value_status" -eq 0 ]]; then
+	echo "Expected --retries without a value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Missing value for --retries" "$tmpdir/missing-retries-value.out"; then
+	echo "Expected missing --retries value message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --quick --only lint,unknown --dry-run > "$tmpdir/unknown-gate.out" 2>&1
+unknown_gate_status=$?
+set -e
+if [[ "$unknown_gate_status" -eq 0 ]]; then
+	echo "Expected --only with unknown gate id to fail." >&2
+	exit 1
+fi
+if ! grep -q "Unknown gate id 'unknown' for --only" "$tmpdir/unknown-gate.out"; then
+	echo "Expected unknown gate id validation message." >&2
+	exit 1
+fi
+
+set +e
+VSCODE_VERIFY_CONTINUE_ON_FAILURE=maybe ./scripts/verify-gates.sh --quick --only lint --dry-run > "$tmpdir/invalid-continue-on-failure.out" 2>&1
+invalid_continue_on_failure_status=$?
+set -e
+if [[ "$invalid_continue_on_failure_status" -eq 0 ]]; then
+	echo "Expected invalid continue-on-failure environment value to fail." >&2
+	exit 1
+fi
+if ! grep -q "Invalid continue-on-failure value 'maybe'" "$tmpdir/invalid-continue-on-failure.out"; then
+	echo "Expected invalid continue-on-failure validation message." >&2
+	exit 1
+fi
+
+set +e
 ./scripts/publish-verify-gates-summary.sh --help > "$tmpdir/help.out" 2>&1
 help_status=$?
 set -e
