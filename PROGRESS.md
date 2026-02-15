@@ -2503,6 +2503,15 @@
   - Assertions verify selected metadata/counts remain scoped (`Gate count: 1`) and table output includes only selected matching rows (non-selected `build` row omitted).
   - `scripts/README.md` updated to document selected-subset row scoping behavior.
   **Why:** ensures table rendering respects explicit selected-gate scope when selection matches at least one available row.
+- **Selected-gate scope alignment for row-derived partitions (2026-02-15 PM)** Closed selection/partition mismatch:
+  - `scripts/publish-verify-gates-summary.sh` now scopes row-derived status partitions/counters to explicit `selectedGateIds` when provided:
+    - pass/fail/skip/not-run counts and lists
+    - executed-gate list
+    - row-derived `nonSuccessGateIds` semantics
+    - row-derived status-map fallback for selected IDs.
+  - `scripts/test-verify-gates-summary.sh` selected-subset scenario now includes a failing non-selected row and verifies selected-scope outputs remain unaffected (`Passed gates: 1`, `Failed gates: 0`, `Non-success gates list: none`).
+  - `scripts/README.md` selected-subset bullet updated to call out counter/non-success scoping.
+  **Why:** prevents non-selected row statuses from leaking into selected-scope summary counters and lists.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:
   - `scripts/publish-verify-gates-summary.sh` now treats parsed payload as summary data only when the root JSON value is a plain object; scalar/array/null roots are normalized to an empty summary object before derivation.
   - Existing scalar/array/null contract scenarios continue to pass with deterministic placeholder rendering and warnings.

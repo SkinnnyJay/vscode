@@ -570,7 +570,7 @@ const payload = {
 	selectedGateIds: ['lint'],
 	gates: [
 		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
-		{ id: ' build ', command: 'make build', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080001Z', completedAt: '20260215T080002Z', notRunReason: null },
+		{ id: ' build ', command: 'make build', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 9, startedAt: '20260215T080001Z', completedAt: '20260215T080002Z', notRunReason: null },
 	],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1651,7 +1651,11 @@ if ! grep -Fq "**Selected gates:** lint" "$selected_subset_rows_step_summary" ||
 	echo "Expected selected-subset-rows summary to preserve explicit selected subset metadata." >&2
 	exit 1
 fi
-if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_subset_rows_step_summary" || grep -Fq '| `build` | `make build` | pass |' "$selected_subset_rows_step_summary"; then
+if ! grep -Fq "**Passed gates:** 1" "$selected_subset_rows_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_subset_rows_step_summary" || ! grep -Fq "**Non-success gates list:** none" "$selected_subset_rows_step_summary"; then
+	echo "Expected selected-subset-rows summary to scope pass/fail/non-success derivation to explicitly selected gates only." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_subset_rows_step_summary" || grep -Fq '| `build` | `make build` |' "$selected_subset_rows_step_summary"; then
 	echo "Expected selected-subset-rows summary table to render only rows matching explicit selectedGateIds subset." >&2
 	exit 1
 fi
