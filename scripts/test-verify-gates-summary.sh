@@ -73,6 +73,8 @@ unknown_status_only_rows_summary="$tmpdir/unknown-status-only-rows.json"
 unknown_status_only_rows_step_summary="$tmpdir/unknown-status-only-rows-step.md"
 duplicate_same_status_rows_summary="$tmpdir/duplicate-same-status-rows.json"
 duplicate_same_status_rows_step_summary="$tmpdir/duplicate-same-status-rows-step.md"
+selected_order_rows_summary="$tmpdir/selected-order-rows.json"
+selected_order_rows_step_summary="$tmpdir/selected-order-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -473,6 +475,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$duplicate_same_status_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$duplicate_same_status_rows_summary" "Verify Gates Duplicate Same-Status Rows Contract Test"
+
+node - "$expected_schema_version" "$selected_order_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-order-rows-contract',
+	selectedGateIds: ['build', 'lint'],
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
+		{ id: ' build ', command: 'make build', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080001Z', completedAt: '20260215T080002Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_order_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_rows_summary" "Verify Gates Selected Order Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1414,6 +1437,16 @@ if ! grep -Fq '| `lint` | `make lint` | fail | 2 | 1 | 1 | 2 | 7 | n/a |' "$dupl
 fi
 if grep -q "\*\*Schema warning:\*\*" "$duplicate_same_status_rows_step_summary"; then
 	echo "Did not expect schema warning for duplicate-same-status-rows summary." >&2
+	exit 1
+fi
+selected_order_build_line="$(grep -nF '| `build` | `make build` | pass |' "$selected_order_rows_step_summary" | awk -F: 'NR==1{print $1}')"
+selected_order_lint_line="$(grep -nF '| `lint` | `make lint` | pass |' "$selected_order_rows_step_summary" | awk -F: 'NR==1{print $1}')"
+if [[ -z "$selected_order_build_line" || -z "$selected_order_lint_line" || "$selected_order_build_line" -ge "$selected_order_lint_line" ]]; then
+	echo "Expected selected-order-rows summary table to follow explicit selectedGateIds order when rows are present." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_order_rows_step_summary"; then
+	echo "Did not expect schema warning for selected-order-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
