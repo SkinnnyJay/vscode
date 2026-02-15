@@ -50,6 +50,7 @@ const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
 const supportedSchemaVersion = 17;
 const sanitizeHeading = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
+const sanitizeInlineCode = (value) => String(value ?? '').replace(/\r?\n/g, ' ').replace(/`/g, '\\`');
 const renderedHeading = sanitizeHeading(heading) || 'Verify Gates Summary';
 
 if (!summaryPath || !summaryOutputPath) {
@@ -61,7 +62,7 @@ try {
 	parsedSummary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
 } catch (error) {
 	const message = error instanceof Error ? error.message : String(error);
-	fs.appendFileSync(summaryOutputPath, `## ${renderedHeading}\n\nUnable to parse verify-gates summary at \`${summaryPath}\`: ${message}\n`);
+	fs.appendFileSync(summaryOutputPath, `## ${renderedHeading}\n\nUnable to parse verify-gates summary at \`${sanitizeInlineCode(summaryPath)}\`: ${message}\n`);
 	process.exit(0);
 }
 
@@ -234,7 +235,7 @@ const lines = [
 ];
 
 if (summary.logFile) {
-	lines.push(`**Log file:** \`${summary.logFile}\``);
+	lines.push(`**Log file:** \`${sanitizeInlineCode(summary.logFile)}\``);
 }
 
 if (typeof summary.schemaVersion === 'number' && summary.schemaVersion > supportedSchemaVersion) {

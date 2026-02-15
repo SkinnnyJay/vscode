@@ -35,11 +35,13 @@ fail_fast_step_summary="$tmpdir/fail-fast-step.md"
 retry_step_summary="$tmpdir/retry-step.md"
 future_summary="$tmpdir/future.json"
 future_step_summary="$tmpdir/future-step.md"
-malformed_summary="$tmpdir/malformed.json"
+malformed_summary="$tmpdir/malformed\`name.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
 escape_summary="$tmpdir/escape.json"
 escape_step_summary="$tmpdir/escape-step.md"
+code_span_summary="$tmpdir/code-span.json"
+code_span_step_summary="$tmpdir/code-span-step.md"
 fallback_summary="$tmpdir/fallback.json"
 fallback_step_summary="$tmpdir/fallback-step.md"
 minimal_summary="$tmpdir/minimal.json"
@@ -387,7 +389,7 @@ const malformedStep = fs.readFileSync(malformedStepPath, 'utf8');
 if (!malformedStep.includes('Unable to parse verify-gates summary')) {
 	throw new Error('Malformed-summary handling message missing from published step summary.');
 }
-if (!malformedStep.includes('malformed.json')) {
+if (!malformedStep.includes('malformed\\`name.json')) {
 	throw new Error('Malformed-summary warning should include summary file path.');
 }
 NODE
@@ -766,6 +768,30 @@ if (!escapeStep.includes('id\\|with\\`pipe')) {
 }
 if (!escapeStep.includes('line1 line2 \\| \\`')) {
 	throw new Error('Expected escaped/single-line command in markdown table output.');
+}
+NODE
+
+node - "$expected_schema_version" "$code_span_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+const payload = {
+	schemaVersion,
+	success: true,
+	logFile: 'path/with`tick\nline.log',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$code_span_step_summary" ./scripts/publish-verify-gates-summary.sh "$code_span_summary" "Verify Gates Code Span Contract Test"
+
+node - "$code_span_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [codeSpanStepPath] = process.argv.slice(2);
+const codeSpanStep = fs.readFileSync(codeSpanStepPath, 'utf8');
+if (!codeSpanStep.includes('**Log file:** `path/with\\`tick line.log`')) {
+	throw new Error('Expected escaped/single-line log-file code span output.');
 }
 NODE
 

@@ -2053,6 +2053,15 @@
     - `Summary schema version: unknown`
   - `scripts/README.md` updated to include null payload coverage in sparse-payload checks.
   **Why:** prevents runtime crashes for edge-case JSON inputs while preserving fail-safe summary output.
+- **Inline code-span escaping coverage (2026-02-15 PM)** Hardened markdown safety for code-span fields:
+  - `scripts/publish-verify-gates-summary.sh` now sanitizes inline code spans (newline collapse + backtick escaping) for:
+    - malformed-summary file-path warning line
+    - rendered `Log file` metadata line
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - malformed warning includes escaped backtick path (`malformed\`name.json`)
+    - `Log file` line escapes backticks and removes newlines.
+  - `scripts/README.md` updated to document inline code-span escaping coverage.
+  **Why:** prevents markdown breakage in warnings/metadata when paths contain special characters.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
