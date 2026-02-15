@@ -305,10 +305,10 @@ const payload = {
 	selectedGateIds: ['lint', 'typecheck', 'test-unit', 'build'],
 	passedGateIds: ['lint'],
 	failedGateIds: ['typecheck'],
+	failedGateExitCodes: [2],
 	skippedGateIds: ['test-unit'],
 	notRunGateIds: ['build'],
 	executedGateIds: ['lint', 'typecheck'],
-	gateExitCodeById: { lint: 0, typecheck: 2, 'test-unit': null, build: null },
 	gateRetryCountById: { lint: 2, typecheck: 0, 'test-unit': 0, build: 0 },
 	gateDurationSecondsById: { lint: 5, typecheck: 3, 'test-unit': 0, build: 0 },
 	gateAttemptCountById: { lint: 1, typecheck: 1, 'test-unit': 0, build: 0 },
@@ -800,6 +800,10 @@ if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":1,\"skip\":1,\"not-run\":
 fi
 if ! grep -Fq "\"lint\":\"pass\"" "$derived_lists_step_summary" || ! grep -Fq "\"typecheck\":\"fail\"" "$derived_lists_step_summary" || ! grep -Fq "\"test-unit\":\"skip\"" "$derived_lists_step_summary" || ! grep -Fq "\"build\":\"not-run\"" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive gate status map from gate-id partitions." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate exit-code map:** {\"lint\":null,\"typecheck\":2,\"test-unit\":null,\"build\":null}" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive gate exit-code map from failedGateIds + failedGateExitCodes." >&2
 	exit 1
 fi
 if ! grep -Fq "**Executed gates:** 2" "$derived_lists_step_summary"; then

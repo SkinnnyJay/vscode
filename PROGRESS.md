@@ -2233,3 +2233,11 @@
     - list/map-only sparse payload derives `Total duration` from duration map and keeps started/completed as `unknown`.
   - `scripts/README.md` updated to include timing metadata derivation in sparse fallback coverage.
   **Why:** preserves useful run timing metadata for sparse payload producers that omit top-level timing fields while still providing enough gate-level timing context.
+- **Sparse exit-code map derivation from failed-exit lists (2026-02-15 PM)** Added reverse fallback for gate exit-code maps:
+  - `scripts/publish-verify-gates-summary.sh` now derives `gateExitCodeById` for sparse/list-only payloads using:
+    - `selectedGateIds` + partition lists to establish gate IDs (default `null`)
+    - `failedGateIds` + `failedGateExitCodes` (and `failedGateId` + `failedGateExitCode`) to backfill failed gate codes.
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload now omits `gateExitCodeById` and asserts markdown still renders:
+    - `Gate exit-code map: {"lint":null,"typecheck":2,"test-unit":null,"build":null}`.
+  - `scripts/README.md` updated to mention bidirectional failed-exit-code derivation coverage.
+  **Why:** ensures exit-code diagnostics remain complete even when sparse producers supply failed code lists but omit explicit per-gate exit-code maps.
