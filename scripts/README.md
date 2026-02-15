@@ -44,6 +44,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
   - Summary payload includes `startedAt`, `completedAt`, `totalDurationSeconds`, plus per-gate `status`, `attempts`, and `durationSeconds`.
 - **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.
+  - The helper is fail-safe for CI `if: always()` steps: malformed/missing payload fields are rendered as warnings/placeholders instead of failing the workflow step.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
   - Gate IDs: `lint`, `typecheck`, `test-unit`, `test`, `test-smoke`, `test-integration`, `test-e2e`, `test-web-integration`, `build`.
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.

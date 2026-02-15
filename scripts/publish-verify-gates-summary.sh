@@ -27,7 +27,15 @@ if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
 }
 
-const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+let summary;
+try {
+	summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+} catch (error) {
+	const message = error instanceof Error ? error.message : String(error);
+	fs.appendFileSync(summaryOutputPath, `## ${heading}\n\nUnable to parse verify-gates summary at \`${summaryPath}\`: ${message}\n`);
+	process.exit(0);
+}
+
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
 const gateRows = gates.map((gate) => {
 	const gateId = gate.id ?? 'unknown';
@@ -43,12 +51,12 @@ const lines = [
 	'',
 	'| Gate ID | Command | Status | Attempts | Duration (s) |',
 	'| --- | --- | --- | ---: | ---: |',
-	...gateRows,
+	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a |']),
 	'',
-	`**Success:** ${summary.success}`,
-	`**Total duration:** ${summary.totalDurationSeconds}s`,
-	`**Started:** ${summary.startedAt}`,
-	`**Completed:** ${summary.completedAt}`,
+	`**Success:** ${summary.success ?? 'unknown'}`,
+	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
+	`**Started:** ${summary.startedAt ?? 'unknown'}`,
+	`**Completed:** ${summary.completedAt ?? 'unknown'}`,
 ];
 
 if (summary.logFile) {
