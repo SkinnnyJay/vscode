@@ -1714,6 +1714,10 @@ if ! grep -Fq "**Selected gates:** missing-only" "$selected_order_unmatched_rows
 	echo "Expected selected-order-unmatched-rows summary to preserve explicit unmatched selected-gate metadata." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate status map:** {\"missing-only\":\"unknown\"}" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Gate exit-code map:** {\"missing-only\":null}" "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary to scope per-gate maps to explicitly selected unmatched gates." >&2
+	exit 1
+fi
 if ! grep -Fq "**Non-success gates list:** missing-only" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Attention gates list:** missing-only" "$selected_order_unmatched_rows_step_summary"; then
 	echo "Expected selected-order-unmatched-rows summary to keep unmatched selected gates visible in non-success and attention metadata." >&2
 	exit 1
@@ -1736,6 +1740,10 @@ if ! grep -Fq "**Selected gates:** lint" "$selected_subset_rows_step_summary" ||
 fi
 if ! grep -Fq "**Passed gates:** 1" "$selected_subset_rows_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_subset_rows_step_summary" || ! grep -Fq "**Non-success gates list:** none" "$selected_subset_rows_step_summary"; then
 	echo "Expected selected-subset-rows summary to scope pass/fail/non-success derivation to explicitly selected gates only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate status map:** {\"lint\":\"pass\"}" "$selected_subset_rows_step_summary" || ! grep -Fq "**Gate exit-code map:** {\"lint\":0}" "$selected_subset_rows_step_summary"; then
+	echo "Expected selected-subset-rows summary to scope row-derived per-gate maps to explicitly selected gates only." >&2
 	exit 1
 fi
 if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_subset_rows_step_summary" || grep -Fq '| `build` | `make build` |' "$selected_subset_rows_step_summary"; then

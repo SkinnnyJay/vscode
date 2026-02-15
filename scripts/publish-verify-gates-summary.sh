@@ -380,9 +380,12 @@ const statusCounts = {
 	'not-run': rawStatusCounts['not-run'] ?? notRunGateCount,
 };
 const normalizeGateIdValue = (value) => normalizeNonEmptyString(value);
+const resolvedRowsForSelectionScope = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
+	? selectedGateIdsFromSummary.map((gateId) => resolvedRowByGateId[gateId]).filter((gate) => gate !== undefined)
+	: Object.values(resolvedRowByGateId);
 const gateIdsFromRows = (predicate) => {
 	const gateIds = [];
-	for (const gate of Object.values(resolvedRowByGateId)) {
+	for (const gate of resolvedRowsForSelectionScope) {
 		if (!predicate(gate)) {
 			continue;
 		}
@@ -395,7 +398,7 @@ const gateIdsFromRows = (predicate) => {
 };
 const gateMapFromRows = (valueSelector) => {
 	const gateMap = {};
-	for (const gate of Object.values(resolvedRowByGateId)) {
+	for (const gate of resolvedRowsForSelectionScope) {
 		const gateId = normalizeGateIdValue(gate.id);
 		if (gateId === null) {
 			continue;

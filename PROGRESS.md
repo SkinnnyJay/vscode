@@ -2524,6 +2524,7 @@
     - row-derived `nonSuccessGateIds` semantics
     - row-derived status-map fallback for selected IDs.
   - `scripts/test-verify-gates-summary.sh` selected-subset scenario now includes a failing non-selected row and verifies selected-scope outputs remain unaffected (`Passed gates: 1`, `Failed gates: 0`, `Non-success gates list: none`).
+  - Selected subset/unmatched scenarios now also verify row-derived per-gate maps are selected-scope aligned (`gateStatusById`/`gateExitCodeById` include only selected IDs).
   - `scripts/README.md` selected-subset bullet updated to call out counter/non-success scoping.
   **Why:** prevents non-selected row statuses from leaking into selected-scope summary counters and lists.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:
