@@ -1360,3 +1360,13 @@
   - `make build` → **pass** (0 compile errors)
   - `make test-e2e` run in parallel with `make test-web-integration` → transient failure in e2e colorize leg; immediate standalone `make test-e2e` rerun → **pass**
   **Why:** adds another high-signal confirmation that serialized heavy suites remain stable, while preserving an explicit record that concurrent e2e+web runs can still trigger VM-level transient failures.
+- **Verification automation command (2026-02-15 AM)** Added `scripts/verify-gates.sh` to run deterministic validation sweeps with optional `--quick` mode and configurable retries (`VSCODE_VERIFY_RETRIES` / `--retries`).
+  - `scripts/verify-gates.sh` default full sweep: lint, typecheck, test-unit, test, test-smoke, test-integration, test-e2e, test-web-integration, build
+  - quick sweep: lint, typecheck, test-unit
+  - one-retry default with exponential backoff to absorb known transient VM flakes.
+  **Why:** replaces repeated manual gate orchestration with a consistent command that captures the same validation policy and transient handling in one place.
+- **Verification automation validation (2026-02-15 AM)** Validated new `verify-gates` flow and documented behavior:
+  - `./scripts/verify-gates.sh --quick --retries 0` → reproduced known transient `McpStdioStateHandler sigterm after grace` failure in `make test-unit`
+  - `./scripts/verify-gates.sh --quick` (default retries=1) → **pass**
+  - script is executable and callable directly from repo root (`./scripts/verify-gates.sh ...`).
+  **Why:** confirms command wiring works end-to-end and proves retry behavior addresses existing non-deterministic unit-test flakes without changing test code.
