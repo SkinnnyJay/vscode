@@ -1785,3 +1785,9 @@
   - `scripts/publish-verify-gates-summary.sh` now treats `supportedSchemaVersion=9`
   - `scripts/README.md` now documents current schema version as `9`.
   **Why:** keeps explicit schema/version compatibility aligned with the evolved payload contract and summary renderer expectations.
+- **Gate-status map + schema v10 (2026-02-15 AM)** Added direct gate-id→status lookup and bumped schema:
+  - `scripts/verify-gates.sh` now emits `gateStatusById` object (e.g. `{ "lint": "pass", "typecheck": "fail" }`)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate status map` in step summaries and derives fallback map from per-gate rows when top-level field is absent
+  - schema baseline bumped to `10` in both producer/renderer
+  - `scripts/README.md` updated to current schema version `10` and field list includes `gateStatusById`.
+  **Why:** allows downstream tooling to read gate statuses in O(1) by gate id without scanning arrays, while keeping schema compatibility explicit.
