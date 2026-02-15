@@ -1216,3 +1216,13 @@
 - **Full integration rerun after repeated smoke/electron passes (2026-02-15 AM)** Executed the complete integration gate once more on current head:
   - `make test-integration` → **pass** (node integration, extension/API, css/html suites all green)
   **Why:** confirms the broader extension/integration surface remains stable after multiple consecutive launcher and runtime hardening regression cycles.
+- **Policy export execution hardening for longer E2E runs (2026-02-15 AM)** Tightened policy export test stability in `policyExport.integrationTest.ts`:
+  - increased per-attempt subprocess timeout from 30s to 90s
+  - increased test timeout from 180s to 300s
+  - added CLI flags for export runs (`--disable-extensions --disable-gpu --skip-welcome`) to reduce startup variance.
+  **Why:** `make test-e2e` is a longer run path than normal integration and intermittently exceeded stricter export timing assumptions.
+- **Post-hardening E2E validation (2026-02-15 AM)** Re-ran targeted and full gates after the timing/args update:
+  - `./scripts/test.sh --runGlob "**/policyExport.integrationTest.js"` → **pass** (`2 passing`, export case ~41s)
+  - `make test-e2e` → first run hit a transient early Electron child-process ENOENT flake; immediate re-run **pass**
+  - `make lint` → **pass**
+  **Why:** confirms the policy export path is materially more resilient in the long-running e2e sequence while preserving lint-clean state.

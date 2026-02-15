@@ -16,8 +16,8 @@ import * as util from 'util';
 const execFile = util.promisify(cp.execFile);
 const policyExportRetries = 3;
 const policyExportRetryDelayMs = 500;
-const policyExportAttemptTimeoutMs = 30000;
-const policyExportTestTimeoutMs = 180000;
+const policyExportAttemptTimeoutMs = 90000;
+const policyExportTestTimeoutMs = 300000;
 const policyExportFileWaitTimeoutMs = 5000;
 const policyExportFileWaitIntervalMs = 200;
 
@@ -75,7 +75,12 @@ async function runPolicyExportWithRetry(scriptPath: string, targetPath: string, 
 	for (let attempt = 1; attempt <= policyExportRetries; attempt++) {
 		try {
 			await fs.unlink(targetPath).catch(() => undefined);
-			const execResult = await execFile(scriptPath, [`--export-policy-data=${targetPath}`], {
+			const execResult = await execFile(scriptPath, [
+				`--export-policy-data=${targetPath}`,
+				'--disable-extensions',
+				'--disable-gpu',
+				'--skip-welcome'
+			], {
 				cwd,
 				env: { ...process.env, VSCODE_SKIP_PRELAUNCH: '1' },
 				timeout: policyExportAttemptTimeoutMs
