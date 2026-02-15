@@ -1803,3 +1803,9 @@
   - schema baseline bumped to `12` in producer/renderer
   - `scripts/README.md` updated to schema version `12` and field list includes `attentionGateIds`.
   **Why:** surfaces flaky-but-passing gates alongside failures/skips/not-runs in one actionable list for faster run triage.
+- **Exit-code map + schema v13 (2026-02-15 AM)** Added direct gate-id→exit-code lookup:
+  - `scripts/verify-gates.sh` now emits `gateExitCodeById` object for all selected gates
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate exit-code map` and derives fallback from `gates[]` when missing
+  - schema baseline bumped to `13` in producer/renderer
+  - `scripts/README.md` updated to schema version `13` and field list includes `gateExitCodeById`.
+  **Why:** allows downstream consumers to query exit codes by gate id without scanning arrays or joining multiple fields.
