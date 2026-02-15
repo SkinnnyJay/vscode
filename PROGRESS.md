@@ -1653,6 +1653,23 @@
   - future schema warning test (`schemaVersion=99`) confirmed renderer warning references supported version `5`.
   - `make lint` → **pass**.
   **Why:** confirms schema-v5 rollout and fastest-gate telemetry are consistent across dry/mock/real flows and compatibility warnings.
+- **Retried-gate aggregate metadata (2026-02-15 AM)** Added explicit retried-gate rollups:
+  - `scripts/verify-gates.sh` now emits top-level:
+    - `retriedGateCount`
+    - `retriedGateIds`
+  - terminal summary now prints `Retried gates: <count> (<labels>)`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Retried gate count` and `Retried gates`.
+  **Why:** makes retry concentration visible at a glance, improving flake triage without scanning per-gate attempts.
+- **Retried-gate validation (2026-02-15 AM)** Verified new retry-rollup fields across dry/retried/real runs:
+  - dry run (`--quick --only lint --dry-run`) confirmed `retriedGateCount=0`, `retriedGateIds=[]`, terminal line `Retried gates: 0 (none)`.
+  - controlled retry run (mock `lint` fails once then passes, `typecheck` passes) confirmed:
+    - `retriedGateCount=1`
+    - `retriedGateIds=["lint"]`
+    - terminal line `Retried gates: 1 (lint(retries=1))`
+    - step summary includes `Retried gate count: 1` and `Retried gates: lint`.
+  - real run (`--quick --only typecheck --retries 0`) confirmed zero retried-gate rollups and terminal parity.
+  - `make lint` → **pass**.
+  **Why:** confirms retried-gate aggregates are accurate and consistently surfaced across JSON, terminal, and markdown outputs.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)

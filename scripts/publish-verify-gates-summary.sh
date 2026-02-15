@@ -76,6 +76,10 @@ const failedGateExitCodes = Array.isArray(summary.failedGateExitCodes)
 	? summary.failedGateExitCodes
 	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.exitCode);
 const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
+const retriedGateIds = Array.isArray(summary.retriedGateIds)
+	? summary.retriedGateIds
+	: gates.filter((gate) => (gate.retryCount ?? 0) > 0).map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
 const notRunGateIds = Array.isArray(summary.notRunGateIds)
 	? summary.notRunGateIds
 	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -117,6 +121,8 @@ const lines = [
 	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
 	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
+	`**Retried gate count:** ${summary.retriedGateCount ?? retriedGateIds.length}`,
+	`**Retried gates:** ${sanitizeCell(retriedGateIdsLabel)}`,
 	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
 	`**Executed duration total:** ${summary.executedDurationSeconds ?? 'unknown'}s`,
 	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,
