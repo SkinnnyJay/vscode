@@ -1581,3 +1581,7 @@
   - real success run (`./scripts/verify-gates.sh --quick --only typecheck --retries 0`) confirmed empty `notRunGateIds` and non-null gate timestamps.
   - `make lint` → **pass**.
   **Why:** demonstrates correct not-run modeling under fail-fast while preserving executed-gate timestamp semantics.
+- **Summary schema bump to v3 + forward-compat warning (2026-02-15 AM)** Updated verify summary contract:
+  - bumped `schemaVersion` from `2` to `3` in `scripts/verify-gates.sh` to reflect accumulated payload evolution
+  - `scripts/publish-verify-gates-summary.sh` now emits a `Schema warning` line when consuming a future schema version (`>3`).
+  **Why:** makes payload-version intent explicit for downstream tooling and improves resilience when renderer/script versions drift.

@@ -48,6 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
+const supportedSchemaVersion = 3;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -122,6 +123,10 @@ const lines = [
 
 if (summary.logFile) {
 	lines.push(`**Log file:** \`${summary.logFile}\``);
+}
+
+if (typeof summary.schemaVersion === 'number' && summary.schemaVersion > supportedSchemaVersion) {
+	lines.push(`**Schema warning:** summary schema version ${summary.schemaVersion} is newer than supported ${supportedSchemaVersion}; some fields may be omitted.`);
 }
 
 fs.appendFileSync(summaryOutputPath, lines.join('\n') + '\n');
