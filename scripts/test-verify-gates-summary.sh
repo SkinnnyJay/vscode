@@ -77,6 +77,8 @@ selected_order_rows_summary="$tmpdir/selected-order-rows.json"
 selected_order_rows_step_summary="$tmpdir/selected-order-rows-step.md"
 selected_order_missing_rows_summary="$tmpdir/selected-order-missing-rows.json"
 selected_order_missing_rows_step_summary="$tmpdir/selected-order-missing-rows-step.md"
+selected_order_unmatched_rows_summary="$tmpdir/selected-order-unmatched-rows.json"
+selected_order_unmatched_rows_step_summary="$tmpdir/selected-order-unmatched-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -518,6 +520,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_order_missing_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_missing_rows_summary" "Verify Gates Selected Order Missing Rows Contract Test"
+
+node - "$expected_schema_version" "$selected_order_unmatched_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-order-unmatched-rows-contract',
+	selectedGateIds: ['missing-only'],
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_order_unmatched_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_unmatched_rows_summary" "Verify Gates Selected Order Unmatched Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1489,6 +1511,22 @@ if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$sele
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_order_missing_rows_step_summary"; then
 	echo "Did not expect schema warning for selected-order-missing-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** missing-only" "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary to preserve explicit unmatched selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary table to fall back to available rows when selectedGateIds do not match any row IDs." >&2
+	exit 1
+fi
+if grep -Fq '| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |' "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary table fallback to avoid empty placeholder row when real rows exist." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_order_unmatched_rows_step_summary"; then
+	echo "Did not expect schema warning for selected-order-unmatched-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

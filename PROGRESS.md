@@ -2483,6 +2483,14 @@
     - `gateExitCodeById.missing = null`.
   - `scripts/README.md` updated to document missing-selected-gate map-default coverage.
   **Why:** ensures explicit selected gates remain visible in derived diagnostics maps even when no row data is provided.
+- **Selected-order unmatched-row fallback (2026-02-15 PM)** Hardened table rendering when selection mismatches rows:
+  - `scripts/publish-verify-gates-summary.sh` now falls back to resolved available rows for table rendering when explicit `selectedGateIds` exists but matches zero row IDs.
+  - `scripts/test-verify-gates-summary.sh` adds `selected_order_unmatched_rows` scenario (`selectedGateIds: ['missing-only']`, rows contain only `lint`) and verifies:
+    - selected metadata preserves unmatched selection
+    - table still renders available `lint` row
+    - empty placeholder row is not emitted.
+  - `scripts/README.md` updated to document unmatched selected-order table fallback coverage.
+  **Why:** avoids hiding valid row diagnostics behind empty table placeholders when explicit selections are stale or mismatched.
 - **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
   - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
   - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.
