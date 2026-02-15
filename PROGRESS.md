@@ -2474,7 +2474,7 @@
   **Why:** ensures repeated same-status sparse rows produce stable, predictable per-gate values instead of ambiguous merge behavior.
 - **Selected-gate ordering applied to rendered rows (2026-02-15 PM)** Improved table ordering semantics:
   - `scripts/publish-verify-gates-summary.sh` now orders rendered gate rows by explicit `selectedGateIds` (when provided) while still sourcing row values from resolved per-gate rows.
-  - `scripts/test-verify-gates-summary.sh` adds `selected_order_rows` scenario and verifies row order in markdown table follows `selectedGateIds` (`build` before `lint`) even when input row order differs.
+  - `scripts/test-verify-gates-summary.sh` `selected_order_rows` scenario now also injects noisy selected IDs (whitespace/duplicates/non-string) and verifies normalization + ordering (`build` before `lint`).
   - `scripts/README.md` updated to document selected-order table coverage.
   **Why:** keeps rendered table order consistent with operator-selected gate ordering in sparse summaries.
 - **Selected-order missing-row coverage (2026-02-15 PM)** Added explicit sparse selection edge-case guard:

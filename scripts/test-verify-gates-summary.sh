@@ -506,7 +506,7 @@ if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
 const payload = {
 	schemaVersion,
 	runId: 'selected-order-rows-contract',
-	selectedGateIds: ['build', 'lint'],
+	selectedGateIds: [' build ', 'lint', '', 7, 'build'],
 	gates: [
 		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080000Z', completedAt: '20260215T080001Z', notRunReason: null },
 		{ id: ' build ', command: 'make build', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T080001Z', completedAt: '20260215T080002Z', notRunReason: null },
@@ -1605,6 +1605,10 @@ selected_order_build_line="$(grep -nF '| `build` | `make build` | pass |' "$sele
 selected_order_lint_line="$(grep -nF '| `lint` | `make lint` | pass |' "$selected_order_rows_step_summary" | awk -F: 'NR==1{print $1}')"
 if [[ -z "$selected_order_build_line" || -z "$selected_order_lint_line" || "$selected_order_build_line" -ge "$selected_order_lint_line" ]]; then
 	echo "Expected selected-order-rows summary table to follow explicit selectedGateIds order when rows are present." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** build, lint" "$selected_order_rows_step_summary"; then
+	echo "Expected selected-order-rows summary to normalize explicit selectedGateIds (trim, drop non-strings/empties, dedupe) before rendering." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_order_rows_step_summary"; then
