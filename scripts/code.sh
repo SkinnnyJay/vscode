@@ -42,6 +42,16 @@ function code() {
 		node build/lib/preLaunch.ts
 	fi
 
+	if [[ ! -x "$CODE" ]]; then
+		echo "Electron binary '$CODE' missing, retrying setup..."
+		npm run electron
+	fi
+
+	if [[ ! -x "$CODE" ]]; then
+		echo "ERROR: Electron binary '$CODE' not found after setup."
+		exit 1
+	fi
+
 	# Manage built-in extensions
 	if [[ "$1" == "--builtin" ]]; then
 		exec "$CODE" build/builtin

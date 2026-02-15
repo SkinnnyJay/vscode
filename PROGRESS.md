@@ -1243,3 +1243,13 @@
   **Why:** reconfirms both Electron-hosted and browser-hosted integration paths stay green after introducing the binary preflight fallback.
 - **Launcher guard docs refresh (2026-02-15 AM)** Updated `scripts/README.md` Linux headless stability section to explicitly document the new Electron binary preflight-and-retry behavior in `scripts/test.sh`.
   **Why:** keeps operator-facing docs aligned with launcher reliability logic so CI/debug workflows are discoverable without reading shell internals.
+- **Code launcher preflight parity (2026-02-15 AM)** Added the same binary preflight-and-retry guard to `scripts/code.sh` used by integration and local dev launches:
+  - checks `./.build/electron/<applicationName>` executability after prelaunch
+  - retries `npm run electron` once if missing
+  - fails fast with clear error if still unavailable.
+  **Why:** extends ENOENT hardening beyond `scripts/test.sh` so integration/dev launch paths share the same startup resilience.
+- **Parity validation (2026-02-15 AM)** Verified the `code.sh` preflight change across integration surfaces:
+  - `make test-integration` → **pass**
+  - `make test-web-integration` → **pass**
+  - `make test-e2e` → **pass**
+  **Why:** confirms no regressions and demonstrates the preflight parity works across Electron and browser-hosted test entrypoints.
