@@ -987,3 +987,22 @@
     - `"consistencyChecks":{"...","consoleWindowCoverageMatchesCounts":true,"consoleWindowStateMatchesCounts":true,"isConsistent":true}`.
   Re-ran `make lint` (pass).
   **Why:** confirms console coverage metrics are emitted and internally consistent with display/retained/total console counters.
+- **Console coverage classes + consistency parity (2026-02-14 PM)** Extended console diagnostics in `test/automation/src/code.ts` with coverage-class labeling and consistency validation:
+  - added line:
+    - `Import target console window coverage classes: display=<class>, retained=<class>`
+  - added structured field:
+    - `consoleWindowCoverageClasses` with `displayInRetained` and `retainedInTotal`
+  - added consistency check:
+    - `consoleWindowCoverageClassesMatchCounts`
+  - consistency line now includes:
+    - `consoleCoverageClasses=<bool>`
+  - composite signature now incorporates this new consistency boolean.
+  **Why:** brings console window coverage to full parity with existing channel coverage-class diagnostics and guards against class/count drift.
+- **Console coverage-classes validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target console window coverage classes: display=n-a, retained=n-a`
+  - `Import target diagnostics consistency: pass (..., consoleCoverage=true, consoleCoverageClasses=true, consoleWindow=true)`
+  - structured record fields:
+    - `"consoleWindowCoverageClasses":{"displayInRetained":"n-a","retainedInTotal":"n-a"}`
+    - `"consistencyChecks":{"...","consoleWindowCoverageMatchesCounts":true,"consoleWindowCoverageClassesMatchCounts":true,"consoleWindowStateMatchesCounts":true,"isConsistent":true}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms console coverage classes are emitted and validated against underlying coverage counters.
