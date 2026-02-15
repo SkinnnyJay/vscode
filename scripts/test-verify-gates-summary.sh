@@ -429,6 +429,7 @@ const payload = {
 	schemaVersion,
 	runId: 'explicit-reason-contract',
 	exitReason: 'completed-with-failures',
+	continueOnFailure: 'off',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1085,8 +1086,8 @@ if ! grep -Fq "**Success:** false" "$explicit_reason_step_summary"; then
 	echo "Expected explicit-reason summary to derive success=false from exitReason." >&2
 	exit 1
 fi
-if ! grep -Fq "**Continue on failure:** true" "$explicit_reason_step_summary"; then
-	echo "Expected explicit-reason summary to derive continue-on-failure=true from completed-with-failures reason." >&2
+if ! grep -Fq "**Continue on failure:** false" "$explicit_reason_step_summary"; then
+	echo "Expected explicit-reason summary to normalize explicit continue-on-failure value." >&2
 	exit 1
 fi
 if ! grep -Fq "**Exit reason:** completed-with-failures" "$explicit_reason_step_summary"; then

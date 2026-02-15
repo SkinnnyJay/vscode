@@ -76,6 +76,22 @@ const normalizeNonEmptyString = (value) => {
 	const normalizedValue = value.trim();
 	return normalizedValue.length > 0 ? normalizedValue : null;
 };
+const normalizeBoolean = (value) => {
+	if (typeof value === 'boolean') {
+		return value;
+	}
+	if (typeof value !== 'string') {
+		return null;
+	}
+	const normalizedValue = value.trim().toLowerCase();
+	if (normalizedValue === '1' || normalizedValue === 'true' || normalizedValue === 'yes' || normalizedValue === 'on') {
+		return true;
+	}
+	if (normalizedValue === '0' || normalizedValue === 'false' || normalizedValue === 'no' || normalizedValue === 'off') {
+		return false;
+	}
+	return null;
+};
 const normalizeGateIdList = (value) => {
 	if (!Array.isArray(value)) {
 		return null;
@@ -200,7 +216,12 @@ const normalizeGateReasonMap = (value) => {
 			continue;
 		}
 		if (typeof reasonValue === 'string') {
-			normalizedMap[gateId] = reasonValue;
+			const normalizedReason = reasonValue.trim();
+			if (normalizedReason.length === 0) {
+				normalizedMap[gateId] = null;
+			} else {
+				normalizedMap[gateId] = normalizedReason;
+			}
 		}
 	}
 	return normalizedMap;
@@ -613,10 +634,11 @@ const hasOutcomeEvidence = gates.length > 0
 	|| skippedGateCountFromSummary !== null
 	|| notRunGateCountFromSummary !== null
 	|| rawStatusCountsHasValues;
-const explicitDryRun = typeof summary.dryRun === 'boolean' ? summary.dryRun : null;
+const explicitDryRun = normalizeBoolean(summary.dryRun);
 const explicitExitReason = normalizeNonEmptyString(summary.exitReason);
-const successValue = typeof summary.success === 'boolean'
-	? summary.success
+const explicitSuccess = normalizeBoolean(summary.success);
+const successValue = explicitSuccess !== null
+	? explicitSuccess
 	: (explicitDryRun === true
 		? true
 		: (explicitExitReason === 'dry-run' || explicitExitReason === 'success'
@@ -657,8 +679,9 @@ const derivedRunClassification = explicitRunClassification ?? (() => {
 const dryRunValue = explicitDryRun !== null
 	? explicitDryRun
 	: (derivedExitReason === 'unknown' ? 'unknown' : derivedExitReason === 'dry-run');
-const continueOnFailureValue = typeof summary.continueOnFailure === 'boolean'
-	? summary.continueOnFailure
+const explicitContinueOnFailure = normalizeBoolean(summary.continueOnFailure);
+const continueOnFailureValue = explicitContinueOnFailure !== null
+	? explicitContinueOnFailure
 	: (derivedExitReason === 'completed-with-failures'
 		? true
 		: (derivedExitReason === 'fail-fast' ? false : 'unknown'));

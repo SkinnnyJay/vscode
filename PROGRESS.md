@@ -2295,6 +2295,14 @@
   - Sparse map handling was refined so known gates are default-filled for partial map payloads while keeping strict numeric sanitization, and contract assertions were adjusted to validate normalized map contents without relying on object key order.
   - `scripts/test-verify-gates-summary.sh` now adds an explicit-exit-reason sparse scenario and verifies derived run-state lines (`Success`, `Continue on failure`, `Exit reason`, `Run classification`), plus enhanced map-normalization assertions for status-map payloads.
   **Why:** closes ambiguity in sparse summaries that provide only explicit exit reason or partial maps, ensuring deterministic, semantically accurate CI summary output.
+- **Boolean-like run-state normalization (2026-02-15 PM)** Hardened sparse run-state parsing for non-boolean flag encodings:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes boolean-like string values (`true/false/1/0/yes/no/on/off`) for:
+    - `success`
+    - `dryRun`
+    - `continueOnFailure`.
+  - `scripts/test-verify-gates-summary.sh` explicit-exit-reason sparse case now sets `continueOnFailure: 'off'` and asserts rendered output normalizes to `Continue on failure: false` while preserving explicit-exit-reason-derived run classification.
+  - `scripts/README.md` updated to document boolean-like run-state normalization coverage.
+  **Why:** keeps renderer behavior deterministic for sparse producers that encode booleans as strings in CI payloads.
 - **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
   - `scripts/publish-verify-gates-summary.sh` now:
     - treats exit codes as non-negative integers (invalid/negative values ignored)
