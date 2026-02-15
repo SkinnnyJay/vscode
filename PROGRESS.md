@@ -875,3 +875,26 @@
     - `"consistencyChecks":{"...","windowHierarchyMatchesCounts":true,"isConsistent":true}`
   Re-ran `make lint` (pass).
   **Why:** confirms the new tiered window-state interpretation and hierarchy consistency checks are emitted and coherent.
+- **Per-channel window-coverage metrics (2026-02-14 PM)** Extended smoke fail-fast diagnostics in `test/automation/src/code.ts` with explicit coverage ratios across both window transitions for each channel:
+  - new line:
+    - `Import target channel window coverage: requestFailures=display=<...>, retained=<...>, ...`
+  - new structured field:
+    - `channelWindowCoverage`
+  - each channel now records:
+    - `displayInRetained` (`display-window / retained-window`)
+    - `retainedInTotal` (`retained-window / total`)
+  **Why:** quantifies both truncation boundaries directly, rather than only exposing raw counts and coarse states.
+- **Window-coverage consistency extension (2026-02-14 PM)** Updated consistency model and composite signature inputs to include:
+  - `windowCoverageMatchesCounts` (validates `channelWindowCoverage` numerators/denominators against raw counters)
+  - consistency line now reports `windowCoverage=<bool>`
+  - `consistencyChecks` JSON includes `windowCoverageMatchesCounts`
+  - composite signature now incorporates this new consistency dimension.
+  **Why:** ensures newly added window-coverage diagnostics cannot silently drift from base counts.
+- **Window-coverage validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target channel window coverage: requestFailures=display=n/a (0/0), retained=n/a (0/0), scriptResponses=display=n/a (0/0), retained=0% (0/1), cdpScriptLoads=display=n/a (0/0), retained=n/a (0/0)`
+  - `Import target diagnostics consistency: pass (signal=true, visibility=true, deltas=true, coverage=true, windowCoverage=true, windows=true)`
+  - structured record fields:
+    - `"channelWindowCoverage":{"requestFailures":{"displayInRetained":{"recent":0,"total":0,"percent":null},"retainedInTotal":{"recent":0,"total":0,"percent":null}},"scriptResponses":{"displayInRetained":{"recent":0,"total":0,"percent":null},"retainedInTotal":{"recent":0,"total":1,"percent":0}},"cdpScriptLoads":{"displayInRetained":{"recent":0,"total":0,"percent":null},"retainedInTotal":{"recent":0,"total":0,"percent":null}}}`
+    - `"consistencyChecks":{"...","windowCoverageMatchesCounts":true,"windowHierarchyMatchesCounts":true,"isConsistent":true}`
+  Re-ran `make lint` (pass).
+  **Why:** confirms dual-window coverage metrics are emitted and internally consistent with all existing counters.

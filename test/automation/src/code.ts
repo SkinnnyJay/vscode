@@ -461,6 +461,14 @@ export class Code {
 					const importTargetChannelWindowStatesStatus = importTargetUrl
 						? `\nImport target channel window states: requestFailures=${importTargetChannelWindowStates.requestFailures}, scriptResponses=${importTargetChannelWindowStates.scriptResponses}, cdpScriptLoads=${importTargetChannelWindowStates.cdpScriptLoads}`
 						: '';
+					const importTargetChannelWindowCoverage = {
+						requestFailures: this.buildChannelWindowCoverageStats(importTargetDisplayWindowRequestFailureEventCount, importTargetRequestFailureEventCount, importTargetTotalEventCounts?.requestFailures ?? 0),
+						scriptResponses: this.buildChannelWindowCoverageStats(importTargetDisplayWindowScriptResponseEventCount, importTargetScriptResponseEventCount, importTargetTotalEventCounts?.scriptResponses ?? 0),
+						cdpScriptLoads: this.buildChannelWindowCoverageStats(importTargetDisplayWindowCdpScriptLoadEventCount, importTargetCdpScriptLoadEventCount, importTargetTotalEventCounts?.cdpScriptLoads ?? 0)
+					};
+					const importTargetChannelWindowCoverageStatus = importTargetUrl
+						? `\nImport target channel window coverage: requestFailures=${this.formatChannelWindowCoverage(importTargetChannelWindowCoverage.requestFailures)}, scriptResponses=${this.formatChannelWindowCoverage(importTargetChannelWindowCoverage.scriptResponses)}, cdpScriptLoads=${this.formatChannelWindowCoverage(importTargetChannelWindowCoverage.cdpScriptLoads)}`
+						: '';
 					const importTargetDroppedEventEstimates = importTargetTotalEventCounts
 						? {
 							requestFailures: Math.max(0, importTargetTotalEventCounts.requestFailures - importTargetRequestFailureEventCount),
@@ -519,10 +527,11 @@ export class Code {
 						},
 						importTargetTotalEventCounts,
 						importTargetDroppedEventEstimates,
-						importTargetChannelCoverage
+						importTargetChannelCoverage,
+						importTargetChannelWindowCoverage
 					);
 					const importTargetDiagnosticsConsistencyStatus = importTargetUrl
-						? `\nImport target diagnostics consistency: ${importTargetDiagnosticsConsistency.isConsistent ? 'pass' : 'fail'} (signal=${importTargetDiagnosticsConsistency.signalMatchesTotals}, visibility=${importTargetDiagnosticsConsistency.visibilityMatchesCounts}, deltas=${importTargetDiagnosticsConsistency.droppedMatchesDelta}, coverage=${importTargetDiagnosticsConsistency.coverageMatchesCounts}, windows=${importTargetDiagnosticsConsistency.windowHierarchyMatchesCounts})`
+						? `\nImport target diagnostics consistency: ${importTargetDiagnosticsConsistency.isConsistent ? 'pass' : 'fail'} (signal=${importTargetDiagnosticsConsistency.signalMatchesTotals}, visibility=${importTargetDiagnosticsConsistency.visibilityMatchesCounts}, deltas=${importTargetDiagnosticsConsistency.droppedMatchesDelta}, coverage=${importTargetDiagnosticsConsistency.coverageMatchesCounts}, windowCoverage=${importTargetDiagnosticsConsistency.windowCoverageMatchesCounts}, windows=${importTargetDiagnosticsConsistency.windowHierarchyMatchesCounts})`
 						: '';
 					const globalChannelBufferStats = {
 						requestFailures: {
@@ -580,6 +589,7 @@ export class Code {
 						importTargetVisibilityClass,
 						importTargetChannelStates,
 						importTargetChannelWindowStates,
+						importTargetChannelWindowCoverage,
 						importTargetChannelCoverage,
 						importTargetChannelCoverageClasses,
 						importTargetDiagnosticsConsistency,
@@ -597,7 +607,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetChannelWindowCoverageStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -814,6 +824,20 @@ export class Code {
 		visibilityClass: string,
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' },
 		channelWindowStates: { requestFailures: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; scriptResponses: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; cdpScriptLoads: 'displayed' | 'retained-only' | 'historical-only' | 'unseen' },
+		channelWindowCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+		},
 		channelCoverage: {
 			requestFailures: { recent: number; total: number; percent: number | null };
 			scriptResponses: { recent: number; total: number; percent: number | null };
@@ -829,6 +853,7 @@ export class Code {
 			visibilityMatchesCounts: boolean;
 			droppedMatchesDelta: boolean;
 			coverageMatchesCounts: boolean;
+			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
 			isConsistent: boolean;
 		},
@@ -849,6 +874,20 @@ export class Code {
 		visibilityClass: string;
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' };
 		channelWindowStates: { requestFailures: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; scriptResponses: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; cdpScriptLoads: 'displayed' | 'retained-only' | 'historical-only' | 'unseen' };
+		channelWindowCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+		};
 		channelCoverage: {
 			requestFailures: { recent: number; total: number; percent: number | null };
 			scriptResponses: { recent: number; total: number; percent: number | null };
@@ -864,6 +903,7 @@ export class Code {
 			visibilityMatchesCounts: boolean;
 			droppedMatchesDelta: boolean;
 			coverageMatchesCounts: boolean;
+			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
 			isConsistent: boolean;
 		};
@@ -893,6 +933,7 @@ export class Code {
 			visibilityClass,
 			channelStates,
 			channelWindowStates,
+			channelWindowCoverage,
 			channelCoverage,
 			channelCoverageClasses,
 			consistencyChecks,
@@ -927,6 +968,23 @@ export class Code {
 		return { recent: recentCount, total: totalCount, percent };
 	}
 
+	private buildChannelWindowCoverageStats(displayCount: number, retainedCount: number, totalCount: number): {
+		displayInRetained: { recent: number; total: number; percent: number | null };
+		retainedInTotal: { recent: number; total: number; percent: number | null };
+	} {
+		return {
+			displayInRetained: this.buildChannelCoverageStats(displayCount, retainedCount),
+			retainedInTotal: this.buildChannelCoverageStats(retainedCount, totalCount)
+		};
+	}
+
+	private formatChannelWindowCoverage(channelWindowCoverage: {
+		displayInRetained: { recent: number; total: number; percent: number | null };
+		retainedInTotal: { recent: number; total: number; percent: number | null };
+	}): string {
+		return `display=${this.formatCoverage(channelWindowCoverage.displayInRetained.recent, channelWindowCoverage.displayInRetained.total)}, retained=${this.formatCoverage(channelWindowCoverage.retainedInTotal.recent, channelWindowCoverage.retainedInTotal.total)}`;
+	}
+
 	private classifyCoverageVisibility(recentCount: number, totalCount: number): 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' {
 		if (totalCount <= 0) {
 			return 'n-a';
@@ -954,12 +1012,27 @@ export class Code {
 			requestFailures: { recent: number; total: number; percent: number | null };
 			scriptResponses: { recent: number; total: number; percent: number | null };
 			cdpScriptLoads: { recent: number; total: number; percent: number | null };
+		},
+		channelWindowCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
 		}
 	): {
 		signalMatchesTotals: boolean;
 		visibilityMatchesCounts: boolean;
 		droppedMatchesDelta: boolean;
 		coverageMatchesCounts: boolean;
+		windowCoverageMatchesCounts: boolean;
 		windowHierarchyMatchesCounts: boolean;
 		isConsistent: boolean;
 	} {
@@ -983,19 +1056,32 @@ export class Code {
 			&& channelCoverage.requestFailures.total === normalizedTotals.requestFailures
 			&& channelCoverage.scriptResponses.total === normalizedTotals.scriptResponses
 			&& channelCoverage.cdpScriptLoads.total === normalizedTotals.cdpScriptLoads;
+		const windowCoverageMatchesCounts = channelWindowCoverage.requestFailures.displayInRetained.recent === displayWindowEventCounts.requestFailures
+			&& channelWindowCoverage.requestFailures.displayInRetained.total === recentEventCounts.requestFailures
+			&& channelWindowCoverage.requestFailures.retainedInTotal.recent === recentEventCounts.requestFailures
+			&& channelWindowCoverage.requestFailures.retainedInTotal.total === normalizedTotals.requestFailures
+			&& channelWindowCoverage.scriptResponses.displayInRetained.recent === displayWindowEventCounts.scriptResponses
+			&& channelWindowCoverage.scriptResponses.displayInRetained.total === recentEventCounts.scriptResponses
+			&& channelWindowCoverage.scriptResponses.retainedInTotal.recent === recentEventCounts.scriptResponses
+			&& channelWindowCoverage.scriptResponses.retainedInTotal.total === normalizedTotals.scriptResponses
+			&& channelWindowCoverage.cdpScriptLoads.displayInRetained.recent === displayWindowEventCounts.cdpScriptLoads
+			&& channelWindowCoverage.cdpScriptLoads.displayInRetained.total === recentEventCounts.cdpScriptLoads
+			&& channelWindowCoverage.cdpScriptLoads.retainedInTotal.recent === recentEventCounts.cdpScriptLoads
+			&& channelWindowCoverage.cdpScriptLoads.retainedInTotal.total === normalizedTotals.cdpScriptLoads;
 		const windowHierarchyMatchesCounts = displayWindowEventCounts.requestFailures <= recentEventCounts.requestFailures
 			&& displayWindowEventCounts.scriptResponses <= recentEventCounts.scriptResponses
 			&& displayWindowEventCounts.cdpScriptLoads <= recentEventCounts.cdpScriptLoads
 			&& recentEventCounts.requestFailures <= normalizedTotals.requestFailures
 			&& recentEventCounts.scriptResponses <= normalizedTotals.scriptResponses
 			&& recentEventCounts.cdpScriptLoads <= normalizedTotals.cdpScriptLoads;
-		const isConsistent = signalMatchesTotals && visibilityMatchesCounts && droppedMatchesDelta && coverageMatchesCounts && windowHierarchyMatchesCounts;
+		const isConsistent = signalMatchesTotals && visibilityMatchesCounts && droppedMatchesDelta && coverageMatchesCounts && windowCoverageMatchesCounts && windowHierarchyMatchesCounts;
 
 		return {
 			signalMatchesTotals,
 			visibilityMatchesCounts,
 			droppedMatchesDelta,
 			coverageMatchesCounts,
+			windowCoverageMatchesCounts,
 			windowHierarchyMatchesCounts,
 			isConsistent
 		};
@@ -1035,6 +1121,7 @@ export class Code {
 			visibilityMatchesCounts: boolean;
 			droppedMatchesDelta: boolean;
 			coverageMatchesCounts: boolean;
+			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
 			isConsistent: boolean;
 		}
@@ -1046,6 +1133,7 @@ export class Code {
 			`visibilityMatchesCounts=${consistencyChecks.visibilityMatchesCounts}`,
 			`droppedMatchesDelta=${consistencyChecks.droppedMatchesDelta}`,
 			`coverageMatchesCounts=${consistencyChecks.coverageMatchesCounts}`,
+			`windowCoverageMatchesCounts=${consistencyChecks.windowCoverageMatchesCounts}`,
 			`windowHierarchyMatchesCounts=${consistencyChecks.windowHierarchyMatchesCounts}`,
 			`isConsistent=${consistencyChecks.isConsistent}`
 		].join('|');
