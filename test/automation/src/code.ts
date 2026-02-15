@@ -626,6 +626,14 @@ export class Code {
 					const globalChannelBufferCoverageClassesStatus = importTargetUrl
 						? `\nImport target global channel coverage classes: requestFailures=display=${globalChannelBufferCoverageClasses.requestFailures.displayInRetained}, retained=${globalChannelBufferCoverageClasses.requestFailures.retainedInTotal}, scriptResponses=display=${globalChannelBufferCoverageClasses.scriptResponses.displayInRetained}, retained=${globalChannelBufferCoverageClasses.scriptResponses.retainedInTotal}, cdpScriptLoads=display=${globalChannelBufferCoverageClasses.cdpScriptLoads.displayInRetained}, retained=${globalChannelBufferCoverageClasses.cdpScriptLoads.retainedInTotal}, consoleErrors=display=${globalChannelBufferCoverageClasses.consoleErrors.displayInRetained}, retained=${globalChannelBufferCoverageClasses.consoleErrors.retainedInTotal}`
 						: '';
+					const globalChannelCoverageConsistency = this.buildGlobalChannelCoverageConsistency(
+						globalChannelBufferStats,
+						globalChannelBufferCoverage,
+						globalChannelBufferCoverageClasses
+					);
+					const globalChannelCoverageConsistencyStatus = importTargetUrl
+						? `\nImport target global channel coverage consistency: ${globalChannelCoverageConsistency.isConsistent ? 'pass' : 'fail'} (coverage=${globalChannelCoverageConsistency.coverageMatchesStats}, classes=${globalChannelCoverageConsistency.classesMatchCoverage}, hierarchy=${globalChannelCoverageConsistency.hierarchyMatchesStats})`
+						: '';
 					const importTargetGlobalBufferSignature = this.computeGlobalBufferSignature(globalChannelBufferStats);
 					const importTargetGlobalBufferSignatureStatus = importTargetUrl
 						? `\nImport target global buffer signature: ${importTargetGlobalBufferSignature}`
@@ -638,7 +646,8 @@ export class Code {
 						importTargetDiagnosticsSignature,
 						importTargetGlobalBufferSignature,
 						importTargetGlobalCoverageSignature,
-						importTargetDiagnosticsConsistency
+						importTargetDiagnosticsConsistency,
+						globalChannelCoverageConsistency
 					);
 					const importTargetCompositeSignatureStatus = importTargetUrl
 						? `\nImport target composite signature: ${importTargetCompositeSignature}`
@@ -681,7 +690,8 @@ export class Code {
 						retryInterval,
 						globalChannelBufferStats,
 						globalChannelBufferCoverage,
-						globalChannelBufferCoverageClasses
+						globalChannelBufferCoverageClasses,
+						globalChannelCoverageConsistency
 					);
 					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
 						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
@@ -690,7 +700,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${globalChannelCoverageConsistencyStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -988,6 +998,12 @@ export class Code {
 			scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
 			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
 			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		},
+		globalChannelCoverageConsistency: {
+			coverageMatchesStats: boolean;
+			classesMatchCoverage: boolean;
+			hierarchyMatchesStats: boolean;
+			isConsistent: boolean;
 		}
 	): {
 		schemaVersion: number;
@@ -1081,6 +1097,12 @@ export class Code {
 			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
 			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
 		};
+		globalChannelCoverageConsistency: {
+			coverageMatchesStats: boolean;
+			classesMatchCoverage: boolean;
+			hierarchyMatchesStats: boolean;
+			isConsistent: boolean;
+		};
 		signature: string;
 	} | undefined {
 		if (!importTargetUrl) {
@@ -1114,6 +1136,7 @@ export class Code {
 			globalChannelBufferStats,
 			globalChannelBufferCoverage,
 			globalChannelBufferCoverageClasses,
+			globalChannelCoverageConsistency,
 			signature
 		};
 	}
@@ -1212,6 +1235,88 @@ export class Code {
 				displayInRetained: this.classifyCoverageVisibility(globalChannelBufferStats.consoleErrors.displayed, globalChannelBufferStats.consoleErrors.retained),
 				retainedInTotal: this.classifyCoverageVisibility(globalChannelBufferStats.consoleErrors.retained, globalChannelBufferStats.consoleErrors.observed)
 			}
+		};
+	}
+
+	private buildGlobalChannelCoverageConsistency(
+		globalChannelBufferStats: {
+			requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		},
+		globalChannelBufferCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			consoleErrors: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+		},
+		globalChannelBufferCoverageClasses: {
+			requestFailures: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		}
+	): {
+		coverageMatchesStats: boolean;
+		classesMatchCoverage: boolean;
+		hierarchyMatchesStats: boolean;
+		isConsistent: boolean;
+	} {
+		const coverageMatchesStats = globalChannelBufferCoverage.requestFailures.displayInRetained.recent === globalChannelBufferStats.requestFailures.displayed
+			&& globalChannelBufferCoverage.requestFailures.displayInRetained.total === globalChannelBufferStats.requestFailures.retained
+			&& globalChannelBufferCoverage.requestFailures.retainedInTotal.recent === globalChannelBufferStats.requestFailures.retained
+			&& globalChannelBufferCoverage.requestFailures.retainedInTotal.total === globalChannelBufferStats.requestFailures.observed
+			&& globalChannelBufferCoverage.scriptResponses.displayInRetained.recent === globalChannelBufferStats.scriptResponses.displayed
+			&& globalChannelBufferCoverage.scriptResponses.displayInRetained.total === globalChannelBufferStats.scriptResponses.retained
+			&& globalChannelBufferCoverage.scriptResponses.retainedInTotal.recent === globalChannelBufferStats.scriptResponses.retained
+			&& globalChannelBufferCoverage.scriptResponses.retainedInTotal.total === globalChannelBufferStats.scriptResponses.observed
+			&& globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.recent === globalChannelBufferStats.cdpScriptLoads.displayed
+			&& globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.total === globalChannelBufferStats.cdpScriptLoads.retained
+			&& globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.recent === globalChannelBufferStats.cdpScriptLoads.retained
+			&& globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.total === globalChannelBufferStats.cdpScriptLoads.observed
+			&& globalChannelBufferCoverage.consoleErrors.displayInRetained.recent === globalChannelBufferStats.consoleErrors.displayed
+			&& globalChannelBufferCoverage.consoleErrors.displayInRetained.total === globalChannelBufferStats.consoleErrors.retained
+			&& globalChannelBufferCoverage.consoleErrors.retainedInTotal.recent === globalChannelBufferStats.consoleErrors.retained
+			&& globalChannelBufferCoverage.consoleErrors.retainedInTotal.total === globalChannelBufferStats.consoleErrors.observed;
+
+		const classesMatchCoverage = globalChannelBufferCoverageClasses.requestFailures.displayInRetained === this.classifyCoverageVisibility(globalChannelBufferCoverage.requestFailures.displayInRetained.recent, globalChannelBufferCoverage.requestFailures.displayInRetained.total)
+			&& globalChannelBufferCoverageClasses.requestFailures.retainedInTotal === this.classifyCoverageVisibility(globalChannelBufferCoverage.requestFailures.retainedInTotal.recent, globalChannelBufferCoverage.requestFailures.retainedInTotal.total)
+			&& globalChannelBufferCoverageClasses.scriptResponses.displayInRetained === this.classifyCoverageVisibility(globalChannelBufferCoverage.scriptResponses.displayInRetained.recent, globalChannelBufferCoverage.scriptResponses.displayInRetained.total)
+			&& globalChannelBufferCoverageClasses.scriptResponses.retainedInTotal === this.classifyCoverageVisibility(globalChannelBufferCoverage.scriptResponses.retainedInTotal.recent, globalChannelBufferCoverage.scriptResponses.retainedInTotal.total)
+			&& globalChannelBufferCoverageClasses.cdpScriptLoads.displayInRetained === this.classifyCoverageVisibility(globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.recent, globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.total)
+			&& globalChannelBufferCoverageClasses.cdpScriptLoads.retainedInTotal === this.classifyCoverageVisibility(globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.recent, globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.total)
+			&& globalChannelBufferCoverageClasses.consoleErrors.displayInRetained === this.classifyCoverageVisibility(globalChannelBufferCoverage.consoleErrors.displayInRetained.recent, globalChannelBufferCoverage.consoleErrors.displayInRetained.total)
+			&& globalChannelBufferCoverageClasses.consoleErrors.retainedInTotal === this.classifyCoverageVisibility(globalChannelBufferCoverage.consoleErrors.retainedInTotal.recent, globalChannelBufferCoverage.consoleErrors.retainedInTotal.total);
+
+		const hierarchyMatchesStats = globalChannelBufferStats.requestFailures.displayed <= globalChannelBufferStats.requestFailures.retained
+			&& globalChannelBufferStats.requestFailures.retained <= globalChannelBufferStats.requestFailures.observed
+			&& globalChannelBufferStats.scriptResponses.displayed <= globalChannelBufferStats.scriptResponses.retained
+			&& globalChannelBufferStats.scriptResponses.retained <= globalChannelBufferStats.scriptResponses.observed
+			&& globalChannelBufferStats.cdpScriptLoads.displayed <= globalChannelBufferStats.cdpScriptLoads.retained
+			&& globalChannelBufferStats.cdpScriptLoads.retained <= globalChannelBufferStats.cdpScriptLoads.observed
+			&& globalChannelBufferStats.consoleErrors.displayed <= globalChannelBufferStats.consoleErrors.retained
+			&& globalChannelBufferStats.consoleErrors.retained <= globalChannelBufferStats.consoleErrors.observed;
+
+		const isConsistent = coverageMatchesStats && classesMatchCoverage && hierarchyMatchesStats;
+
+		return {
+			coverageMatchesStats,
+			classesMatchCoverage,
+			hierarchyMatchesStats,
+			isConsistent
 		};
 	}
 
@@ -1456,6 +1561,12 @@ export class Code {
 			consoleWindowCoverageClassesMatchCounts: boolean;
 			consoleWindowStateMatchesCounts: boolean;
 			isConsistent: boolean;
+		},
+		globalChannelCoverageConsistency: {
+			coverageMatchesStats: boolean;
+			classesMatchCoverage: boolean;
+			hierarchyMatchesStats: boolean;
+			isConsistent: boolean;
 		}
 	): string {
 		const payload = [
@@ -1471,7 +1582,11 @@ export class Code {
 			`consoleWindowCoverageMatchesCounts=${consistencyChecks.consoleWindowCoverageMatchesCounts}`,
 			`consoleWindowCoverageClassesMatchCounts=${consistencyChecks.consoleWindowCoverageClassesMatchCounts}`,
 			`consoleWindowStateMatchesCounts=${consistencyChecks.consoleWindowStateMatchesCounts}`,
-			`isConsistent=${consistencyChecks.isConsistent}`
+			`isConsistent=${consistencyChecks.isConsistent}`,
+			`globalCoverage.coverageMatchesStats=${globalChannelCoverageConsistency.coverageMatchesStats}`,
+			`globalCoverage.classesMatchCoverage=${globalChannelCoverageConsistency.classesMatchCoverage}`,
+			`globalCoverage.hierarchyMatchesStats=${globalChannelCoverageConsistency.hierarchyMatchesStats}`,
+			`globalCoverage.isConsistent=${globalChannelCoverageConsistency.isConsistent}`
 		].join('|');
 
 		return this.computeStableSignature(payload);

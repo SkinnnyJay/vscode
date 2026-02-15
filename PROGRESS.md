@@ -1043,3 +1043,20 @@
   - existing consistency checks remained passing.
   Re-ran `make lint` (pass).
   **Why:** confirms global coverage class labels and signature are emitted in both human-readable and structured outputs.
+- **Global channel coverage consistency diagnostics (2026-02-15 AM)** Extended `test/automation/src/code.ts` with explicit global-coverage consistency checks:
+  - added helper:
+    - `buildGlobalChannelCoverageConsistency(...)`
+    - validates (a) coverage counters match global buffer stats, (b) global coverage class labels match derived coverage visibility classes, and (c) displayed ≤ retained ≤ observed hierarchy holds for each channel.
+  - added line:
+    - `Import target global channel coverage consistency: pass|fail (coverage=<bool>, classes=<bool>, hierarchy=<bool>)`
+  - structured diagnostics record now includes:
+    - `globalChannelCoverageConsistency` with booleans `coverageMatchesStats`, `classesMatchCoverage`, `hierarchyMatchesStats`, `isConsistent`
+  - composite signature payload now incorporates the global consistency booleans to keep failure fingerprints sensitive to global consistency drift.
+  **Why:** closes the loop for global diagnostics by self-validating both ratios and classes against raw global counters, reducing the risk of stale/derived-field skew.
+- **Global coverage consistency validation (2026-02-15 AM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output now includes:
+  - `Import target global channel coverage consistency: pass (coverage=true, classes=true, hierarchy=true)`
+  - structured record field:
+    - `"globalChannelCoverageConsistency":{"coverageMatchesStats":true,"classesMatchCoverage":true,"hierarchyMatchesStats":true,"isConsistent":true}`
+  - composite signature present with updated payload inputs, and existing diagnostics consistency checks remained passing.
+  Re-ran `make lint` (pass).
+  **Why:** confirms global consistency checks are emitted, internally coherent, and wired into fingerprinting without regressing compile/lint or smoke harness execution.
