@@ -132,12 +132,21 @@ find_gate_index() {
 	return 1
 }
 
+trim_whitespace() {
+	local value="$1"
+	value="${value#"${value%%[![:space:]]*}"}"
+	value="${value%"${value##*[![:space:]]}"}"
+	printf '%s' "$value"
+}
+
 if [[ -n "$ONLY_GATE_IDS_RAW" ]]; then
 	IFS=',' read -r -a requested_gate_ids <<< "$ONLY_GATE_IDS_RAW"
 	declare -a filtered_gate_ids
 	declare -a filtered_gate_commands
+	declare -a duplicate_gate_ids
 
 	for requested_gate_id in "${requested_gate_ids[@]}"; do
+		requested_gate_id="$(trim_whitespace "$requested_gate_id")"
 		if [[ -z "$requested_gate_id" ]]; then
 			continue
 		fi
@@ -145,6 +154,20 @@ if [[ -n "$ONLY_GATE_IDS_RAW" ]]; then
 		if ! gate_index="$(find_gate_index "$requested_gate_id")"; then
 			echo "Unknown gate id '$requested_gate_id' for --only. Available gate ids: ${gate_ids[*]}" >&2
 			exit 1
+		fi
+
+		selected_gate_id="${gate_ids[$gate_index]}"
+		already_selected=0
+		for existing_gate_id in "${filtered_gate_ids[@]}"; do
+			if [[ "$existing_gate_id" == "$selected_gate_id" ]]; then
+				already_selected=1
+				break
+			fi
+		done
+
+		if [[ "$already_selected" == "1" ]]; then
+			duplicate_gate_ids+=("$selected_gate_id")
+			continue
 		fi
 
 		filtered_gate_ids+=("${gate_ids[$gate_index]}")
@@ -156,11 +179,20 @@ if [[ -n "$ONLY_GATE_IDS_RAW" ]]; then
 		exit 1
 	fi
 
+	if ((${#duplicate_gate_ids[@]} > 0)); then
+		echo "Ignoring duplicate gate ids from --only: ${duplicate_gate_ids[*]}"
+	fi
+
 	gate_ids=("${filtered_gate_ids[@]}")
 	gate_commands=("${filtered_gate_commands[@]}")
 fi
 
 if [[ -n "$FROM_GATE_ID" ]]; then
+	FROM_GATE_ID="$(trim_whitespace "$FROM_GATE_ID")"
+	if [[ -z "$FROM_GATE_ID" ]]; then
+		echo "--from requires a non-empty gate id." >&2
+		exit 1
+	fi
 	if ! from_index="$(find_gate_index "$FROM_GATE_ID")"; then
 		echo "Unknown gate id '$FROM_GATE_ID' for --from. Available gate ids: ${gate_ids[*]}" >&2
 		exit 1

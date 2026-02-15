@@ -48,6 +48,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Both helper scripts print usage and exit non-zero on unknown flags/missing required option values.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
 - **Dry-run planning:** use `--dry-run` to validate gate selection/filtering and emit summary/log metadata without executing gates.
+  - `--only` tolerates whitespace and automatically ignores duplicate gate IDs.
   - Gate IDs: `lint`, `typecheck`, `test-unit`, `test`, `test-smoke`, `test-integration`, `test-e2e`, `test-web-integration`, `build`.
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
 

@@ -1450,3 +1450,8 @@
   - `scripts/verify-gates.sh` now fails fast with usage output when `--retries`, `--summary-json`, `--from`, or `--only` are missing required values
   - `scripts/publish-verify-gates-summary.sh` now fails fast for unknown flags (instead of silently treating them as file paths).
   **Why:** reduces silent misconfiguration and makes command-line failures immediately actionable in local and CI usage.
+- **Gate-id normalization for selective runs (2026-02-15 AM)** Improved `scripts/verify-gates.sh` selective gate parsing:
+  - trims surrounding whitespace on `--only`/`--from` gate IDs
+  - deduplicates repeated `--only` gate IDs with an explicit informational message
+  - rejects whitespace-only `--from` values with a clear error.
+  **Why:** makes selective gate invocations more forgiving for human-edited CI/local commands while preserving deterministic gate execution order.
