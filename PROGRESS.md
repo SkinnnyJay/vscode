@@ -1346,3 +1346,9 @@
   - immediate standalone `make test-e2e` rerun → **pass**
   - `make build` → **pass** (0 compile errors)
   **Why:** maintains high-confidence green evidence on current tip, while explicitly recording that concurrent heavy suites can still trigger VM-level transient failures that are resolved by serialized reruns.
+- **Serialized e2e/web/unit confirmation (2026-02-15 AM)** Ran another sequence favoring deterministic order:
+  - `make test-e2e` → **pass**
+  - `make test-web-integration` → **pass**
+  - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
+  - `make build` → **pass** (0 compile errors)
+  **Why:** reconfirms green status after prior transient parallel-run noise, with all heavy suites passing sequentially on the same branch tip.
