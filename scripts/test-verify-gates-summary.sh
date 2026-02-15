@@ -103,6 +103,8 @@ selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
 selected_status_map_scope_step_summary="$tmpdir/selected-status-map-scope-step.md"
 selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
 selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
+selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
+selected_scalar_counts_scope_step_summary="$tmpdir/selected-scalar-counts-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -763,6 +765,33 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_scalar_failure_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_failure_scope_summary" "Verify Gates Selected Scalar Failure Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_scalar_counts_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-scalar-counts-scope-contract',
+	selectedGateIds: ['lint'],
+	gateCount: 9,
+	passedGateCount: 0,
+	failedGateCount: 5,
+	skippedGateCount: 2,
+	notRunGateCount: 2,
+	executedGateCount: 5,
+	statusCounts: { pass: 0, fail: 5, skip: 2, 'not-run': 2 },
+	gateStatusById: { lint: 'pass' },
+	gateDurationSecondsById: { lint: 1 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_scalar_counts_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_counts_scope_summary" "Verify Gates Selected Scalar Counts Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2004,6 +2033,26 @@ if grep -Fq "build" "$selected_scalar_failure_scope_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_failure_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-scalar-failure-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_scalar_counts_scope_step_summary" || ! grep -Fq "**Gate count:** 1" "$selected_scalar_counts_scope_step_summary"; then
+	echo "Expected selected-scalar-counts-scope summary to prioritize selected gate-count scope over conflicting scalar gateCount." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_scalar_counts_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_scalar_counts_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_scalar_counts_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_scalar_counts_scope_step_summary"; then
+	echo "Expected selected-scalar-counts-scope summary to ignore conflicting scalar pass/fail/skip/not-run counts when selected scope is explicit." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":0,"skip":0,"not-run":0}' "$selected_scalar_counts_scope_step_summary"; then
+	echo "Expected selected-scalar-counts-scope summary to derive status counts from selected-scope partitions instead of conflicting raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 1" "$selected_scalar_counts_scope_step_summary"; then
+	echo "Expected selected-scalar-counts-scope summary to ignore conflicting scalar executedGateCount when selected scope is explicit." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_counts_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-scalar-counts-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

@@ -301,6 +301,7 @@ const scopeGateIdToSelection = (gateId) => {
 	}
 	return selectedGateIdSetFromSummary.has(gateId) ? gateId : null;
 };
+const normalizeSelectedScopedNonNegativeInteger = (value) => selectedGateIdsFromSummary === null ? normalizeNonNegativeInteger(value) : null;
 const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
 const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
 const skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
@@ -341,7 +342,7 @@ const derivedStatusCountsFromStatusMap = gateStatusByIdFromSummary
 		return accumulator;
 	}, { pass: 0, fail: 0, skip: 0, 'not-run': 0 })
 	: null;
-const rawStatusCountsInput = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
+const rawStatusCountsInput = selectedGateIdsFromSummary === null && summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
 	? summary.statusCounts
 	: null;
 const rawStatusCounts = {
@@ -390,10 +391,10 @@ const derivedRowStatusCounts = canonicalRowStatusEntriesForSelection.reduce((acc
 	accumulator[status] += 1;
 	return accumulator;
 }, { pass: 0, fail: 0, skip: 0, 'not-run': 0 });
-const passedGateCountFromSummary = normalizeNonNegativeInteger(summary.passedGateCount);
-const failedGateCountFromSummary = normalizeNonNegativeInteger(summary.failedGateCount);
-const skippedGateCountFromSummary = normalizeNonNegativeInteger(summary.skippedGateCount);
-const notRunGateCountFromSummary = normalizeNonNegativeInteger(summary.notRunGateCount);
+const passedGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.passedGateCount);
+const failedGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.failedGateCount);
+const skippedGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.skippedGateCount);
+const notRunGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.notRunGateCount);
 const passedGateCount = passedGateCountFromSummary ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? (gates.length > 0 ? derivedRowStatusCounts.pass : derivedStatusCounts.pass);
 const failedGateCount = failedGateCountFromSummary ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? (gates.length > 0 ? derivedRowStatusCounts.fail : derivedStatusCounts.fail);
 const skippedGateCount = skippedGateCountFromSummary ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? (gates.length > 0 ? derivedRowStatusCounts.skip : derivedStatusCounts.skip);
@@ -468,8 +469,8 @@ const executedGateIds = executedGateIdsFromSummary
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
-const executedGateCount = normalizeNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
-const gateCount = normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
+const executedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
+const gateCount = selectedGateIdsFromSummary?.length ?? normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIds.length ?? gates.length;
 const notRunGateIds = notRunGateIdsFromSummary
 	!== null
 	? notRunGateIdsFromSummary
