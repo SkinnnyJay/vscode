@@ -311,7 +311,7 @@ const payload = {
 	skippedGateIds: ['test-unit', 'test-unit'],
 	notRunGateIds: ['build', false],
 	executedGateIds: [' lint ', 'typecheck', 'lint'],
-	gateRetryCountById: { lint: 2, typecheck: 0, 'test-unit': 0, build: 0 },
+	retriedGateIds: [' lint ', '', 'lint', 42],
 	gateDurationSecondsById: { lint: 5, typecheck: 3, 'test-unit': 0, build: 0 },
 	gateAttemptCountById: { lint: 1, typecheck: 1, 'test-unit': 0, build: 0 },
 	gateNotRunReasonById: { lint: null, typecheck: null, 'test-unit': null, build: 'blocked-by-fail-fast:typecheck' },
@@ -835,11 +835,15 @@ if ! grep -Fq "**Executed gates:** 2" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive executed gate count from executedGateIds." >&2
 	exit 1
 fi
-if ! grep -Fq "**Total retries:** 2" "$derived_lists_step_summary"; then
-	echo "Expected derived-list fallback summary to derive total retries from gateRetryCountById." >&2
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"typecheck\":0,\"test-unit\":0,\"build\":0}" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive gate retry-count map from retriedGateIds when retry map is omitted." >&2
 	exit 1
 fi
-if ! grep -Fq "**Total retry backoff:** 3s" "$derived_lists_step_summary"; then
+if ! grep -Fq "**Total retries:** 1" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive total retries from retriedGateIds fallback map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retry backoff:** 1s" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive retry backoff from retry counts." >&2
 	exit 1
 fi
@@ -867,7 +871,7 @@ if ! grep -Fq "**Attention gates list:** lint, typecheck, test-unit, build" "$de
 	echo "Expected derived-list fallback summary to derive attention gates list from non-success and retried gates." >&2
 	exit 1
 fi
-if ! grep -Fq "**Retry backoff share (executed duration):** 37%" "$derived_lists_step_summary"; then
+if ! grep -Fq "**Retry backoff share (executed duration):** 12%" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive retry-backoff share from derived totals." >&2
 	exit 1
 fi

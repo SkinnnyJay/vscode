@@ -2256,3 +2256,10 @@
     - derived non-success/attention lists and failed-gate pointers.
   - `scripts/README.md` updated to call out status-map-based sparse derivation coverage.
   **Why:** keeps sparse summaries fully informative when producers provide status maps without per-gate rows or partition arrays.
+- **Retry-count-map fallback from retried gate IDs (2026-02-15 PM)** Improved sparse retry derivation when explicit retry maps are absent:
+  - `scripts/publish-verify-gates-summary.sh` now derives `gateRetryCountById` for sparse/list-only payloads using normalized gate identity plus `retriedGateIds` (defaulting retried gates to count `1` and others to `0`).
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload now omits `gateRetryCountById`, provides noisy `retriedGateIds`, and verifies:
+    - derived retry-count map (`{"lint":1,"typecheck":0,"test-unit":0,"build":0}`)
+    - derived `totalRetryCount`, `totalRetryBackoffSeconds`, and retry-backoff share percentages.
+  - `scripts/README.md` updated to mention retry-map fallback derivation from `retriedGateIds`.
+  **Why:** preserves consistent retry diagnostics when sparse payloads supply retried gate IDs but omit per-gate retry-count maps.
