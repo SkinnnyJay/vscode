@@ -1237,3 +1237,7 @@
   - `make test-e2e` → **pass** (twice consecutively)
   - `make lint` → **pass**
   **Why:** confirms the preflight guard does not regress core test startup and improves resilience of repeated end-to-end execution.
+- **Additional post-guard confidence sweep (2026-02-15 AM)** Ran further regression gates on top of the launcher preflight update:
+  - `make test-e2e` → **pass** (first attempt)
+  - `make test-web-integration` → **pass**
+  **Why:** reconfirms both Electron-hosted and browser-hosted integration paths stay green after introducing the binary preflight fallback.
