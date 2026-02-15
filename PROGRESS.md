@@ -2450,6 +2450,14 @@
     - `Non-success gates list` and `Attention gates list` stay `none`.
   - `scripts/README.md` updated to document unknown-status duplicate filtering coverage.
   **Why:** avoids non-success/attention list pollution from malformed duplicate statuses once gate-level canonical status has been resolved.
+- **Unknown-status-only row visibility coverage (2026-02-15 PM)** Added unresolved-status regression guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `unknown_status_only_rows` scenario with a valid gate ID but unresolved status token (`mystery-status`).
+  - Assertions verify renderer behavior stays explicit:
+    - gate remains selected (`Gate count: 1`)
+    - status map shows `unknown`
+    - gate appears in `Non-success gates list` and `Attention gates list`.
+  - `scripts/README.md` updated to document unknown-status-only coverage.
+  **Why:** preserves operator visibility for unresolved statuses while still filtering duplicate invalid statuses when a canonical status exists.
 - **Malformed gate-row resilience coverage (2026-02-15 PM)** Extended sparse row hardening contract:
   - `scripts/test-verify-gates-summary.sh` now adds `malformed_gate_rows` scenario with mixed invalid `gates[]` entries (`null`, string, number) plus one valid padded row.
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.
