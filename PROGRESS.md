@@ -2263,3 +2263,13 @@
     - derived `totalRetryCount`, `totalRetryBackoffSeconds`, and retry-backoff share percentages.
   - `scripts/README.md` updated to mention retry-map fallback derivation from `retriedGateIds`.
   **Why:** preserves consistent retry diagnostics when sparse payloads supply retried gate IDs but omit per-gate retry-count maps.
+- **Per-gate map sanitization for sparse fallbacks (2026-02-15 PM)** Hardened map-based inputs against noisy values:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes/sanitizes map fields by trimming gate IDs and validating values:
+    - `gateExitCodeById` (integers/null)
+    - `gateRetryCountById` (non-negative integers)
+    - `gateDurationSecondsById` (non-negative integers)
+    - `gateAttemptCountById` (non-negative integers)
+    - `gateNotRunReasonById` (string/null).
+  - `scripts/test-verify-gates-summary.sh` status-map sparse scenario now injects noisy map keys/values and verifies rendered maps/derived metrics use normalized data only (including retry totals/backoff share and attention list behavior).
+  - `scripts/README.md` updated to call out sanitized per-gate map handling in contract coverage.
+  **Why:** prevents malformed sparse map payloads from polluting derived metrics or producing inconsistent diagnostics.

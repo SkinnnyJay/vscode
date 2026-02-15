@@ -333,11 +333,11 @@ const payload = {
 	schemaVersion,
 	runId: 'derived-status-map-contract',
 	gateStatusById: { ' lint ': 'pass', typecheck: 'fail', build: 'not-run', ignored: 'unknown', '': 'pass' },
-	gateExitCodeById: { typecheck: 5, build: null },
-	gateRetryCountById: { lint: 0, typecheck: 0, build: 0 },
-	gateDurationSecondsById: { lint: 1, typecheck: 2, build: 0 },
-	gateAttemptCountById: { lint: 1, typecheck: 1, build: 0 },
-	gateNotRunReasonById: { lint: null, typecheck: null, build: 'blocked-by-fail-fast:typecheck' },
+	gateExitCodeById: { ' lint ': '0', typecheck: '5', build: null, bad: 'x' },
+	gateRetryCountById: { ' lint ': '2', typecheck: '0', build: 0, bad: -1 },
+	gateDurationSecondsById: { ' lint ': '1', typecheck: '2', build: 0, bad: -1 },
+	gateAttemptCountById: { ' lint ': '1', typecheck: 1, build: 0, bad: 'oops' },
+	gateNotRunReasonById: { ' lint ': 123, typecheck: null, build: 'blocked-by-fail-fast:typecheck', bad: 5 },
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -947,6 +947,22 @@ if ! grep -Fq "\"lint\":\"pass\"" "$derived_status_map_step_summary" || ! grep -
 	echo "Expected derived-status-map fallback summary to normalize status-map keys and values." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate exit-code map:** {\"lint\":0,\"typecheck\":5,\"build\":null}" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to normalize gate exit-code map values and keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":2,\"typecheck\":0,\"build\":0}" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to normalize retry-count map values and keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate duration map (s):** {\"lint\":1,\"typecheck\":2,\"build\":0}" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to normalize duration map values and keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate attempt-count map:** {\"lint\":1,\"typecheck\":1,\"build\":0}" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to normalize attempt-count map values and keys." >&2
+	exit 1
+fi
 if ! grep -Fq "**Failed gate:** typecheck" "$derived_status_map_step_summary" || ! grep -Fq "**Failed gate exit code:** 5" "$derived_status_map_step_summary"; then
 	echo "Expected derived-status-map fallback summary to derive failed gate pointers from status/exit maps." >&2
 	exit 1
@@ -955,8 +971,16 @@ if ! grep -Fq "**Continue on failure:** false" "$derived_status_map_step_summary
 	echo "Expected derived-status-map fallback summary to infer fail-fast run-state metadata." >&2
 	exit 1
 fi
-if ! grep -Fq "**Non-success gates list:** typecheck, build" "$derived_status_map_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, build" "$derived_status_map_step_summary"; then
+if ! grep -Fq "**Non-success gates list:** typecheck, build" "$derived_status_map_step_summary" || ! grep -Fq "**Attention gates list:** lint, typecheck, build" "$derived_status_map_step_summary"; then
 	echo "Expected derived-status-map fallback summary to derive non-success/attention lists from status map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 2" "$derived_status_map_step_summary" || ! grep -Fq "**Total retry backoff:** 3s" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive retry totals from normalized retry map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry backoff share (executed duration):** 100%" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive retry-backoff share from normalized metrics." >&2
 	exit 1
 fi
 if ! grep -Fq "**Total duration:** 3s" "$derived_status_map_step_summary"; then
