@@ -2118,3 +2118,15 @@
   - The same scenario is rendered through `scripts/publish-verify-gates-summary.sh`, and the contract checks now assert expected markdown metadata lines for continue-on-failure + failed-continued output.
   - `scripts/README.md` updated to note continue-on-failure failure-path coverage in contract test scope.
   **Why:** closes a key behavioral gap between fail-fast and continued-failure modes so CI consumers can reliably distinguish and triage both failure classes.
+- **Continue-on-failure multi-failure partition coverage (2026-02-15 PM)** Expanded failure-mode assertions when multiple gates fail under continue-on-failure:
+  - `scripts/test-verify-gates-summary.sh` now runs an additional mocked `--continue-on-failure` scenario where both `lint` and `typecheck` fail.
+  - Added producer assertions verifying:
+    - first-failure pointer remains stable (`failedGateId=lint`, `failedGateExitCode=7`)
+    - multi-failure partitions/maps include both gates and exit codes (`failedGateIds=lint,typecheck`, `failedGateExitCodes=7,3`, `nonSuccessGateIds`, `attentionGateIds`)
+    - no not-run gates and no retries.
+  - Added renderer assertions verifying markdown output includes:
+    - `Failed gates list: lint, typecheck`
+    - `Failed gate exit codes: 7, 3`
+    - continue-on-failure failed-continued metadata lines.
+  - `scripts/README.md` updated to call out single- and multi-failure continue-on-failure coverage.
+  **Why:** hardens contract guarantees for downstream CI/report consumers that depend on accurate aggregation when more than one gate fails in continued execution mode.
