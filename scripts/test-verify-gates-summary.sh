@@ -45,6 +45,7 @@ minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
 scalar_summary="$tmpdir/scalar.json"
 scalar_step_summary="$tmpdir/scalar-step.md"
+append_step_summary="$tmpdir/append-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -639,6 +640,23 @@ if [[ "$env_path_status" -ne 0 ]]; then
 fi
 if ! grep -q "^## Verify Gates Summary" "$env_path_step_summary"; then
 	echo "Expected default heading when summary heading argument is omitted." >&2
+	exit 1
+fi
+
+GITHUB_STEP_SUMMARY="$append_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Append Heading One"
+GITHUB_STEP_SUMMARY="$append_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Append Heading Two"
+if [[ "$(grep -c "^## Append Heading One$" "$append_step_summary")" -ne 1 ]]; then
+	echo "Expected appended summary to include first heading exactly once." >&2
+	exit 1
+fi
+if [[ "$(grep -c "^## Append Heading Two$" "$append_step_summary")" -ne 1 ]]; then
+	echo "Expected appended summary to include second heading exactly once." >&2
+	exit 1
+fi
+append_heading_one_line="$(grep -n "^## Append Heading One$" "$append_step_summary" | awk -F: 'NR==1 {print $1}')"
+append_heading_two_line="$(grep -n "^## Append Heading Two$" "$append_step_summary" | awk -F: 'NR==1 {print $1}')"
+if [[ -z "$append_heading_one_line" ]] || [[ -z "$append_heading_two_line" ]] || ((append_heading_one_line >= append_heading_two_line)); then
+	echo "Expected appended headings to appear in write order." >&2
 	exit 1
 fi
 

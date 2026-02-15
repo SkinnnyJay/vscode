@@ -2001,6 +2001,12 @@
   - additionally verifies `executedGateCount === executedGateIds.length` for fail-fast and retry-success scenarios.
   - `scripts/README.md` updated to include run/timing metadata coverage.
   **Why:** guards key metadata integrity used by automation and diagnostics dashboards.
+- **Publisher append-order coverage (2026-02-15 PM)** Added explicit checks for summary append semantics:
+  - `scripts/test-verify-gates-summary.sh` now publishes two summaries into the same `GITHUB_STEP_SUMMARY` file and verifies:
+    - both headings are present exactly once
+    - headings appear in write order (first publish before second publish)
+  - `scripts/README.md` updated to include append-behavior coverage.
+  **Why:** protects CI summary accumulation behavior and prevents regressions that could overwrite prior summary content.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
