@@ -49,6 +49,16 @@ if [[ -z "${VSCODE_SKIP_PRELAUNCH}" ]]; then
 	npm run electron
 fi
 
+if [[ ! -x "$CODE" ]]; then
+	echo "Electron binary '$CODE' missing, retrying setup..."
+	npm run electron
+fi
+
+if [[ ! -x "$CODE" ]]; then
+	echo "ERROR: Electron binary '$CODE' not found after setup."
+	exit 1
+fi
+
 # Unit Tests
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	cd $ROOT ; ulimit -n 4096 ; \

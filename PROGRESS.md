@@ -1228,3 +1228,12 @@
   **Why:** confirms the policy export path is materially more resilient in the long-running e2e sequence while preserving lint-clean state.
 - **E2E stability confirmation rerun (2026-02-15 AM)** Ran `make test-e2e` once more after the above hardening and observed a clean pass on the first attempt.
   **Why:** provides additional evidence that the new policy export timing margins and launch flags hold across repeated full e2e executions.
+- **Electron binary preflight guard in test launcher (2026-02-15 AM)** Hardened `scripts/test.sh` with a binary existence preflight:
+  - after prelaunch, if the computed Electron binary path is missing/non-executable, rerun `npm run electron` once
+  - fail fast with explicit error if binary is still unavailable.
+  **Why:** protects against transient missing-binary startup races observed in long e2e loops (`spawn .../.build/electron/pointer ENOENT`).
+- **Post-guard validation (2026-02-15 AM)** Ran focused and full checks for the launcher guard:
+  - `./scripts/test.sh --runGlob "**/ipc.cp.integrationTest.js"` → **pass**
+  - `make test-e2e` → **pass** (twice consecutively)
+  - `make lint` → **pass**
+  **Why:** confirms the preflight guard does not regress core test startup and improves resilience of repeated end-to-end execution.
