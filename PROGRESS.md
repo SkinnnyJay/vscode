@@ -2333,3 +2333,13 @@
   - `scripts/test-verify-gates-summary.sh` now adds a sparse contract case with only `runClassification: "SUCCESS-NO-RETRIES"` and verifies rendered `Success: true`, `Exit reason: success`, and normalized `Run classification: success-no-retries`.
   - `scripts/README.md` updated to note explicit run-classification fallback coverage in the contract harness.
   **Why:** keeps CI summaries semantically complete when upstream producers emit only run classification without duplicating outcome fields.
+- **Explicit exit-reason precedence over conflicting classification (2026-02-15 PM)** Resolved sparse run-state contradictions:
+  - `scripts/publish-verify-gates-summary.sh` now:
+    - treats explicit `exitReason` as authoritative for success inference when present (before classification-based inference)
+    - ignores explicit `runClassification` only when it conflicts with explicit `exitReason`, deriving a classification from reason instead.
+  - `scripts/test-verify-gates-summary.sh` now adds a sparse conflict scenario (`exitReason: fail-fast`, `runClassification: success-no-retries`) and verifies rendered output is consistent:
+    - `Success: false`
+    - `Exit reason: fail-fast`
+    - `Run classification: failed-fail-fast`.
+  - `scripts/README.md` updated to document this precedence/consistency contract.
+  **Why:** prevents contradictory CI summary metadata when sparse producers emit mismatched reason/classification fields.

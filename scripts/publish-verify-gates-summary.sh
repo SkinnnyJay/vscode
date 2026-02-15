@@ -650,8 +650,8 @@ const hasOutcomeEvidence = gates.length > 0
 const explicitDryRun = normalizeBoolean(summary.dryRun);
 const explicitExitReason = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
 const explicitRunClassification = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
-const exitReasonFromRunClassification = (() => {
-	switch (explicitRunClassification) {
+const exitReasonForRunClassification = (runClassification) => {
+	switch (runClassification) {
 		case 'dry-run':
 			return 'dry-run';
 		case 'success-no-retries':
@@ -664,16 +664,47 @@ const exitReasonFromRunClassification = (() => {
 		default:
 			return null;
 	}
+};
+const exitReasonFromRunClassification = exitReasonForRunClassification(explicitRunClassification);
+const runClassificationFromSummary = explicitRunClassification !== null
+	&& explicitExitReason !== null
+	&& exitReasonFromRunClassification !== explicitExitReason
+	? null
+	: explicitRunClassification;
+const successForExplicitExitReason = (() => {
+	switch (explicitExitReason) {
+		case 'dry-run':
+		case 'success':
+			return true;
+		case 'fail-fast':
+		case 'completed-with-failures':
+			return false;
+		default:
+			return null;
+	}
+})();
+const successForRunClassification = (() => {
+	switch (explicitRunClassification) {
+		case 'dry-run':
+		case 'success-no-retries':
+		case 'success-with-retries':
+			return true;
+		case 'failed-fail-fast':
+		case 'failed-continued':
+			return false;
+		default:
+			return null;
+	}
 })();
 const explicitSuccess = normalizeBoolean(summary.success);
 const successValue = explicitSuccess !== null
 	? explicitSuccess
 	: (explicitDryRun === true
 		? true
-		: (explicitExitReason === 'dry-run' || explicitExitReason === 'success' || explicitRunClassification === 'dry-run' || explicitRunClassification === 'success-no-retries' || explicitRunClassification === 'success-with-retries'
-			? true
-			: (explicitExitReason === 'fail-fast' || explicitExitReason === 'completed-with-failures' || explicitRunClassification === 'failed-fail-fast' || explicitRunClassification === 'failed-continued'
-				? false
+		: (successForExplicitExitReason !== null
+			? successForExplicitExitReason
+			: (successForRunClassification !== null
+				? successForRunClassification
 				: (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'))));
 const derivedExitReason = explicitExitReason ?? exitReasonFromRunClassification ?? (() => {
 	if (explicitDryRun === true) {
@@ -690,7 +721,7 @@ const derivedExitReason = explicitExitReason ?? exitReasonFromRunClassification 
 	}
 	return 'completed-with-failures';
 })();
-const derivedRunClassification = explicitRunClassification ?? (() => {
+const derivedRunClassification = runClassificationFromSummary ?? (() => {
 	switch (derivedExitReason) {
 		case 'dry-run':
 			return 'dry-run';
