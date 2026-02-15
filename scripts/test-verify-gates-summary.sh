@@ -57,6 +57,8 @@ dry_fallback_summary="$tmpdir/dry-fallback.json"
 dry_fallback_step_summary="$tmpdir/dry-fallback-step.md"
 fail_fast_fallback_summary="$tmpdir/fail-fast-fallback.json"
 fail_fast_fallback_step_summary="$tmpdir/fail-fast-fallback-step.md"
+derived_counts_summary="$tmpdir/derived-counts.json"
+derived_counts_step_summary="$tmpdir/derived-counts-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -261,6 +263,28 @@ fs.writeFileSync(fallbackPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$fail_fast_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_fallback_summary" "Verify Gates Fail-fast Fallback Contract Test"
+
+node - "$expected_schema_version" "$derived_counts_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'derived-counts-contract',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T010000Z', completedAt: '20260215T010001Z', notRunReason: null },
+		{ id: 'typecheck', command: 'make typecheck', status: 'fail', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 2, startedAt: '20260215T010001Z', completedAt: '20260215T010003Z', notRunReason: null },
+		{ id: 'test-unit', command: 'make test-unit', status: 'skip', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: '20260215T010003Z', completedAt: '20260215T010003Z', notRunReason: null },
+		{ id: 'build', command: 'make build', status: 'not-run', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:typecheck' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$derived_counts_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_counts_summary" "Verify Gates Derived Count Fallback Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -614,6 +638,39 @@ if (!fallbackStep.includes('**Failed gates list:** none') || !fallbackStep.inclu
 	throw new Error('Fallback summary did not derive failed/not-run gate lists from gate rows.');
 }
 NODE
+
+if ! grep -Fq "**Gate count:** 4" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive gate count from gate rows." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive passed gate count." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gates:** 1" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive failed gate count." >&2
+	exit 1
+fi
+if ! grep -Fq "**Skipped gates:** 1" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive skipped gate count." >&2
+	exit 1
+fi
+if ! grep -Fq "**Not-run gates:** 1" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive not-run gate count." >&2
+	exit 1
+fi
+if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":1,\"skip\":1,\"not-run\":1}" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive statusCounts map from gate rows." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive executed gate count from gate rows." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$derived_counts_step_summary"; then
+	echo "Did not expect schema warning for derived-count fallback summary." >&2
+	exit 1
+fi
 
 node - "$retry_summary" "$future_summary" <<'NODE'
 const fs = require('node:fs');

@@ -69,6 +69,26 @@ try {
 const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
+const derivedStatusCounts = gates.reduce((accumulator, gate) => {
+	const status = gate?.status;
+	if (status === 'pass' || status === 'fail' || status === 'skip' || status === 'not-run') {
+		accumulator[status] += 1;
+	}
+	return accumulator;
+}, { pass: 0, fail: 0, skip: 0, 'not-run': 0 });
+const rawStatusCounts = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
+	? summary.statusCounts
+	: {};
+const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? derivedStatusCounts.pass;
+const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? derivedStatusCounts.fail;
+const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? derivedStatusCounts.skip;
+const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? derivedStatusCounts['not-run'];
+const statusCounts = {
+	pass: rawStatusCounts.pass ?? passedGateCount,
+	fail: rawStatusCounts.fail ?? failedGateCount,
+	skip: rawStatusCounts.skip ?? skippedGateCount,
+	'not-run': rawStatusCounts['not-run'] ?? notRunGateCount,
+};
 const selectedGateIds = Array.isArray(summary.selectedGateIds)
 	? summary.selectedGateIds
 	: gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -97,6 +117,7 @@ const executedGateIds = Array.isArray(summary.executedGateIds)
 	? summary.executedGateIds
 	: gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
+const executedGateCount = summary.executedGateCount ?? executedGateIds.length;
 const notRunGateIds = Array.isArray(summary.notRunGateIds)
 	? summary.notRunGateIds
 	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -192,18 +213,18 @@ const lines = [
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
 	`**Gate count:** ${summary.gateCount ?? gates.length}`,
-	`**Passed gates:** ${summary.passedGateCount ?? 'unknown'}`,
-	`**Failed gates:** ${summary.failedGateCount ?? 'unknown'}`,
-	`**Skipped gates:** ${summary.skippedGateCount ?? 'unknown'}`,
-	`**Not-run gates:** ${summary.notRunGateCount ?? 'unknown'}`,
-	`**Status counts:** ${sanitizeCell(JSON.stringify(summary.statusCounts ?? { pass: summary.passedGateCount ?? 'unknown', fail: summary.failedGateCount ?? 'unknown', skip: summary.skippedGateCount ?? 'unknown', 'not-run': summary.notRunGateCount ?? 'unknown' }))}`,
+	`**Passed gates:** ${passedGateCount}`,
+	`**Failed gates:** ${failedGateCount}`,
+	`**Skipped gates:** ${skippedGateCount}`,
+	`**Not-run gates:** ${notRunGateCount}`,
+	`**Status counts:** ${sanitizeCell(JSON.stringify(statusCounts))}`,
 	`**Gate status map:** ${sanitizeCell(JSON.stringify(gateStatusById))}`,
 	`**Gate exit-code map:** ${sanitizeCell(JSON.stringify(gateExitCodeById))}`,
 	`**Gate retry-count map:** ${sanitizeCell(JSON.stringify(gateRetryCountById))}`,
 	`**Gate duration map (s):** ${sanitizeCell(JSON.stringify(gateDurationSecondsById))}`,
 	`**Gate not-run reason map:** ${sanitizeCell(gateNotRunReasonMapLabel)}`,
 	`**Gate attempt-count map:** ${sanitizeCell(JSON.stringify(gateAttemptCountById))}`,
-	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
+	`**Executed gates:** ${executedGateCount}`,
 	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
 	`**Retried gate count:** ${summary.retriedGateCount ?? retriedGateIds.length}`,

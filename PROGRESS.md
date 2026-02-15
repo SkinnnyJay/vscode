@@ -2156,3 +2156,12 @@
   - Updated schema-warning negative checks to include the new fail-fast fallback summary publication path.
   - `scripts/README.md` updated to call out fail-fast fallback coverage within non-executed exit-code contract checks.
   **Why:** ensures markdown fallback rendering preserves null semantics for blocked/not-run gates when explicit exit-code maps are absent.
+- **Derived counter/status fallback hardening (2026-02-15 PM)** Improved renderer resilience when scalar counters are omitted:
+  - `scripts/publish-verify-gates-summary.sh` now derives `passedGateCount`, `failedGateCount`, `skippedGateCount`, `notRunGateCount`, `executedGateCount`, and normalized `statusCounts` from `gates[]` when top-level counter fields are missing.
+  - `scripts/test-verify-gates-summary.sh` now publishes a synthetic summary containing only `schemaVersion`, `runId`, and mixed-status `gates[]` rows (pass/fail/skip/not-run), then asserts markdown output includes:
+    - derived gate counters
+    - derived `statusCounts` map
+    - derived executed-gate count
+    - no schema warning for current schema.
+  - `scripts/README.md` updated to document derived-counter fallback coverage.
+  **Why:** guarantees step summaries remain informative and numerically correct even when upstream payloads omit scalar counter fields.
