@@ -1399,3 +1399,12 @@
   - verified JSON summary parses and includes expected gate count/status fields
   - verified both log file and summary file are created in the configured output directory.
   **Why:** confirms machine-readable output works for downstream CI/artifact processing without changing gate behavior.
+- **Verification summary metadata hardening (2026-02-15 AM)** Improved `scripts/verify-gates.sh` summary/reporting:
+  - added JSON-safe escaping for string fields in summary output
+  - added run-level timestamps (`startedAt`, `completedAt`) and `totalDurationSeconds`
+  - terminal summary now prints total duration in addition to per-gate timing/attempts.
+  **Why:** makes summary output safer to parse and more useful for trend analysis without relying on log scraping.
+- **Summary metadata validation (2026-02-15 AM)** Re-ran quick sweep with explicit summary path and schema assertions:
+  - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick --summary-json "<tmp>/summary.json"` → **pass**
+  - validated via Node script that summary includes `startedAt`, `completedAt`, `totalDurationSeconds`, and expected gate entries.
+  **Why:** confirms enriched summary metadata is emitted correctly and remains machine-consumable.

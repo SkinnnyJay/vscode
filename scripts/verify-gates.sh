@@ -15,6 +15,7 @@ fi
 MODE="full"
 RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+RUN_START_EPOCH_SECONDS="$(date +%s)"
 SUMMARY_FILE=""
 
 while (($# > 0)); do
@@ -121,33 +122,57 @@ run_gate() {
 }
 
 print_summary() {
+	local completed_epoch_seconds
+	completed_epoch_seconds="$(date +%s)"
+	local total_duration_seconds
+	total_duration_seconds=$((completed_epoch_seconds - RUN_START_EPOCH_SECONDS))
+
 	echo
 	echo "Verification summary:"
 	for i in "${!gates[@]}"; do
 		printf "  - %-26s status=%-4s attempts=%s duration=%ss\n" "${gates[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}"
 	done
+	echo "  Total duration: ${total_duration_seconds}s"
 	echo "  Log file: $LOG_FILE"
 	echo "  Summary file: $SUMMARY_FILE"
 }
 
+json_escape() {
+	local value="$1"
+	value="${value//\\/\\\\}"
+	value="${value//\"/\\\"}"
+	value="${value//$'\n'/\\n}"
+	value="${value//$'\r'/\\r}"
+	value="${value//$'\t'/\\t}"
+	printf '%s' "$value"
+}
+
 write_summary_json() {
 	local run_success="$1"
+	local completed_timestamp
+	completed_timestamp="$(date -u +"%Y%m%dT%H%M%SZ")"
+	local completed_epoch_seconds
+	completed_epoch_seconds="$(date +%s)"
+	local total_duration_seconds
+	total_duration_seconds=$((completed_epoch_seconds - RUN_START_EPOCH_SECONDS))
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
 		echo "{"
-		echo "  \"mode\": \"${MODE}\","
+		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"success\": ${run_success},"
-		echo "  \"timestamp\": \"${RUN_TIMESTAMP}\","
-		echo "  \"logFile\": \"${LOG_FILE}\","
+		echo "  \"startedAt\": \"$(json_escape "$RUN_TIMESTAMP")\","
+		echo "  \"completedAt\": \"$(json_escape "$completed_timestamp")\","
+		echo "  \"totalDurationSeconds\": ${total_duration_seconds},"
+		echo "  \"logFile\": \"$(json_escape "$LOG_FILE")\","
 		echo "  \"gates\": ["
 		for i in "${!gates[@]}"; do
 			local delimiter=","
 			if ((i == ${#gates[@]} - 1)); then
 				delimiter=""
 			fi
-			echo "    {\"command\":\"${gates[$i]}\",\"status\":\"${gate_results[$i]}\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
+			echo "    {\"command\":\"$(json_escape "${gates[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
