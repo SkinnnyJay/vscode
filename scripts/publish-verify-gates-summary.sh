@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 7;
+const supportedSchemaVersion = 8;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -80,6 +80,18 @@ const retriedGateIds = Array.isArray(summary.retriedGateIds)
 	? summary.retriedGateIds
 	: gates.filter((gate) => (gate.retryCount ?? 0) > 0).map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
+const passedGateIds = Array.isArray(summary.passedGateIds)
+	? summary.passedGateIds
+	: gates.filter((gate) => gate.status === 'pass').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const passedGateIdsLabel = passedGateIds.length > 0 ? passedGateIds.join(', ') : 'none';
+const skippedGateIds = Array.isArray(summary.skippedGateIds)
+	? summary.skippedGateIds
+	: gates.filter((gate) => gate.status === 'skip').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const skippedGateIdsLabel = skippedGateIds.length > 0 ? skippedGateIds.join(', ') : 'none';
+const executedGateIds = Array.isArray(summary.executedGateIds)
+	? summary.executedGateIds
+	: gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
 const notRunGateIds = Array.isArray(summary.notRunGateIds)
 	? summary.notRunGateIds
 	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -126,6 +138,9 @@ const lines = [
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
 	`**Retried gate count:** ${summary.retriedGateCount ?? retriedGateIds.length}`,
 	`**Retried gates:** ${sanitizeCell(retriedGateIdsLabel)}`,
+	`**Executed gates list:** ${sanitizeCell(executedGateIdsLabel)}`,
+	`**Passed gates list:** ${sanitizeCell(passedGateIdsLabel)}`,
+	`**Skipped gates list:** ${sanitizeCell(skippedGateIdsLabel)}`,
 	`**Retry rate (executed gates):** ${summary.retryRatePercent ?? 'n/a'}${summary.retryRatePercent === null || summary.retryRatePercent === undefined ? '' : '%'}`,
 	`**Retry backoff share (executed duration):** ${summary.retryBackoffSharePercent ?? 'n/a'}${summary.retryBackoffSharePercent === null || summary.retryBackoffSharePercent === undefined ? '' : '%'}`,
 	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,

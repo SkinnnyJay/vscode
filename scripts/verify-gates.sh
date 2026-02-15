@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=7
+SUMMARY_SCHEMA_VERSION=8
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -745,6 +745,42 @@ write_failed_gate_ids_json() {
 	done
 }
 
+write_passed_gate_ids_json() {
+	local -a passed_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "pass" ]]; then
+			passed_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!passed_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#passed_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${passed_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
+write_skipped_gate_ids_json() {
+	local -a skipped_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "skip" ]]; then
+			skipped_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!skipped_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#skipped_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${skipped_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
 write_failed_gate_exit_codes_json() {
 	local -a failed_gate_exit_codes=()
 	local i
@@ -760,6 +796,24 @@ write_failed_gate_exit_codes_json() {
 			delimiter=""
 		fi
 		echo "    ${failed_gate_exit_codes[$i]}${delimiter}"
+	done
+}
+
+write_executed_gate_ids_json() {
+	local -a executed_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "pass" ]] || [[ "${gate_results[$i]}" == "fail" ]]; then
+			executed_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!executed_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#executed_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${executed_gate_ids[$i]}")\"${delimiter}"
 	done
 }
 
@@ -974,8 +1028,17 @@ write_summary_json() {
 		echo "  \"failedGateIds\": ["
 		write_failed_gate_ids_json
 		echo "  ],"
+		echo "  \"passedGateIds\": ["
+		write_passed_gate_ids_json
+		echo "  ],"
+		echo "  \"skippedGateIds\": ["
+		write_skipped_gate_ids_json
+		echo "  ],"
 		echo "  \"failedGateExitCodes\": ["
 		write_failed_gate_exit_codes_json
+		echo "  ],"
+		echo "  \"executedGateIds\": ["
+		write_executed_gate_ids_json
 		echo "  ],"
 		echo "  \"retriedGateIds\": ["
 		write_retried_gate_ids_json

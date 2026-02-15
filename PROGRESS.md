@@ -1744,3 +1744,35 @@
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
   - `scripts/publish-verify-gates-summary.sh` now renders `Slowest executed gate` and `Slowest executed gate duration`.
   **Why:** highlights the dominant gate bottleneck directly in summaries, improving perf-triage speed on long verification runs.
+- **Gate partition lists + schema v8 (2026-02-15 AM)** Added explicit gate-id partitions and bumped summary schema:
+  - schema version bumped to `8`
+  - `scripts/verify-gates.sh` now emits:
+    - `passedGateIds`
+    - `skippedGateIds`
+    - `executedGateIds`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Executed/Passed/Skipped gates list` metadata and warns for versions beyond supported `8`.
+  **Why:** removes the need for downstream tools to reconstruct gate partitions from per-gate statuses.
+- **Gate partition validation (2026-02-15 AM)** Verified partition fields across dry/retry/fail-fast/real-success runs:
+  - dry run (`--quick --only lint --dry-run`) confirmed:
+    - `passedGateIds=[]`
+    - `skippedGateIds=[\"lint\"]`
+    - `executedGateIds=[]`
+  - controlled retry-success run (lint fails once then passes, typecheck passes) confirmed:
+    - `passedGateIds=[\"lint\",\"typecheck\"]`
+    - `executedGateIds=[\"lint\",\"typecheck\"]`
+    - `skippedGateIds=[]`
+  - controlled fail-fast run (`lint` fails, `typecheck` blocked) confirmed:
+    - `executedGateIds=[\"lint\"]`
+    - `passedGateIds=[]`
+    - `skippedGateIds=[]`
+    - `notRunGateIds=[\"typecheck\"]`
+  - real success run (`--quick --only typecheck --retries 0`) confirmed:
+    - `executedGateIds=[\"typecheck\"]`
+    - `passedGateIds=[\"typecheck\"]`
+  - markdown summary includes:
+    - `Executed gates list: lint, typecheck`
+    - `Passed gates list: lint, typecheck`
+    - `Skipped gates list: none`
+  - future-schema warning test (`schemaVersion=99`) confirmed warning references supported version `8`.
+  - `make lint` → **pass**.
+  **Why:** confirms schema-v8 partition lists are accurate across representative run paths and consistently surfaced in markdown output.
