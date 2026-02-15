@@ -87,17 +87,19 @@ const gateRows = gates.map((gate) => {
 	const command = gate.command ?? 'unknown';
 	const status = gate.status ?? 'unknown';
 	const attempts = gate.attempts ?? '-';
+	const retryCount = gate.retryCount ?? '-';
+	const retryBackoffSeconds = gate.retryBackoffSeconds ?? '-';
 	const durationSeconds = gate.durationSeconds ?? '-';
 	const exitCode = gate.exitCode ?? 'unknown';
-	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} |`;
+	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(retryCount)} | ${sanitizeCell(retryBackoffSeconds)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} |`;
 });
 
 const lines = [
 	`## ${heading}`,
 	'',
-	'| Gate ID | Command | Status | Attempts | Duration (s) | Exit code |',
-	'| --- | --- | --- | ---: | ---: | ---: |',
-	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a |']),
+	'| Gate ID | Command | Status | Attempts | Retries | Retry backoff (s) | Duration (s) | Exit code |',
+	'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |',
+	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
@@ -111,6 +113,8 @@ const lines = [
 	`**Skipped gates:** ${summary.skippedGateCount ?? 'unknown'}`,
 	`**Not-run gates:** ${summary.notRunGateCount ?? 'unknown'}`,
 	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
+	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
+	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
 	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
 	`**Executed duration total:** ${summary.executedDurationSeconds ?? 'unknown'}s`,
 	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,

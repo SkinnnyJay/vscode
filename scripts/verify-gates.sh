@@ -339,6 +339,10 @@ print_summary() {
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_count")"
 	local slowest_executed_gate_index
 	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
+	local total_retry_count
+	total_retry_count="$(compute_total_retry_count)"
+	local total_retry_backoff_seconds
+	total_retry_backoff_seconds="$(compute_total_retry_backoff_seconds)"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -350,6 +354,7 @@ print_summary() {
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
+	echo "  Retry totals: retries=${total_retry_count} backoff=${total_retry_backoff_seconds}s"
 	if ((pass_rate_percent >= 0)); then
 		echo "  Pass rate (executed gates): ${pass_rate_percent}%"
 	else
@@ -370,7 +375,11 @@ print_summary() {
 	fi
 	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
-		printf "  - %-20s status=%-7s attempts=%s duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		local retry_backoff_seconds
+		retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
+		printf "  - %-20s status=%-7s attempts=%s retries=%s backoff=%ss duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${retry_count}" "${retry_backoff_seconds}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
 	done
 	echo "  Total duration: ${total_duration_seconds}s"
 	echo "  Log file: $LOG_FILE"
@@ -452,6 +461,59 @@ compute_average_executed_duration_seconds() {
 	fi
 
 	echo $((executed_duration_seconds / executed_gate_count))
+}
+
+compute_gate_retry_count_by_index() {
+	local gate_index="$1"
+	local gate_status="${gate_results[$gate_index]}"
+	if [[ "$gate_status" != "pass" ]] && [[ "$gate_status" != "fail" ]]; then
+		echo "0"
+		return 0
+	fi
+
+	local attempts="${gate_attempt_counts[$gate_index]}"
+	if ((attempts <= 1)); then
+		echo "0"
+		return 0
+	fi
+
+	echo $((attempts - 1))
+}
+
+compute_gate_retry_backoff_seconds_by_index() {
+	local retry_count="$1"
+	if ((retry_count <= 0)); then
+		echo "0"
+		return 0
+	fi
+
+	echo $((2 ** retry_count - 1))
+}
+
+compute_total_retry_count() {
+	local total_retry_count=0
+	local i
+	for i in "${!gate_results[@]}"; do
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		total_retry_count=$((total_retry_count + retry_count))
+	done
+
+	echo "$total_retry_count"
+}
+
+compute_total_retry_backoff_seconds() {
+	local total_backoff_seconds=0
+	local i
+	for i in "${!gate_results[@]}"; do
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		local retry_backoff_seconds
+		retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
+		total_backoff_seconds=$((total_backoff_seconds + retry_backoff_seconds))
+	done
+
+	echo "$total_backoff_seconds"
 }
 
 find_slowest_executed_gate_index() {
@@ -586,6 +648,10 @@ write_summary_json() {
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_gate_count")"
 	local slowest_executed_gate_index
 	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
+	local total_retry_count
+	total_retry_count="$(compute_total_retry_count)"
+	local total_retry_backoff_seconds
+	total_retry_backoff_seconds="$(compute_total_retry_backoff_seconds)"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -604,6 +670,8 @@ write_summary_json() {
 		echo "  \"skippedGateCount\": ${skipped_gate_count},"
 		echo "  \"notRunGateCount\": ${not_run_gate_count},"
 		echo "  \"executedGateCount\": ${executed_gate_count},"
+		echo "  \"totalRetryCount\": ${total_retry_count},"
+		echo "  \"totalRetryBackoffSeconds\": ${total_retry_backoff_seconds},"
 		echo "  \"executedDurationSeconds\": ${executed_duration_seconds},"
 		if ((pass_rate_percent >= 0)); then
 			echo "  \"passRatePercent\": ${pass_rate_percent},"
@@ -658,7 +726,11 @@ write_summary_json() {
 			started_at_json="$(json_optional_timestamp "${gate_started_at[$i]}")"
 			local completed_at_json
 			completed_at_json="$(json_optional_timestamp "${gate_completed_at[$i]}")"
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json}}${delimiter}"
+			local retry_count
+			retry_count="$(compute_gate_retry_count_by_index "$i")"
+			local retry_backoff_seconds
+			retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"retryCount\":${retry_count},\"retryBackoffSeconds\":${retry_backoff_seconds},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"

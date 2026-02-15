@@ -1595,6 +1595,23 @@
   - terminal summary now prints executed duration total + average
   - `scripts/publish-verify-gates-summary.sh` now renders `Executed duration total` and `Executed duration average`.
   **Why:** provides immediate throughput context for regression detection and run-shape comparisons without manual per-gate arithmetic.
+- **Retry telemetry enrichment (2026-02-15 AM)** Added retry-focused metrics for transient-flake diagnosis:
+  - `scripts/verify-gates.sh` now computes and reports:
+    - top-level `totalRetryCount`, `totalRetryBackoffSeconds`
+    - per-gate `retryCount`, `retryBackoffSeconds`
+  - terminal summary now prints `Retry totals: retries=<n> backoff=<s>s` and per-gate retry/backoff values
+  - `scripts/publish-verify-gates-summary.sh` table now includes `Retries` + `Retry backoff (s)` columns, plus total retry metadata lines.
+  **Why:** makes flake/retry cost visible without parsing attempt logs, improving CI stability analysis.
+- **Retry telemetry validation (2026-02-15 AM)** Verified retry metrics across dry, retried, and non-retried runs:
+  - dry-run case (`--quick --only lint --dry-run`) confirmed `totalRetryCount=0`, `totalRetryBackoffSeconds=0` and terminal retry totals line.
+  - controlled retry case (mock `lint` fails once then succeeds; `typecheck` succeeds) confirmed:
+    - top-level totals `totalRetryCount=1`, `totalRetryBackoffSeconds=1`
+    - per-gate metrics `lint.retryCount=1`, `lint.retryBackoffSeconds=1`, `typecheck.retryCount=0`
+    - terminal summary includes `Retry totals: retries=1 backoff=1s`
+    - step summary includes retry columns and total retry metadata lines.
+  - real run (`--quick --only typecheck --retries 0`) confirmed zero retry totals.
+  - `make lint` → **pass**.
+  **Why:** confirms retry metrics are accurate and consistently surfaced across JSON, terminal output, and markdown summaries.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
