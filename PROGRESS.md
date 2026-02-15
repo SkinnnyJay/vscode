@@ -2546,6 +2546,18 @@
   - Assertions verify rendered lists remain authoritative empty (`Non-success gates list: none`, `Attention gates list: none`) even though failure partitions still surface from row status (`Failed gates: 1`, `Failed gates list: lint`).
   - `scripts/README.md` updated to document explicit-empty list precedence behavior.
   **Why:** ensures explicit operator-provided empty diagnostic lists are preserved instead of being silently repopulated by row-derived fallback logic.
+- **Selected scope filtering for summary-provided maps/lists (2026-02-15 PM)** Closed explicit-map selection leak:
+  - `scripts/publish-verify-gates-summary.sh` now scopes summary-provided gate-id lists/maps to explicit `selectedGateIds` when present:
+    - list inputs (`passed/failed/skipped/not-run/executed/retried/non-success/attention`)
+    - map inputs (`gateStatusById`, `gateExitCodeById`, `gateRetryCountById`, `gateDurationSecondsById`, `gateNotRunReasonById`, `gateAttemptCountById`).
+  - This keeps status-map fallback derivations aligned with explicit selection boundaries (no non-selected IDs leaking into counts/lists/maps).
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
+    - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
+    - map outputs only include `lint`
+    - non-success/attention lists remain `none`
+    - no non-selected `build` metadata leakage.
+  - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.
+  **Why:** preserves deterministic selected-scope semantics even when sparse producers include stale/extra gate IDs in explicit summary maps.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:
   - `scripts/publish-verify-gates-summary.sh` now treats parsed payload as summary data only when the root JSON value is a plain object; scalar/array/null roots are normalized to an empty summary object before derivation.
   - Existing scalar/array/null contract scenarios continue to pass with deterministic placeholder rendering and warnings.

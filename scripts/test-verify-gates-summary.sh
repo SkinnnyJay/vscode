@@ -99,6 +99,8 @@ slow_fast_string_metadata_summary="$tmpdir/slow-fast-string-metadata.json"
 slow_fast_string_metadata_step_summary="$tmpdir/slow-fast-string-metadata-step.md"
 explicit_empty_attention_lists_summary="$tmpdir/explicit-empty-attention-lists.json"
 explicit_empty_attention_lists_step_summary="$tmpdir/explicit-empty-attention-lists-step.md"
+selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
+selected_status_map_scope_step_summary="$tmpdir/selected-status-map-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -711,6 +713,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_empty_attention_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_attention_lists_summary" "Verify Gates Explicit Empty Attention Lists Contract Test"
+
+node - "$expected_schema_version" "$selected_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-map-scope-contract',
+	selectedGateIds: [' lint '],
+	gateStatusById: { ' lint ': ' PASS ', ' build ': ' fail ' },
+	gateExitCodeById: { lint: 0, build: 9 },
+	gateRetryCountById: { lint: 0, build: 3 },
+	gateDurationSecondsById: { lint: 1, build: 8 },
+	gateAttemptCountById: { lint: 1, build: 4 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_map_scope_summary" "Verify Gates Selected Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1900,6 +1925,38 @@ if ! grep -Fq "**Failed gates:** 1" "$explicit_empty_attention_lists_step_summar
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_attention_lists_step_summary"; then
 	echo "Did not expect schema warning for explicit-empty-attention-lists summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_status_map_scope_step_summary" || ! grep -Fq "**Gate count:** 1" "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to keep explicit selected gate scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to scope derived pass/fail counters to selected IDs when using status-map fallback." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to filter summary gate-status map entries to selected IDs." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate exit-code map:** {"lint":0}' "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to filter summary exit-code map entries to selected IDs." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate retry-count map:** {"lint":0}' "$selected_status_map_scope_step_summary" || ! grep -Fq '**Gate duration map (s):** {"lint":1}' "$selected_status_map_scope_step_summary" || ! grep -Fq '**Gate attempt-count map:** {"lint":1}' "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to filter summary retry/duration/attempt maps to selected IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$selected_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** none" "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to derive non-success/attention lists from selected-scope status-map data." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_status_map_scope_step_summary"; then
+	echo "Expected selected-status-map-scope summary to exclude non-selected status-map gate IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

@@ -275,15 +275,34 @@ const normalizeGateReasonMap = (value) => {
 	}
 	return normalizedMap;
 };
-const passedGateIdsFromSummary = normalizeGateIdList(summary.passedGateIds);
-const failedGateIdsFromSummary = normalizeGateIdList(summary.failedGateIds);
-const skippedGateIdsFromSummary = normalizeGateIdList(summary.skippedGateIds);
-const notRunGateIdsFromSummary = normalizeGateIdList(summary.notRunGateIds);
 const selectedGateIdsFromSummary = normalizeGateIdList(summary.selectedGateIds);
-const executedGateIdsFromSummary = normalizeGateIdList(summary.executedGateIds);
-const retriedGateIdsFromSummary = normalizeGateIdList(summary.retriedGateIds);
-const nonSuccessGateIdsFromSummary = normalizeGateIdList(summary.nonSuccessGateIds);
-const attentionGateIdsFromSummary = normalizeGateIdList(summary.attentionGateIds);
+const selectedGateIdSetFromSummary = selectedGateIdsFromSummary ? new Set(selectedGateIdsFromSummary) : null;
+const scopeGateIdListToSelection = (gateIds) => {
+	if (gateIds === null || selectedGateIdSetFromSummary === null) {
+		return gateIds;
+	}
+	return gateIds.filter((gateId) => selectedGateIdSetFromSummary.has(gateId));
+};
+const scopeGateMapToSelection = (gateMap) => {
+	if (gateMap === null || selectedGateIdsFromSummary === null) {
+		return gateMap;
+	}
+	const scopedMap = {};
+	for (const gateId of selectedGateIdsFromSummary) {
+		if (Object.prototype.hasOwnProperty.call(gateMap, gateId)) {
+			scopedMap[gateId] = gateMap[gateId];
+		}
+	}
+	return scopedMap;
+};
+const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
+const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
+const skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
+const notRunGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.notRunGateIds));
+const executedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.executedGateIds));
+const retriedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.retriedGateIds));
+const nonSuccessGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.nonSuccessGateIds));
+const attentionGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.attentionGateIds));
 const normalizeGateStatusMap = (value) => {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) {
 		return null;
@@ -302,7 +321,7 @@ const normalizeGateStatusMap = (value) => {
 	}
 	return normalizedMap;
 };
-const gateStatusByIdFromSummary = normalizeGateStatusMap(summary.gateStatusById);
+const gateStatusByIdFromSummary = scopeGateMapToSelection(normalizeGateStatusMap(summary.gateStatusById));
 const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 	const status = gate?.status;
 	if (status === 'pass' || status === 'fail' || status === 'skip' || status === 'not-run') {
@@ -529,7 +548,9 @@ const buildGateExitCodeMapFromSparseData = () => {
 	}
 	return gateExitCodeMap;
 };
-const gateExitCodeByIdFromSummary = normalizeGateIntegerMap(summary.gateExitCodeById, { allowNullValues: true, normalizeValue: normalizeNonNegativeInteger });
+const gateExitCodeByIdFromSummary = scopeGateMapToSelection(
+	normalizeGateIntegerMap(summary.gateExitCodeById, { allowNullValues: true, normalizeValue: normalizeNonNegativeInteger }),
+);
 const gateExitCodeById = gateExitCodeByIdFromSummary
 	? applyKnownGateDefaults(gateExitCodeByIdFromSummary, null)
 	: applyKnownGateDefaults(
@@ -549,7 +570,7 @@ const failedGateExitCodes = failedGateIds
 	})
 	.filter((exitCode) => exitCode !== null && exitCode !== undefined);
 const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
-const gateRetryCountByIdFromSummary = normalizeGateRetryCountMap(summary.gateRetryCountById);
+const gateRetryCountByIdFromSummary = scopeGateMapToSelection(normalizeGateRetryCountMap(summary.gateRetryCountById));
 const buildRetryCountMapFromSparseData = () => {
 	const retryCountByGateId = {};
 	const allGateIds = uniqueGateIds([
@@ -579,15 +600,19 @@ const gateRetryCountById = gateRetryCountByIdFromSummary
 			: buildRetryCountMapFromSparseData(),
 		0,
 	);
-const gateDurationSecondsByIdFromSummary = normalizeGateIntegerMap(summary.gateDurationSecondsById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger });
+const gateDurationSecondsByIdFromSummary = scopeGateMapToSelection(
+	normalizeGateIntegerMap(summary.gateDurationSecondsById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger }),
+);
 const gateDurationSecondsById = gateDurationSecondsByIdFromSummary
 	? applyKnownGateDefaults(gateDurationSecondsByIdFromSummary, 0)
 	: applyKnownGateDefaults(gateMapFromRows((gate) => normalizeNonNegativeInteger(gate.durationSeconds) ?? 0), 0);
-const gateNotRunReasonByIdFromSummary = normalizeGateReasonMap(summary.gateNotRunReasonById);
+const gateNotRunReasonByIdFromSummary = scopeGateMapToSelection(normalizeGateReasonMap(summary.gateNotRunReasonById));
 const gateNotRunReasonById = gateNotRunReasonByIdFromSummary
 	? applyKnownGateDefaults(gateNotRunReasonByIdFromSummary, null)
 	: applyKnownGateDefaults(gateMapFromRows((gate) => typeof gate.notRunReason === 'string' ? gate.notRunReason : null), null);
-const gateAttemptCountByIdFromSummary = normalizeGateIntegerMap(summary.gateAttemptCountById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger });
+const gateAttemptCountByIdFromSummary = scopeGateMapToSelection(
+	normalizeGateIntegerMap(summary.gateAttemptCountById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger }),
+);
 const gateAttemptCountById = gateAttemptCountByIdFromSummary
 	? applyKnownGateDefaults(gateAttemptCountByIdFromSummary, 0)
 	: applyKnownGateDefaults(gateMapFromRows((gate) => normalizeNonNegativeInteger(gate.attempts) ?? 0), 0);
