@@ -1848,3 +1848,11 @@
     - build gate passed cleanly.
   - Both runs emitted schema version `17` payloads and rendered markdown summaries successfully.
   **Why:** reconfirms finish-state stability with real gate execution (not only synthetic/mocked runs) on the latest summary contract.
+- **Automated verify-gates contract test harness (2026-02-15 PM)** Added deterministic script-level contract test:
+  - new script: `scripts/test-verify-gates-summary.sh`
+    - validates schema v17 payloads across dry-run, fail-fast, and retry-success scenarios
+    - validates map fields (`gateStatusById`, `gateExitCodeById`, `gateRetryCountById`, `gateDurationSecondsById`, `gateNotRunReasonById`, `gateAttemptCountById`)
+    - validates partition fields (`attentionGateIds`) and compact not-run reason rendering in markdown summaries
+    - validates future-schema warning path (synthetic `schemaVersion=99` expecting warning text referencing supported 17)
+  - documented script usage in `scripts/README.md`.
+  **Why:** replaces ad-hoc inline assertion chains with a reusable, reviewable regression test for summary contract and renderer behavior.
