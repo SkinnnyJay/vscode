@@ -86,6 +86,7 @@ const lines = [
 	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
+	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
 	`**Gate count:** ${summary.gateCount ?? gates.length}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,

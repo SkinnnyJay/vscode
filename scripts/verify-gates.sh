@@ -15,6 +15,7 @@ fi
 MODE="full"
 RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
 SUMMARY_FILE=""
 FROM_GATE_ID=""
@@ -112,6 +113,8 @@ fi
 
 cd "$ROOT"
 
+RUN_ID="${MODE}-${RUN_TIMESTAMP}"
+
 declare -a gate_ids
 declare -a gate_commands
 if [[ "$MODE" == "quick" ]]; then
@@ -205,9 +208,9 @@ fi
 
 LOG_DIR="${VSCODE_VERIFY_LOG_DIR:-$ROOT/.build/logs/verify-gates}"
 mkdir -p "$LOG_DIR"
-LOG_FILE="$LOG_DIR/${MODE}-${RUN_TIMESTAMP}.log"
+LOG_FILE="$LOG_DIR/${RUN_ID}.log"
 if [[ -z "$SUMMARY_FILE" ]]; then
-	SUMMARY_FILE="$LOG_DIR/${MODE}-${RUN_TIMESTAMP}.json"
+	SUMMARY_FILE="$LOG_DIR/${RUN_ID}.json"
 fi
 exec > >(tee -a "$LOG_FILE") 2>&1
 
@@ -257,6 +260,7 @@ print_summary() {
 
 	echo
 	echo "Verification summary:"
+	echo "  Run ID: ${RUN_ID}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	for i in "${!gate_commands[@]}"; do
@@ -300,6 +304,7 @@ write_summary_json() {
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
 		echo "{"
+		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"dryRun\": $([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"),"

@@ -1479,3 +1479,9 @@
   - escapes inline-code backticks in gate IDs/commands
   - applies escaping to selected/failed gate metadata as well.
   **Why:** prevents malformed GitHub step-summary tables when gate metadata contains markdown-special characters, preserving readability and parser stability.
+- **Run ID surfacing in verify summaries (2026-02-15 AM)** Added explicit run identifiers across verification artifacts:
+  - `scripts/verify-gates.sh` now computes a stable `runId` (`<mode>-<timestamp>`) and uses it for default log/summary filenames
+  - terminal summary now prints `Run ID`
+  - JSON summary now includes top-level `runId`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Run ID` in GitHub step summaries.
+  **Why:** makes log/JSON/step-summary correlation trivial during CI triage and cross-artifact debugging.
