@@ -2328,3 +2328,8 @@
     - known gates remain present in derived maps even when omitted from partial inputs.
   - List-only sparse scenario assertions were made order-insensitive for JSON map rendering while still validating all expected key/value pairs.
   **Why:** avoids propagating invalid exit codes and keeps rendered map diagnostics complete for all known selected/partitioned gates.
+- **Run-classification-only sparse fallback inference (2026-02-15 PM)** Hardened run-state derivation when sparse payloads provide only classification:
+  - `scripts/publish-verify-gates-summary.sh` now maps explicit `runClassification` to `exitReason` when `exitReason` is omitted (`dry-run`→`dry-run`, `success-*`→`success`, `failed-*`→failure reasons), and includes explicit run classification in `success` inference precedence.
+  - `scripts/test-verify-gates-summary.sh` now adds a sparse contract case with only `runClassification: "SUCCESS-NO-RETRIES"` and verifies rendered `Success: true`, `Exit reason: success`, and normalized `Run classification: success-no-retries`.
+  - `scripts/README.md` updated to note explicit run-classification fallback coverage in the contract harness.
+  **Why:** keeps CI summaries semantically complete when upstream producers emit only run classification without duplicating outcome fields.

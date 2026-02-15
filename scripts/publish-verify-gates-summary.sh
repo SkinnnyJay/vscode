@@ -649,17 +649,33 @@ const hasOutcomeEvidence = gates.length > 0
 	|| rawStatusCountsHasValues;
 const explicitDryRun = normalizeBoolean(summary.dryRun);
 const explicitExitReason = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
+const explicitRunClassification = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
+const exitReasonFromRunClassification = (() => {
+	switch (explicitRunClassification) {
+		case 'dry-run':
+			return 'dry-run';
+		case 'success-no-retries':
+		case 'success-with-retries':
+			return 'success';
+		case 'failed-fail-fast':
+			return 'fail-fast';
+		case 'failed-continued':
+			return 'completed-with-failures';
+		default:
+			return null;
+	}
+})();
 const explicitSuccess = normalizeBoolean(summary.success);
 const successValue = explicitSuccess !== null
 	? explicitSuccess
 	: (explicitDryRun === true
 		? true
-		: (explicitExitReason === 'dry-run' || explicitExitReason === 'success'
+		: (explicitExitReason === 'dry-run' || explicitExitReason === 'success' || explicitRunClassification === 'dry-run' || explicitRunClassification === 'success-no-retries' || explicitRunClassification === 'success-with-retries'
 			? true
-			: (explicitExitReason === 'fail-fast' || explicitExitReason === 'completed-with-failures'
+			: (explicitExitReason === 'fail-fast' || explicitExitReason === 'completed-with-failures' || explicitRunClassification === 'failed-fail-fast' || explicitRunClassification === 'failed-continued'
 				? false
 				: (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'))));
-const derivedExitReason = explicitExitReason ?? (() => {
+const derivedExitReason = explicitExitReason ?? exitReasonFromRunClassification ?? (() => {
 	if (explicitDryRun === true) {
 		return 'dry-run';
 	}
@@ -674,7 +690,6 @@ const derivedExitReason = explicitExitReason ?? (() => {
 	}
 	return 'completed-with-failures';
 })();
-const explicitRunClassification = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
 const derivedRunClassification = explicitRunClassification ?? (() => {
 	switch (derivedExitReason) {
 		case 'dry-run':
