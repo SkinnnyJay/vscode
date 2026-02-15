@@ -537,10 +537,11 @@ const gateAttemptCountById = gateAttemptCountByIdFromSummary
 	: gateMapFromRows((gate) => normalizeNonNegativeInteger(gate.attempts) ?? 0);
 const toIntegerOrNull = normalizeInteger;
 const normalizeSummaryTimestamp = (value) => {
-	if (typeof value !== 'string') {
+	const normalizedTimestamp = normalizeNonEmptyString(value);
+	if (normalizedTimestamp === null) {
 		return null;
 	}
-	return /^\d{8}T\d{6}Z$/.test(value) ? value : null;
+	return /^\d{8}T\d{6}Z$/.test(normalizedTimestamp) ? normalizedTimestamp : null;
 };
 const timestampToEpochSeconds = (timestamp) => {
 	const normalizedTimestamp = normalizeSummaryTimestamp(timestamp);

@@ -60,6 +60,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes gate-row not-run-reason type checks proving non-string `gates[].notRunReason` values are sanitized to `null`/`n/a` in derived metadata and table output.
   - Includes gate-row command-type checks proving non-string/empty `gates[].command` values are sanitized to `unknown` in table output without affecting gate-ID derivation.
   - Includes gate-row numeric-field sanitization checks proving invalid `attempts`/`retryCount`/`retryBackoffSeconds`/`durationSeconds`/`exitCode` values are normalized to safe defaults (`0`/`n/a`) for row rendering and derived maps.
+  - Includes timestamp-whitespace normalization checks proving padded `startedAt`/`completedAt` values are trimmed before duration/start/end derivation.
   - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists/table rows while valid normalized rows still render correctly.
   - Includes numeric-boolean normalization checks proving `success`/`dryRun`/`continueOnFailure` accept numeric `1`/`0` encodings in sparse payloads.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).

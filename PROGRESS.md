@@ -2466,3 +2466,8 @@
   - `scripts/test-verify-gates-summary.sh` `row_command_type` scenario now injects invalid numeric noise (`attempts: "bad"`, negative retry/exit code, non-numeric duration/backoff) and verifies rendered row defaults to `0`/`n/a` values.
   - `scripts/README.md` updated to document row numeric-field sanitization coverage.
   **Why:** prevents malformed row numeric values from leaking inconsistent text into table cells and keeps row rendering aligned with normalized map derivations.
+- **Timestamp whitespace normalization for summary derivation (2026-02-15 PM)** Hardened timestamp parsing:
+  - `scripts/publish-verify-gates-summary.sh` now trims timestamp strings before summary-timestamp validation (`YYYYMMDDTHHMMSSZ`) so padded values are accepted.
+  - `scripts/test-verify-gates-summary.sh` derived-counts scenario now provides padded row `startedAt`/`completedAt` values and keeps existing `Started`/`Completed`/`Total duration` assertions unchanged.
+  - `scripts/README.md` updated to document timestamp-whitespace normalization coverage.
+  **Why:** prevents harmless producer whitespace around timestamps from suppressing derived timing metadata.
