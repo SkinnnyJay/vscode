@@ -75,6 +75,10 @@ const failedGateExitCodes = Array.isArray(summary.failedGateExitCodes)
 	? summary.failedGateExitCodes
 	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.exitCode);
 const failedGateExitCodesLabel = failedGateExitCodes.length > 0 ? failedGateExitCodes.join(', ') : 'none';
+const notRunGateIds = Array.isArray(summary.notRunGateIds)
+	? summary.notRunGateIds
+	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
 const sanitizeCell = (value) => String(value).replace(/\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
 const gateRows = gates.map((gate) => {
@@ -108,6 +112,7 @@ const lines = [
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
+	`**Not-run gates list:** ${sanitizeCell(notRunGateIdsLabel)}`,
 	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
 	`**Failed gate exit code:** ${sanitizeCell(summary.failedGateExitCode ?? 'none')}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,

@@ -441,6 +441,34 @@ write_failed_gate_exit_codes_json() {
 	done
 }
 
+write_not_run_gate_ids_json() {
+	local -a not_run_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" == "not-run" ]]; then
+			not_run_gate_ids+=("${gate_ids[$i]}")
+		fi
+	done
+
+	for i in "${!not_run_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#not_run_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${not_run_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
+json_optional_timestamp() {
+	local value="$1"
+	if [[ -z "$value" ]]; then
+		echo "null"
+		return 0
+	fi
+
+	echo "\"$(json_escape "$value")\""
+}
+
 write_summary_json() {
 	local run_success="$1"
 	local completed_timestamp
@@ -490,6 +518,9 @@ write_summary_json() {
 		echo "  \"failedGateExitCodes\": ["
 		write_failed_gate_exit_codes_json
 		echo "  ],"
+		echo "  \"notRunGateIds\": ["
+		write_not_run_gate_ids_json
+		echo "  ],"
 		echo "  \"selectedGateIds\": ["
 		write_selected_gate_ids_json
 		echo "  ],"
@@ -503,7 +534,11 @@ write_summary_json() {
 			if ((i == ${#gate_commands[@]} - 1)); then
 				delimiter=""
 			fi
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":\"$(json_escape "${gate_started_at[$i]}")\",\"completedAt\":\"$(json_escape "${gate_completed_at[$i]}")\"}${delimiter}"
+			local started_at_json
+			started_at_json="$(json_optional_timestamp "${gate_started_at[$i]}")"
+			local completed_at_json
+			completed_at_json="$(json_optional_timestamp "${gate_completed_at[$i]}")"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"

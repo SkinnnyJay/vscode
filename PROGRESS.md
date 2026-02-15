@@ -1567,3 +1567,17 @@
   - real success run (`./scripts/verify-gates.sh --quick --only typecheck --retries 0`) confirmed empty failure arrays.
   - `make lint` → **pass**.
   **Why:** confirms aggregate failure telemetry is accurate without regressing existing first-failure semantics or success-path payloads.
+- **Not-run gate ID + nullable gate timestamps (2026-02-15 AM)** Refined summary semantics for fail-fast runs:
+  - `scripts/verify-gates.sh` now emits top-level `notRunGateIds`
+  - per-gate `startedAt` / `completedAt` are now `null` (instead of empty string) when status is `not-run`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Not-run gates list` metadata.
+  **Why:** improves schema clarity for consumers by cleanly separating “not executed” from executed gates and removes ambiguous empty-string timestamps.
+- **Not-run metadata validation (2026-02-15 AM)** Validated fail-fast and success semantics for new fields:
+  - mock fail-fast run (`lint` exits 5, `typecheck` not run) confirmed:
+    - `notRunGateCount=1`, `notRunGateIds=["typecheck"]`
+    - not-run gate timestamps are `null`
+    - terminal summary includes `Failed gates: lint(exitCode=5)`
+    - step summary includes `Not-run gates list: typecheck`
+  - real success run (`./scripts/verify-gates.sh --quick --only typecheck --retries 0`) confirmed empty `notRunGateIds` and non-null gate timestamps.
+  - `make lint` → **pass**.
+  **Why:** demonstrates correct not-run modeling under fail-fast while preserving executed-gate timestamp semantics.
