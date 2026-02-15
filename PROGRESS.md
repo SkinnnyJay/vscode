@@ -1352,3 +1352,11 @@
   - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
   - `make build` → **pass** (0 compile errors)
   **Why:** reconfirms green status after prior transient parallel-run noise, with all heavy suites passing sequentially on the same branch tip.
+- **Fresh serialized verification + parallel stress note (2026-02-15 AM)** Executed another round to reconfirm current tip:
+  - `make test-e2e && make test-web-integration && make test-unit` (fully sequential) → **pass** (`test-unit: 7584 passing`, `134 pending`)
+  - separate `make test-integration` → **pass**
+  - `make lint` → **pass**
+  - `make typecheck` → **pass**
+  - `make build` → **pass** (0 compile errors)
+  - `make test-e2e` run in parallel with `make test-web-integration` → transient failure in e2e colorize leg; immediate standalone `make test-e2e` rerun → **pass**
+  **Why:** adds another high-signal confirmation that serialized heavy suites remain stable, while preserving an explicit record that concurrent e2e+web runs can still trigger VM-level transient failures.
