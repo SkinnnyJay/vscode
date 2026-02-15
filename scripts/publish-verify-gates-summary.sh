@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 16;
+const supportedSchemaVersion = 17;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -145,6 +145,13 @@ const gateNotRunReasonById = summary.gateNotRunReasonById && typeof summary.gate
 			.filter((gate) => typeof gate.id === 'string')
 			.map((gate) => [gate.id, gate.notRunReason ?? null]),
 	);
+const gateAttemptCountById = summary.gateAttemptCountById && typeof summary.gateAttemptCountById === 'object' && !Array.isArray(summary.gateAttemptCountById)
+	? summary.gateAttemptCountById
+	: Object.fromEntries(
+		gates
+			.filter((gate) => typeof gate.id === 'string')
+			.map((gate) => [gate.id, gate.attempts ?? 0]),
+	);
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\n/g, ' ').replace(/\|/g, '\\|');
@@ -190,6 +197,7 @@ const lines = [
 	`**Gate retry-count map:** ${sanitizeCell(JSON.stringify(gateRetryCountById))}`,
 	`**Gate duration map (s):** ${sanitizeCell(JSON.stringify(gateDurationSecondsById))}`,
 	`**Gate not-run reason map:** ${sanitizeCell(gateNotRunReasonMapLabel)}`,
+	`**Gate attempt-count map:** ${sanitizeCell(JSON.stringify(gateAttemptCountById))}`,
 	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
 	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,

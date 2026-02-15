@@ -1832,3 +1832,9 @@
   - producer payload remains unchanged (`gateNotRunReasonById` still includes all selected gates with nullable values).
   - `scripts/README.md` now documents the compact rendering behavior.
   **Why:** removes noisy `null` entries from step summaries while preserving complete machine-readable JSON data.
+- **Attempt-count map + schema v17 (2026-02-15 AM)** Added direct gate-id→attempt-count lookup:
+  - `scripts/verify-gates.sh` now emits `gateAttemptCountById` object for all selected gates
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate attempt-count map` and derives fallback from `gates[]` when missing
+  - schema baseline bumped to `17` in producer/renderer
+  - `scripts/README.md` updated to schema version `17` and field list includes `gateAttemptCountById`.
+  **Why:** gives downstream tooling constant-time visibility into per-gate attempt pressure (including retries) without recomputation.
