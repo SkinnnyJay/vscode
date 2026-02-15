@@ -2477,6 +2477,17 @@
     - table renders only available row data (no synthetic/placeholder `missing` row).
   - `scripts/README.md` updated to document missing-row behavior under explicit selection order.
   **Why:** preserves operator-selected metadata while keeping rendered rows grounded in actual available gate-row data.
+- **Selected missing-gate map-default coverage (2026-02-15 PM)** Extended explicit-selection edge-case checks:
+  - `scripts/test-verify-gates-summary.sh` selected-missing-row scenario now also verifies per-gate map defaults for missing selected gates:
+    - `gateStatusById.missing = unknown`
+    - `gateExitCodeById.missing = null`.
+  - `scripts/README.md` updated to document missing-selected-gate map-default coverage.
+  **Why:** ensures explicit selected gates remain visible in derived diagnostics maps even when no row data is provided.
+- **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
+  - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
+  - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.
+  - Existing selected-missing-row contract assertions now pass for `gateExitCodeById.missing = null`.
+  **Why:** keeps per-gate map visibility consistent across producer styles (explicit maps vs row-derived fallbacks).
 - **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
   - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
   - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.
