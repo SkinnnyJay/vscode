@@ -2522,6 +2522,15 @@
   - `scripts/test-verify-gates-summary.sh` adds `metadata_whitespace` scenario with blank/invalid metadata and verifies unknown/n/a fallbacks plus log-file suppression.
   - `scripts/README.md` updated to document metadata whitespace sanitization coverage.
   **Why:** prevents sparse producers from rendering empty/invalid metadata values that reduce CI summary readability.
+- **Non-string metadata sanitization coverage (2026-02-15 PM)** Extended run/signature/log guard rails:
+  - `scripts/test-verify-gates-summary.sh` now adds `metadata_nonstring` scenario with non-string values for:
+    - `runId`
+    - `resultSignatureAlgorithm`
+    - `resultSignature`
+    - `logFile`.
+  - Assertions verify non-string values are sanitized to `unknown` (run/signature) and log-file line suppression is preserved.
+  - `scripts/README.md` updated to document non-string metadata sanitization coverage.
+  **Why:** ensures sparse producers cannot leak arbitrary non-string metadata values into rendered summary lines.
 - **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
   - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
   - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.

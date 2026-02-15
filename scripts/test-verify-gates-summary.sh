@@ -87,6 +87,8 @@ invocation_whitespace_summary="$tmpdir/invocation-whitespace.json"
 invocation_whitespace_step_summary="$tmpdir/invocation-whitespace-step.md"
 metadata_whitespace_summary="$tmpdir/metadata-whitespace.json"
 metadata_whitespace_step_summary="$tmpdir/metadata-whitespace-step.md"
+metadata_nonstring_summary="$tmpdir/metadata-nonstring.json"
+metadata_nonstring_step_summary="$tmpdir/metadata-nonstring-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -590,6 +592,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$metadata_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$metadata_whitespace_summary" "Verify Gates Metadata Whitespace Contract Test"
+
+node - "$expected_schema_version" "$metadata_nonstring_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 123,
+	resultSignatureAlgorithm: 9,
+	resultSignature: false,
+	logFile: 42,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$metadata_nonstring_step_summary" ./scripts/publish-verify-gates-summary.sh "$metadata_nonstring_summary" "Verify Gates Metadata Nonstring Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1609,6 +1631,22 @@ if grep -Fq "**Log file:**" "$metadata_whitespace_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$metadata_whitespace_step_summary"; then
 	echo "Did not expect schema warning for metadata-whitespace summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run ID:** unknown" "$metadata_nonstring_step_summary"; then
+	echo "Expected metadata-nonstring summary to normalize non-string run ID values to unknown." >&2
+	exit 1
+fi
+if ! grep -Fq "**Result signature algorithm:** unknown" "$metadata_nonstring_step_summary" || ! grep -Fq "**Result signature:** unknown" "$metadata_nonstring_step_summary"; then
+	echo "Expected metadata-nonstring summary to normalize non-string signature metadata to unknown." >&2
+	exit 1
+fi
+if grep -Fq "**Log file:**" "$metadata_nonstring_step_summary"; then
+	echo "Expected metadata-nonstring summary to suppress non-string log-file metadata lines." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$metadata_nonstring_step_summary"; then
+	echo "Did not expect schema warning for metadata-nonstring summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
