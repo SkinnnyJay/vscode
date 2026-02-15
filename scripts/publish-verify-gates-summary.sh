@@ -110,6 +110,8 @@ const lines = [
 	`**Failed gates:** ${summary.failedGateCount ?? 'unknown'}`,
 	`**Skipped gates:** ${summary.skippedGateCount ?? 'unknown'}`,
 	`**Not-run gates:** ${summary.notRunGateCount ?? 'unknown'}`,
+	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
+	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,

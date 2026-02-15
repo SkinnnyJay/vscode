@@ -329,6 +329,10 @@ print_summary() {
 	skip_count="$(count_gate_status "skip")"
 	local not_run_count
 	not_run_count="$(count_gate_status "not-run")"
+	local executed_count
+	executed_count="$(count_executed_gates)"
+	local pass_rate_percent
+	pass_rate_percent="$(compute_pass_rate_percent "$executed_count" "$pass_count")"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -340,6 +344,11 @@ print_summary() {
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
+	if ((pass_rate_percent >= 0)); then
+		echo "  Pass rate (executed gates): ${pass_rate_percent}%"
+	else
+		echo "  Pass rate (executed gates): n/a"
+	fi
 	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
 		printf "  - %-20s status=%-7s attempts=%s duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
@@ -380,6 +389,25 @@ count_gate_status() {
 		fi
 	done
 	echo "$count"
+}
+
+count_executed_gates() {
+	local passed_count
+	passed_count="$(count_gate_status "pass")"
+	local failed_count
+	failed_count="$(count_gate_status "fail")"
+	echo $((passed_count + failed_count))
+}
+
+compute_pass_rate_percent() {
+	local executed_count="$1"
+	local passed_count="$2"
+	if ((executed_count == 0)); then
+		echo "-1"
+		return 0
+	fi
+
+	echo $((passed_count * 100 / executed_count))
 }
 
 collect_failed_gate_labels() {
@@ -485,6 +513,10 @@ write_summary_json() {
 	skipped_gate_count="$(count_gate_status "skip")"
 	local not_run_gate_count
 	not_run_gate_count="$(count_gate_status "not-run")"
+	local executed_gate_count
+	executed_gate_count="$(count_executed_gates)"
+	local pass_rate_percent
+	pass_rate_percent="$(compute_pass_rate_percent "$executed_gate_count" "$passed_gate_count")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -502,6 +534,12 @@ write_summary_json() {
 		echo "  \"failedGateCount\": ${failed_gate_count},"
 		echo "  \"skippedGateCount\": ${skipped_gate_count},"
 		echo "  \"notRunGateCount\": ${not_run_gate_count},"
+		echo "  \"executedGateCount\": ${executed_gate_count},"
+		if ((pass_rate_percent >= 0)); then
+			echo "  \"passRatePercent\": ${pass_rate_percent},"
+		else
+			echo "  \"passRatePercent\": null,"
+		fi
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","
 		else
