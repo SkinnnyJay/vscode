@@ -622,13 +622,22 @@ export class Code {
 					const globalChannelBufferCoverageStatus = importTargetUrl
 						? `\nImport target global channel coverage: requestFailures=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.requestFailures)}, scriptResponses=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.scriptResponses)}, cdpScriptLoads=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.cdpScriptLoads)}, consoleErrors=${this.formatChannelWindowCoverage(globalChannelBufferCoverage.consoleErrors)}`
 						: '';
+					const globalChannelBufferCoverageClasses = this.buildGlobalChannelBufferCoverageClasses(globalChannelBufferStats);
+					const globalChannelBufferCoverageClassesStatus = importTargetUrl
+						? `\nImport target global channel coverage classes: requestFailures=display=${globalChannelBufferCoverageClasses.requestFailures.displayInRetained}, retained=${globalChannelBufferCoverageClasses.requestFailures.retainedInTotal}, scriptResponses=display=${globalChannelBufferCoverageClasses.scriptResponses.displayInRetained}, retained=${globalChannelBufferCoverageClasses.scriptResponses.retainedInTotal}, cdpScriptLoads=display=${globalChannelBufferCoverageClasses.cdpScriptLoads.displayInRetained}, retained=${globalChannelBufferCoverageClasses.cdpScriptLoads.retainedInTotal}, consoleErrors=display=${globalChannelBufferCoverageClasses.consoleErrors.displayInRetained}, retained=${globalChannelBufferCoverageClasses.consoleErrors.retainedInTotal}`
+						: '';
 					const importTargetGlobalBufferSignature = this.computeGlobalBufferSignature(globalChannelBufferStats);
 					const importTargetGlobalBufferSignatureStatus = importTargetUrl
 						? `\nImport target global buffer signature: ${importTargetGlobalBufferSignature}`
 						: '';
+					const importTargetGlobalCoverageSignature = this.computeGlobalChannelCoverageSignature(globalChannelBufferCoverage, globalChannelBufferCoverageClasses);
+					const importTargetGlobalCoverageSignatureStatus = importTargetUrl
+						? `\nImport target global coverage signature: ${importTargetGlobalCoverageSignature}`
+						: '';
 					const importTargetCompositeSignature = this.computeImportTargetCompositeSignature(
 						importTargetDiagnosticsSignature,
 						importTargetGlobalBufferSignature,
+						importTargetGlobalCoverageSignature,
 						importTargetDiagnosticsConsistency
 					);
 					const importTargetCompositeSignatureStatus = importTargetUrl
@@ -661,6 +670,7 @@ export class Code {
 						importTargetDiagnosticsConsistency,
 						importTargetDiagnosticsSignature,
 						importTargetGlobalBufferSignature,
+						importTargetGlobalCoverageSignature,
 						importTargetCompositeSignature,
 						{
 							displayWindow: importTargetDisplayWindowConsoleErrorCount,
@@ -670,7 +680,8 @@ export class Code {
 						trial,
 						retryInterval,
 						globalChannelBufferStats,
-						globalChannelBufferCoverage
+						globalChannelBufferCoverage,
+						globalChannelBufferCoverageClasses
 					);
 					const importTargetDiagnosticsRecordStatus = importTargetDiagnosticsRecord
 						? `\nImport target diagnostics record: ${JSON.stringify(importTargetDiagnosticsRecord)}`
@@ -679,7 +690,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -943,6 +954,7 @@ export class Code {
 		},
 		signature: string,
 		globalBufferSignature: string,
+		globalCoverageSignature: string,
 		compositeSignature: string,
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number },
 		detectedAtTrial: number,
@@ -970,6 +982,12 @@ export class Code {
 				displayInRetained: { recent: number; total: number; percent: number | null };
 				retainedInTotal: { recent: number; total: number; percent: number | null };
 			};
+		},
+		globalChannelBufferCoverageClasses: {
+			requestFailures: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
 		}
 	): {
 		schemaVersion: number;
@@ -1026,6 +1044,7 @@ export class Code {
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
 		globalBufferSignature: string;
+		globalCoverageSignature: string;
 		compositeSignature: string;
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number };
 		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -1056,6 +1075,12 @@ export class Code {
 				retainedInTotal: { recent: number; total: number; percent: number | null };
 			};
 		};
+		globalChannelBufferCoverageClasses: {
+			requestFailures: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		};
 		signature: string;
 	} | undefined {
 		if (!importTargetUrl) {
@@ -1077,6 +1102,7 @@ export class Code {
 			channelCoverageClasses,
 			consistencyChecks,
 			globalBufferSignature,
+			globalCoverageSignature,
 			compositeSignature,
 			consoleErrorCounts,
 			detectedAtTrial,
@@ -1087,6 +1113,7 @@ export class Code {
 			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			globalChannelBufferStats,
 			globalChannelBufferCoverage,
+			globalChannelBufferCoverageClasses,
 			signature
 		};
 	}
@@ -1154,6 +1181,37 @@ export class Code {
 			scriptResponses: this.buildChannelWindowCoverageStats(globalChannelBufferStats.scriptResponses.displayed, globalChannelBufferStats.scriptResponses.retained, globalChannelBufferStats.scriptResponses.observed),
 			cdpScriptLoads: this.buildChannelWindowCoverageStats(globalChannelBufferStats.cdpScriptLoads.displayed, globalChannelBufferStats.cdpScriptLoads.retained, globalChannelBufferStats.cdpScriptLoads.observed),
 			consoleErrors: this.buildChannelWindowCoverageStats(globalChannelBufferStats.consoleErrors.displayed, globalChannelBufferStats.consoleErrors.retained, globalChannelBufferStats.consoleErrors.observed)
+		};
+	}
+
+	private buildGlobalChannelBufferCoverageClasses(globalChannelBufferStats: {
+		requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+	}): {
+		requestFailures: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+	} {
+		return {
+			requestFailures: {
+				displayInRetained: this.classifyCoverageVisibility(globalChannelBufferStats.requestFailures.displayed, globalChannelBufferStats.requestFailures.retained),
+				retainedInTotal: this.classifyCoverageVisibility(globalChannelBufferStats.requestFailures.retained, globalChannelBufferStats.requestFailures.observed)
+			},
+			scriptResponses: {
+				displayInRetained: this.classifyCoverageVisibility(globalChannelBufferStats.scriptResponses.displayed, globalChannelBufferStats.scriptResponses.retained),
+				retainedInTotal: this.classifyCoverageVisibility(globalChannelBufferStats.scriptResponses.retained, globalChannelBufferStats.scriptResponses.observed)
+			},
+			cdpScriptLoads: {
+				displayInRetained: this.classifyCoverageVisibility(globalChannelBufferStats.cdpScriptLoads.displayed, globalChannelBufferStats.cdpScriptLoads.retained),
+				retainedInTotal: this.classifyCoverageVisibility(globalChannelBufferStats.cdpScriptLoads.retained, globalChannelBufferStats.cdpScriptLoads.observed)
+			},
+			consoleErrors: {
+				displayInRetained: this.classifyCoverageVisibility(globalChannelBufferStats.consoleErrors.displayed, globalChannelBufferStats.consoleErrors.retained),
+				retainedInTotal: this.classifyCoverageVisibility(globalChannelBufferStats.consoleErrors.retained, globalChannelBufferStats.consoleErrors.observed)
+			}
 		};
 	}
 
@@ -1327,9 +1385,66 @@ export class Code {
 		return this.computeStableSignature(payload);
 	}
 
+	private computeGlobalChannelCoverageSignature(
+		globalChannelBufferCoverage: {
+			requestFailures: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			scriptResponses: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			cdpScriptLoads: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+			consoleErrors: {
+				displayInRetained: { recent: number; total: number; percent: number | null };
+				retainedInTotal: { recent: number; total: number; percent: number | null };
+			};
+		},
+		globalChannelBufferCoverageClasses: {
+			requestFailures: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			scriptResponses: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			cdpScriptLoads: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+			consoleErrors: { displayInRetained: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible'; retainedInTotal: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible' };
+		}
+	): string {
+		const payload = [
+			`requestFailures.display.recent=${globalChannelBufferCoverage.requestFailures.displayInRetained.recent}`,
+			`requestFailures.display.total=${globalChannelBufferCoverage.requestFailures.displayInRetained.total}`,
+			`requestFailures.retained.recent=${globalChannelBufferCoverage.requestFailures.retainedInTotal.recent}`,
+			`requestFailures.retained.total=${globalChannelBufferCoverage.requestFailures.retainedInTotal.total}`,
+			`requestFailures.classes.display=${globalChannelBufferCoverageClasses.requestFailures.displayInRetained}`,
+			`requestFailures.classes.retained=${globalChannelBufferCoverageClasses.requestFailures.retainedInTotal}`,
+			`scriptResponses.display.recent=${globalChannelBufferCoverage.scriptResponses.displayInRetained.recent}`,
+			`scriptResponses.display.total=${globalChannelBufferCoverage.scriptResponses.displayInRetained.total}`,
+			`scriptResponses.retained.recent=${globalChannelBufferCoverage.scriptResponses.retainedInTotal.recent}`,
+			`scriptResponses.retained.total=${globalChannelBufferCoverage.scriptResponses.retainedInTotal.total}`,
+			`scriptResponses.classes.display=${globalChannelBufferCoverageClasses.scriptResponses.displayInRetained}`,
+			`scriptResponses.classes.retained=${globalChannelBufferCoverageClasses.scriptResponses.retainedInTotal}`,
+			`cdpScriptLoads.display.recent=${globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.recent}`,
+			`cdpScriptLoads.display.total=${globalChannelBufferCoverage.cdpScriptLoads.displayInRetained.total}`,
+			`cdpScriptLoads.retained.recent=${globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.recent}`,
+			`cdpScriptLoads.retained.total=${globalChannelBufferCoverage.cdpScriptLoads.retainedInTotal.total}`,
+			`cdpScriptLoads.classes.display=${globalChannelBufferCoverageClasses.cdpScriptLoads.displayInRetained}`,
+			`cdpScriptLoads.classes.retained=${globalChannelBufferCoverageClasses.cdpScriptLoads.retainedInTotal}`,
+			`consoleErrors.display.recent=${globalChannelBufferCoverage.consoleErrors.displayInRetained.recent}`,
+			`consoleErrors.display.total=${globalChannelBufferCoverage.consoleErrors.displayInRetained.total}`,
+			`consoleErrors.retained.recent=${globalChannelBufferCoverage.consoleErrors.retainedInTotal.recent}`,
+			`consoleErrors.retained.total=${globalChannelBufferCoverage.consoleErrors.retainedInTotal.total}`,
+			`consoleErrors.classes.display=${globalChannelBufferCoverageClasses.consoleErrors.displayInRetained}`,
+			`consoleErrors.classes.retained=${globalChannelBufferCoverageClasses.consoleErrors.retainedInTotal}`
+		].join('|');
+
+		return this.computeStableSignature(payload);
+	}
+
 	private computeImportTargetCompositeSignature(
 		diagnosticsSignature: string,
 		globalBufferSignature: string,
+		globalCoverageSignature: string,
 		consistencyChecks: {
 			signalMatchesTotals: boolean;
 			visibilityMatchesCounts: boolean;
@@ -1346,6 +1461,7 @@ export class Code {
 		const payload = [
 			`diagnostics=${diagnosticsSignature}`,
 			`globalBuffer=${globalBufferSignature}`,
+			`globalCoverage=${globalCoverageSignature}`,
 			`signalMatchesTotals=${consistencyChecks.signalMatchesTotals}`,
 			`visibilityMatchesCounts=${consistencyChecks.visibilityMatchesCounts}`,
 			`droppedMatchesDelta=${consistencyChecks.droppedMatchesDelta}`,

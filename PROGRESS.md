@@ -1022,3 +1022,24 @@
     - `"globalChannelBufferCoverage":{"requestFailures":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":718,"percent":3.5}},"scriptResponses":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":73,"percent":34.2}},"cdpScriptLoads":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":72,"percent":34.7}},"consoleErrors":{"displayInRetained":{"recent":8,"total":25,"percent":32},"retainedInTotal":{"recent":25,"total":361,"percent":6.9}}}`
   Re-ran `make lint` (pass).
   **Why:** confirms global coverage ratios are emitted and consistent with existing displayed/retained/observed channel counts.
+- **Global channel coverage classes + signature (2026-02-14 PM)** Extended global buffer diagnostics in `test/automation/src/code.ts`:
+  - added line:
+    - `Import target global channel coverage classes: ...`
+    - per channel emits class labels for both `displayInRetained` and `retainedInObserved`
+  - added line:
+    - `Import target global coverage signature: 06fda560` (example from latest run)
+    - derived from global coverage counts + class labels
+  - structured diagnostics record now includes:
+    - `globalChannelBufferCoverageClasses`
+    - `globalCoverageSignature`
+  - composite signature now incorporates `globalCoverageSignature`.
+  **Why:** adds compact fingerprinting and categorical interpretation for global buffer retention behavior, improving run-to-run comparison beyond raw percentages.
+- **Global coverage class/signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target global channel coverage classes: requestFailures=display=partial-visible, retained=partial-visible, scriptResponses=display=partial-visible, retained=partial-visible, cdpScriptLoads=display=partial-visible, retained=partial-visible, consoleErrors=display=partial-visible, retained=partial-visible`
+  - `Import target global coverage signature: 06fda560`
+  - structured record fields:
+    - `"globalChannelBufferCoverageClasses":{"requestFailures":{"displayInRetained":"partial-visible","retainedInTotal":"partial-visible"},"scriptResponses":{"displayInRetained":"partial-visible","retainedInTotal":"partial-visible"},"cdpScriptLoads":{"displayInRetained":"partial-visible","retainedInTotal":"partial-visible"},"consoleErrors":{"displayInRetained":"partial-visible","retainedInTotal":"partial-visible"}}`
+    - `"globalCoverageSignature":"06fda560"`
+  - existing consistency checks remained passing.
+  Re-ran `make lint` (pass).
+  **Why:** confirms global coverage class labels and signature are emitted in both human-readable and structured outputs.
