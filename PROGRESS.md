@@ -2103,3 +2103,10 @@
     - `resultSignatureAlgorithm` is populated.
   - `scripts/README.md` updated to include signature stability coverage.
   **Why:** protects downstream consumers that rely on signature equality for run-shape comparisons and flaky-triage grouping.
+- **Mode/retry precedence contract coverage (2026-02-15 PM)** Expanded producer contract assertions for option precedence:
+  - `scripts/test-verify-gates-summary.sh` now runs additional dry-run scenarios validating:
+    - final mode flag wins when both are provided (`--quick --full` => `mode=full`, `runId=full-*`; `--full --quick` => `mode=quick`, `runId=quick-*`)
+    - `VSCODE_VERIFY_RETRIES` sets default retries in summary metadata when `--retries` is omitted
+    - explicit `--retries` overrides `VSCODE_VERIFY_RETRIES`.
+  - `scripts/README.md` now documents these precedence checks under CI contract coverage notes.
+  **Why:** guarantees deterministic CLI/env precedence semantics for automation wrappers and CI callers that compose flags dynamically.

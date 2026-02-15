@@ -30,6 +30,10 @@ dedupe_summary="$tmpdir/dedupe.json"
 from_summary="$tmpdir/from.json"
 full_dry_summary="$tmpdir/full-dry.json"
 default_mode_dry_summary="$tmpdir/default-mode-dry.json"
+mode_precedence_full_summary="$tmpdir/mode-precedence-full.json"
+mode_precedence_quick_summary="$tmpdir/mode-precedence-quick.json"
+env_retries_summary="$tmpdir/env-retries.json"
+cli_retries_override_summary="$tmpdir/cli-retries-override.json"
 fail_fast_summary="$tmpdir/fail-fast.json"
 retry_summary="$tmpdir/retry.json"
 fail_fast_step_summary="$tmpdir/fail-fast-step.md"
@@ -101,6 +105,10 @@ VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only " 
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --from typecheck --dry-run --summary-json "$from_summary" > "$tmpdir/from.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --full --only build --dry-run --summary-json "$full_dry_summary" > "$tmpdir/full-dry.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --only build --dry-run --summary-json "$default_mode_dry_summary" > "$tmpdir/default-mode-dry.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" VSCODE_VERIFY_RETRIES=2 ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$env_retries_summary" > "$tmpdir/env-retries.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" VSCODE_VERIFY_RETRIES=2 ./scripts/verify-gates.sh --quick --only lint --retries 0 --dry-run --summary-json "$cli_retries_override_summary" > "$tmpdir/cli-retries-override.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --full --only build --dry-run --summary-json "$mode_precedence_full_summary" > "$tmpdir/mode-precedence-full.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --full --quick --only test-unit --dry-run --summary-json "$mode_precedence_quick_summary" > "$tmpdir/mode-precedence-quick.out"
 if ! grep -q "Ignoring duplicate gate ids from --only: lint" "$tmpdir/dedupe.out"; then
 	echo "Expected duplicate --only gate IDs warning message." >&2
 	exit 1
@@ -180,9 +188,9 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, modePrecedenceFullPath, modePrecedenceQuickPath, envRetriesPath, cliRetriesOverridePath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -196,6 +204,10 @@ const dedupe = JSON.parse(fs.readFileSync(dedupePath, 'utf8'));
 const from = JSON.parse(fs.readFileSync(fromPath, 'utf8'));
 const fullDry = JSON.parse(fs.readFileSync(fullDryPath, 'utf8'));
 const defaultModeDry = JSON.parse(fs.readFileSync(defaultModeDryPath, 'utf8'));
+const modePrecedenceFull = JSON.parse(fs.readFileSync(modePrecedenceFullPath, 'utf8'));
+const modePrecedenceQuick = JSON.parse(fs.readFileSync(modePrecedenceQuickPath, 'utf8'));
+const envRetries = JSON.parse(fs.readFileSync(envRetriesPath, 'utf8'));
+const cliRetriesOverride = JSON.parse(fs.readFileSync(cliRetriesOverridePath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
@@ -206,10 +218,10 @@ const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
 }
-if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion || defaultModeDry.schemaVersion !== expectedSchemaVersion) {
+if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion || defaultModeDry.schemaVersion !== expectedSchemaVersion || modePrecedenceFull.schemaVersion !== expectedSchemaVersion || modePrecedenceQuick.schemaVersion !== expectedSchemaVersion || envRetries.schemaVersion !== expectedSchemaVersion || cliRetriesOverride.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
-for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['fail-fast', failFast], ['retry', retry]]) {
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['fail-fast', failFast], ['retry', retry]]) {
 	const statusCounts = summary.statusCounts ?? {};
 	const passCount = summary.passedGateCount ?? 0;
 	const failCount = summary.failedGateCount ?? 0;
@@ -247,11 +259,10 @@ if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
 }
 const timestampPattern = /^\d{8}T\d{6}Z$/;
-for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['fail-fast', failFast], ['retry', retry]]) {
-	const expectedRunIdPrefix = label === 'full-dry' ? 'full-' : 'quick-';
-	const normalizedRunIdPrefix = label === 'default-mode-dry' ? 'full-' : expectedRunIdPrefix;
-	if (typeof summary.runId !== 'string' || !summary.runId.startsWith(normalizedRunIdPrefix)) {
-		throw new Error(`${label} summary runId should start with ${normalizedRunIdPrefix}.`);
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['fail-fast', failFast], ['retry', retry]]) {
+	const expectedRunIdPrefix = label === 'full-dry' || label === 'default-mode-dry' || label === 'mode-precedence-full' ? 'full-' : 'quick-';
+	if (typeof summary.runId !== 'string' || !summary.runId.startsWith(expectedRunIdPrefix)) {
+		throw new Error(`${label} summary runId should start with ${expectedRunIdPrefix}.`);
 	}
 	if (!timestampPattern.test(String(summary.startedAt ?? '')) || !timestampPattern.test(String(summary.completedAt ?? ''))) {
 		throw new Error(`${label} summary timestamps should match YYYYMMDDTHHMMSSZ.`);
@@ -274,6 +285,24 @@ if (defaultModeDry.mode !== 'full' || !defaultModeDry.runId.startsWith('full-'))
 }
 if (defaultModeDry.selectedGateIds.join(',') !== 'build' || defaultModeDry.skippedGateIds.join(',') !== 'build') {
 	throw new Error('Default-mode dry-run gate selection/partition mismatch.');
+}
+if (modePrecedenceFull.mode !== 'full' || !modePrecedenceFull.runId.startsWith('full-')) {
+	throw new Error('Mode precedence should use final --full flag.');
+}
+if (modePrecedenceFull.selectedGateIds.join(',') !== 'build' || modePrecedenceFull.skippedGateIds.join(',') !== 'build') {
+	throw new Error('Mode precedence full selection/partition mismatch.');
+}
+if (modePrecedenceQuick.mode !== 'quick' || !modePrecedenceQuick.runId.startsWith('quick-')) {
+	throw new Error('Mode precedence should use final --quick flag.');
+}
+if (modePrecedenceQuick.selectedGateIds.join(',') !== 'test-unit' || modePrecedenceQuick.skippedGateIds.join(',') !== 'test-unit') {
+	throw new Error('Mode precedence quick selection/partition mismatch.');
+}
+if (envRetries.retries !== 2 || envRetries.mode !== 'quick' || envRetries.selectedGateIds.join(',') !== 'lint') {
+	throw new Error('Expected VSCODE_VERIFY_RETRIES to control retries in dry-run metadata.');
+}
+if (cliRetriesOverride.retries !== 0 || cliRetriesOverride.mode !== 'quick' || cliRetriesOverride.selectedGateIds.join(',') !== 'lint') {
+	throw new Error('Expected --retries flag to override VSCODE_VERIFY_RETRIES.');
 }
 if (!Array.isArray(failFast.executedGateIds) || failFast.executedGateCount !== failFast.executedGateIds.length) {
 	throw new Error('Fail-fast executed gate count/list mismatch.');
