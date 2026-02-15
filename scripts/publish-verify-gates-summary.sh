@@ -48,7 +48,7 @@ const fs = require('fs');
 const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
-const supportedSchemaVersion = 8;
+const supportedSchemaVersion = 9;
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);

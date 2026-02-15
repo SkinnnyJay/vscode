@@ -1780,3 +1780,8 @@
   - future-schema warning test (`schemaVersion=99`) confirmed warning references supported version `8`.
   - `make lint` → **pass**.
   **Why:** confirms schema-v8 partition lists are accurate across representative run paths and consistently surfaced in markdown output.
+- **Schema v9 version bump for statusCounts contract (2026-02-15 AM)** Promoted summary schema baseline after adding `statusCounts`:
+  - `scripts/verify-gates.sh` now emits `schemaVersion=9`
+  - `scripts/publish-verify-gates-summary.sh` now treats `supportedSchemaVersion=9`
+  - `scripts/README.md` now documents current schema version as `9`.
+  **Why:** keeps explicit schema/version compatibility aligned with the evolved payload contract and summary renderer expectations.
