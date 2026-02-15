@@ -1274,3 +1274,9 @@
   - `make test-integration` → **pass**
   - `make lint` → **pass**
   **Why:** confirms refactor-only changes preserved behavior while keeping all launcher paths green.
+- **Additional post-consolidation stress pass (2026-02-15 AM)** Re-ran broader gates after helper extraction:
+  - `make test-smoke` → **pass**
+  - `make test-integration` → **pass**
+  - `make test` → transient first-run failure in this VM, immediate rerun **pass**
+  - `make lint` → **pass**
+  **Why:** provides extra confidence that shared launcher helpers remain stable under repeated long-running suites, while documenting observed nondeterministic VM flake behavior transparently.
