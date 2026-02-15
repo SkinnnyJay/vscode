@@ -20,6 +20,7 @@ SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 DRY_RUN=0
+FAILED_GATE_ID=""
 
 print_usage() {
 	cat <<'USAGE'
@@ -141,9 +142,9 @@ trim_whitespace() {
 
 if [[ -n "$ONLY_GATE_IDS_RAW" ]]; then
 	IFS=',' read -r -a requested_gate_ids <<< "$ONLY_GATE_IDS_RAW"
-	declare -a filtered_gate_ids
-	declare -a filtered_gate_commands
-	declare -a duplicate_gate_ids
+	declare -a filtered_gate_ids=()
+	declare -a filtered_gate_commands=()
+	declare -a duplicate_gate_ids=()
 
 	for requested_gate_id in "${requested_gate_ids[@]}"; do
 		requested_gate_id="$(trim_whitespace "$requested_gate_id")"
@@ -256,6 +257,8 @@ print_summary() {
 
 	echo
 	echo "Verification summary:"
+	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"))"
+	echo "  Gate count: ${#gate_commands[@]}"
 	for i in "${!gate_commands[@]}"; do
 		printf "  - %-20s status=%-4s attempts=%s duration=%ss command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_commands[$i]}"
 	done
@@ -274,6 +277,17 @@ json_escape() {
 	printf '%s' "$value"
 }
 
+write_selected_gate_ids_json() {
+	local gate_index
+	for gate_index in "${!gate_ids[@]}"; do
+		local delimiter=","
+		if ((gate_index == ${#gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${gate_ids[$gate_index]}")\"${delimiter}"
+	done
+}
+
 write_summary_json() {
 	local run_success="$1"
 	local completed_timestamp
@@ -290,6 +304,15 @@ write_summary_json() {
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"dryRun\": $([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"),"
 		echo "  \"success\": ${run_success},"
+		echo "  \"gateCount\": ${#gate_ids[@]},"
+		if [[ -n "$FAILED_GATE_ID" ]]; then
+			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","
+		else
+			echo "  \"failedGateId\": null,"
+		fi
+		echo "  \"selectedGateIds\": ["
+		write_selected_gate_ids_json
+		echo "  ],"
 		echo "  \"startedAt\": \"$(json_escape "$RUN_TIMESTAMP")\","
 		echo "  \"completedAt\": \"$(json_escape "$completed_timestamp")\","
 		echo "  \"totalDurationSeconds\": ${total_duration_seconds},"
@@ -335,6 +358,7 @@ for i in "${!gate_commands[@]}"; do
 	gate_results+=("fail")
 	gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
 	gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
+	FAILED_GATE_ID="${gate_ids[$i]}"
 	print_summary
 	write_summary_json "false"
 	exit 1

@@ -1455,3 +1455,18 @@
   - deduplicates repeated `--only` gate IDs with an explicit informational message
   - rejects whitespace-only `--from` values with a clear error.
   **Why:** makes selective gate invocations more forgiving for human-edited CI/local commands while preserving deterministic gate execution order.
+- **Run-level summary metadata enrichment (2026-02-15 AM)** Extended `scripts/verify-gates.sh` summary payload/console output with additional run diagnostics:
+  - terminal summary now includes mode/retry/dry-run context and gate count
+  - JSON summary now includes `gateCount`, `failedGateId`, and `selectedGateIds`
+  - failure path records `failedGateId` deterministically before exiting.
+  Also updated `scripts/publish-verify-gates-summary.sh` to render `dryRun`, `gateCount`, and `failedGateId` in GitHub step summaries.
+  **Why:** improves CI triage speed by making run configuration and exact failing gate visible without digging through raw logs.
+- **Summary metadata enrichment validation (2026-02-15 AM)** Verified new fields/rendering with focused scripted checks:
+  - `./scripts/verify-gates.sh --quick --only typecheck --retries 0 --summary-json "<tmp>/summary-run.json"` → **pass**
+  - `./scripts/verify-gates.sh --quick --only " lint , lint " --dry-run --summary-json "<tmp>/summary-dry.json"` → **pass** (duplicate warning emitted)
+  - Node assertions confirmed:
+    - run summary: `gateCount=1`, `failedGateId=null`, `selectedGateIds=["typecheck"]`
+    - dry-run summary: `dryRun=true`, `selectedGateIds=["lint"]`
+  - `./scripts/publish-verify-gates-summary.sh` output now includes `Dry run`, `Gate count`, and `Failed gate` lines.
+  - `make lint` → **pass**.
+  **Why:** confirms payload schema evolution and step-summary rendering remain accurate and lint-clean.
