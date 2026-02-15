@@ -67,6 +67,8 @@ derived_dry_run_summary="$tmpdir/derived-dry-run.json"
 derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
 derived_continued_failure_summary="$tmpdir/derived-continued-failure.json"
 derived_continued_failure_step_summary="$tmpdir/derived-continued-failure-step.md"
+explicit_reason_summary="$tmpdir/explicit-reason.json"
+explicit_reason_step_summary="$tmpdir/explicit-reason-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -415,6 +417,24 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_continued_failure_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_continued_failure_summary" "Verify Gates Derived Continued-Failure Contract Test"
+
+node - "$expected_schema_version" "$explicit_reason_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-reason-contract',
+	exitReason: 'completed-with-failures',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_reason_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_reason_summary" "Verify Gates Explicit Reason Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1059,6 +1079,26 @@ if ! grep -Fq "**Blocked by gate:** none" "$derived_continued_failure_step_summa
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_continued_failure_step_summary"; then
 	echo "Did not expect schema warning for derived-continued-failure summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$explicit_reason_step_summary"; then
+	echo "Expected explicit-reason summary to derive success=false from exitReason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$explicit_reason_step_summary"; then
+	echo "Expected explicit-reason summary to derive continue-on-failure=true from completed-with-failures reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** completed-with-failures" "$explicit_reason_step_summary"; then
+	echo "Expected explicit-reason summary to preserve explicit exit reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** failed-continued" "$explicit_reason_step_summary"; then
+	echo "Expected explicit-reason summary to derive failed-continued classification from explicit exit reason." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_reason_step_summary"; then
+	echo "Did not expect schema warning for explicit-reason summary." >&2
 	exit 1
 fi
 

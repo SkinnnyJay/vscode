@@ -2290,6 +2290,11 @@
   - `scripts/test-verify-gates-summary.sh` updated sparse status-map/list-map scenarios to include negative/invalid numeric noise and assert sanitized outputs (e.g. invalid exit codes collapse to `null`, derived totals remain stable).
   - `scripts/README.md` updated to explicitly call out strict non-negative numeric enforcement in fallback handling.
   **Why:** ensures malformed negative or non-numeric values cannot leak into derived CI summary diagnostics.
+- **Explicit exit-reason precedence + sparse map coverage refinements (2026-02-15 PM)** Tightened edge-case run-state and sparse-map expectations:
+  - `scripts/publish-verify-gates-summary.sh` now treats explicit `exitReason` values as authoritative run-state evidence when `success` is absent (e.g. `completed-with-failures` now derives `success=false` and `runClassification=failed-continued` even without partition counters).
+  - Sparse map handling was refined so known gates are default-filled for partial map payloads while keeping strict numeric sanitization, and contract assertions were adjusted to validate normalized map contents without relying on object key order.
+  - `scripts/test-verify-gates-summary.sh` now adds an explicit-exit-reason sparse scenario and verifies derived run-state lines (`Success`, `Continue on failure`, `Exit reason`, `Run classification`), plus enhanced map-normalization assertions for status-map payloads.
+  **Why:** closes ambiguity in sparse summaries that provide only explicit exit reason or partial maps, ensuring deterministic, semantically accurate CI summary output.
 - **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
   - `scripts/publish-verify-gates-summary.sh` now:
     - treats exit codes as non-negative integers (invalid/negative values ignored)

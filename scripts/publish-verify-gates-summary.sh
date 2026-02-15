@@ -614,10 +614,16 @@ const hasOutcomeEvidence = gates.length > 0
 	|| notRunGateCountFromSummary !== null
 	|| rawStatusCountsHasValues;
 const explicitDryRun = typeof summary.dryRun === 'boolean' ? summary.dryRun : null;
+const explicitExitReason = normalizeNonEmptyString(summary.exitReason);
 const successValue = typeof summary.success === 'boolean'
 	? summary.success
-	: (explicitDryRun === true ? true : (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'));
-const explicitExitReason = normalizeNonEmptyString(summary.exitReason);
+	: (explicitDryRun === true
+		? true
+		: (explicitExitReason === 'dry-run' || explicitExitReason === 'success'
+			? true
+			: (explicitExitReason === 'fail-fast' || explicitExitReason === 'completed-with-failures'
+				? false
+				: (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'))));
 const derivedExitReason = explicitExitReason ?? (() => {
 	if (explicitDryRun === true) {
 		return 'dry-run';
