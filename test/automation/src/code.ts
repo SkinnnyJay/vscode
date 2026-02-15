@@ -410,6 +410,9 @@ export class Code {
 					const importTargetCdpScriptLifecycle = importTargetUrl
 						? this.driver.getCdpScriptLifecycleSummaryForUrl(importTargetUrl)
 						: undefined;
+					const importTargetPlaywrightScriptLifecycle = importTargetUrl
+						? this.driver.getPlaywrightScriptLifecycleSummaryForUrl(importTargetUrl)
+						: undefined;
 					const importTargetTotalEventCounts = importTargetUrl
 						? this.driver.getImportTargetEventCounts(importTargetUrl)
 						: undefined;
@@ -442,6 +445,9 @@ export class Code {
 						: '';
 					const importTargetCdpScriptLifecycleStatus = importTargetUrl
 						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
+						: '';
+					const importTargetPlaywrightScriptLifecycleStatus = importTargetUrl
+						? `\nImport target Playwright script lifecycle: ${importTargetPlaywrightScriptLifecycle ?? 'unseen'}`
 						: '';
 					const importTargetFirstSeenTimingsStatus = importTargetUrl
 						? `\nImport target first-seen timings: requestFailures=${this.formatElapsedMs(importTargetFirstSeenTimes?.requestFailureFirstSeenAtMs)}, scriptRequests=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptRequestFirstSeenAtMs)}, scriptResponses=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptResponseFirstSeenAtMs)}, cdpLifecycle=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLifecycleFirstSeenAtMs)}, cdpScriptLoads=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLoadFirstSeenAtMs)}, consoleErrors=${this.formatElapsedMs(importTargetFirstSeenTimes?.consoleErrorFirstSeenAtMs)}`
@@ -664,6 +670,7 @@ export class Code {
 						importTargetGlobalCoverageSignature,
 						importTargetDiagnosticsConsistency,
 						globalChannelCoverageConsistency,
+						importTargetPlaywrightScriptLifecycle ?? 'unseen',
 						importTargetCdpCorrelationClass,
 						cdpNetworkDiagnosticsStatus
 					);
@@ -704,6 +711,7 @@ export class Code {
 							retainedWindow: importTargetRetainedWindowConsoleErrorCount,
 							total: importTargetTotalConsoleErrorCount
 						},
+						importTargetPlaywrightScriptLifecycle,
 						importTargetFirstSeenTimes,
 						cdpNetworkDiagnosticsStatus,
 						importTargetCdpCorrelationClass,
@@ -721,7 +729,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetFirstSeenTimingsStatus}${importTargetCdpAttachStatus}${importTargetCdpCorrelationStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${globalChannelCoverageConsistencyStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetPlaywrightScriptLifecycleStatus}${importTargetFirstSeenTimingsStatus}${importTargetCdpAttachStatus}${importTargetCdpCorrelationStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${globalChannelCoverageConsistencyStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -1035,6 +1043,7 @@ export class Code {
 		globalCoverageSignature: string,
 		compositeSignature: string,
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number },
+		playwrightScriptLifecycle: string | undefined,
 		firstSeenTimes: {
 			requestFailureFirstSeenAtMs: number | undefined;
 			scriptRequestFirstSeenAtMs: number | undefined;
@@ -1146,6 +1155,7 @@ export class Code {
 		globalCoverageSignature: string;
 		compositeSignature: string;
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number };
+		playwrightScriptLifecycle: string;
 		firstSeenTimes: {
 			requestFailureFirstSeenAtMs: number | undefined;
 			scriptRequestFirstSeenAtMs: number | undefined;
@@ -1225,6 +1235,7 @@ export class Code {
 			globalCoverageSignature,
 			compositeSignature,
 			consoleErrorCounts,
+			playwrightScriptLifecycle: playwrightScriptLifecycle ?? 'unseen',
 			firstSeenTimes: firstSeenTimes ?? {
 				requestFailureFirstSeenAtMs: undefined,
 				scriptRequestFirstSeenAtMs: undefined,
@@ -1680,6 +1691,7 @@ export class Code {
 			hierarchyMatchesStats: boolean;
 			isConsistent: boolean;
 		},
+		playwrightScriptLifecycle: string,
 		cdpCorrelationClass: string,
 		cdpDiagnosticsStatus: {
 			attachStartedAtMs: number | undefined;
@@ -1706,6 +1718,7 @@ export class Code {
 			`globalCoverage.classesMatchCoverage=${globalChannelCoverageConsistency.classesMatchCoverage}`,
 			`globalCoverage.hierarchyMatchesStats=${globalChannelCoverageConsistency.hierarchyMatchesStats}`,
 			`globalCoverage.isConsistent=${globalChannelCoverageConsistency.isConsistent}`,
+			`playwrightLifecycle=${playwrightScriptLifecycle}`,
 			`cdpCorrelationClass=${cdpCorrelationClass}`,
 			`cdpDiagnosticsAttached=${cdpDiagnosticsStatus.isAttached}`,
 			`cdpAttachStartedAtMs=${cdpDiagnosticsStatus.attachStartedAtMs ?? 'unseen'}`,

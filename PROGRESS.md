@@ -1112,3 +1112,22 @@
   - `Import target CDP correlation class: request-before-cdp-ready`
   Re-ran `make lint` (pass).
   **Why:** confirms, with direct timing evidence, that the import target request starts before CDP network instrumentation finishes attaching in this headless smoke environment.
+- **Playwright script-lifecycle diagnostics (2026-02-15 AM)** Added direct per-URL script lifecycle counters from Playwright network events to compare against CDP:
+  - `test/automation/src/playwrightDriver.ts`
+    - tracks per-target counts for `request`, `response`, `requestfinished`, `requestfailed`
+    - exposes summary via `getPlaywrightScriptLifecycleSummaryForUrl(url)`
+  - `test/automation/src/code.ts`
+    - new line:
+      - `Import target Playwright script lifecycle: request=<n> response=<n> finished=<n> failed=<n> latestOutcome=<...>`
+    - structured diagnostics record now includes:
+      - `playwrightScriptLifecycle`
+    - composite signature payload now includes Playwright lifecycle summary.
+  **Why:** provides a second (non-CDP) lifecycle channel so we can tell whether the import target request actually finishes at the Playwright layer when startup still throws a dynamic import fetch failure.
+- **Playwright lifecycle validation + contradiction signal (2026-02-15 AM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target CDP script lifecycle: requestWillBeSent=1 loadingFinished=1 loadingFailed=0 latestOutcome=loadingFinished`
+  - `Import target Playwright script lifecycle: request=1 response=1 finished=1 failed=0 latestOutcome=requestfinished`
+  - `Import target CDP correlation class: cdp-correlated`
+  - startup still fails with:
+    - `TypeError: Failed to fetch dynamically imported module: .../workbench.desktop.main.js`
+  Re-ran `make lint` (pass).
+  **Why:** shows the failure can occur even when both CDP and Playwright report a fully completed import-target request lifecycle, indicating the root cause is not only “missing/early network instrumentation” and may involve downstream module evaluation/runtime state.

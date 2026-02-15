@@ -90,6 +90,7 @@ export class PlaywrightDriver {
 	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
 	private readonly cdpScriptLoadSeenCountsByUrl = new Map<string, number>();
 	private readonly cdpScriptLifecycleByUrl = new Map<string, { requestWillBeSentCount: number; loadingFinishedCount: number; loadingFailedCount: number; latestOutcome: string }>();
+	private readonly playwrightScriptLifecycleByUrl = new Map<string, { requestCount: number; responseCount: number; finishedCount: number; failedCount: number; latestOutcome: string }>();
 	private readonly requestFailureCountByUrl = new Map<string, number>();
 	private readonly scriptResponseCountByUrl = new Map<string, number>();
 	private readonly cdpScriptLoadCountByUrl = new Map<string, number>();
@@ -547,6 +548,15 @@ export class PlaywrightDriver {
 		return `requestWillBeSent=${lifecycle.requestWillBeSentCount} loadingFinished=${lifecycle.loadingFinishedCount} loadingFailed=${lifecycle.loadingFailedCount} latestOutcome=${lifecycle.latestOutcome}`;
 	}
 
+	getPlaywrightScriptLifecycleSummaryForUrl(url: string): string | undefined {
+		const lifecycle = this.playwrightScriptLifecycleByUrl.get(this.toUrlKey(url));
+		if (!lifecycle) {
+			return undefined;
+		}
+
+		return `request=${lifecycle.requestCount} response=${lifecycle.responseCount} finished=${lifecycle.finishedCount} failed=${lifecycle.failedCount} latestOutcome=${lifecycle.latestOutcome}`;
+	}
+
 	getImportTargetEventCounts(url: string): { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } {
 		const urlKey = this.toUrlKey(url);
 		return {
@@ -608,6 +618,9 @@ export class PlaywrightDriver {
 			}
 
 			const url = request.url();
+			if (request.resourceType() === 'script' && url.startsWith('vscode-file://')) {
+				this.updatePlaywrightScriptLifecycle(url, 'failed', 'requestfailed');
+			}
 			const entry = this.toFailureEntry(failureText, url);
 			this.pushRecentRequestFailure(entry);
 		});
@@ -623,6 +636,7 @@ export class PlaywrightDriver {
 			}
 
 			this.rememberFirstSeenTimestamp(this.firstScriptRequestSeenAtByUrl, this.toUrlKey(url));
+			this.updatePlaywrightScriptLifecycle(url, 'request', 'request');
 		});
 
 		page.on('response', response => {
@@ -636,12 +650,26 @@ export class PlaywrightDriver {
 				return;
 			}
 
+			this.updatePlaywrightScriptLifecycle(url, 'response', 'response');
 			const responseHeaders = response.headers();
 			const contentType = responseHeaders['content-type'] ?? 'unknown';
 			const cacheControl = responseHeaders['cache-control'] ?? 'unknown';
 			const contentLength = responseHeaders['content-length'];
 			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl, contentLength);
 			this.pushRecentScriptResponse(entry);
+		});
+
+		page.on('requestfinished', request => {
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = request.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			this.updatePlaywrightScriptLifecycle(url, 'finished', 'requestfinished');
 		});
 
 		page.on('console', message => {
@@ -825,6 +853,23 @@ export class PlaywrightDriver {
 		}
 		existing.latestOutcome = latestOutcome;
 		this.cdpScriptLifecycleByUrl.set(urlKey, existing);
+	}
+
+	private updatePlaywrightScriptLifecycle(url: string, eventType: 'request' | 'response' | 'finished' | 'failed', latestOutcome: string): void {
+		const urlKey = this.toUrlKey(url);
+		const existing = this.playwrightScriptLifecycleByUrl.get(urlKey) ?? { requestCount: 0, responseCount: 0, finishedCount: 0, failedCount: 0, latestOutcome: 'unseen' };
+		if (eventType === 'request') {
+			existing.requestCount++;
+		} else if (eventType === 'response') {
+			existing.responseCount++;
+		} else if (eventType === 'finished') {
+			existing.finishedCount++;
+		} else {
+			existing.failedCount++;
+		}
+
+		existing.latestOutcome = latestOutcome;
+		this.playwrightScriptLifecycleByUrl.set(urlKey, existing);
 	}
 
 	private toUrlKey(url: string): string {
