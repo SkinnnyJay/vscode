@@ -2551,11 +2551,17 @@
     - list inputs (`passed/failed/skipped/not-run/executed/retried/non-success/attention`)
     - map inputs (`gateStatusById`, `gateExitCodeById`, `gateRetryCountById`, `gateDurationSecondsById`, `gateNotRunReasonById`, `gateAttemptCountById`).
   - This keeps status-map fallback derivations aligned with explicit selection boundaries (no non-selected IDs leaking into counts/lists/maps).
+  - Publisher now also scopes scalar failure metadata to explicit selection:
+    - `failedGateId`
+    - `failedGateExitCode` (ignored when paired with non-selected `failedGateId`)
+    - `blockedByGateId`
+    - sparse `failedGateId`/`failedGateExitCode` injection into fallback `gateExitCodeById`.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
     - non-success/attention lists remain `none`
     - no non-selected `build` metadata leakage.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_failure_scope` scenario and verifies non-selected scalar failure metadata is suppressed (`Failed gate: none`, `Failed gate exit code: none`, `Blocked by gate: none`).
   - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.
   **Why:** preserves deterministic selected-scope semantics even when sparse producers include stale/extra gate IDs in explicit summary maps.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:

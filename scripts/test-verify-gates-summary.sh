@@ -101,6 +101,8 @@ explicit_empty_attention_lists_summary="$tmpdir/explicit-empty-attention-lists.j
 explicit_empty_attention_lists_step_summary="$tmpdir/explicit-empty-attention-lists-step.md"
 selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
 selected_status_map_scope_step_summary="$tmpdir/selected-status-map-scope-step.md"
+selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
+selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -736,6 +738,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_map_scope_summary" "Verify Gates Selected Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_scalar_failure_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-scalar-failure-scope-contract',
+	selectedGateIds: ['lint'],
+	passedGateIds: ['lint'],
+	failedGateIds: ['build'],
+	failedGateExitCodes: [9],
+	failedGateId: 'build',
+	failedGateExitCode: 9,
+	blockedByGateId: 'build',
+	gateNotRunReasonById: { lint: null, build: 'blocked-by-fail-fast:build' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_scalar_failure_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_failure_scope_summary" "Verify Gates Selected Scalar Failure Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1957,6 +1984,26 @@ if grep -Fq "build" "$selected_status_map_scope_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Passed gates:** 1" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_scalar_failure_scope_step_summary"; then
+	echo "Expected selected-scalar-failure-scope summary to keep partition counts scoped to selected IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate:** none" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Failed gate exit code:** none" "$selected_scalar_failure_scope_step_summary"; then
+	echo "Expected selected-scalar-failure-scope summary to suppress non-selected scalar failed-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** none" "$selected_scalar_failure_scope_step_summary"; then
+	echo "Expected selected-scalar-failure-scope summary to suppress non-selected blocked-by gate metadata." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_scalar_failure_scope_step_summary"; then
+	echo "Expected selected-scalar-failure-scope summary to exclude non-selected scalar failure gate IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_failure_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-scalar-failure-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

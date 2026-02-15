@@ -295,6 +295,12 @@ const scopeGateMapToSelection = (gateMap) => {
 	}
 	return scopedMap;
 };
+const scopeGateIdToSelection = (gateId) => {
+	if (gateId === null || selectedGateIdSetFromSummary === null) {
+		return gateId;
+	}
+	return selectedGateIdSetFromSummary.has(gateId) ? gateId : null;
+};
 const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
 const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
 const skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
@@ -541,7 +547,7 @@ const buildGateExitCodeMapFromSparseData = () => {
 			}
 		}
 	}
-	const summaryFailedGateId = normalizeNonEmptyString(summary.failedGateId);
+	const summaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
 	const summaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
 	if (summaryFailedGateId && summaryFailedGateExitCode !== null) {
 		gateExitCodeMap[summaryFailedGateId] = summaryFailedGateExitCode;
@@ -709,16 +715,21 @@ const fastestExecutedGate = executedGateDurations.reduce((fastestGate, gateDurat
 	}
 	return gateDuration.durationSeconds < fastestGate.durationSeconds ? gateDuration : fastestGate;
 }, null);
-const failedGateId = normalizeNonEmptyString(summary.failedGateId) ?? failedGateIds[0] ?? 'none';
-const failedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode) ?? failedGateExitCodes[0] ?? 'none';
-const blockedByGateId = normalizeNonEmptyString(summary.blockedByGateId) ?? (() => {
+const summaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
+const summaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
+const failedGateId = summaryFailedGateId ?? failedGateIds[0] ?? 'none';
+const failedGateExitCode = (summaryFailedGateExitCode !== null && summaryFailedGateId !== null)
+	? summaryFailedGateExitCode
+	: failedGateExitCodes[0] ?? 'none';
+const summaryBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.blockedByGateId));
+const blockedByGateId = summaryBlockedByGateId ?? (() => {
 	for (const reason of Object.values(gateNotRunReasonById)) {
 		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {
-			return reason.slice('blocked-by-fail-fast:'.length);
+			return scopeGateIdToSelection(reason.slice('blocked-by-fail-fast:'.length)) ?? null;
 		}
 	}
-	return 'none';
-})();
+	return null;
+})() ?? 'none';
 const startedAt = normalizeSummaryTimestamp(summary.startedAt) ?? (() => {
 	let earliestTimestamp = null;
 	for (const gate of gates) {
