@@ -1485,3 +1485,8 @@
   - JSON summary now includes top-level `runId`
   - `scripts/publish-verify-gates-summary.sh` now renders `Run ID` in GitHub step summaries.
   **Why:** makes log/JSON/step-summary correlation trivial during CI triage and cross-artifact debugging.
+- **Gate outcome count metrics (2026-02-15 AM)** Added explicit pass/fail/skip counters to verify outputs:
+  - `scripts/verify-gates.sh` terminal summary now prints aggregate gate outcomes (`pass=X fail=Y skip=Z`)
+  - JSON summary now includes `passedGateCount`, `failedGateCount`, and `skippedGateCount`
+  - `scripts/publish-verify-gates-summary.sh` now renders these counts in GitHub step summaries.
+  **Why:** gives immediate high-signal run health at a glance without scanning every gate row, especially useful for long full sweeps.

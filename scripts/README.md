@@ -42,7 +42,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
-  - Summary payload includes `runId`, `startedAt`, `completedAt`, `totalDurationSeconds`, `dryRun`, `gateCount`, `failedGateId`, plus per-gate `status`, `attempts`, and `durationSeconds`.
+  - Summary payload includes `runId`, `startedAt`, `completedAt`, `totalDurationSeconds`, `dryRun`, `gateCount`, `passedGateCount`, `failedGateCount`, `skippedGateCount`, `failedGateId`, plus per-gate `status`, `attempts`, and `durationSeconds`.
 - **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.
   - The helper is fail-safe for CI `if: always()` steps: malformed/missing payload fields are rendered as warnings/placeholders instead of failing the workflow step.
   - Rendered metadata includes run mode context (`dryRun`, gate count, selected gates, failed gate) for faster CI triage.

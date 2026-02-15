@@ -257,12 +257,19 @@ print_summary() {
 	completed_epoch_seconds="$(date +%s)"
 	local total_duration_seconds
 	total_duration_seconds=$((completed_epoch_seconds - RUN_START_EPOCH_SECONDS))
+	local pass_count
+	pass_count="$(count_gate_status "pass")"
+	local fail_count
+	fail_count="$(count_gate_status "fail")"
+	local skip_count
+	skip_count="$(count_gate_status "skip")"
 
 	echo
 	echo "Verification summary:"
 	echo "  Run ID: ${RUN_ID}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
+	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count}"
 	for i in "${!gate_commands[@]}"; do
 		printf "  - %-20s status=%-4s attempts=%s duration=%ss command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_commands[$i]}"
 	done
@@ -292,6 +299,18 @@ write_selected_gate_ids_json() {
 	done
 }
 
+count_gate_status() {
+	local target_status="$1"
+	local count=0
+	local gate_status
+	for gate_status in "${gate_results[@]}"; do
+		if [[ "$gate_status" == "$target_status" ]]; then
+			count=$((count + 1))
+		fi
+	done
+	echo "$count"
+}
+
 write_summary_json() {
 	local run_success="$1"
 	local completed_timestamp
@@ -300,6 +319,12 @@ write_summary_json() {
 	completed_epoch_seconds="$(date +%s)"
 	local total_duration_seconds
 	total_duration_seconds=$((completed_epoch_seconds - RUN_START_EPOCH_SECONDS))
+	local passed_gate_count
+	passed_gate_count="$(count_gate_status "pass")"
+	local failed_gate_count
+	failed_gate_count="$(count_gate_status "fail")"
+	local skipped_gate_count
+	skipped_gate_count="$(count_gate_status "skip")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -310,6 +335,9 @@ write_summary_json() {
 		echo "  \"dryRun\": $([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"),"
 		echo "  \"success\": ${run_success},"
 		echo "  \"gateCount\": ${#gate_ids[@]},"
+		echo "  \"passedGateCount\": ${passed_gate_count},"
+		echo "  \"failedGateCount\": ${failed_gate_count},"
+		echo "  \"skippedGateCount\": ${skipped_gate_count},"
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","
 		else
