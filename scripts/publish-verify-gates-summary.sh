@@ -66,7 +66,7 @@ try {
 	process.exit(0);
 }
 
-const summary = parsedSummary ?? {};
+const summary = parsedSummary && typeof parsedSummary === 'object' && !Array.isArray(parsedSummary) ? parsedSummary : {};
 
 const gatesFromSummary = Array.isArray(summary.gates) ? summary.gates : [];
 const normalizeNonEmptyString = (value) => {

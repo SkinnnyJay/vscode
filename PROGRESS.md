@@ -2491,6 +2491,10 @@
     - empty placeholder row is not emitted.
   - `scripts/README.md` updated to document unmatched selected-order table fallback coverage.
   **Why:** avoids hiding valid row diagnostics behind empty table placeholders when explicit selections are stale or mismatched.
+- **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:
+  - `scripts/publish-verify-gates-summary.sh` now treats parsed payload as summary data only when the root JSON value is a plain object; scalar/array/null roots are normalized to an empty summary object before derivation.
+  - Existing scalar/array/null contract scenarios continue to pass with deterministic placeholder rendering and warnings.
+  **Why:** prevents accidental property access against non-object JSON roots and keeps sparse malformed-root handling deterministic.
 - **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
   - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
   - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.
