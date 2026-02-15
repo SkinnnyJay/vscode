@@ -1060,3 +1060,8 @@
   - composite signature present with updated payload inputs, and existing diagnostics consistency checks remained passing.
   Re-ran `make lint` (pass).
   **Why:** confirms global consistency checks are emitted, internally coherent, and wired into fingerprinting without regressing compile/lint or smoke harness execution.
+- **Broader validation sweep after global consistency wiring (2026-02-15 AM)** Ran additional suite/runtime checks to verify no collateral regressions outside smoke diagnostics:
+  - `make test-unit` (**pass**: `7584 passing`, `134 pending`)
+  - `xvfb-run -a ./scripts/code.sh --version` (**pass**, prints version after startup; only expected headless DBus/GPU warnings in this VM)
+  - smoke startup failure remains the same known blocker (`TypeError: Failed to fetch dynamically imported module`), with the new `globalChannelCoverageConsistency` diagnostics present.
+  **Why:** confirms recent diagnostic instrumentation remains isolated to smoke failure reporting and does not break baseline unit test/runtime startup behavior.
