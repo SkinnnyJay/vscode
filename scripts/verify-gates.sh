@@ -2,7 +2,7 @@
 # verify-gates - Run a deterministic validation sweep.
 # Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>]
 # Delegates to: make lint/typecheck/test-* and make build targets.
-# Called by: make verify-gates
+# Emits run logs to .build/logs/verify-gates (configurable via VSCODE_VERIFY_LOG_DIR).
 set -euo pipefail
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -14,6 +14,7 @@ fi
 
 MODE="full"
 RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
+RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 
 while (($# > 0)); do
 	case "$1" in
@@ -64,19 +65,38 @@ else
 	)
 fi
 
+LOG_DIR="${VSCODE_VERIFY_LOG_DIR:-$ROOT/.build/logs/verify-gates}"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/${MODE}-${RUN_TIMESTAMP}.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+declare -a gate_results
+declare -a gate_durations_seconds
+declare -a gate_attempt_counts
+
 run_gate() {
 	local command="$1"
 	local attempt=1
 	local max_attempts=$((RETRIES + 1))
+	local start_epoch_seconds
+	local end_epoch_seconds
+
+	start_epoch_seconds="$(date +%s)"
 
 	while ((attempt <= max_attempts)); do
 		echo
 		echo ">>> [$attempt/$max_attempts] $command"
 		if eval "$command"; then
+			end_epoch_seconds="$(date +%s)"
+			RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
+			RUN_GATE_ATTEMPTS="$attempt"
 			return 0
 		fi
 
 		if ((attempt == max_attempts)); then
+			end_epoch_seconds="$(date +%s)"
+			RUN_GATE_DURATION_SECONDS=$((end_epoch_seconds - start_epoch_seconds))
+			RUN_GATE_ATTEMPTS="$attempt"
 			echo "Gate failed after $max_attempts attempt(s): $command" >&2
 			return 1
 		fi
@@ -88,10 +108,31 @@ run_gate() {
 	done
 }
 
+print_summary() {
+	echo
+	echo "Verification summary:"
+	for i in "${!gates[@]}"; do
+		printf "  - %-26s status=%-4s attempts=%s duration=%ss\n" "${gates[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}"
+	done
+	echo "  Log file: $LOG_FILE"
+}
+
 echo "Running '${MODE}' verification sweep with retries=$RETRIES"
 for gate in "${gates[@]}"; do
-	run_gate "$gate"
+	if run_gate "$gate"; then
+		gate_results+=("pass")
+		gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
+		gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
+		continue
+	fi
+
+	gate_results+=("fail")
+	gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
+	gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")
+	print_summary
+	exit 1
 done
 
+print_summary
 echo
 echo "Verification sweep completed successfully."

@@ -1380,3 +1380,13 @@
   **Why:** creates a single-source, unattended full-regression safety net using the same verification script path used locally.
 - **Nightly-workflow validation (2026-02-15 AM)** Re-ran `./scripts/verify-gates.sh --quick` after adding the new workflow to reconfirm no regressions in the scripted validation path.
   **Why:** verifies the automation entrypoint remains healthy after CI workflow expansion.
+- **Verification logs + summary metrics (2026-02-15 AM)** Enhanced `scripts/verify-gates.sh` to emit per-run logs and per-gate timing/attempt summaries:
+  - writes logs to `.build/logs/verify-gates/` (or `VSCODE_VERIFY_LOG_DIR`)
+  - prints a summary table (status, attempts, duration in seconds) for each gate
+  - keeps existing retry/backoff behavior and failure-short-circuit semantics.
+  **Why:** improves debuggability and observability of long validation sweeps in local runs and CI logs.
+- **Verification logging validation (2026-02-15 AM)** Validated enhanced script behavior:
+  - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick` → **pass**
+  - confirmed summary output includes per-gate durations and attempts
+  - confirmed log file is created in override directory (e.g. `quick-<timestamp>.log`).
+  **Why:** proves logging/summary enhancements work end-to-end without regressing gate execution.
