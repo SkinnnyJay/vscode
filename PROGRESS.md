@@ -2040,6 +2040,11 @@
     - `## Verify Gates Summary`
   - `scripts/README.md` updated to document blank-heading fallback behavior in coverage notes.
   **Why:** guarantees stable heading output even when callers pass empty/whitespace heading values.
+- **Whitespace-normalized heading coverage (2026-02-15 PM)** Improved heading sanitization behavior and tests:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes all heading whitespace (`\\s+`) to single spaces before rendering.
+  - `scripts/test-verify-gates-summary.sh` now verifies mixed tab/multi-space heading input renders as a clean single-space heading.
+  - `scripts/README.md` updated to mention mixed-whitespace normalization coverage.
+  **Why:** avoids irregular markdown headings from varied caller formatting while preserving readable custom heading text.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

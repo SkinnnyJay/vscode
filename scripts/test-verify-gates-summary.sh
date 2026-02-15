@@ -50,6 +50,7 @@ scalar_step_summary="$tmpdir/scalar-step.md"
 append_step_summary="$tmpdir/append-step.md"
 multiline_heading_step_summary="$tmpdir/multiline-heading-step.md"
 blank_heading_step_summary="$tmpdir/blank-heading-step.md"
+whitespace_heading_step_summary="$tmpdir/whitespace-heading-step.md"
 array_summary="$tmpdir/array.json"
 array_step_summary="$tmpdir/array-step.md"
 
@@ -698,6 +699,12 @@ fi
 GITHUB_STEP_SUMMARY="$multiline_heading_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" $'Multiline Heading\nSecond Line'
 if ! grep -q "^## Multiline Heading Second Line$" "$multiline_heading_step_summary"; then
 	echo "Expected multiline heading to be sanitized into a single heading line." >&2
+	exit 1
+fi
+
+GITHUB_STEP_SUMMARY="$whitespace_heading_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" $'  Heading\twith   mixed\t whitespace  '
+if ! grep -q "^## Heading with mixed whitespace$" "$whitespace_heading_step_summary"; then
+	echo "Expected mixed-whitespace heading to normalize to single spaces." >&2
 	exit 1
 fi
 
