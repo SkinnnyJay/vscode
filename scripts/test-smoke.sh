@@ -22,4 +22,23 @@ if [[ "$OSTYPE" != "darwin"* ]] && [[ "$DISPLAY_UNAVAILABLE" == "1" ]] && comman
 	exit $?
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	NAME="$(node -p "require('./product.json').nameLong")"
+	EXE_NAME="$(node -p "require('./product.json').nameShort")"
+	CODE="./.build/electron/$NAME.app/Contents/MacOS/$EXE_NAME"
+else
+	NAME="$(node -p "require('./product.json').applicationName")"
+	CODE="./.build/electron/$NAME"
+fi
+
+if [[ ! -x "$CODE" ]]; then
+	echo "Electron binary '$CODE' missing, retrying setup..."
+	npm run electron
+fi
+
+if [[ ! -x "$CODE" ]]; then
+	echo "ERROR: Electron binary '$CODE' not found after setup."
+	exit 1
+fi
+
 npm run smoketest

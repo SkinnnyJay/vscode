@@ -1255,3 +1255,12 @@
   **Why:** confirms no regressions and demonstrates the preflight parity works across Electron and browser-hosted test entrypoints.
 - **Smoke regression after launcher parity (2026-02-15 AM)** Ran `make test-smoke` after the `code.sh` preflight update and observed a clean pass (`34 passing`, `61 pending`).
   **Why:** closes the remaining major launcher path by confirming smoke automation remains stable alongside unit/integration/e2e/web gates.
+- **Smoke launcher preflight parity (2026-02-15 AM)** Added Electron binary preflight-and-retry logic to `scripts/test-smoke.sh`:
+  - resolves expected Electron binary path from product metadata
+  - retries `npm run electron` once if missing/non-executable
+  - exits with explicit error if still unavailable.
+  **Why:** extends ENOENT startup hardening to smoke entrypoint so all primary launcher scripts (`test.sh`, `code.sh`, `test-smoke.sh`) share the same resilience pattern.
+- **Post-smoke-preflight validation (2026-02-15 AM)** Re-ran smoke gate twice after the new guard:
+  - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
+  - `make test-smoke` (second run) → **pass** (`34 passing`, `61 pending`)
+  **Why:** confirms the new preflight logic is non-regressive and stable under repeated smoke execution.
