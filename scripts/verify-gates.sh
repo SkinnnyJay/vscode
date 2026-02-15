@@ -333,6 +333,10 @@ print_summary() {
 	executed_count="$(count_executed_gates)"
 	local pass_rate_percent
 	pass_rate_percent="$(compute_pass_rate_percent "$executed_count" "$pass_count")"
+	local executed_duration_seconds
+	executed_duration_seconds="$(compute_executed_duration_seconds)"
+	local average_executed_duration_seconds
+	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_count")"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -348,6 +352,12 @@ print_summary() {
 		echo "  Pass rate (executed gates): ${pass_rate_percent}%"
 	else
 		echo "  Pass rate (executed gates): n/a"
+	fi
+	echo "  Executed duration total: ${executed_duration_seconds}s"
+	if ((average_executed_duration_seconds >= 0)); then
+		echo "  Executed duration average: ${average_executed_duration_seconds}s"
+	else
+		echo "  Executed duration average: n/a"
 	fi
 	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
@@ -408,6 +418,31 @@ compute_pass_rate_percent() {
 	fi
 
 	echo $((passed_count * 100 / executed_count))
+}
+
+compute_executed_duration_seconds() {
+	local total=0
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" != "pass" ]] && [[ "${gate_results[$i]}" != "fail" ]]; then
+			continue
+		fi
+
+		total=$((total + gate_durations_seconds[$i]))
+	done
+
+	echo "$total"
+}
+
+compute_average_executed_duration_seconds() {
+	local executed_duration_seconds="$1"
+	local executed_gate_count="$2"
+	if ((executed_gate_count == 0)); then
+		echo "-1"
+		return 0
+	fi
+
+	echo $((executed_duration_seconds / executed_gate_count))
 }
 
 collect_failed_gate_labels() {
@@ -517,6 +552,10 @@ write_summary_json() {
 	executed_gate_count="$(count_executed_gates)"
 	local pass_rate_percent
 	pass_rate_percent="$(compute_pass_rate_percent "$executed_gate_count" "$passed_gate_count")"
+	local executed_duration_seconds
+	executed_duration_seconds="$(compute_executed_duration_seconds)"
+	local average_executed_duration_seconds
+	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_gate_count")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -535,10 +574,16 @@ write_summary_json() {
 		echo "  \"skippedGateCount\": ${skipped_gate_count},"
 		echo "  \"notRunGateCount\": ${not_run_gate_count},"
 		echo "  \"executedGateCount\": ${executed_gate_count},"
+		echo "  \"executedDurationSeconds\": ${executed_duration_seconds},"
 		if ((pass_rate_percent >= 0)); then
 			echo "  \"passRatePercent\": ${pass_rate_percent},"
 		else
 			echo "  \"passRatePercent\": null,"
+		fi
+		if ((average_executed_duration_seconds >= 0)); then
+			echo "  \"averageExecutedDurationSeconds\": ${average_executed_duration_seconds},"
+		else
+			echo "  \"averageExecutedDurationSeconds\": null,"
 		fi
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","

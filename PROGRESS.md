@@ -1590,3 +1590,8 @@
   - bumped `schemaVersion` from `2` to `3` in `scripts/verify-gates.sh` to reflect accumulated payload evolution
   - `scripts/publish-verify-gates-summary.sh` now emits a `Schema warning` line when consuming a future schema version (`>3`).
   **Why:** makes payload-version intent explicit for downstream tooling and improves resilience when renderer/script versions drift.
+- **Executed-duration metrics (2026-02-15 AM)** Added duration rollups for executed gates:
+  - `scripts/verify-gates.sh` now computes `executedDurationSeconds` and `averageExecutedDurationSeconds` (`null` when no executed gates)
+  - terminal summary now prints executed duration total + average
+  - `scripts/publish-verify-gates-summary.sh` now renders `Executed duration total` and `Executed duration average`.
+  **Why:** provides immediate throughput context for regression detection and run-shape comparisons without manual per-gate arithmetic.
