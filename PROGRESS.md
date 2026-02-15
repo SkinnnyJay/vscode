@@ -1081,7 +1081,7 @@
     - `Import target first-seen timings: ...`
     - `Import target CDP diagnostics attach: ...`
     - `Import target CDP correlation class: ...`
-      (`no-script-response`, `cdp-correlated`, `cdp-attach-failed`, `cdp-attach-incomplete`, `response-before-cdp-ready`, `response-after-cdp-ready-no-cdp-events`)
+      (`no-script-response`, `cdp-correlated`, `cdp-attach-failed`, `cdp-attach-incomplete`, `request-before-cdp-ready`, `request-only-no-response`, `response-before-cdp-ready`, `response-after-cdp-ready-no-cdp-events`)
   - structured diagnostics record now includes:
     - `firstSeenTimes`
     - `cdpDiagnosticsStatus`
@@ -1098,3 +1098,17 @@
     - `"cdpCorrelationClass":"response-after-cdp-ready-no-cdp-events"`
   Re-ran `make lint` (pass).
   **Why:** provides direct runtime evidence that the import target’s script response was observed after CDP attach completed, yet no CDP lifecycle/load events were recorded for that URL in this failure mode.
+- **Request-start correlation refinement (2026-02-15 AM)** Added `scriptRequests` first-seen timing to distinguish request start vs response arrival:
+  - `PlaywrightDriver` now records `scriptRequestFirstSeenAtMs` (first `page.on('request')` timestamp for script `vscode-file://` URLs).
+  - fail-fast timing line now includes:
+    - `scriptRequests=<...>`
+  - CDP correlation classifier now prioritizes request timing and can emit:
+    - `request-before-cdp-ready`
+    - `request-only-no-response`
+  **Why:** response timestamps alone can lag actual request start; request timing gives a stricter signal for whether CDP missed the lifecycle because attach completed too late.
+- **Request-start correlation validation (2026-02-15 AM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target first-seen timings: requestFailures=unseen, scriptRequests=78ms, scriptResponses=83ms, cdpLifecycle=unseen, cdpScriptLoads=unseen, consoleErrors=unseen`
+  - `Import target CDP diagnostics attach: started=1ms, completed=81ms, attached=true`
+  - `Import target CDP correlation class: request-before-cdp-ready`
+  Re-ran `make lint` (pass).
+  **Why:** confirms, with direct timing evidence, that the import target request starts before CDP network instrumentation finishes attaching in this headless smoke environment.

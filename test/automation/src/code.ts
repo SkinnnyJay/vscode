@@ -444,7 +444,7 @@ export class Code {
 						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
 						: '';
 					const importTargetFirstSeenTimingsStatus = importTargetUrl
-						? `\nImport target first-seen timings: requestFailures=${this.formatElapsedMs(importTargetFirstSeenTimes?.requestFailureFirstSeenAtMs)}, scriptResponses=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptResponseFirstSeenAtMs)}, cdpLifecycle=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLifecycleFirstSeenAtMs)}, cdpScriptLoads=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLoadFirstSeenAtMs)}, consoleErrors=${this.formatElapsedMs(importTargetFirstSeenTimes?.consoleErrorFirstSeenAtMs)}`
+						? `\nImport target first-seen timings: requestFailures=${this.formatElapsedMs(importTargetFirstSeenTimes?.requestFailureFirstSeenAtMs)}, scriptRequests=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptRequestFirstSeenAtMs)}, scriptResponses=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptResponseFirstSeenAtMs)}, cdpLifecycle=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLifecycleFirstSeenAtMs)}, cdpScriptLoads=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLoadFirstSeenAtMs)}, consoleErrors=${this.formatElapsedMs(importTargetFirstSeenTimes?.consoleErrorFirstSeenAtMs)}`
 						: '';
 					const importTargetCdpAttachStatus = importTargetUrl
 						? `\nImport target CDP diagnostics attach: started=${this.formatElapsedMs(cdpNetworkDiagnosticsStatus.attachStartedAtMs)}, completed=${this.formatElapsedMs(cdpNetworkDiagnosticsStatus.attachCompletedAtMs)}, attached=${cdpNetworkDiagnosticsStatus.isAttached}${cdpNetworkDiagnosticsStatus.attachError ? `, error=${cdpNetworkDiagnosticsStatus.attachError}` : ''}`
@@ -877,6 +877,7 @@ export class Code {
 	private classifyImportTargetCdpCorrelation(
 		firstSeenTimes: {
 			requestFailureFirstSeenAtMs: number | undefined;
+			scriptRequestFirstSeenAtMs: number | undefined;
 			scriptResponseFirstSeenAtMs: number | undefined;
 			cdpScriptLoadFirstSeenAtMs: number | undefined;
 			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
@@ -889,7 +890,7 @@ export class Code {
 			isAttached: boolean;
 		}
 	): string {
-		if (!firstSeenTimes || firstSeenTimes.scriptResponseFirstSeenAtMs === undefined) {
+		if (!firstSeenTimes || (firstSeenTimes.scriptRequestFirstSeenAtMs === undefined && firstSeenTimes.scriptResponseFirstSeenAtMs === undefined)) {
 			return 'no-script-response';
 		}
 
@@ -903,6 +904,14 @@ export class Code {
 
 		if (!cdpDiagnosticsStatus.isAttached || cdpDiagnosticsStatus.attachCompletedAtMs === undefined) {
 			return 'cdp-attach-incomplete';
+		}
+
+		if (firstSeenTimes.scriptRequestFirstSeenAtMs !== undefined && firstSeenTimes.scriptRequestFirstSeenAtMs < cdpDiagnosticsStatus.attachCompletedAtMs) {
+			return 'request-before-cdp-ready';
+		}
+
+		if (firstSeenTimes.scriptResponseFirstSeenAtMs === undefined) {
+			return 'request-only-no-response';
 		}
 
 		if (firstSeenTimes.scriptResponseFirstSeenAtMs < cdpDiagnosticsStatus.attachCompletedAtMs) {
@@ -1028,6 +1037,7 @@ export class Code {
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number },
 		firstSeenTimes: {
 			requestFailureFirstSeenAtMs: number | undefined;
+			scriptRequestFirstSeenAtMs: number | undefined;
 			scriptResponseFirstSeenAtMs: number | undefined;
 			cdpScriptLoadFirstSeenAtMs: number | undefined;
 			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
@@ -1138,6 +1148,7 @@ export class Code {
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number };
 		firstSeenTimes: {
 			requestFailureFirstSeenAtMs: number | undefined;
+			scriptRequestFirstSeenAtMs: number | undefined;
 			scriptResponseFirstSeenAtMs: number | undefined;
 			cdpScriptLoadFirstSeenAtMs: number | undefined;
 			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
@@ -1216,6 +1227,7 @@ export class Code {
 			consoleErrorCounts,
 			firstSeenTimes: firstSeenTimes ?? {
 				requestFailureFirstSeenAtMs: undefined,
+				scriptRequestFirstSeenAtMs: undefined,
 				scriptResponseFirstSeenAtMs: undefined,
 				cdpScriptLoadFirstSeenAtMs: undefined,
 				cdpScriptLifecycleFirstSeenAtMs: undefined,

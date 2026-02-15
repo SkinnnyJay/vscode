@@ -95,6 +95,7 @@ export class PlaywrightDriver {
 	private readonly cdpScriptLoadCountByUrl = new Map<string, number>();
 	private readonly consoleErrorCountByUrl = new Map<string, number>();
 	private readonly firstRequestFailureSeenAtByUrl = new Map<string, number>();
+	private readonly firstScriptRequestSeenAtByUrl = new Map<string, number>();
 	private readonly firstScriptResponseSeenAtByUrl = new Map<string, number>();
 	private readonly firstCdpScriptLoadSeenAtByUrl = new Map<string, number>();
 	private readonly firstCdpScriptLifecycleSeenAtByUrl = new Map<string, number>();
@@ -557,6 +558,7 @@ export class PlaywrightDriver {
 
 	getImportTargetFirstSeenTimes(url: string): {
 		requestFailureFirstSeenAtMs: number | undefined;
+		scriptRequestFirstSeenAtMs: number | undefined;
 		scriptResponseFirstSeenAtMs: number | undefined;
 		cdpScriptLoadFirstSeenAtMs: number | undefined;
 		cdpScriptLifecycleFirstSeenAtMs: number | undefined;
@@ -565,6 +567,7 @@ export class PlaywrightDriver {
 		const urlKey = this.toUrlKey(url);
 		return {
 			requestFailureFirstSeenAtMs: this.firstRequestFailureSeenAtByUrl.get(urlKey),
+			scriptRequestFirstSeenAtMs: this.firstScriptRequestSeenAtByUrl.get(urlKey),
 			scriptResponseFirstSeenAtMs: this.firstScriptResponseSeenAtByUrl.get(urlKey),
 			cdpScriptLoadFirstSeenAtMs: this.firstCdpScriptLoadSeenAtByUrl.get(urlKey),
 			cdpScriptLifecycleFirstSeenAtMs: this.firstCdpScriptLifecycleSeenAtByUrl.get(urlKey),
@@ -607,6 +610,19 @@ export class PlaywrightDriver {
 			const url = request.url();
 			const entry = this.toFailureEntry(failureText, url);
 			this.pushRecentRequestFailure(entry);
+		});
+
+		page.on('request', request => {
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = request.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			this.rememberFirstSeenTimestamp(this.firstScriptRequestSeenAtByUrl, this.toUrlKey(url));
 		});
 
 		page.on('response', response => {
