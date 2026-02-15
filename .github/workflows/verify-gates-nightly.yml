@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 180
     env:
       VSCODE_VERIFY_RETRIES: 1
+      VSCODE_VERIFY_CONTINUE_ON_FAILURE: 1
       VSCODE_VERIFY_SUMMARY_FILE: .build/logs/verify-gates/full-summary.json
     steps:
       - name: Checkout repository

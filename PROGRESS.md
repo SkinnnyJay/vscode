@@ -1509,3 +1509,6 @@
   - `VSCODE_VERIFY_CONTINUE_ON_FAILURE` now accepts `0/1`, `true/false`, `yes/no`, `on/off` (case-insensitive)
   - invalid values now fail fast with a precise allowed-values error.
   **Why:** prevents brittle CI failures from common boolean env conventions and provides clearer feedback on misconfiguration.
+- **Nightly workflow full-failure visibility (2026-02-15 AM)** Updated `.github/workflows/verify-gates-nightly.yml` to set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1`.
+  - nightly full sweeps now keep executing subsequent gates after a failure and still fail the job at the end if any gate failed.
+  **Why:** improves nightly diagnostics by capturing all failing gates in one run instead of stopping at the first failure.
