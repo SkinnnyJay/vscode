@@ -2130,3 +2130,16 @@
     - continue-on-failure failed-continued metadata lines.
   - `scripts/README.md` updated to call out single- and multi-failure continue-on-failure coverage.
   **Why:** hardens contract guarantees for downstream CI/report consumers that depend on accurate aggregation when more than one gate fails in continued execution mode.
+- **Non-executed gate exit-code null semantics (2026-02-15 PM)** Standardized skipped/not-run exit-code representation across producer and renderer:
+  - `scripts/verify-gates.sh` now emits `exitCode: null` for non-executed gates (`skip`/`not-run`) in both:
+    - per-gate rows (`gates[].exitCode`)
+    - `gateExitCodeById` map.
+  - Human-readable verify-gates terminal summaries now print `exitCode=n/a` for non-executed gates (instead of ambiguous numeric placeholders).
+  - `scripts/publish-verify-gates-summary.sh` now:
+    - preserves `null` when deriving `gateExitCodeById` fallback values from `gates[]`
+    - renders table exit-code cells as `n/a` when gate exit code is `null`/missing.
+  - `scripts/test-verify-gates-summary.sh` expanded with:
+    - generic gate-level assertions enforcing integer exit codes for executed gates and `null` for non-executed gates
+    - a dry-run fallback-rendering case (with `gateExitCodeById` removed) to verify derived map shows `{"lint":null}` and table row shows `exit code = n/a`.
+  - `scripts/README.md` updated to document null exit-code semantics and corresponding contract coverage.
+  **Why:** removes ambiguity between "not executed" and "successful exit code 0", improving machine-readability and CI triage clarity.

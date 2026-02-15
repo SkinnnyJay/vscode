@@ -127,7 +127,7 @@ const gateExitCodeById = summary.gateExitCodeById && typeof summary.gateExitCode
 	: Object.fromEntries(
 		gates
 			.filter((gate) => typeof gate.id === 'string')
-			.map((gate) => [gate.id, gate.exitCode ?? 0]),
+			.map((gate) => [gate.id, gate.exitCode ?? null]),
 	);
 const gateRetryCountById = summary.gateRetryCountById && typeof summary.gateRetryCountById === 'object' && !Array.isArray(summary.gateRetryCountById)
 	? summary.gateRetryCountById
@@ -169,7 +169,7 @@ const gateRows = gates.map((gate) => {
 	const retryCount = gate.retryCount ?? '-';
 	const retryBackoffSeconds = gate.retryBackoffSeconds ?? '-';
 	const durationSeconds = gate.durationSeconds ?? '-';
-	const exitCode = gate.exitCode ?? 'unknown';
+	const exitCode = gate.exitCode === null || gate.exitCode === undefined ? 'n/a' : gate.exitCode;
 	const notRunReason = gate.notRunReason ?? 'n/a';
 	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(retryCount)} | ${sanitizeCell(retryBackoffSeconds)} | ${sanitizeCell(durationSeconds)} | ${sanitizeCell(exitCode)} | ${sanitizeCell(notRunReason)} |`;
 });

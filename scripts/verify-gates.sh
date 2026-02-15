@@ -273,7 +273,7 @@ for i in "${!gate_commands[@]}"; do
 	gate_results+=("not-run")
 	gate_durations_seconds+=("0")
 	gate_attempt_counts+=("0")
-	gate_exit_codes+=("0")
+	gate_exit_codes+=("")
 	gate_started_at+=("")
 	gate_completed_at+=("")
 	gate_not_run_reasons+=("")
@@ -421,7 +421,16 @@ print_summary() {
 		retry_count="$(compute_gate_retry_count_by_index "$i")"
 		local retry_backoff_seconds
 		retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
-		printf "  - %-20s status=%-7s attempts=%s retries=%s backoff=%ss duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${retry_count}" "${retry_backoff_seconds}" "${gate_durations_seconds[$i]}" "${gate_exit_codes[$i]}" "${gate_commands[$i]}"
+		local exit_code_label
+		case "${gate_results[$i]}" in
+			pass|fail)
+				exit_code_label="${gate_exit_codes[$i]}"
+				;;
+			*)
+				exit_code_label="n/a"
+				;;
+		esac
+		printf "  - %-20s status=%-7s attempts=%s retries=%s backoff=%ss duration=%ss exitCode=%s command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${retry_count}" "${retry_backoff_seconds}" "${gate_durations_seconds[$i]}" "${exit_code_label}" "${gate_commands[$i]}"
 	done
 	echo "  Total duration: ${total_duration_seconds}s"
 	echo "  Log file: $LOG_FILE"
@@ -885,6 +894,18 @@ write_gate_status_by_id_json() {
 	done
 }
 
+gate_exit_code_json_by_index() {
+	local gate_index="$1"
+	case "${gate_results[$gate_index]}" in
+		pass|fail)
+			echo "${gate_exit_codes[$gate_index]}"
+			;;
+		*)
+			echo "null"
+			;;
+	esac
+}
+
 write_gate_exit_code_by_id_json() {
 	local i
 	for i in "${!gate_ids[@]}"; do
@@ -892,7 +913,9 @@ write_gate_exit_code_by_id_json() {
 		if ((i == ${#gate_ids[@]} - 1)); then
 			delimiter=""
 		fi
-		echo "    \"$(json_escape "${gate_ids[$i]}")\": ${gate_exit_codes[$i]}${delimiter}"
+		local gate_exit_code_json
+		gate_exit_code_json="$(gate_exit_code_json_by_index "$i")"
+		echo "    \"$(json_escape "${gate_ids[$i]}")\": ${gate_exit_code_json}${delimiter}"
 	done
 }
 
@@ -1202,11 +1225,13 @@ write_summary_json() {
 			completed_at_json="$(json_optional_timestamp "${gate_completed_at[$i]}")"
 			local not_run_reason_json
 			not_run_reason_json="$(json_optional_string "${gate_not_run_reasons[$i]}")"
+			local gate_exit_code_json
+			gate_exit_code_json="$(gate_exit_code_json_by_index "$i")"
 			local retry_count
 			retry_count="$(compute_gate_retry_count_by_index "$i")"
 			local retry_backoff_seconds
 			retry_backoff_seconds="$(compute_gate_retry_backoff_seconds_by_index "$retry_count")"
-			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"retryCount\":${retry_count},\"retryBackoffSeconds\":${retry_backoff_seconds},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_codes[$i]},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json},\"notRunReason\":${not_run_reason_json}}${delimiter}"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"retryCount\":${retry_count},\"retryBackoffSeconds\":${retry_backoff_seconds},\"durationSeconds\":${gate_durations_seconds[$i]},\"exitCode\":${gate_exit_code_json},\"startedAt\":${started_at_json},\"completedAt\":${completed_at_json},\"notRunReason\":${not_run_reason_json}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
@@ -1223,7 +1248,7 @@ if [[ "$DRY_RUN" == "1" ]]; then
 		gate_results[$i]="skip"
 		gate_durations_seconds[$i]="0"
 		gate_attempt_counts[$i]="0"
-		gate_exit_codes[$i]="0"
+		gate_exit_codes[$i]=""
 		gate_started_at[$i]="$RUN_TIMESTAMP"
 		gate_completed_at[$i]="$RUN_TIMESTAMP"
 	done
