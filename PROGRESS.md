@@ -839,3 +839,19 @@
   - structured record fields `"globalBufferSignature":"010d798a"` and `"compositeSignature":"8eb192e2"`.
   Re-ran `make lint` (pass).
   **Why:** confirms the new composite fingerprint is emitted in both human-readable and JSON forms and reflects the active diagnostics state.
+- **Display-window vs retained-window target counts (2026-02-14 PM)** Clarified import-target buffer visibility metrics in smoke fail-fast diagnostics (`test/automation/src/code.ts`):
+  - added line:
+    - `Import target display-window event counts: ...` (counts inside currently printed last-8 window)
+  - renamed prior line to:
+    - `Import target retained-window event counts: ...` (counts across retained ring buffer entries)
+  - structured diagnostics record now includes:
+    - `displayWindowEventCounts`
+  while retaining existing `recentEventCounts` (retained-window) and `totalEventCounts` (run-total).
+  **Why:** removes ambiguity between what is visible in the printed tail versus what is still retained in buffers but not displayed, improving interpretation of truncated diagnostics.
+- **Window-count split validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output now includes:
+  - `Import target display-window event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  - `Import target retained-window event counts: requestFailures=0, scriptResponses=0, cdpScriptLoads=0`
+  - `Import target total event counts: requestFailures=0, scriptResponses=1, cdpScriptLoads=0`
+  - structured record includes `"displayWindowEventCounts":{"requestFailures":0,"scriptResponses":0,"cdpScriptLoads":0}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new split counters are emitted and make it explicit this failure’s import-target evidence is currently outside both display and retained windows, but still present in run-total counters.

@@ -399,6 +399,9 @@ export class Code {
 					const importTargetTotalEventCounts = importTargetUrl
 						? this.driver.getImportTargetEventCounts(importTargetUrl)
 						: undefined;
+					const importTargetDisplayWindowRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentFailures, importTargetUrl) : 0;
+					const importTargetDisplayWindowScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentScriptResponses, importTargetUrl) : 0;
+					const importTargetDisplayWindowCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentCdpScriptLoads, importTargetUrl) : 0;
 					const importTargetRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentFailures, importTargetUrl) : 0;
 					const importTargetScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentScriptResponses, importTargetUrl) : 0;
 					const importTargetCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(allRecentCdpScriptLoads, importTargetUrl) : 0;
@@ -414,8 +417,11 @@ export class Code {
 					const importTargetCdpScriptLifecycleStatus = importTargetUrl
 						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
 						: '';
+					const importTargetDisplayWindowChannelEventCounts = importTargetUrl
+						? `\nImport target display-window event counts: requestFailures=${importTargetDisplayWindowRequestFailureEventCount}, scriptResponses=${importTargetDisplayWindowScriptResponseEventCount}, cdpScriptLoads=${importTargetDisplayWindowCdpScriptLoadEventCount}`
+						: '';
 					const importTargetChannelEventCounts = importTargetUrl
-						? `\nImport target channel event counts: requestFailures=${importTargetRequestFailureEventCount}, scriptResponses=${importTargetScriptResponseEventCount}, cdpScriptLoads=${importTargetCdpScriptLoadEventCount}`
+						? `\nImport target retained-window event counts: requestFailures=${importTargetRequestFailureEventCount}, scriptResponses=${importTargetScriptResponseEventCount}, cdpScriptLoads=${importTargetCdpScriptLoadEventCount}`
 						: '';
 					const importTargetTotalChannelEventCounts = importTargetUrl
 						? `\nImport target total event counts: requestFailures=${importTargetTotalEventCounts?.requestFailures ?? 0}, scriptResponses=${importTargetTotalEventCounts?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetTotalEventCounts?.cdpScriptLoads ?? 0}`
@@ -547,6 +553,11 @@ export class Code {
 						importTargetUrl,
 						importTargetTotalEventCounts,
 						{
+							requestFailures: importTargetDisplayWindowRequestFailureEventCount,
+							scriptResponses: importTargetDisplayWindowScriptResponseEventCount,
+							cdpScriptLoads: importTargetDisplayWindowCdpScriptLoadEventCount
+						},
+						{
 							requestFailures: importTargetRequestFailureEventCount,
 							scriptResponses: importTargetScriptResponseEventCount,
 							cdpScriptLoads: importTargetCdpScriptLoadEventCount
@@ -572,7 +583,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -766,6 +777,7 @@ export class Code {
 	private buildImportTargetDiagnosticsRecord(
 		importTargetUrl: string | undefined,
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
 		signalClass: string,
@@ -825,6 +837,7 @@ export class Code {
 		detectedAtElapsedMs: number;
 		globalBufferSignature: string;
 		compositeSignature: string;
+		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -852,6 +865,7 @@ export class Code {
 			compositeSignature,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
+			displayWindowEventCounts,
 			recentEventCounts,
 			totalEventCounts: totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
 			droppedEventEstimates: droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 },
