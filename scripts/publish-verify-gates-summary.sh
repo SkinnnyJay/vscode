@@ -865,7 +865,8 @@ const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, 
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
-const gateRows = gates.map((gate) => {
+const gateRowsSource = Object.values(resolvedRowByGateId);
+const gateRows = gateRowsSource.map((gate) => {
 	const gateId = normalizeGateIdValue(gate.id) ?? 'unknown';
 	const command = gate.command ?? 'unknown';
 	const status = gate.status ?? 'unknown';

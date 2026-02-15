@@ -1273,6 +1273,11 @@ if ! grep -Fq "**Gate exit-code map:** {\"lint\":9,\"typecheck\":2}" "$duplicate
 	echo "Expected duplicate-gate-rows summary to align failed exit-code derivation with status-precedence-resolved rows." >&2
 	exit 1
 fi
+lint_fail_row_count="$(grep -Fc '| `lint` | `make lint` | fail |' "$duplicate_gate_rows_step_summary")"
+if [[ "$lint_fail_row_count" -ne 1 ]] || grep -Fq '| `lint` | `make lint` | pass |' "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary table to render one precedence-resolved lint row only." >&2
+	exit 1
+fi
 if ! grep -Fq "**Executed gates list:** lint, typecheck" "$duplicate_gate_rows_step_summary"; then
 	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in executed-gates list." >&2
 	exit 1
@@ -1339,6 +1344,10 @@ if ! grep -Fq "**Passed gates:** 1" "$unknown_status_duplicate_rows_step_summary
 fi
 if ! grep -Fq "**Non-success gates list:** none" "$unknown_status_duplicate_rows_step_summary"; then
 	echo "Expected unknown-status-duplicate-rows summary to avoid marking pass-resolved duplicate IDs as non-success due to invalid duplicate statuses." >&2
+	exit 1
+fi
+if grep -Fq '| `lint` | `make lint` | unknown |' "$unknown_status_duplicate_rows_step_summary"; then
+	echo "Expected unknown-status-duplicate-rows summary table to suppress unresolved duplicate row once canonical pass row resolves the gate." >&2
 	exit 1
 fi
 if ! grep -Fq "**Attention gates list:** none" "$unknown_status_duplicate_rows_step_summary"; then

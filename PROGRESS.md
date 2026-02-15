@@ -2450,6 +2450,13 @@
     - exit-code map and failed-exit-code lists resolve to fail-row exit code (`lint:9`) rather than later pass-row code.
   - `scripts/README.md` updated to document map-level precedence alignment coverage.
   **Why:** keeps row-derived lists/counters/maps semantically consistent under duplicate conflicting rows, regardless of payload row order.
+- **Duplicate-row table deduplication via resolved rows (2026-02-15 PM)** Extended precedence alignment to rendering:
+  - `scripts/publish-verify-gates-summary.sh` now renders markdown gate rows from `resolvedRowByGateId` (one precedence-resolved row per normalized gate ID) instead of raw `gates[]` rows.
+  - `scripts/test-verify-gates-summary.sh` now asserts:
+    - duplicate conflicting `lint` rows collapse to a single rendered `fail` row
+    - unknown duplicate row is suppressed when canonical pass row resolves the same gate.
+  - `scripts/README.md` updated to document duplicate-row table deduplication coverage.
+  **Why:** prevents table output from contradicting deduplicated counter/list/map metadata when sparse payloads include repeated gate rows.
 - **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
   - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
   - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.
