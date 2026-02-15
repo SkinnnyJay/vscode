@@ -1856,3 +1856,8 @@
     - validates future-schema warning path (synthetic `schemaVersion=99` expecting warning text referencing supported 17)
   - documented script usage in `scripts/README.md`.
   **Why:** replaces ad-hoc inline assertion chains with a reusable, reviewable regression test for summary contract and renderer behavior.
+- **CI contract-gate integration (2026-02-15 PM)** Wired summary-contract regression checks into workflows:
+  - `.github/workflows/pointer-quality.yml`: `test-pointer-owned` now runs `./scripts/test-verify-gates-summary.sh` before `--quick` sweep.
+  - `.github/workflows/verify-gates-nightly.yml`: nightly full sweep job now runs `./scripts/test-verify-gates-summary.sh` before `--full` sweep.
+  - `scripts/README.md` now documents the contract-check position in CI.
+  **Why:** catches summary schema/renderer regressions as a first-class CI gate instead of relying on manual or ad-hoc validation.

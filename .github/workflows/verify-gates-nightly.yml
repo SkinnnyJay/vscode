@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate verify-gates summary contract
+        run: ./scripts/test-verify-gates-summary.sh
+
       - name: Run full verification sweep
         run: ./scripts/verify-gates.sh --full
 
