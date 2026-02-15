@@ -97,6 +97,8 @@ metadata_nonstring_summary="$tmpdir/metadata-nonstring.json"
 metadata_nonstring_step_summary="$tmpdir/metadata-nonstring-step.md"
 slow_fast_string_metadata_summary="$tmpdir/slow-fast-string-metadata.json"
 slow_fast_string_metadata_step_summary="$tmpdir/slow-fast-string-metadata-step.md"
+explicit_empty_attention_lists_summary="$tmpdir/explicit-empty-attention-lists.json"
+explicit_empty_attention_lists_step_summary="$tmpdir/explicit-empty-attention-lists-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -688,6 +690,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$slow_fast_string_metadata_step_summary" ./scripts/publish-verify-gates-summary.sh "$slow_fast_string_metadata_summary" "Verify Gates Slow/Fast String Metadata Contract Test"
+
+node - "$expected_schema_version" "$explicit_empty_attention_lists_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-empty-attention-lists-contract',
+	nonSuccessGateIds: [],
+	attentionGateIds: [],
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 2, startedAt: '20260215T090000Z', completedAt: '20260215T090001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_empty_attention_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_attention_lists_summary" "Verify Gates Explicit Empty Attention Lists Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1865,6 +1888,18 @@ if ! grep -Fq "**Slowest executed gate duration:** 5s" "$slow_fast_string_metada
 fi
 if grep -q "\*\*Schema warning:\*\*" "$slow_fast_string_metadata_step_summary"; then
 	echo "Did not expect schema warning for slow-fast-string-metadata summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$explicit_empty_attention_lists_step_summary" || ! grep -Fq "**Attention gates list:** none" "$explicit_empty_attention_lists_step_summary"; then
+	echo "Expected explicit-empty-attention-lists summary to preserve explicit empty non-success/attention lists over row-derived fail status." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gates:** 1" "$explicit_empty_attention_lists_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$explicit_empty_attention_lists_step_summary"; then
+	echo "Expected explicit-empty-attention-lists summary to keep failure partitions while honoring explicit empty non-success/attention overrides." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_attention_lists_step_summary"; then
+	echo "Did not expect schema warning for explicit-empty-attention-lists summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
