@@ -869,6 +869,7 @@ const continueOnFailureValue = explicitContinueOnFailure !== null
 		: (derivedExitReason === 'fail-fast' || derivedExitReason === 'success' || derivedExitReason === 'dry-run' ? false : 'unknown'));
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
+const schemaVersionValue = normalizeNonNegativeInteger(summary.schemaVersion);
 const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown';
 const runIdValue = normalizeNonEmptyString(summary.runId) ?? 'unknown';
 const resultSignatureAlgorithmValue = normalizeNonEmptyString(summary.resultSignatureAlgorithm) ?? 'unknown';
@@ -905,7 +906,7 @@ const lines = [
 	...(gateRows.length > 0 ? gateRows : ['| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |']),
 	'',
 	`**Success:** ${successValue}`,
-	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
+	`**Summary schema version:** ${schemaVersionValue ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(runIdValue)}`,
 	`**Run classification:** ${sanitizeCell(derivedRunClassification)}`,
 	`**Result signature algorithm:** ${sanitizeCell(resultSignatureAlgorithmValue)}`,
@@ -961,8 +962,8 @@ if (logFileValue) {
 	lines.push(`**Log file:** \`${sanitizeInlineCode(logFileValue)}\``);
 }
 
-if (typeof summary.schemaVersion === 'number' && summary.schemaVersion > supportedSchemaVersion) {
-	lines.push(`**Schema warning:** summary schema version ${summary.schemaVersion} is newer than supported ${supportedSchemaVersion}; some fields may be omitted.`);
+if (schemaVersionValue !== null && schemaVersionValue > supportedSchemaVersion) {
+	lines.push(`**Schema warning:** summary schema version ${schemaVersionValue} is newer than supported ${supportedSchemaVersion}; some fields may be omitted.`);
 }
 
 fs.appendFileSync(summaryOutputPath, lines.join('\n') + '\n');

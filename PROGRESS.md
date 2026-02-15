@@ -2495,6 +2495,13 @@
   - `scripts/publish-verify-gates-summary.sh` now treats parsed payload as summary data only when the root JSON value is a plain object; scalar/array/null roots are normalized to an empty summary object before derivation.
   - Existing scalar/array/null contract scenarios continue to pass with deterministic placeholder rendering and warnings.
   **Why:** prevents accidental property access against non-object JSON roots and keeps sparse malformed-root handling deterministic.
+- **Schema-version string normalization (2026-02-15 PM)** Hardened schema metadata handling:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes `schemaVersion` as a non-negative integer before rendering and future-schema warning checks.
+  - `scripts/test-verify-gates-summary.sh` now adds a future-schema string scenario (`schemaVersion: " 99 "`) and verifies:
+    - rendered summary schema version shows `99`
+    - future-schema warning is emitted once with supported-version reference.
+  - `scripts/README.md` updated to document schema-version string normalization coverage.
+  **Why:** ensures future-schema compatibility warnings remain reliable when sparse producers serialize schema versions as numeric strings.
 - **Invocation whitespace normalization (2026-02-15 PM)** Hardened rendered invocation metadata:
   - `scripts/publish-verify-gates-summary.sh` now normalizes `invocation` with non-empty-string semantics before rendering (`unknown` fallback for blank/whitespace values).
   - `scripts/test-verify-gates-summary.sh` adds `invocation_whitespace` scenario and verifies rendered `Invocation: unknown`.

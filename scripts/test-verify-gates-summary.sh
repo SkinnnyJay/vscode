@@ -44,6 +44,8 @@ fail_fast_step_summary="$tmpdir/fail-fast-step.md"
 retry_step_summary="$tmpdir/retry-step.md"
 future_summary="$tmpdir/future.json"
 future_step_summary="$tmpdir/future-step.md"
+future_string_summary="$tmpdir/future-string.json"
+future_string_step_summary="$tmpdir/future-string-step.md"
 malformed_summary="$tmpdir/malformed\`name.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
@@ -2159,6 +2161,36 @@ if (!futureStep.includes(`supported ${supportedSchemaVersion}`)) {
 const warningMatches = futureStep.match(/\*\*Schema warning:\*\*/g) ?? [];
 if (warningMatches.length !== 1) {
 	throw new Error('Future-schema output should contain exactly one schema warning line.');
+}
+NODE
+
+node - "$retry_summary" "$future_string_summary" <<'NODE'
+const fs = require('node:fs');
+const [sourcePath, futurePath] = process.argv.slice(2);
+const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+payload.schemaVersion = ' 99 ';
+fs.writeFileSync(futurePath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$future_string_step_summary" ./scripts/publish-verify-gates-summary.sh "$future_string_summary" "Verify Gates Future String Schema Contract Test"
+
+node - "$supported_schema_version" "$future_string_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [supportedSchemaVersionRaw, futureStepPath] = process.argv.slice(2);
+const supportedSchemaVersion = Number.parseInt(supportedSchemaVersionRaw, 10);
+if (!Number.isInteger(supportedSchemaVersion) || supportedSchemaVersion <= 0) {
+	throw new Error(`Invalid supported schema version: ${supportedSchemaVersionRaw}`);
+}
+const futureStep = fs.readFileSync(futureStepPath, 'utf8');
+if (!futureStep.includes('**Summary schema version:** 99')) {
+	throw new Error('Future-string-schema output should normalize schema version string to integer.');
+}
+if (!futureStep.includes(`supported ${supportedSchemaVersion}`)) {
+	throw new Error(`Future-string-schema warning should reference supported schema ${supportedSchemaVersion}.`);
+}
+const warningMatches = futureStep.match(/\*\*Schema warning:\*\*/g) ?? [];
+if (warningMatches.length !== 1) {
+	throw new Error('Future-string-schema output should contain exactly one schema warning line.');
 }
 NODE
 
