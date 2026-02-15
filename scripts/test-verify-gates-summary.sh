@@ -1188,6 +1188,10 @@ if ! grep -Fq '| `lint` | `make lint` | pass |' "$malformed_gate_rows_step_summa
 	echo "Expected malformed-gate-rows summary table to include normalized valid row." >&2
 	exit 1
 fi
+if grep -Fq '| `unknown` |' "$malformed_gate_rows_step_summary"; then
+	echo "Expected malformed-gate-rows summary table to ignore invalid rows without normalized IDs." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$malformed_gate_rows_step_summary"; then
 	echo "Did not expect schema warning for malformed-gate-rows summary." >&2
 	exit 1

@@ -56,7 +56,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes classification-driven success contradiction checks proving conflicting explicit `success`/`dryRun` values are ignored while explicit `continueOnFailure` remains visible for non-failure summaries.
   - Includes status-map case/whitespace normalization checks proving sparse `gateStatusById` values are normalized case-insensitively (`PASS`/`FAIL`/`Not-Run`) before derivation.
   - Includes gate-row status/ID case+whitespace normalization checks proving sparse `gates[].status` values are normalized case-insensitively and `gates[].id` values are trimmed + deduplicated before counter/list/table derivation.
-  - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists while valid normalized rows still render correctly.
+  - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists/table rows while valid normalized rows still render correctly.
   - Includes numeric-boolean normalization checks proving `success`/`dryRun`/`continueOnFailure` accept numeric `1`/`0` encodings in sparse payloads.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).

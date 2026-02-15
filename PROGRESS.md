@@ -2432,3 +2432,9 @@
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.
   - `scripts/README.md` updated to document malformed gate-row contract coverage.
   **Why:** guards against producer bugs emitting non-object gate rows and ensures they do not pollute derived summary counters/lists.
+- **Invalid-row filtering in sparse `gates[]` normalization (2026-02-15 PM)** Hardened renderer ingestion path:
+  - `scripts/publish-verify-gates-summary.sh` now filters normalized `gates[]` rows to only rows with valid non-empty gate IDs before all downstream derivation/rendering.
+  - This ensures malformed entries (`null`, scalars, objects missing/blank IDs) cannot contribute to status counts, gate lists, maps, or markdown table rows.
+  - `scripts/test-verify-gates-summary.sh` malformed-row scenario now additionally asserts no `unknown` gate rows are rendered.
+  - `scripts/README.md` wording updated to explicitly include table-row filtering behavior.
+  **Why:** prevents malformed sparse row payloads from leaking placeholder `unknown` entries into rendered summaries and diagnostics.

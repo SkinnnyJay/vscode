@@ -110,13 +110,19 @@ const normalizeKnownValue = (value, allowedValues) => {
 	return allowedValues.includes(canonicalValue) ? canonicalValue : null;
 };
 const normalizeGateStatusValue = (value) => normalizeKnownValue(value, ['pass', 'fail', 'skip', 'not-run']);
-const gates = gatesFromSummary.map((gate) => {
+const gates = gatesFromSummary.reduce((normalizedGates, gate) => {
 	const gateObject = gate && typeof gate === 'object' ? gate : {};
-	return {
+	const gateId = normalizeNonEmptyString(gateObject.id);
+	if (gateId === null) {
+		return normalizedGates;
+	}
+	normalizedGates.push({
 		...gateObject,
+		id: gateId,
 		status: normalizeGateStatusValue(gateObject.status) ?? gateObject.status,
-	};
-});
+	});
+	return normalizedGates;
+}, []);
 const normalizeGateIdList = (value) => {
 	if (!Array.isArray(value)) {
 		return null;
