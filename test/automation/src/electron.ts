@@ -35,6 +35,10 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 		`--logsPath=${logsPath}`
 	];
 
+	if (process.platform === 'linux' && !extraArgs?.includes('--disable-dev-shm-usage')) {
+		args.push('--disable-dev-shm-usage');
+	}
+
 	// Only add workspace path if provided
 	if (workspacePath) {
 		args.unshift(workspacePath);

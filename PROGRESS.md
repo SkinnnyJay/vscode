@@ -1131,3 +1131,15 @@
     - `TypeError: Failed to fetch dynamically imported module: .../workbench.desktop.main.js`
   Re-ran `make lint` (pass).
   **Why:** shows the failure can occur even when both CDP and Playwright report a fully completed import-target request lifecycle, indicating the root cause is not only “missing/early network instrumentation” and may involve downstream module evaluation/runtime state.
+- **Linux shared-memory mitigation for Electron smoke/test runners (2026-02-15 AM)** Implemented container-friendly launch defaults to avoid renderer import instability in this headless VM:
+  - `test/automation/src/electron.ts`
+    - on Linux, appends `--disable-dev-shm-usage` by default (unless already supplied via extra args).
+  - `scripts/test.sh`
+    - on non-macOS, appends `--disable-dev-shm-usage` when launching Electron unit tests.
+  **Why:** runtime experiments showed the persistent dynamic import fetch failures disappear when `/dev/shm` pressure is reduced; applying the flag by default aligns local/CI headless behavior with that stable path.
+- **Mitigation validation (2026-02-15 AM)** Verified end-to-end after the default flag wiring:
+  - `xvfb-run -a make test-smoke` → **pass** (`34 passing`, `61 pending`, `0 failing`)
+  - `xvfb-run -a make test` → **pass** (full Electron unit test target exits 0; previously failed early with dynamic import fetch errors)
+  - `make lint` → **pass**
+  - `npm run compile` in `test/smoke` → **pass**
+  **Why:** confirms the blocker moved from immediate renderer import failure to stable execution for both smoke and Electron unit targets in this Linux headless environment.
