@@ -1713,6 +1713,10 @@
   - future-schema warning test (`schemaVersion=99`) confirmed warning references supported version `7`
   - `make lint` → **pass**.
   **Why:** confirms schema-v7 causality semantics are accurate in dry/fail-fast/continue/success flows and renderer compatibility checks.
+- **Result-signature algorithm visibility (2026-02-15 AM)** Added explicit signature algorithm telemetry:
+  - `scripts/verify-gates.sh` now emits `resultSignatureAlgorithm` (e.g. `sha256sum`, `shasum-256`, `cksum`) and prints it in terminal summary
+  - `scripts/publish-verify-gates-summary.sh` now renders `Result signature algorithm` in step summaries.
+  **Why:** makes signature provenance explicit for cross-platform comparisons and downstream parser confidence.
 - **Deterministic result signature telemetry (2026-02-15 AM)** Added run-shape fingerprinting:
   - `scripts/verify-gates.sh` now computes `resultSignature` (sha256 over ordered gate outcome facts) and includes it in terminal + JSON summary
   - `scripts/publish-verify-gates-summary.sh` now renders `Result signature` in step summaries.

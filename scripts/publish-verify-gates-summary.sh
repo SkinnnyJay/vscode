@@ -109,6 +109,7 @@ const lines = [
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Summary schema version:** ${summary.schemaVersion ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
+	`**Result signature algorithm:** ${sanitizeCell(summary.resultSignatureAlgorithm ?? 'unknown')}`,
 	`**Result signature:** ${sanitizeCell(summary.resultSignature ?? 'unknown')}`,
 	`**Exit reason:** ${sanitizeCell(summary.exitReason ?? 'unknown')}`,
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,

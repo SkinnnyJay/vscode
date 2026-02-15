@@ -357,8 +357,10 @@ print_summary() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local result_signature_algorithm
+	result_signature_algorithm="$(compute_result_signature_algorithm)"
 	local result_signature
-	result_signature="$(compute_result_signature)"
+	result_signature="$(compute_result_signature "$result_signature_algorithm")"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -368,6 +370,7 @@ print_summary() {
 	echo "  Invocation: ${INVOCATION}"
 	echo "  Summary schema version: ${SUMMARY_SCHEMA_VERSION}"
 	echo "  Exit reason: ${RUN_EXIT_REASON}"
+	echo "  Result signature algorithm: ${result_signature_algorithm}"
 	echo "  Result signature: ${result_signature}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
@@ -749,6 +752,7 @@ write_not_run_gate_ids_json() {
 }
 
 compute_result_signature() {
+	local algorithm="${1:-$(compute_result_signature_algorithm)}"
 	local payload=""
 	local i
 	for i in "${!gate_commands[@]}"; do
@@ -757,17 +761,34 @@ compute_result_signature() {
 		payload+="${gate_ids[$i]}|${gate_results[$i]}|${gate_attempt_counts[$i]}|${retry_count}|${gate_exit_codes[$i]}|${gate_durations_seconds[$i]};"
 	done
 
+	case "$algorithm" in
+		sha256sum)
+			printf '%s' "$payload" | sha256sum | awk '{print $1}'
+			;;
+		shasum-256)
+			printf '%s' "$payload" | shasum -a 256 | awk '{print $1}'
+			;;
+		cksum)
+			printf '%s' "$payload" | cksum | awk '{print $1}'
+			;;
+		*)
+			printf '%s' "$payload" | cksum | awk '{print $1}'
+			;;
+	esac
+}
+
+compute_result_signature_algorithm() {
 	if command -v sha256sum > /dev/null 2>&1; then
-		printf '%s' "$payload" | sha256sum | awk '{print $1}'
+		echo "sha256sum"
 		return 0
 	fi
 
 	if command -v shasum > /dev/null 2>&1; then
-		printf '%s' "$payload" | shasum -a 256 | awk '{print $1}'
+		echo "shasum-256"
 		return 0
 	fi
 
-	printf '%s' "$payload" | cksum | awk '{print $1}'
+	echo "cksum"
 }
 
 mark_remaining_not_run_reasons() {
@@ -839,8 +860,10 @@ write_summary_json() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_gate_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local result_signature_algorithm
+	result_signature_algorithm="$(compute_result_signature_algorithm)"
 	local result_signature
-	result_signature="$(compute_result_signature)"
+	result_signature="$(compute_result_signature "$result_signature_algorithm")"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -849,6 +872,7 @@ write_summary_json() {
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
 		echo "  \"exitReason\": \"$(json_escape "$RUN_EXIT_REASON")\","
+		echo "  \"resultSignatureAlgorithm\": \"$(json_escape "$result_signature_algorithm")\","
 		echo "  \"resultSignature\": \"$(json_escape "$result_signature")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
