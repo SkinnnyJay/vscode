@@ -1881,3 +1881,9 @@
     - empty/unset `GITHUB_STEP_SUMMARY` path is a no-op success with warning output
   - `scripts/README.md` updated to document the broader no-op/failure-path coverage.
   **Why:** locks in safe CI behavior for misconfiguration scenarios and guards user-facing error clarity.
+- **Publisher help + markdown escaping coverage (2026-02-15 PM)** Expanded contract harness for output-safety guarantees:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `publish-verify-gates-summary.sh --help` exits zero and prints usage text
+    - markdown escaping for gate IDs/commands containing pipes, backticks, and newlines (ensuring table-safe output)
+  - `scripts/README.md` updated to mention markdown escaping coverage in the contract script.
+  **Why:** prevents regressions in user-facing summary readability and keeps CLI UX behavior explicitly guarded.

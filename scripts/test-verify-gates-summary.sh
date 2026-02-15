@@ -30,6 +30,8 @@ future_step_summary="$tmpdir/future-step.md"
 malformed_summary="$tmpdir/malformed.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
+escape_summary="$tmpdir/escape.json"
+escape_step_summary="$tmpdir/escape-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -224,5 +226,56 @@ if ! grep -q "GITHUB_STEP_SUMMARY is not set; skipping summary publication." "$t
 	echo "Expected missing GITHUB_STEP_SUMMARY warning output." >&2
 	exit 1
 fi
+
+set +e
+./scripts/publish-verify-gates-summary.sh --help > "$tmpdir/help.out" 2>&1
+help_status=$?
+set -e
+if [[ "$help_status" -ne 0 ]]; then
+	echo "Expected publish-verify-gates-summary.sh --help to succeed." >&2
+	exit 1
+fi
+if ! grep -q "^Usage:" "$tmpdir/help.out"; then
+	echo "Expected --help output to include usage text." >&2
+	exit 1
+fi
+
+node - "$expected_schema_version" "$escape_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+const payload = {
+	schemaVersion,
+	success: true,
+	gates: [
+		{
+			id: 'id|with`pipe',
+			command: 'echo line1\nline2 | `',
+			status: 'pass',
+			attempts: 1,
+			retryCount: 0,
+			retryBackoffSeconds: 0,
+			durationSeconds: 0,
+			exitCode: 0,
+			notRunReason: null,
+		}
+	]
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$escape_step_summary" ./scripts/publish-verify-gates-summary.sh "$escape_summary" "Verify Gates Escape Contract Test"
+
+node - "$escape_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [escapeStepPath] = process.argv.slice(2);
+const escapeStep = fs.readFileSync(escapeStepPath, 'utf8');
+if (!escapeStep.includes('id\\|with\\`pipe')) {
+	throw new Error('Expected escaped gate id in markdown table output.');
+}
+if (!escapeStep.includes('line1 line2 \\| \\`')) {
+	throw new Error('Expected escaped/single-line command in markdown table output.');
+}
+NODE
 
 echo "verify-gates summary contract checks passed."
