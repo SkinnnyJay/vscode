@@ -535,6 +535,14 @@ export class Code {
 					const importTargetGlobalBufferSignatureStatus = importTargetUrl
 						? `\nImport target global buffer signature: ${importTargetGlobalBufferSignature}`
 						: '';
+					const importTargetCompositeSignature = this.computeImportTargetCompositeSignature(
+						importTargetDiagnosticsSignature,
+						importTargetGlobalBufferSignature,
+						importTargetDiagnosticsConsistency
+					);
+					const importTargetCompositeSignatureStatus = importTargetUrl
+						? `\nImport target composite signature: ${importTargetCompositeSignature}`
+						: '';
 					const importTargetDiagnosticsRecord = this.buildImportTargetDiagnosticsRecord(
 						importTargetUrl,
 						importTargetTotalEventCounts,
@@ -552,6 +560,7 @@ export class Code {
 						importTargetDiagnosticsConsistency,
 						importTargetDiagnosticsSignature,
 						importTargetGlobalBufferSignature,
+						importTargetCompositeSignature,
 						trial,
 						retryInterval,
 						globalChannelBufferStats
@@ -563,7 +572,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -781,6 +790,7 @@ export class Code {
 		},
 		signature: string,
 		globalBufferSignature: string,
+		compositeSignature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
 		globalChannelBufferStats: {
@@ -814,6 +824,7 @@ export class Code {
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
 		globalBufferSignature: string;
+		compositeSignature: string;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -838,6 +849,7 @@ export class Code {
 			channelCoverageClasses,
 			consistencyChecks,
 			globalBufferSignature,
+			compositeSignature,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
@@ -952,6 +964,30 @@ export class Code {
 			`cdpScriptLoads.capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}`,
 			`cdpScriptLoads.observed=${globalChannelBufferStats.cdpScriptLoads.observed}`,
 			`cdpScriptLoads.dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}`
+		].join('|');
+
+		return this.computeStableSignature(payload);
+	}
+
+	private computeImportTargetCompositeSignature(
+		diagnosticsSignature: string,
+		globalBufferSignature: string,
+		consistencyChecks: {
+			signalMatchesTotals: boolean;
+			visibilityMatchesCounts: boolean;
+			droppedMatchesDelta: boolean;
+			coverageMatchesCounts: boolean;
+			isConsistent: boolean;
+		}
+	): string {
+		const payload = [
+			`diagnostics=${diagnosticsSignature}`,
+			`globalBuffer=${globalBufferSignature}`,
+			`signalMatchesTotals=${consistencyChecks.signalMatchesTotals}`,
+			`visibilityMatchesCounts=${consistencyChecks.visibilityMatchesCounts}`,
+			`droppedMatchesDelta=${consistencyChecks.droppedMatchesDelta}`,
+			`coverageMatchesCounts=${consistencyChecks.coverageMatchesCounts}`,
+			`isConsistent=${consistencyChecks.isConsistent}`
 		].join('|');
 
 		return this.computeStableSignature(payload);

@@ -824,3 +824,18 @@
   - structured record fields `"globalBufferSignature":"2a1a4687"` and `"consistencyChecks":{...}`.
   Re-ran `make lint` (pass).
   **Why:** confirms global buffer signature is emitted correctly and aligned with structured consistency diagnostics.
+- **Import-target composite signature (2026-02-14 PM)** Extended smoke fail-fast diagnostics in `test/automation/src/code.ts` with a new derived line:
+  - `Import target composite signature: <hex>`
+  The composite hash folds together:
+  - `importTargetDiagnosticsSignature`
+  - `importTargetGlobalBufferSignature`
+  - consistency-check booleans (`signalMatchesTotals`, `visibilityMatchesCounts`, `droppedMatchesDelta`, `coverageMatchesCounts`, `isConsistent`)
+  The structured diagnostics record now also includes `compositeSignature`.
+  **Why:** provides a single stable fingerprint for the full target-diagnostics shape, combining target signal, global buffer pressure, and internal consistency status.
+- **Composite-signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target diagnostics signature: e04809df`
+  - `Import target global buffer signature: 010d798a`
+  - `Import target composite signature: 8eb192e2`
+  - structured record fields `"globalBufferSignature":"010d798a"` and `"compositeSignature":"8eb192e2"`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms the new composite fingerprint is emitted in both human-readable and JSON forms and reflects the active diagnostics state.
