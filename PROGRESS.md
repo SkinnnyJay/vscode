@@ -2062,6 +2062,12 @@
     - `Log file` line escapes backticks and removes newlines.
   - `scripts/README.md` updated to document inline code-span escaping coverage.
   **Why:** prevents markdown breakage in warnings/metadata when paths contain special characters.
+- **Counter/partition consistency coverage (2026-02-15 PM)** Expanded summary integrity assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies, across dry/dedupe/from/full-dry/fail-fast/retry variants:
+    - `statusCounts` object values match scalar counters (`passed/failed/skipped/not-run`)
+    - gate-id array lengths match corresponding scalar counters (`passedGateIds`, `failedGateIds`, `skippedGateIds`, `notRunGateIds`)
+  - `scripts/README.md` updated to include count/partition consistency checks.
+  **Why:** protects internal summary consistency so downstream consumers can trust either scalar counters or partition arrays interchangeably.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

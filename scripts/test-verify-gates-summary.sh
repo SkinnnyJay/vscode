@@ -206,6 +206,28 @@ if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== ex
 if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['fail-fast', failFast], ['retry', retry]]) {
+	const statusCounts = summary.statusCounts ?? {};
+	const passCount = summary.passedGateCount ?? 0;
+	const failCount = summary.failedGateCount ?? 0;
+	const skipCount = summary.skippedGateCount ?? 0;
+	const notRunCount = summary.notRunGateCount ?? 0;
+	if (statusCounts.pass !== passCount || statusCounts.fail !== failCount || statusCounts.skip !== skipCount || statusCounts['not-run'] !== notRunCount) {
+		throw new Error(`${label} summary statusCounts mismatch with scalar counters.`);
+	}
+	if (!Array.isArray(summary.passedGateIds) || summary.passedGateIds.length !== passCount) {
+		throw new Error(`${label} passedGateIds length mismatch.`);
+	}
+	if (!Array.isArray(summary.failedGateIds) || summary.failedGateIds.length !== failCount) {
+		throw new Error(`${label} failedGateIds length mismatch.`);
+	}
+	if (!Array.isArray(summary.skippedGateIds) || summary.skippedGateIds.length !== skipCount) {
+		throw new Error(`${label} skippedGateIds length mismatch.`);
+	}
+	if (!Array.isArray(summary.notRunGateIds) || summary.notRunGateIds.length !== notRunCount) {
+		throw new Error(`${label} notRunGateIds length mismatch.`);
+	}
+}
 if (dry.exitReason !== 'dry-run' || dry.runClassification !== 'dry-run') {
 	throw new Error('Dry-run exit reason/classification mismatch.');
 }
