@@ -1,0 +1,39 @@
+name: Verify Gates Nightly
+
+on:
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  full-verify-gates:
+    name: Full verification sweep (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      VSCODE_VERIFY_RETRIES: 1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install Linux native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-0 \
+            libxkbfile-dev \
+            libkrb5-dev \
+            libgbm1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full verification sweep
+        run: ./scripts/verify-gates.sh --full

@@ -1374,3 +1374,9 @@
   **Why:** aligns CI quality checks with the new deterministic quick sweep (lint + typecheck + unit tests with retry handling), reducing duplicated logic and improving resilience to known transient flakes.
 - **Post-CI-wireup validation (2026-02-15 AM)** Re-ran `./scripts/verify-gates.sh --quick` locally after workflow update to confirm the scripted gate still passes end-to-end.
   **Why:** ensures the new CI invocation path is validated in the same repository state before merge.
+- **Nightly full-sweep workflow (2026-02-15 AM)** Added `.github/workflows/verify-gates-nightly.yml` to run `./scripts/verify-gates.sh --full` on a daily schedule and manual dispatch.
+  - includes Linux dependencies needed for Electron-based suites (`xvfb`, `libgtk-3-0`, `libxkbfile-dev`, `libkrb5-dev`, `libgbm1`)
+  - sets `VSCODE_VERIFY_RETRIES=1` for transient resilience consistency with local/CI quick runs.
+  **Why:** creates a single-source, unattended full-regression safety net using the same verification script path used locally.
+- **Nightly-workflow validation (2026-02-15 AM)** Re-ran `./scripts/verify-gates.sh --quick` after adding the new workflow to reconfirm no regressions in the scripted validation path.
+  **Why:** verifies the automation entrypoint remains healthy after CI workflow expansion.
