@@ -1992,6 +1992,12 @@
     - usage text block (`Usage:`)
   - `scripts/README.md` updated to call out unknown-option failure with usage output coverage.
   **Why:** ensures CLI failures remain immediately actionable instead of requiring users to re-run with `--help`.
+- **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading
+    - malformed JSON warning includes the source summary file path (`malformed.json`)
+  - `scripts/README.md` updated to include sparse-payload and malformed-path warning coverage.
+  **Why:** ensures operators get actionable diagnostics and stable output even when upstream summary payloads are malformed or non-object.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`

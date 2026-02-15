@@ -43,6 +43,8 @@ fallback_step_summary="$tmpdir/fallback-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
+scalar_summary="$tmpdir/scalar.json"
+scalar_step_summary="$tmpdir/scalar-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -340,6 +342,9 @@ const malformedStep = fs.readFileSync(malformedStepPath, 'utf8');
 if (!malformedStep.includes('Unable to parse verify-gates summary')) {
 	throw new Error('Malformed-summary handling message missing from published step summary.');
 }
+if (!malformedStep.includes('malformed.json')) {
+	throw new Error('Malformed-summary warning should include summary file path.');
+}
 NODE
 
 set +e
@@ -589,6 +594,17 @@ NODE
 GITHUB_STEP_SUMMARY="$minimal_step_summary" ./scripts/publish-verify-gates-summary.sh "$minimal_summary" "Verify Gates Minimal Summary Contract Test"
 if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$minimal_step_summary"; then
 	echo "Expected minimal summary rendering to include placeholder gate row." >&2
+	exit 1
+fi
+
+printf '%s\n' "$expected_schema_version" > "$scalar_summary"
+GITHUB_STEP_SUMMARY="$scalar_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_summary" "Verify Gates Scalar Summary Contract Test"
+if ! grep -q "^## Verify Gates Scalar Summary Contract Test" "$scalar_step_summary"; then
+	echo "Expected scalar summary heading to be rendered." >&2
+	exit 1
+fi
+if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$scalar_step_summary"; then
+	echo "Expected scalar summary rendering to include placeholder gate row." >&2
 	exit 1
 fi
 
