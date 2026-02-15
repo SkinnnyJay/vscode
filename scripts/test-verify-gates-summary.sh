@@ -59,6 +59,8 @@ fail_fast_fallback_summary="$tmpdir/fail-fast-fallback.json"
 fail_fast_fallback_step_summary="$tmpdir/fail-fast-fallback-step.md"
 derived_counts_summary="$tmpdir/derived-counts.json"
 derived_counts_step_summary="$tmpdir/derived-counts-step.md"
+duplicate_gate_rows_summary="$tmpdir/duplicate-gate-rows.json"
+duplicate_gate_rows_step_summary="$tmpdir/duplicate-gate-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -319,6 +321,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_counts_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_counts_summary" "Verify Gates Derived Count Fallback Contract Test"
+
+node - "$expected_schema_version" "$duplicate_gate_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'duplicate-gate-rows-contract',
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T020000Z', completedAt: '20260215T020001Z', notRunReason: null },
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T020001Z', completedAt: '20260215T020002Z', notRunReason: null },
+		{ id: ' typecheck ', command: 'make typecheck', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 2, startedAt: '20260215T020002Z', completedAt: '20260215T020004Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$duplicate_gate_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$duplicate_gate_rows_summary" "Verify Gates Duplicate Gate Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1107,6 +1130,22 @@ if ! grep -Fq "**Completed:** 20260215T010003Z" "$derived_counts_step_summary"; 
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_counts_step_summary"; then
 	echo "Did not expect schema warning for derived-count fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in selected-gates list." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint" "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in passed-gates list." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates list:** lint, typecheck" "$duplicate_gate_rows_step_summary"; then
+	echo "Expected duplicate-gate-rows summary to deduplicate normalized row IDs in executed-gates list." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$duplicate_gate_rows_step_summary"; then
+	echo "Did not expect schema warning for duplicate-gate-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

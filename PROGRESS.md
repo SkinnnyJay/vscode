@@ -2422,3 +2422,8 @@
   - `scripts/test-verify-gates-summary.sh` adds `numeric_boolean_flags` scenario (`success: 1`, `dryRun: 0`, `continueOnFailure: 0`) and verifies normalized run-state rendering (`Success: true`, `Dry run: false`, `Continue on failure: false`, `Exit reason: success`, `Run classification: success-no-retries`).
   - `scripts/README.md` updated to document numeric-boolean normalization coverage.
   **Why:** keeps sparse summary derivation robust when producers encode booleans as numeric JSON fields.
+- **Duplicate row-ID deduplication in sparse `gates[]` fallbacks (2026-02-15 PM)** Hardened row-derived list consistency:
+  - `scripts/publish-verify-gates-summary.sh` now deduplicates normalized row IDs when deriving gate lists from `gates[]` (`selected/passed/failed/skipped/not-run/executed/non-success/attention` paths).
+  - `scripts/test-verify-gates-summary.sh` adds `duplicate_gate_rows` scenario with duplicate padded IDs (`" lint "` + `"lint"`) and verifies selected/passed/executed list rendering contains each normalized ID once.
+  - `scripts/README.md` updated to document deduplication in row ID normalization coverage.
+  **Why:** prevents malformed sparse payloads with repeated gate rows from producing duplicate gate IDs in rendered summary metadata.

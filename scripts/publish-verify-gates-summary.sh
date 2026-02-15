@@ -328,7 +328,7 @@ const gateIdsFromRows = (predicate) => {
 			gateIds.push(gateId);
 		}
 	}
-	return gateIds;
+	return uniqueGateIds(gateIds);
 };
 const gateMapFromRows = (valueSelector) => {
 	const gateMap = {};
