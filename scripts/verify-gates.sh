@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # verify-gates - Run a deterministic validation sweep.
-# Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>]
+# Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>] [--from <gate-id>] [--only <gate-id[,gate-id...]>]
 # Delegates to: make lint/typecheck/test-* and make build targets.
 # Emits run logs to .build/logs/verify-gates (configurable via VSCODE_VERIFY_LOG_DIR).
 set -euo pipefail
@@ -17,6 +17,8 @@ RETRIES="${VSCODE_VERIFY_RETRIES:-1}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_START_EPOCH_SECONDS="$(date +%s)"
 SUMMARY_FILE=""
+FROM_GATE_ID=""
+ONLY_GATE_IDS_RAW=""
 
 while (($# > 0)); do
 	case "$1" in
@@ -34,9 +36,17 @@ while (($# > 0)); do
 			shift
 			SUMMARY_FILE="${1:-}"
 			;;
+		--from)
+			shift
+			FROM_GATE_ID="${1:-}"
+			;;
+		--only)
+			shift
+			ONLY_GATE_IDS_RAW="${1:-}"
+			;;
 		*)
 			echo "Unknown option: $1" >&2
-			echo "Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>]" >&2
+			echo "Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>] [--from <gate-id>] [--only <gate-id[,gate-id...]>]" >&2
 			exit 1
 			;;
 	esac
@@ -54,25 +64,63 @@ fi
 
 cd "$ROOT"
 
-declare -a gates
+declare -a gate_ids
+declare -a gate_commands
 if [[ "$MODE" == "quick" ]]; then
-	gates=(
-		"make lint"
-		"make typecheck"
-		"make test-unit"
-	)
+	gate_ids=("lint" "typecheck" "test-unit")
+	gate_commands=("make lint" "make typecheck" "make test-unit")
 else
-	gates=(
-		"make lint"
-		"make typecheck"
-		"make test-unit"
-		"make test"
-		"make test-smoke"
-		"make test-integration"
-		"make test-e2e"
-		"make test-web-integration"
-		"make build"
-	)
+	gate_ids=("lint" "typecheck" "test-unit" "test" "test-smoke" "test-integration" "test-e2e" "test-web-integration" "build")
+	gate_commands=("make lint" "make typecheck" "make test-unit" "make test" "make test-smoke" "make test-integration" "make test-e2e" "make test-web-integration" "make build")
+fi
+
+find_gate_index() {
+	local target_id="$1"
+	for index in "${!gate_ids[@]}"; do
+		if [[ "${gate_ids[$index]}" == "$target_id" ]]; then
+			echo "$index"
+			return 0
+		fi
+	done
+	return 1
+}
+
+if [[ -n "$ONLY_GATE_IDS_RAW" ]]; then
+	IFS=',' read -r -a requested_gate_ids <<< "$ONLY_GATE_IDS_RAW"
+	declare -a filtered_gate_ids
+	declare -a filtered_gate_commands
+
+	for requested_gate_id in "${requested_gate_ids[@]}"; do
+		if [[ -z "$requested_gate_id" ]]; then
+			continue
+		fi
+
+		if ! gate_index="$(find_gate_index "$requested_gate_id")"; then
+			echo "Unknown gate id '$requested_gate_id' for --only. Available gate ids: ${gate_ids[*]}" >&2
+			exit 1
+		fi
+
+		filtered_gate_ids+=("${gate_ids[$gate_index]}")
+		filtered_gate_commands+=("${gate_commands[$gate_index]}")
+	done
+
+	if ((${#filtered_gate_ids[@]} == 0)); then
+		echo "--only produced an empty gate list. Provide at least one valid gate id." >&2
+		exit 1
+	fi
+
+	gate_ids=("${filtered_gate_ids[@]}")
+	gate_commands=("${filtered_gate_commands[@]}")
+fi
+
+if [[ -n "$FROM_GATE_ID" ]]; then
+	if ! from_index="$(find_gate_index "$FROM_GATE_ID")"; then
+		echo "Unknown gate id '$FROM_GATE_ID' for --from. Available gate ids: ${gate_ids[*]}" >&2
+		exit 1
+	fi
+
+	gate_ids=("${gate_ids[@]:from_index}")
+	gate_commands=("${gate_commands[@]:from_index}")
 fi
 
 LOG_DIR="${VSCODE_VERIFY_LOG_DIR:-$ROOT/.build/logs/verify-gates}"
@@ -129,8 +177,8 @@ print_summary() {
 
 	echo
 	echo "Verification summary:"
-	for i in "${!gates[@]}"; do
-		printf "  - %-26s status=%-4s attempts=%s duration=%ss\n" "${gates[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}"
+	for i in "${!gate_commands[@]}"; do
+		printf "  - %-20s status=%-4s attempts=%s duration=%ss command=%s\n" "${gate_ids[$i]}" "${gate_results[$i]}" "${gate_attempt_counts[$i]}" "${gate_durations_seconds[$i]}" "${gate_commands[$i]}"
 	done
 	echo "  Total duration: ${total_duration_seconds}s"
 	echo "  Log file: $LOG_FILE"
@@ -167,12 +215,12 @@ write_summary_json() {
 		echo "  \"totalDurationSeconds\": ${total_duration_seconds},"
 		echo "  \"logFile\": \"$(json_escape "$LOG_FILE")\","
 		echo "  \"gates\": ["
-		for i in "${!gates[@]}"; do
+		for i in "${!gate_commands[@]}"; do
 			local delimiter=","
-			if ((i == ${#gates[@]} - 1)); then
+			if ((i == ${#gate_commands[@]} - 1)); then
 				delimiter=""
 			fi
-			echo "    {\"command\":\"$(json_escape "${gates[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
+			echo "    {\"id\":\"$(json_escape "${gate_ids[$i]}")\",\"command\":\"$(json_escape "${gate_commands[$i]}")\",\"status\":\"$(json_escape "${gate_results[$i]}")\",\"attempts\":${gate_attempt_counts[$i]},\"durationSeconds\":${gate_durations_seconds[$i]}}${delimiter}"
 		done
 		echo "  ]"
 		echo "}"
@@ -180,8 +228,9 @@ write_summary_json() {
 }
 
 echo "Running '${MODE}' verification sweep with retries=$RETRIES"
-for gate in "${gates[@]}"; do
-	if run_gate "$gate"; then
+echo "Selected gates: ${gate_ids[*]}"
+for i in "${!gate_commands[@]}"; do
+	if run_gate "${gate_commands[$i]}"; then
 		gate_results+=("pass")
 		gate_durations_seconds+=("$RUN_GATE_DURATION_SECONDS")
 		gate_attempt_counts+=("$RUN_GATE_ATTEMPTS")

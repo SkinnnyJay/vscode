@@ -1417,3 +1417,12 @@
   - local Node simulation of workflow summary renderer succeeded (`summary rows generated: 3`)
   - observed retry behavior captured in summary (`make test-unit` attempts = 2) on transient flake.
   **Why:** confirms summary JSON remains compatible with workflow rendering logic and accurately reports retry-adjusted metrics.
+- **Selective gate execution support (2026-02-15 AM)** Extended `scripts/verify-gates.sh` with targeted execution flags:
+  - `--only <gate-id[,gate-id...]>` to run a subset
+  - `--from <gate-id>` to resume from a specific gate
+  - summary JSON now includes gate `id` fields and terminal output shows selected gates at run start.
+  **Why:** reduces rerun cost when debugging a specific failing stage and makes long full sweeps resumable without manual command editing.
+- **Selective execution validation (2026-02-15 AM)** Validated `--only` + `--from` behavior and summary payload:
+  - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick --only lint,typecheck --from typecheck --summary-json "<tmp>/summary.json"` → **pass**
+  - verified summary contains exactly one gate with `id: "typecheck"`.
+  **Why:** confirms subset/resume behavior works correctly and emits machine-readable filtered results.

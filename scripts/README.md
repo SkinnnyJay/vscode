@@ -42,6 +42,8 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
   - Summary payload includes `startedAt`, `completedAt`, `totalDurationSeconds`, plus per-gate `status`, `attempts`, and `durationSeconds`.
+- **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
+  - Gate IDs: `lint`, `typecheck`, `test-unit`, `test`, `test-smoke`, `test-integration`, `test-e2e`, `test-web-integration`, `build`.
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
 
 ## Linux headless stability note
