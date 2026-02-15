@@ -1168,3 +1168,20 @@
   - documents opt-out env var `VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1`
   - lists affected entry points (`make test`, automation smoke/electron launches)
   **Why:** makes the reliability workaround and override explicit for contributors/CI operators, reducing hidden behavior and debugging time.
+- **Policy export integration resiliency (2026-02-15 AM)** Hardened `src/vs/workbench/contrib/policyExport/test/node/policyExport.integrationTest.ts` against transient file-export timing:
+  - replaced single-shot `exec(...)` call with `runPolicyExportWithRetry(...)`
+  - added bounded retry loop (3 attempts) with short delay
+  - added `waitForFile(...)` polling window before reading exported output
+  - improved error detail to include stdout/stderr when export command exits but file is missing.
+  **Why:** observed intermittent `ENOENT` in full integration runs when export command completed before temp file became observable; retries/wait make the test robust without relaxing assertions.
+- **PATH cache test stabilization (2026-02-15 AM)** Made `extensions/terminal-suggest/src/test/env/pathExecutableCache.test.ts` deterministic:
+  - `results are the same on successive calls` now uses a temporary controlled PATH fixture directory instead of ambient `process.env.PATH`
+  - creates a single executable fixture file (platform-specific script) and validates cache behavior against that stable input
+  - removes dependence on host-specific PATH churn during long integration sessions.
+  **Why:** full integration run exposed nondeterminism from ambient PATH changes, causing false negatives unrelated to cache logic.
+- **Flake-fix validation (2026-02-15 AM)** Ran targeted and full validation after both test hardening changes:
+  - `xvfb-run -a ./scripts/test.sh --runGlob "**/policyExport.integrationTest.js"` → **pass** (`2 passing`)
+  - `xvfb-run -a npm run test-extension -- -l terminal-suggest` → **pass** (`347 passing`)
+  - `xvfb-run -a make test-integration` → **pass**
+  - `make lint` → **pass**
+  **Why:** confirms both previously intermittent integration failure points are now stable within the full integration workflow.

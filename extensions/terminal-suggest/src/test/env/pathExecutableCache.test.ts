@@ -5,6 +5,9 @@
 
 import 'mocha';
 import { deepStrictEqual, strictEqual } from 'node:assert';
+import { promises as fs } from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import type { MarkdownString } from 'vscode';
 import { PathExecutableCache } from '../../env/pathExecutableCache';
 import { WindowsExecutableExtensionsCache, windowsDefaultExecutableExtensions } from '../../helpers/executable';
@@ -19,10 +22,27 @@ suite('PathExecutableCache', () => {
 
 	test('results are the same on successive calls', async () => {
 		const cache = new PathExecutableCache();
-		const env = { PATH: process.env.PATH };
-		const result = await cache.getExecutablesInPath(env);
-		const result2 = await cache.getExecutablesInPath(env);
-		deepStrictEqual(result!.labels, result2!.labels);
+		const fixtureDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pathExecutableCache-'));
+		try {
+			const fixtureExecutable = process.platform === 'win32'
+				? path.join(fixtureDir, 'cache-fixture.cmd')
+				: path.join(fixtureDir, 'cache-fixture.sh');
+			const fixtureScript = process.platform === 'win32'
+				? '@echo off\r\necho cache-fixture\r\n'
+				: '#!/usr/bin/env bash\necho cache-fixture\n';
+
+			await fs.writeFile(fixtureExecutable, fixtureScript, 'utf8');
+			if (process.platform !== 'win32') {
+				await fs.chmod(fixtureExecutable, 0o755);
+			}
+
+			const env = { PATH: fixtureDir };
+			const result = await cache.getExecutablesInPath(env);
+			const result2 = await cache.getExecutablesInPath(env);
+			deepStrictEqual(result!.labels, result2!.labels);
+		} finally {
+			await fs.rm(fixtureDir, { recursive: true, force: true });
+		}
 	});
 
 	test('refresh clears the cache', async () => {
@@ -36,7 +56,6 @@ suite('PathExecutableCache', () => {
 
 	if (process.platform !== 'win32') {
 		test('cache should include executables found via symbolic links', async () => {
-			const path = require('path');
 			// Always use the source fixture directory to ensure symlinks are present
 			const fixtureDir = path.resolve(__dirname.replace(/out[\/].*$/, 'src/test/env'), '../fixtures/symlink-test');
 			const env = { PATH: fixtureDir };
