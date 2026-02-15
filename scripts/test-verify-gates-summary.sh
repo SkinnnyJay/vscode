@@ -21,6 +21,8 @@ cleanup() {
 trap cleanup EXIT
 
 dry_summary="$tmpdir/dry.json"
+dedupe_summary="$tmpdir/dedupe.json"
+from_summary="$tmpdir/from.json"
 fail_fast_summary="$tmpdir/fail-fast.json"
 retry_summary="$tmpdir/retry.json"
 fail_fast_step_summary="$tmpdir/fail-fast-step.md"
@@ -54,6 +56,8 @@ if [[ "$expected_schema_version" != "$supported_schema_version" ]]; then
 fi
 
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_summary" > "$tmpdir/dry.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only " lint , lint , typecheck " --dry-run --summary-json "$dedupe_summary" > "$tmpdir/dedupe.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --from typecheck --dry-run --summary-json "$from_summary" > "$tmpdir/from.out"
 
 function make() {
 	if [[ "$1" == "lint" ]]; then
@@ -128,14 +132,16 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dedupe_summary" "$from_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dedupePath, fromPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
 }
 const dry = JSON.parse(fs.readFileSync(dryPath, 'utf8'));
+const dedupe = JSON.parse(fs.readFileSync(dedupePath, 'utf8'));
+const from = JSON.parse(fs.readFileSync(fromPath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
@@ -145,9 +151,21 @@ const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
 }
+if (dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion) {
+	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
+}
 
 if (dry.gateAttemptCountById.lint !== 0 || dry.gateRetryCountById.lint !== 0) {
 	throw new Error('Dry-run gate attempt/retry map mismatch.');
+}
+if (dedupe.selectedGateIds.join(',') !== 'lint,typecheck') {
+	throw new Error('Duplicate/whitespace --only normalization mismatch.');
+}
+if (from.selectedGateIds.join(',') !== 'typecheck,test-unit') {
+	throw new Error('--from gate selection mismatch.');
+}
+if (from.skippedGateIds.join(',') !== 'typecheck,test-unit') {
+	throw new Error('--from dry-run skipped partition mismatch.');
 }
 
 if (failFast.gateStatusById.lint !== 'fail' || failFast.gateStatusById.typecheck !== 'not-run') {
@@ -300,6 +318,19 @@ if [[ "$invalid_continue_on_failure_status" -eq 0 ]]; then
 fi
 if ! grep -q "Invalid continue-on-failure value 'maybe'" "$tmpdir/invalid-continue-on-failure.out"; then
 	echo "Expected invalid continue-on-failure validation message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --quick --from unknown --dry-run > "$tmpdir/unknown-from.out" 2>&1
+unknown_from_status=$?
+set -e
+if [[ "$unknown_from_status" -eq 0 ]]; then
+	echo "Expected --from unknown gate id to fail." >&2
+	exit 1
+fi
+if ! grep -q "Unknown gate id 'unknown' for --from" "$tmpdir/unknown-from.out"; then
+	echo "Expected unknown --from gate id validation message." >&2
 	exit 1
 fi
 

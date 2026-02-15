@@ -1902,3 +1902,10 @@
     - invalid `VSCODE_VERIFY_CONTINUE_ON_FAILURE` value (`maybe`)
   - `scripts/README.md` updated to include verify-gates CLI validation coverage in harness description.
   **Why:** locks in error clarity and prevents regression in preflight argument/env validation behavior.
+- **Verify-gates selection normalization coverage (2026-02-15 PM)** Expanded contract harness for gate-selection semantics:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `--only " lint , lint , typecheck "` normalizes whitespace, removes duplicates, and yields selected gates `lint,typecheck`
+    - `--from typecheck --dry-run` selects `typecheck,test-unit` and marks both as skipped in dry-run partitions
+    - `--from unknown` fails with explicit validation message
+  - `scripts/README.md` updated to document `--only` normalization / `--from` validation coverage.
+  **Why:** prevents regressions in gate-selection UX and keeps summary partitions aligned with selection behavior.
