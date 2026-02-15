@@ -2148,3 +2148,11 @@
   - `scripts/publish-verify-gates-summary.sh` now supports schema version `18`.
   - `scripts/README.md` now documents current summary schema version as `18`.
   **Why:** treats the non-executed-exit-code shift (`0` -> `null`) as a schema-visible contract change for downstream consumers.
+- **Fail-fast fallback exit-code derivation coverage (2026-02-15 PM)** Expanded renderer fallback assertions for blocked gates:
+  - `scripts/test-verify-gates-summary.sh` now builds an additional fallback payload from a fail-fast summary with `gateExitCodeById` removed.
+  - Added assertions that publisher fallback derives:
+    - `Gate exit-code map: {"lint":7,"typecheck":null}`
+    - blocked `typecheck` table row with `exit code = n/a` and preserved `notRunReason`.
+  - Updated schema-warning negative checks to include the new fail-fast fallback summary publication path.
+  - `scripts/README.md` updated to call out fail-fast fallback coverage within non-executed exit-code contract checks.
+  **Why:** ensures markdown fallback rendering preserves null semantics for blocked/not-run gates when explicit exit-code maps are absent.

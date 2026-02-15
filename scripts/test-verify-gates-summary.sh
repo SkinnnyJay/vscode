@@ -55,6 +55,8 @@ fallback_summary="$tmpdir/fallback.json"
 fallback_step_summary="$tmpdir/fallback-step.md"
 dry_fallback_summary="$tmpdir/dry-fallback.json"
 dry_fallback_step_summary="$tmpdir/dry-fallback-step.md"
+fail_fast_fallback_summary="$tmpdir/fail-fast-fallback.json"
+fail_fast_fallback_step_summary="$tmpdir/fail-fast-fallback-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -250,9 +252,19 @@ NODE
 
 GITHUB_STEP_SUMMARY="$dry_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$dry_fallback_summary" "Verify Gates Dry Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$fail_fast_summary" "$fail_fast_fallback_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, modePrecedenceFullPath, modePrecedenceQuickPath, envRetriesPath, cliRetriesOverridePath, continueFailPath, continueMultiFailPath, failFastPath, retryPath, continueFailStepPath, continueMultiFailStepPath, failFastStepPath, retryStepPath, continueFlagStepPath, dryFallbackStepPath, fallbackStepPath] = process.argv.slice(2);
+const [sourcePath, fallbackPath] = process.argv.slice(2);
+const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+delete payload.gateExitCodeById;
+fs.writeFileSync(fallbackPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$fail_fast_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_fallback_summary" "Verify Gates Fail-fast Fallback Contract Test"
+
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, modePrecedenceFullPath, modePrecedenceQuickPath, envRetriesPath, cliRetriesOverridePath, continueFailPath, continueMultiFailPath, failFastPath, retryPath, continueFailStepPath, continueMultiFailStepPath, failFastStepPath, retryStepPath, continueFlagStepPath, dryFallbackStepPath, failFastFallbackStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -280,6 +292,7 @@ const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
 const retryStep = fs.readFileSync(retryStepPath, 'utf8');
 const continueFlagStep = fs.readFileSync(continueFlagStepPath, 'utf8');
 const dryFallbackStep = fs.readFileSync(dryFallbackStepPath, 'utf8');
+const failFastFallbackStep = fs.readFileSync(failFastFallbackStepPath, 'utf8');
 const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 const assertGateExitCodeSemantics = (label, summary) => {
 	if (!Array.isArray(summary.gates)) {
@@ -561,7 +574,7 @@ if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.t
 if (!failFastStep.includes('**Log file:** `') || !retryStep.includes('**Log file:** `')) {
 	throw new Error('Step summaries should include log-file metadata line.');
 }
-if (continueFailStep.includes('**Schema warning:**') || continueMultiFailStep.includes('**Schema warning:**') || failFastStep.includes('**Schema warning:**') || retryStep.includes('**Schema warning:**') || continueFlagStep.includes('**Schema warning:**') || dryFallbackStep.includes('**Schema warning:**') || fallbackStep.includes('**Schema warning:**')) {
+if (continueFailStep.includes('**Schema warning:**') || continueMultiFailStep.includes('**Schema warning:**') || failFastStep.includes('**Schema warning:**') || retryStep.includes('**Schema warning:**') || continueFlagStep.includes('**Schema warning:**') || dryFallbackStep.includes('**Schema warning:**') || failFastFallbackStep.includes('**Schema warning:**') || fallbackStep.includes('**Schema warning:**')) {
 	throw new Error('Did not expect schema warning for current-schema summaries.');
 }
 if (!continueFlagStep.includes('**Continue on failure:** true') || !continueFlagStep.includes('**Dry run:** true') || !continueFlagStep.includes('**Run classification:** dry-run')) {
@@ -572,6 +585,12 @@ if (!dryFallbackStep.includes('**Gate exit-code map:** {"lint":null}')) {
 }
 if (!dryFallbackStep.includes('| `lint` | `make lint` | skip | 0 | 0 | 0 | 0 | n/a | n/a |')) {
 	throw new Error('Dry fallback gate row should render non-executed exit code as n/a.');
+}
+if (!failFastFallbackStep.includes('**Gate exit-code map:** {"lint":7,"typecheck":null}')) {
+	throw new Error('Fail-fast fallback summary should preserve executed and non-executed exit code semantics.');
+}
+if (!failFastFallbackStep.includes('| `typecheck` | `make typecheck` | not-run | 0 | 0 | 0 | 0 | n/a | blocked-by-fail-fast:lint |')) {
+	throw new Error('Fail-fast fallback gate row should render blocked gate exit code as n/a.');
 }
 if (!/\*\*Gate status map:\*\* \{[^\n]*lint[^\n]*pass[^\n]*typecheck[^\n]*pass/.test(fallbackStep)) {
 	throw new Error('Fallback summary did not derive gate status map from gate rows.');

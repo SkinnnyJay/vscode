@@ -43,7 +43,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Summary-contract regression check:** run `./scripts/test-verify-gates-summary.sh` (executed in Pointer quality and nightly verify workflows before sweeps).
   - Includes precedence checks for conflicting mode flags (`--quick --full` / `--full --quick`) and retry-source precedence (`VSCODE_VERIFY_RETRIES` default overridden by `--retries`).
   - Includes continue-on-failure failure-path checks (`exitReason=completed-with-failures`, `runClassification=failed-continued`) for both single-failure and multi-failure scenarios, with metadata/partition assertions.
-  - Includes non-executed gate exit-code semantics checks (`null` in JSON maps/rows, rendered as `n/a` in markdown table output).
+  - Includes non-executed gate exit-code semantics checks (`null` in JSON maps/rows, rendered as `n/a` in markdown table output), including fail-fast fallback derivation for blocked gates.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` (also accepts `true/yes/on`) or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.
