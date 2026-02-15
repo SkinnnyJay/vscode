@@ -2508,6 +2508,11 @@
     - no schema warning is emitted.
   - `scripts/README.md` schema-version coverage updated to include non-numeric fallback behavior.
   **Why:** prevents malformed non-numeric schema metadata from triggering misleading future-schema warnings.
+- **Non-positive schema-version fallback coverage (2026-02-15 PM)** Tightened schema-version validity semantics:
+  - `scripts/publish-verify-gates-summary.sh` now treats schema version values as valid only when normalized integer is > 0.
+  - `scripts/test-verify-gates-summary.sh` now adds `zero_schema_version` scenario (`schemaVersion: 0`) and verifies rendered fallback to `unknown` with no schema warning.
+  - `scripts/README.md` schema-version bullet updated to include non-positive fallback behavior.
+  **Why:** avoids treating non-positive schema versions as valid compatibility metadata.
 - **Invocation whitespace normalization (2026-02-15 PM)** Hardened rendered invocation metadata:
   - `scripts/publish-verify-gates-summary.sh` now normalizes `invocation` with non-empty-string semantics before rendering (`unknown` fallback for blank/whitespace values).
   - `scripts/test-verify-gates-summary.sh` adds `invocation_whitespace` scenario and verifies rendered `Invocation: unknown`.

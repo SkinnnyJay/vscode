@@ -48,6 +48,8 @@ future_string_summary="$tmpdir/future-string.json"
 future_string_step_summary="$tmpdir/future-string-step.md"
 invalid_schema_version_summary="$tmpdir/invalid-schema-version.json"
 invalid_schema_version_step_summary="$tmpdir/invalid-schema-version-step.md"
+zero_schema_version_summary="$tmpdir/zero-schema-version.json"
+zero_schema_version_step_summary="$tmpdir/zero-schema-version-step.md"
 malformed_summary="$tmpdir/malformed\`name.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
@@ -2250,6 +2252,25 @@ if ! grep -Fq "**Summary schema version:** unknown" "$invalid_schema_version_ste
 fi
 if grep -q "\*\*Schema warning:\*\*" "$invalid_schema_version_step_summary"; then
 	echo "Did not expect schema warning for invalid non-numeric schema version metadata." >&2
+	exit 1
+fi
+
+node - "$retry_summary" "$zero_schema_version_summary" <<'NODE'
+const fs = require('node:fs');
+const [sourcePath, zeroPath] = process.argv.slice(2);
+const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+payload.schemaVersion = 0;
+fs.writeFileSync(zeroPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$zero_schema_version_step_summary" ./scripts/publish-verify-gates-summary.sh "$zero_schema_version_summary" "Verify Gates Zero Schema Version Contract Test"
+
+if ! grep -Fq "**Summary schema version:** unknown" "$zero_schema_version_step_summary"; then
+	echo "Expected zero-schema-version summary to treat non-positive schema versions as unknown." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$zero_schema_version_step_summary"; then
+	echo "Did not expect schema warning for non-positive schema version metadata." >&2
 	exit 1
 fi
 

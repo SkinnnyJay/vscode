@@ -869,7 +869,8 @@ const continueOnFailureValue = explicitContinueOnFailure !== null
 		: (derivedExitReason === 'fail-fast' || derivedExitReason === 'success' || derivedExitReason === 'dry-run' ? false : 'unknown'));
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
-const schemaVersionValue = normalizeNonNegativeInteger(summary.schemaVersion);
+const schemaVersionValueRaw = normalizeNonNegativeInteger(summary.schemaVersion);
+const schemaVersionValue = schemaVersionValueRaw !== null && schemaVersionValueRaw > 0 ? schemaVersionValueRaw : null;
 const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown';
 const runIdValue = normalizeNonEmptyString(summary.runId) ?? 'unknown';
 const resultSignatureAlgorithmValue = normalizeNonEmptyString(summary.resultSignatureAlgorithm) ?? 'unknown';
