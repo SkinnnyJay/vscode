@@ -19,6 +19,7 @@ RUN_START_EPOCH_SECONDS="$(date +%s)"
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
+DRY_RUN=0
 
 print_usage() {
 	cat <<'USAGE'
@@ -31,6 +32,7 @@ Options:
 --summary-json <path>       Write run summary JSON to path.
 --from <gate-id>            Start execution from matching gate ID.
 --only <id[,id...]>         Run only listed gate IDs.
+--dry-run                   Resolve and report selected gates without executing commands.
 -h, --help                  Show this help message.
 
 Gate IDs:
@@ -65,6 +67,9 @@ while (($# > 0)); do
 		--only)
 			shift
 			ONLY_GATE_IDS_RAW="${1:-}"
+			;;
+		--dry-run)
+			DRY_RUN=1
 			;;
 		*)
 			echo "Unknown option: $1" >&2
@@ -231,6 +236,7 @@ write_summary_json() {
 		echo "{"
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
+		echo "  \"dryRun\": $([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"),"
 		echo "  \"success\": ${run_success},"
 		echo "  \"startedAt\": \"$(json_escape "$RUN_TIMESTAMP")\","
 		echo "  \"completedAt\": \"$(json_escape "$completed_timestamp")\","
@@ -251,6 +257,21 @@ write_summary_json() {
 
 echo "Running '${MODE}' verification sweep with retries=$RETRIES"
 echo "Selected gates: ${gate_ids[*]}"
+
+if [[ "$DRY_RUN" == "1" ]]; then
+	echo "Dry run mode enabled - commands will not be executed."
+	for i in "${!gate_commands[@]}"; do
+		gate_results+=("skip")
+		gate_durations_seconds+=("0")
+		gate_attempt_counts+=("0")
+	done
+	print_summary
+	write_summary_json "true"
+	echo
+	echo "Verification sweep dry run completed successfully."
+	exit 0
+fi
+
 for i in "${!gate_commands[@]}"; do
 	if run_gate "${gate_commands[$i]}"; then
 		gate_results+=("pass")

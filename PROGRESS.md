@@ -1441,3 +1441,8 @@
   - unknown options now print the same shared usage output
   - `scripts/publish-verify-gates-summary.sh` now supports `--help` with argument/env documentation.
   **Why:** improves discoverability and reduces operator error for local debugging/CI maintenance without changing core gate behavior.
+- **Verify-gates dry-run mode (2026-02-15 AM)** Extended `scripts/verify-gates.sh` with `--dry-run`:
+  - resolves all mode/filter logic (`--quick/--full`, `--only`, `--from`) exactly as normal execution
+  - skips gate command execution while still producing terminal summary + JSON output
+  - summary JSON now includes a top-level `dryRun` boolean for downstream consumers.
+  **Why:** provides a fast planning/debugging path for CI and local operators to validate gate targeting and summary wiring without running heavy test/build commands.
