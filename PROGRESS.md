@@ -2445,3 +2445,10 @@
     - markdown table not-run reason cell emits trimmed value.
   - `scripts/README.md` updated to document row-level not-run-reason trimming coverage.
   **Why:** prevents noisy whitespace in sparse row reason fields from polluting rendered diagnostics and map metadata.
+- **Gate-row not-run reason type sanitization (2026-02-15 PM)** Hardened non-string reason handling:
+  - `scripts/publish-verify-gates-summary.sh` now forces non-string row-level `notRunReason` values to `null` during `gates[]` normalization (instead of preserving arbitrary scalars).
+  - `scripts/test-verify-gates-summary.sh` now adds `row_not_run_reason_type` scenario with a non-string reason (`7`) and verifies:
+    - `Gate not-run reason map` renders `none`
+    - row table `Not-run reason` renders `n/a`.
+  - `scripts/README.md` updated to document non-string row-reason sanitization coverage.
+  **Why:** prevents malformed producer scalar values from leaking into rendered not-run reason cells while keeping row-derived diagnostics type-safe.

@@ -122,7 +122,7 @@ const gates = gatesFromSummary.reduce((normalizedGates, gate) => {
 		status: normalizeGateStatusValue(gateObject.status) ?? gateObject.status,
 		notRunReason: typeof gateObject.notRunReason === 'string'
 			? (normalizeNonEmptyString(gateObject.notRunReason) ?? null)
-			: (gateObject.notRunReason ?? null),
+			: null,
 	});
 	return normalizedGates;
 }, []);

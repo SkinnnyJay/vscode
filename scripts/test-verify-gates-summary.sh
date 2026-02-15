@@ -63,6 +63,8 @@ duplicate_gate_rows_summary="$tmpdir/duplicate-gate-rows.json"
 duplicate_gate_rows_step_summary="$tmpdir/duplicate-gate-rows-step.md"
 malformed_gate_rows_summary="$tmpdir/malformed-gate-rows.json"
 malformed_gate_rows_step_summary="$tmpdir/malformed-gate-rows-step.md"
+row_not_run_reason_type_summary="$tmpdir/row-not-run-reason-type.json"
+row_not_run_reason_type_step_summary="$tmpdir/row-not-run-reason-type-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -366,6 +368,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$malformed_gate_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$malformed_gate_rows_summary" "Verify Gates Malformed Gate Rows Contract Test"
+
+node - "$expected_schema_version" "$row_not_run_reason_type_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'row-not-run-reason-type-contract',
+	gates: [
+		{ id: ' build ', command: 'make build', status: ' Not-Run ', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 7 },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$row_not_run_reason_type_step_summary" ./scripts/publish-verify-gates-summary.sh "$row_not_run_reason_type_summary" "Verify Gates Row Not-Run Reason Type Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1202,6 +1223,18 @@ if grep -Fq '| `unknown` |' "$malformed_gate_rows_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$malformed_gate_rows_step_summary"; then
 	echo "Did not expect schema warning for malformed-gate-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate not-run reason map:** none" "$row_not_run_reason_type_step_summary"; then
+	echo "Expected row-not-run-reason-type summary to sanitize non-string row not-run reason values to null." >&2
+	exit 1
+fi
+if ! grep -Fq '| `build` | `make build` | not-run | 0 | 0 | 0 | 0 | n/a | n/a |' "$row_not_run_reason_type_step_summary"; then
+	echo "Expected row-not-run-reason-type summary table to render non-string not-run reason values as n/a." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$row_not_run_reason_type_step_summary"; then
+	echo "Did not expect schema warning for row-not-run-reason-type summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
