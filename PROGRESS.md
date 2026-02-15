@@ -1320,3 +1320,13 @@
   - `make test-e2e` → **pass**
   - `make test-web-integration` → **pass**
   **Why:** provides another high-confidence end-to-end verification pass while explicitly documenting observed VM-only transient launch/test flakes and their successful reruns.
+- **Sequential stress confirmation (2026-02-15 AM)** Re-ran the same major gates in strict sequence (no parallel invocations) to validate stability under serialized execution:
+  - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
+  - `make test-integration` → **pass**
+  - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
+  - `make lint` → **pass**
+  - `make typecheck` → **pass**
+  - `make test-e2e` → **pass**
+  - `make test-web-integration` → **pass**
+  - `make build` → **pass** (0 compile errors)
+  **Why:** confirms full green status on branch tip with serialized execution, reinforcing that previously observed smoke ICU/SIGTRAP flake was tied to concurrent load rather than persistent launcher regressions.
