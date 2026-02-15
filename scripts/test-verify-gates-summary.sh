@@ -71,6 +71,8 @@ unknown_status_duplicate_rows_summary="$tmpdir/unknown-status-duplicate-rows.jso
 unknown_status_duplicate_rows_step_summary="$tmpdir/unknown-status-duplicate-rows-step.md"
 unknown_status_only_rows_summary="$tmpdir/unknown-status-only-rows.json"
 unknown_status_only_rows_step_summary="$tmpdir/unknown-status-only-rows-step.md"
+duplicate_same_status_rows_summary="$tmpdir/duplicate-same-status-rows.json"
+duplicate_same_status_rows_step_summary="$tmpdir/duplicate-same-status-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -451,6 +453,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unknown_status_only_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$unknown_status_only_rows_summary" "Verify Gates Unknown Status Only Rows Contract Test"
+
+node - "$expected_schema_version" "$duplicate_same_status_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'duplicate-same-status-rows-contract',
+	gates: [
+		{ id: ' lint ', command: 'make lint', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 3, startedAt: '20260215T070000Z', completedAt: '20260215T070001Z', notRunReason: null },
+		{ id: 'lint', command: 'make lint', status: 'fail', attempts: 2, retryCount: 1, retryBackoffSeconds: 1, durationSeconds: 2, exitCode: 7, startedAt: '20260215T070001Z', completedAt: '20260215T070003Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$duplicate_same_status_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$duplicate_same_status_rows_summary" "Verify Gates Duplicate Same-Status Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1376,6 +1398,22 @@ if ! grep -Fq "**Non-success gates list:** lint" "$unknown_status_only_rows_step
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unknown_status_only_rows_step_summary"; then
 	echo "Did not expect schema warning for unknown-status-only-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 1" "$duplicate_same_status_rows_step_summary" || ! grep -Fq "**Failed gates:** 1" "$duplicate_same_status_rows_step_summary"; then
+	echo "Expected duplicate-same-status-rows summary to keep counts deduped by normalized gate ID." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate exit-code map:** {\"lint\":7}" "$duplicate_same_status_rows_step_summary" || ! grep -Fq "**Failed gate exit codes:** 7" "$duplicate_same_status_rows_step_summary"; then
+	echo "Expected duplicate-same-status-rows summary to use last row as deterministic tie-breaker for equal-status duplicates." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | fail | 2 | 1 | 1 | 2 | 7 | n/a |' "$duplicate_same_status_rows_step_summary"; then
+	echo "Expected duplicate-same-status-rows summary table to render tie-broken row values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$duplicate_same_status_rows_step_summary"; then
+	echo "Did not expect schema warning for duplicate-same-status-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

@@ -66,6 +66,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes duplicate conflicting-status row checks proving status precedence is deterministic for repeated IDs (`fail` > `pass` > `skip` > `not-run`) across counters/lists/maps.
   - Includes duplicate conflicting-status exit-code checks proving per-gate maps (e.g., `gateExitCodeById`/failed exit-code lists) are derived from status-precedence-resolved rows rather than raw row order.
   - Includes duplicate-row table checks proving markdown rows are rendered from one precedence-resolved row per gate ID (no duplicate gate rows with conflicting statuses).
+  - Includes equal-status duplicate row checks proving deterministic tie-breaking (latest row wins) for per-gate map/table values when repeated IDs share the same canonical status.
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.
   - Includes unknown-status row-table checks proving unresolved row status tokens are normalized to `unknown` in markdown table output (no raw unknown-status leakage).

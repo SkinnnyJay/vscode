@@ -2457,6 +2457,14 @@
     - unknown duplicate row is suppressed when canonical pass row resolves the same gate.
   - `scripts/README.md` updated to document duplicate-row table deduplication coverage.
   **Why:** prevents table output from contradicting deduplicated counter/list/map metadata when sparse payloads include repeated gate rows.
+- **Equal-status duplicate-row tie-break coverage (2026-02-15 PM)** Locked deterministic same-status behavior:
+  - `scripts/test-verify-gates-summary.sh` now adds `duplicate_same_status_rows` scenario with two `fail` rows for the same normalized gate ID but different numeric values.
+  - Assertions verify deterministic tie-breaking behavior (latest row wins for equal-priority statuses) across:
+    - `gateExitCodeById`
+    - `failedGateExitCodes`
+    - rendered table row values (`attempts/retries/duration/exitCode`).
+  - `scripts/README.md` updated to document equal-status duplicate-row tie-break coverage.
+  **Why:** ensures repeated same-status sparse rows produce stable, predictable per-gate values instead of ambiguous merge behavior.
 - **Duplicate unknown-status non-success filtering (2026-02-15 PM)** Tightened duplicate-row non-success semantics:
   - `scripts/publish-verify-gates-summary.sh` now derives row-based `nonSuccessGateIds` from resolved per-gate status (selected IDs + `rowStatusByGateId`) instead of raw row status scans.
   - This prevents invalid duplicate status rows (e.g. `mystery-status`) from marking a gate as non-success when canonical status resolution already yields `pass`.
