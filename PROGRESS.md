@@ -1948,6 +1948,11 @@
   - also validates fail-fast/retry partition consistency (`nonSuccessGateIds`, `attentionGateIds`).
   - `scripts/README.md` updated to mention run-classification/exit-reason coverage.
   **Why:** guards the highest-signal summary metadata used for CI triage and downstream automation branching.
+- **Duplicate gate warning coverage (2026-02-15 PM)** Added explicit assertion for `--only` duplicate ID feedback:
+  - `scripts/test-verify-gates-summary.sh` now verifies that a deduplicated selection (`--only " lint , lint , typecheck "`) emits:
+    - `Ignoring duplicate gate ids from --only: lint`
+  - `scripts/README.md` updated to include duplicate-warning validation coverage.
+  **Why:** ensures selection dedupe remains transparent to operators instead of silently mutating requested gate sets.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
