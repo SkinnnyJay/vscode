@@ -357,6 +357,8 @@ print_summary() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local result_signature
+	result_signature="$(compute_result_signature)"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -366,6 +368,7 @@ print_summary() {
 	echo "  Invocation: ${INVOCATION}"
 	echo "  Summary schema version: ${SUMMARY_SCHEMA_VERSION}"
 	echo "  Exit reason: ${RUN_EXIT_REASON}"
+	echo "  Result signature: ${result_signature}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
@@ -745,6 +748,28 @@ write_not_run_gate_ids_json() {
 	done
 }
 
+compute_result_signature() {
+	local payload=""
+	local i
+	for i in "${!gate_commands[@]}"; do
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		payload+="${gate_ids[$i]}|${gate_results[$i]}|${gate_attempt_counts[$i]}|${retry_count}|${gate_exit_codes[$i]}|${gate_durations_seconds[$i]};"
+	done
+
+	if command -v sha256sum > /dev/null 2>&1; then
+		printf '%s' "$payload" | sha256sum | awk '{print $1}'
+		return 0
+	fi
+
+	if command -v shasum > /dev/null 2>&1; then
+		printf '%s' "$payload" | shasum -a 256 | awk '{print $1}'
+		return 0
+	fi
+
+	printf '%s' "$payload" | cksum | awk '{print $1}'
+}
+
 mark_remaining_not_run_reasons() {
 	local start_index="$1"
 	local reason="$2"
@@ -814,6 +839,8 @@ write_summary_json() {
 	retry_rate_percent="$(compute_retry_rate_percent "$executed_gate_count" "$retried_gate_count")"
 	local retry_backoff_share_percent
 	retry_backoff_share_percent="$(compute_retry_backoff_share_percent "$executed_duration_seconds" "$total_retry_backoff_seconds")"
+	local result_signature
+	result_signature="$(compute_result_signature)"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -822,6 +849,7 @@ write_summary_json() {
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
 		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
 		echo "  \"exitReason\": \"$(json_escape "$RUN_EXIT_REASON")\","
+		echo "  \"resultSignature\": \"$(json_escape "$result_signature")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"continueOnFailure\": $([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"),"

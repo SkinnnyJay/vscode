@@ -1713,6 +1713,10 @@
   - future-schema warning test (`schemaVersion=99`) confirmed warning references supported version `7`
   - `make lint` → **pass**.
   **Why:** confirms schema-v7 causality semantics are accurate in dry/fail-fast/continue/success flows and renderer compatibility checks.
+- **Deterministic result signature telemetry (2026-02-15 AM)** Added run-shape fingerprinting:
+  - `scripts/verify-gates.sh` now computes `resultSignature` (sha256 over ordered gate outcome facts) and includes it in terminal + JSON summary
+  - `scripts/publish-verify-gates-summary.sh` now renders `Result signature` in step summaries.
+  **Why:** enables quick equality checks between runs (especially for flaky investigations) without diffing full summary payloads.
 - **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
   - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
   - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
