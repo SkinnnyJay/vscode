@@ -83,6 +83,8 @@ export class PlaywrightDriver {
 	private readonly recentConsoleErrors: string[] = [];
 	private totalRecordedConsoleErrors = 0;
 	private droppedRecentConsoleErrors = 0;
+	private readonly consoleErrorSummariesByUrl = new Map<string, string>();
+	private readonly consoleErrorSeenCountsByUrl = new Map<string, number>();
 	private readonly scriptResponseSummariesByUrl = new Map<string, string>();
 	private readonly scriptResponseSeenCountsByUrl = new Map<string, number>();
 	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
@@ -91,6 +93,7 @@ export class PlaywrightDriver {
 	private readonly requestFailureCountByUrl = new Map<string, number>();
 	private readonly scriptResponseCountByUrl = new Map<string, number>();
 	private readonly cdpScriptLoadCountByUrl = new Map<string, number>();
+	private readonly consoleErrorCountByUrl = new Map<string, number>();
 	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
 	private cdpNetworkDiagnosticsAttached = false;
 	private readonly cdpRequestUrls = new Map<string, string>();
@@ -513,6 +516,14 @@ export class PlaywrightDriver {
 		return this.droppedRecentConsoleErrors;
 	}
 
+	getLatestConsoleErrorSummaryForUrl(url: string): string | undefined {
+		return this.consoleErrorSummariesByUrl.get(this.toUrlKey(url));
+	}
+
+	getImportTargetConsoleErrorCount(url: string): number {
+		return this.consoleErrorCountByUrl.get(this.toUrlKey(url)) ?? 0;
+	}
+
 	getLatestCdpScriptLoadSummaryForUrl(url: string): string | undefined {
 		return this.cdpScriptLoadSummariesByUrl.get(this.toUrlKey(url));
 	}
@@ -673,6 +684,14 @@ export class PlaywrightDriver {
 			: '';
 		const resolvedPath = locationUrl ? this.toFilePathFromVscodeFileUrl(locationUrl) : undefined;
 		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const urlKey = locationUrl ? this.toUrlKey(locationUrl) : undefined;
+		if (urlKey) {
+			const seenCount = (this.consoleErrorSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+			this.consoleErrorSeenCountsByUrl.set(urlKey, seenCount);
+			this.consoleErrorCountByUrl.set(urlKey, (this.consoleErrorCountByUrl.get(urlKey) ?? 0) + 1);
+			const summary = this.normalizeFailureText(`seenCount=${seenCount} text=${text}${locationSuffix}${fileExistsSuffix}`);
+			this.setLatestSummary(this.consoleErrorSummariesByUrl, urlKey, summary);
+		}
 		return this.normalizeFailureText(`[console-error] ${text}${locationSuffix}${fileExistsSuffix}`);
 	}
 

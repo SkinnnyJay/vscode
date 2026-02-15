@@ -921,3 +921,26 @@
     - `"consoleErrorCounts":{"displayWindow":0,"retainedWindow":0}`.
   Re-ran `make lint` (pass).
   **Why:** confirms the new console-error channel is active, bounded, and correctly integrated into both text and structured diagnostics outputs.
+- **Console URL summary correlation for import target (2026-02-14 PM)** Extended console diagnostics correlation in smoke automation:
+  - `test/automation/src/playwrightDriver.ts`
+    - added URL-keyed console-error summary map with seen counts (bounded by shared summary capacity)
+    - added cumulative per-URL console-error counter
+    - exposed getters:
+      - `getLatestConsoleErrorSummaryForUrl(url)`
+      - `getImportTargetConsoleErrorCount(url)`
+  - `test/automation/src/code.ts`
+    - added fail-fast line:
+      - `Import target latest console error: ...`
+    - expanded console counts line to include run-total:
+      - `Import target console error counts: displayWindow=<N>, retainedWindow=<N>, total=<N>`
+    - structured diagnostics record now includes:
+      - `"consoleErrorCounts":{"displayWindow":...,"retainedWindow":...,"total":...}`.
+  **Why:** aligns console diagnostics with the same latest/retained/total correlation model used by request-failure/script-response/CDP channels.
+- **Console correlation validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target latest console error: unseen`
+  - `Import target console error counts: displayWindow=0, retainedWindow=0, total=0`
+  - structured record field:
+    - `"consoleErrorCounts":{"displayWindow":0,"retainedWindow":0,"total":0}`
+  - retained console summary block still present with bounded counters/signature.
+  Re-ran `make lint` (pass).
+  **Why:** confirms target-level console correlation now reports both latest summary and cumulative total count consistently.
