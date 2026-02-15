@@ -1717,6 +1717,10 @@ if ! grep -Fq "**Selected gates:** missing-only" "$selected_order_unmatched_rows
 	echo "Expected selected-order-unmatched-rows summary to preserve explicit unmatched selected-gate metadata." >&2
 	exit 1
 fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Executed gates:** 0" "$selected_order_unmatched_rows_step_summary"; then
+	echo "Expected selected-order-unmatched-rows summary counters to remain selected-scope based when table rows fall back to available non-selected rows." >&2
+	exit 1
+fi
 if ! grep -Fq "**Gate status map:** {\"missing-only\":\"unknown\"}" "$selected_order_unmatched_rows_step_summary" || ! grep -Fq "**Gate exit-code map:** {\"missing-only\":null}" "$selected_order_unmatched_rows_step_summary"; then
 	echo "Expected selected-order-unmatched-rows summary to scope per-gate maps to explicitly selected unmatched gates." >&2
 	exit 1

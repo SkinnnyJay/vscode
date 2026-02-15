@@ -74,7 +74,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes selected-gate missing-row map-default checks proving missing selected gates still appear in per-gate maps with safe defaults (`unknown` status, `null` exit code, zero-valued retry/duration/attempt fields).
   - Includes selected-gate missing-row visibility checks proving missing selected IDs surface in non-success/attention lists even when table rows are unavailable.
   - Includes row-derived map-default parity checks proving missing selected gates receive safe defaults in row-derived maps too (`null`/`0`), not just explicit summary maps.
-  - Includes selected-gate unmatched-row table fallback checks proving table rendering falls back to available rows when explicit `selectedGateIds` match no row IDs.
+  - Includes selected-gate unmatched-row table fallback checks proving table rendering falls back to available rows when explicit `selectedGateIds` match no row IDs, while counters/maps remain selected-scope based.
   - Includes selected-gate subset-row checks proving counters/non-success lists, per-gate maps (status/exit/retry/duration/attempt), and table rendering all scope to explicit selected IDs when at least one selected row exists.
   - Includes invocation-whitespace checks proving blank/whitespace `invocation` values normalize to `unknown` in rendered metadata.
   - Includes run/signature/log metadata whitespace checks proving blank `runId`/signature fields normalize to `unknown`, blank `logFile` is suppressed, and invalid slow/fast metadata falls back to derived `n/a` values.

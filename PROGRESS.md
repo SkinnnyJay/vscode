@@ -2512,7 +2512,8 @@
   - `scripts/test-verify-gates-summary.sh` adds `selected_order_unmatched_rows` scenario (`selectedGateIds: ['missing-only']`, rows contain only `lint`) and verifies:
     - selected metadata preserves unmatched selection
     - table still renders available `lint` row
-    - empty placeholder row is not emitted.
+    - empty placeholder row is not emitted
+    - counters/maps remain selected-scope (`Passed/Failed/Executed = 0`, per-gate maps scoped to `missing-only`).
   - `scripts/README.md` updated to document unmatched selected-order table fallback coverage.
   **Why:** avoids hiding valid row diagnostics behind empty table placeholders when explicit selections are stale or mismatched.
 - **Selected subset-row scoping coverage (2026-02-15 PM)** Added explicit-selection subset guard:
