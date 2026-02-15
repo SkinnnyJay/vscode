@@ -1293,3 +1293,7 @@
   - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
   - `make build` → **pass** (0 compile errors)
   **Why:** reconfirms launcher-helper refactor remains stable across smoke/integration/electron-unit/node-unit/build paths under repeated execution pressure.
+- **Follow-up consistency sweep (2026-02-15 AM)** Ran another mixed gate cycle after the above:
+  - `make typecheck` → **pass**
+  - `make test-web-integration` → **pass**
+  **Why:** verifies both TS static validation and browser-hosted extension integration paths remain stable after repeated launcher-hardening iterations.
