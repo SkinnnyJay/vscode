@@ -2280,6 +2280,16 @@
   - `scripts/test-verify-gates-summary.sh` list-only sparse payload now injects invalid scalar metric/status-count values and verifies derived metrics remain correct (counts, retries, backoff share, durations) via fallback sources.
   - `scripts/README.md` updated to document scalar-metric sanitization coverage in the summary contract harness.
   **Why:** prevents malformed scalar fields from overriding trustworthy derived metrics and producing inconsistent CI summaries.
+- **Strict non-negative numeric enforcement for sparse summary maps (2026-02-15 PM)** Tightened numeric sanitization boundaries:
+  - `scripts/publish-verify-gates-summary.sh` now enforces non-negative numeric normalization for:
+    - `failedGateExitCodes` list inputs
+    - `failedGateExitCode` scalar pointer
+    - `gateExitCodeById` map values
+    - all count/timing/retry/rate scalar fields and retry/duration/attempt map values.
+  - Sparse known-gate defaults remain applied for partial maps so omitted known gates still render deterministic placeholders.
+  - `scripts/test-verify-gates-summary.sh` updated sparse status-map/list-map scenarios to include negative/invalid numeric noise and assert sanitized outputs (e.g. invalid exit codes collapse to `null`, derived totals remain stable).
+  - `scripts/README.md` updated to explicitly call out strict non-negative numeric enforcement in fallback handling.
+  **Why:** ensures malformed negative or non-numeric values cannot leak into derived CI summary diagnostics.
 - **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
   - `scripts/publish-verify-gates-summary.sh` now:
     - treats exit codes as non-negative integers (invalid/negative values ignored)
