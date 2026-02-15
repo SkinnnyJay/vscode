@@ -1330,3 +1330,7 @@
   - `make test-web-integration` → **pass**
   - `make build` → **pass** (0 compile errors)
   **Why:** confirms full green status on branch tip with serialized execution, reinforcing that previously observed smoke ICU/SIGTRAP flake was tied to concurrent load rather than persistent launcher regressions.
+- **Additional serialized Electron+smoke rerun (2026-02-15 AM)** Added another focused rerun for the two most volatile Electron-heavy gates:
+  - `make test && make test-smoke` → **pass**
+  - standalone `make test-smoke` rerun → **pass** (`34 passing`, `61 pending`)
+  **Why:** reinforces that the launcher resilience changes remain stable across repeated back-to-back Electron unit/integration and smoke execution on this VM.
