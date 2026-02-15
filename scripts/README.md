@@ -66,6 +66,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes duplicate conflicting-status row checks proving status precedence is deterministic for repeated IDs (`fail` > `pass` > `skip` > `not-run`) across counters/lists/maps.
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.
+  - Includes unknown-status row-table checks proving unresolved row status tokens are normalized to `unknown` in markdown table output (no raw unknown-status leakage).
   - Includes numeric-boolean normalization checks proving `success`/`dryRun`/`continueOnFailure` accept numeric `1`/`0` encodings in sparse payloads.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).

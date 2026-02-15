@@ -1354,6 +1354,10 @@ if ! grep -Fq "**Gate status map:** {\"lint\":\"unknown\"}" "$unknown_status_onl
 	echo "Expected unknown-status-only-rows summary to render unknown status map entries for unresolved row statuses." >&2
 	exit 1
 fi
+if ! grep -Fq '| `lint` | `make lint` | unknown | 1 | 0 | 0 | 1 | 0 | n/a |' "$unknown_status_only_rows_step_summary"; then
+	echo "Expected unknown-status-only-rows summary table to normalize unresolved row statuses to unknown." >&2
+	exit 1
+fi
 if ! grep -Fq "**Non-success gates list:** lint" "$unknown_status_only_rows_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$unknown_status_only_rows_step_summary"; then
 	echo "Expected unknown-status-only-rows summary to classify unresolved row statuses as non-success/attention." >&2
 	exit 1

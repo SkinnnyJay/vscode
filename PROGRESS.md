@@ -2458,6 +2458,11 @@
     - gate appears in `Non-success gates list` and `Attention gates list`.
   - `scripts/README.md` updated to document unknown-status-only coverage.
   **Why:** preserves operator visibility for unresolved statuses while still filtering duplicate invalid statuses when a canonical status exists.
+- **Unknown-status table normalization (2026-02-15 PM)** Hardened unresolved status rendering:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes unresolved row statuses to canonical `unknown` at row-normalization time (instead of preserving raw unknown status tokens).
+  - `scripts/test-verify-gates-summary.sh` unknown-status-only scenario now verifies table row status renders `unknown` (matching status-map semantics).
+  - `scripts/README.md` updated to document unknown-status table normalization coverage.
+  **Why:** keeps unresolved status diagnostics consistent between metadata maps and table rows, avoiding raw token leakage.
 - **Malformed gate-row resilience coverage (2026-02-15 PM)** Extended sparse row hardening contract:
   - `scripts/test-verify-gates-summary.sh` now adds `malformed_gate_rows` scenario with mixed invalid `gates[]` entries (`null`, string, number) plus one valid padded row.
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.

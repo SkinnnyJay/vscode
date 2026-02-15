@@ -129,7 +129,7 @@ const gates = gatesFromSummary.reduce((normalizedGates, gate) => {
 		...gateObject,
 		id: gateId,
 		command: normalizeNonEmptyString(gateObject.command) ?? null,
-		status: normalizeGateStatusValue(gateObject.status) ?? gateObject.status,
+		status: normalizeGateStatusValue(gateObject.status) ?? 'unknown',
 		attempts: normalizeRowNonNegativeInteger(gateObject.attempts) ?? 0,
 		retryCount: normalizeRowNonNegativeInteger(gateObject.retryCount) ?? 0,
 		retryBackoffSeconds: normalizeRowNonNegativeInteger(gateObject.retryBackoffSeconds) ?? 0,
