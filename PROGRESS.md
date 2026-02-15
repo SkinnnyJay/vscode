@@ -2074,6 +2074,15 @@
     - exactly one schema-warning line for synthetic future-schema payloads
   - `scripts/README.md` updated to include schema-warning emission coverage.
   **Why:** prevents noisy or duplicated warnings while preserving explicit forward-compatibility signaling.
+- **Default-mode full-run metadata coverage (2026-02-15 PM)** Expanded mode assertions for implicit defaults:
+  - `scripts/test-verify-gates-summary.sh` now runs:
+    - `./scripts/verify-gates.sh --only build --dry-run --summary-json ...` (no `--quick/--full` flag)
+  - verifies metadata resolves to full mode defaults:
+    - `mode=full`
+    - `runId` prefix `full-`
+    - `selectedGateIds/skippedGateIds` align to `build`.
+  - `scripts/README.md` updated to include default-mode full-run coverage.
+  **Why:** guarantees callers relying on implicit defaults receive deterministic full-mode metadata and partitions.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

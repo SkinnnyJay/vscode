@@ -29,6 +29,7 @@ continue_flag_step_summary="$tmpdir/continue-flag-step.md"
 dedupe_summary="$tmpdir/dedupe.json"
 from_summary="$tmpdir/from.json"
 full_dry_summary="$tmpdir/full-dry.json"
+default_mode_dry_summary="$tmpdir/default-mode-dry.json"
 fail_fast_summary="$tmpdir/fail-fast.json"
 retry_summary="$tmpdir/retry.json"
 fail_fast_step_summary="$tmpdir/fail-fast-step.md"
@@ -99,6 +100,7 @@ VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only li
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only " lint , lint , typecheck " --dry-run --summary-json "$dedupe_summary" > "$tmpdir/dedupe.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --from typecheck --dry-run --summary-json "$from_summary" > "$tmpdir/from.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --full --only build --dry-run --summary-json "$full_dry_summary" > "$tmpdir/full-dry.out"
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --only build --dry-run --summary-json "$default_mode_dry_summary" > "$tmpdir/default-mode-dry.out"
 if ! grep -q "Ignoring duplicate gate ids from --only: lint" "$tmpdir/dedupe.out"; then
 	echo "Expected duplicate --only gate IDs warning message." >&2
 	exit 1
@@ -178,9 +180,9 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -193,6 +195,7 @@ const continueFlag = JSON.parse(fs.readFileSync(continueFlagPath, 'utf8'));
 const dedupe = JSON.parse(fs.readFileSync(dedupePath, 'utf8'));
 const from = JSON.parse(fs.readFileSync(fromPath, 'utf8'));
 const fullDry = JSON.parse(fs.readFileSync(fullDryPath, 'utf8'));
+const defaultModeDry = JSON.parse(fs.readFileSync(defaultModeDryPath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
@@ -203,7 +206,7 @@ const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
 }
-if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion) {
+if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion || defaultModeDry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
 for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['fail-fast', failFast], ['retry', retry]]) {
@@ -244,10 +247,11 @@ if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
 }
 const timestampPattern = /^\d{8}T\d{6}Z$/;
-for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['fail-fast', failFast], ['retry', retry]]) {
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['fail-fast', failFast], ['retry', retry]]) {
 	const expectedRunIdPrefix = label === 'full-dry' ? 'full-' : 'quick-';
-	if (typeof summary.runId !== 'string' || !summary.runId.startsWith(expectedRunIdPrefix)) {
-		throw new Error(`${label} summary runId should start with ${expectedRunIdPrefix}.`);
+	const normalizedRunIdPrefix = label === 'default-mode-dry' ? 'full-' : expectedRunIdPrefix;
+	if (typeof summary.runId !== 'string' || !summary.runId.startsWith(normalizedRunIdPrefix)) {
+		throw new Error(`${label} summary runId should start with ${normalizedRunIdPrefix}.`);
 	}
 	if (!timestampPattern.test(String(summary.startedAt ?? '')) || !timestampPattern.test(String(summary.completedAt ?? ''))) {
 		throw new Error(`${label} summary timestamps should match YYYYMMDDTHHMMSSZ.`);
@@ -264,6 +268,12 @@ if (!fullDry.runId.startsWith('full-') || fullDry.mode !== 'full') {
 }
 if (fullDry.selectedGateIds.join(',') !== 'build' || fullDry.skippedGateIds.join(',') !== 'build') {
 	throw new Error('Full dry-run gate selection/partition mismatch.');
+}
+if (defaultModeDry.mode !== 'full' || !defaultModeDry.runId.startsWith('full-')) {
+	throw new Error('Default-mode dry-run should resolve to full mode metadata.');
+}
+if (defaultModeDry.selectedGateIds.join(',') !== 'build' || defaultModeDry.skippedGateIds.join(',') !== 'build') {
+	throw new Error('Default-mode dry-run gate selection/partition mismatch.');
 }
 if (!Array.isArray(failFast.executedGateIds) || failFast.executedGateCount !== failFast.executedGateIds.length) {
 	throw new Error('Fail-fast executed gate count/list mismatch.');
