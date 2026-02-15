@@ -63,6 +63,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes timestamp-whitespace normalization checks proving padded `startedAt`/`completedAt` values are trimmed before duration/start/end derivation.
   - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists/table rows while valid normalized rows still render correctly.
   - Includes duplicate gate-row checks proving row-derived gate counters stay aligned with deduplicated normalized gate IDs (no double-counted pass/fail totals).
+  - Includes duplicate conflicting-status row checks proving status precedence is deterministic for repeated IDs (`fail` > `pass` > `skip` > `not-run`) across counters/lists/maps.
   - Includes numeric-boolean normalization checks proving `success`/`dryRun`/`continueOnFailure` accept numeric `1`/`0` encodings in sparse payloads.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).

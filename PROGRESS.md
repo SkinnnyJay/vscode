@@ -2432,6 +2432,16 @@
   - `scripts/test-verify-gates-summary.sh` duplicate-row scenario now verifies `Gate count/Passed gates/Failed gates` counters align with deduplicated gate identity (`2/1/1`).
   - `scripts/README.md` updated to document duplicate-row counter alignment coverage.
   **Why:** prevents duplicate sparse rows from inflating derived gate counters while list/map metadata is already deduplicated.
+- **Duplicate-row status precedence alignment (2026-02-15 PM)** Resolved conflicting-status duplicates:
+  - `scripts/publish-verify-gates-summary.sh` now derives row-based pass/fail/skip/not-run counts and partition lists from a normalized `rowStatusByGateId` map that applies deterministic precedence for repeated IDs:
+    - `fail` > `pass` > `skip` > `not-run`.
+  - Row-derived `gateStatusById` fallback now uses the same precedence map (with `unknown` fallback for selected IDs lacking valid status).
+  - `scripts/test-verify-gates-summary.sh` duplicate-row scenario now includes both pass and fail rows for `lint` and verifies:
+    - counters (`Gate count: 2`, `Passed gates: 0`, `Failed gates: 2`)
+    - lists (`Passed gates list: none`, `Failed gates list: lint, typecheck`)
+    - status map (`{"lint":"fail","typecheck":"fail"}`).
+  - `scripts/README.md` updated to document duplicate conflicting-status precedence coverage.
+  **Why:** prevents conflicting duplicate sparse rows from yielding inconsistent counter/list/map outcomes for the same normalized gate ID.
 - **Malformed gate-row resilience coverage (2026-02-15 PM)** Extended sparse row hardening contract:
   - `scripts/test-verify-gates-summary.sh` now adds `malformed_gate_rows` scenario with mixed invalid `gates[]` entries (`null`, string, number) plus one valid padded row.
   - Assertions verify derived metadata is based on valid normalized rows only (`Gate count: 1`, pass-only status counts, selected gates `lint`) while still rendering the valid normalized row in the markdown table.
