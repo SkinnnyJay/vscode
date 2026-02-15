@@ -306,8 +306,8 @@ const payload = {
 	executedGateIds: ['lint', 'typecheck'],
 	gateStatusById: { lint: 'pass', typecheck: 'fail', 'test-unit': 'skip', build: 'not-run' },
 	gateExitCodeById: { lint: 0, typecheck: 2, 'test-unit': null, build: null },
-	gateRetryCountById: { lint: 0, typecheck: 0, 'test-unit': 0, build: 0 },
-	gateDurationSecondsById: { lint: 1, typecheck: 2, 'test-unit': 0, build: 0 },
+	gateRetryCountById: { lint: 2, typecheck: 0, 'test-unit': 0, build: 0 },
+	gateDurationSecondsById: { lint: 5, typecheck: 3, 'test-unit': 0, build: 0 },
 	gateAttemptCountById: { lint: 1, typecheck: 1, 'test-unit': 0, build: 0 },
 	gateNotRunReasonById: { lint: null, typecheck: null, 'test-unit': null, build: 'blocked-by-fail-fast:typecheck' },
 	gates: [],
@@ -732,6 +732,62 @@ if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":1,\"skip\":1,\"not-run\":
 fi
 if ! grep -Fq "**Executed gates:** 2" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive executed gate count from executedGateIds." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 2" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive total retries from gateRetryCountById." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retry backoff:** 3s" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive retry backoff from retry counts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 1" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive retried gate count from retry map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive retried gate IDs from retry map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 50%" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive retry rate from executed/retried counts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 50%" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive pass rate from executed/passed counts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry backoff share (executed duration):** 37%" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive retry-backoff share from derived totals." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 8s" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive executed duration total from gateDuration map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration average:** 4s" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive average executed duration." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate:** lint" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive slowest executed gate." >&2
+	exit 1
+fi
+if ! grep -Fq "**Fastest executed gate:** typecheck" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive fastest executed gate." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** typecheck" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive blocked-by gate from not-run reasons." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate:** typecheck" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive failed gate pointer from failedGateIds." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit code:** 2" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive failed gate exit code from failedGateIds + gateExitCodeById." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then

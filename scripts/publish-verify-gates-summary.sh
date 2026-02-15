@@ -103,10 +103,6 @@ const failedGateIds = failedGateIdsFromSummary
 	? failedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
-const retriedGateIds = Array.isArray(summary.retriedGateIds)
-	? summary.retriedGateIds
-	: gates.filter((gate) => (gate.retryCount ?? 0) > 0).map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
-const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
 const passedGateIds = passedGateIdsFromSummary
 	? passedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'pass').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
@@ -187,6 +183,69 @@ const gateAttemptCountById = summary.gateAttemptCountById && typeof summary.gate
 			.filter((gate) => typeof gate.id === 'string')
 			.map((gate) => [gate.id, gate.attempts ?? 0]),
 	);
+const toIntegerOrNull = (value) => {
+	if (typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value)) {
+		return value;
+	}
+	if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) {
+		return Number.parseInt(value.trim(), 10);
+	}
+	return null;
+};
+const computeRetryBackoffSeconds = (retryCount) => {
+	const normalizedRetryCount = toIntegerOrNull(retryCount);
+	if (normalizedRetryCount === null || normalizedRetryCount <= 0) {
+		return 0;
+	}
+	return 2 ** normalizedRetryCount - 1;
+};
+const sumIntegerValues = (values) => values.reduce((total, value) => {
+	const normalizedValue = toIntegerOrNull(value);
+	if (normalizedValue === null) {
+		return total;
+	}
+	return total + normalizedValue;
+}, 0);
+const retriedGateIds = Array.isArray(summary.retriedGateIds)
+	? summary.retriedGateIds
+	: Object.entries(gateRetryCountById)
+		.filter(([gateId, retryCount]) => gateId.length > 0 && (toIntegerOrNull(retryCount) ?? 0) > 0)
+		.map(([gateId]) => gateId);
+const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
+const retriedGateCount = summary.retriedGateCount ?? retriedGateIds.length;
+const totalRetryCount = summary.totalRetryCount ?? sumIntegerValues(Object.values(gateRetryCountById));
+const totalRetryBackoffSeconds = summary.totalRetryBackoffSeconds ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
+const executedDurationSeconds = summary.executedDurationSeconds ?? executedGateIds.reduce((total, gateId) => {
+	const durationSeconds = toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0;
+	return total + durationSeconds;
+}, 0);
+const averageExecutedDurationSeconds = summary.averageExecutedDurationSeconds ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
+const retryRatePercent = summary.retryRatePercent ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
+const passRatePercent = summary.passRatePercent ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
+const retryBackoffSharePercent = summary.retryBackoffSharePercent ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
+const executedGateDurations = executedGateIds.map((gateId) => ({ gateId, durationSeconds: toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0 }));
+const slowestExecutedGate = executedGateDurations.reduce((slowestGate, gateDuration) => {
+	if (!slowestGate) {
+		return gateDuration;
+	}
+	return gateDuration.durationSeconds > slowestGate.durationSeconds ? gateDuration : slowestGate;
+}, null);
+const fastestExecutedGate = executedGateDurations.reduce((fastestGate, gateDuration) => {
+	if (!fastestGate) {
+		return gateDuration;
+	}
+	return gateDuration.durationSeconds < fastestGate.durationSeconds ? gateDuration : fastestGate;
+}, null);
+const failedGateId = summary.failedGateId ?? failedGateIds[0] ?? 'none';
+const failedGateExitCode = summary.failedGateExitCode ?? failedGateExitCodes[0] ?? 'none';
+const blockedByGateId = summary.blockedByGateId ?? (() => {
+	for (const reason of Object.values(gateNotRunReasonById)) {
+		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {
+			return reason.slice('blocked-by-fail-fast:'.length);
+		}
+	}
+	return 'none';
+})();
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
@@ -234,31 +293,31 @@ const lines = [
 	`**Gate not-run reason map:** ${sanitizeCell(gateNotRunReasonMapLabel)}`,
 	`**Gate attempt-count map:** ${sanitizeCell(JSON.stringify(gateAttemptCountById))}`,
 	`**Executed gates:** ${executedGateCount}`,
-	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
-	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,
-	`**Retried gate count:** ${summary.retriedGateCount ?? retriedGateIds.length}`,
+	`**Total retries:** ${totalRetryCount}`,
+	`**Total retry backoff:** ${totalRetryBackoffSeconds}s`,
+	`**Retried gate count:** ${retriedGateCount}`,
 	`**Retried gates:** ${sanitizeCell(retriedGateIdsLabel)}`,
 	`**Executed gates list:** ${sanitizeCell(executedGateIdsLabel)}`,
 	`**Passed gates list:** ${sanitizeCell(passedGateIdsLabel)}`,
 	`**Skipped gates list:** ${sanitizeCell(skippedGateIdsLabel)}`,
-	`**Retry rate (executed gates):** ${summary.retryRatePercent ?? 'n/a'}${summary.retryRatePercent === null || summary.retryRatePercent === undefined ? '' : '%'}`,
-	`**Retry backoff share (executed duration):** ${summary.retryBackoffSharePercent ?? 'n/a'}${summary.retryBackoffSharePercent === null || summary.retryBackoffSharePercent === undefined ? '' : '%'}`,
-	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
-	`**Executed duration total:** ${summary.executedDurationSeconds ?? 'unknown'}s`,
-	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,
-	`**Slowest executed gate:** ${sanitizeCell(summary.slowestExecutedGateId ?? 'n/a')}`,
-	`**Slowest executed gate duration:** ${summary.slowestExecutedGateDurationSeconds === null || summary.slowestExecutedGateDurationSeconds === undefined ? 'n/a' : `${summary.slowestExecutedGateDurationSeconds}s`}`,
-	`**Fastest executed gate:** ${sanitizeCell(summary.fastestExecutedGateId ?? 'n/a')}`,
-	`**Fastest executed gate duration:** ${summary.fastestExecutedGateDurationSeconds === null || summary.fastestExecutedGateDurationSeconds === undefined ? 'n/a' : `${summary.fastestExecutedGateDurationSeconds}s`}`,
+	`**Retry rate (executed gates):** ${retryRatePercent === null ? 'n/a' : `${retryRatePercent}%`}`,
+	`**Retry backoff share (executed duration):** ${retryBackoffSharePercent === null ? 'n/a' : `${retryBackoffSharePercent}%`}`,
+	`**Pass rate (executed gates):** ${passRatePercent === null ? 'n/a' : `${passRatePercent}%`}`,
+	`**Executed duration total:** ${executedDurationSeconds}s`,
+	`**Executed duration average:** ${averageExecutedDurationSeconds === null ? 'n/a' : `${averageExecutedDurationSeconds}s`}`,
+	`**Slowest executed gate:** ${sanitizeCell(summary.slowestExecutedGateId ?? slowestExecutedGate?.gateId ?? 'n/a')}`,
+	`**Slowest executed gate duration:** ${summary.slowestExecutedGateDurationSeconds === null || summary.slowestExecutedGateDurationSeconds === undefined ? (slowestExecutedGate ? `${slowestExecutedGate.durationSeconds}s` : 'n/a') : `${summary.slowestExecutedGateDurationSeconds}s`}`,
+	`**Fastest executed gate:** ${sanitizeCell(summary.fastestExecutedGateId ?? fastestExecutedGate?.gateId ?? 'n/a')}`,
+	`**Fastest executed gate duration:** ${summary.fastestExecutedGateDurationSeconds === null || summary.fastestExecutedGateDurationSeconds === undefined ? (fastestExecutedGate ? `${fastestExecutedGate.durationSeconds}s` : 'n/a') : `${summary.fastestExecutedGateDurationSeconds}s`}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
 	`**Not-run gates list:** ${sanitizeCell(notRunGateIdsLabel)}`,
 	`**Non-success gates list:** ${sanitizeCell(nonSuccessGateIdsLabel)}`,
 	`**Attention gates list:** ${sanitizeCell(attentionGateIdsLabel)}`,
-	`**Blocked by gate:** ${sanitizeCell(summary.blockedByGateId ?? 'none')}`,
-	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
-	`**Failed gate exit code:** ${sanitizeCell(summary.failedGateExitCode ?? 'none')}`,
+	`**Blocked by gate:** ${sanitizeCell(blockedByGateId)}`,
+	`**Failed gate:** ${sanitizeCell(failedGateId)}`,
+	`**Failed gate exit code:** ${sanitizeCell(failedGateExitCode)}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
 	`**Started:** ${summary.startedAt ?? 'unknown'}`,
 	`**Completed:** ${summary.completedAt ?? 'unknown'}`,

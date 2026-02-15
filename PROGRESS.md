@@ -2184,3 +2184,14 @@
     using the derived mapping.
   - `scripts/README.md` updated to mention failed-exit-code derivation in sparse fallback coverage.
   **Why:** preserves actionable failed-exit-code reporting for sparse summaries that carry gate partitions/maps but not the explicit failed-exit-code list.
+- **Scalar metric derivation from sparse list/map payloads (2026-02-15 PM)** Expanded renderer fallback to compute richer runtime metrics when scalar fields are absent:
+  - `scripts/publish-verify-gates-summary.sh` now derives, from gate maps/lists, when missing:
+    - `totalRetryCount`, `totalRetryBackoffSeconds`
+    - `retriedGateCount` + `retriedGateIds`
+    - `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`
+    - `executedDurationSeconds`, `averageExecutedDurationSeconds`
+    - `slowestExecutedGate*`, `fastestExecutedGate*`
+    - `failedGateId`, `failedGateExitCode`, and `blockedByGateId` pointers.
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload case now validates all of the above derived markdown values (including retry-backoff share math and fastest/slowest gate selection) without top-level scalar metric fields.
+  - `scripts/README.md` updated to document expanded scalar-metric derivation coverage.
+  **Why:** ensures step summaries remain operationally useful for sparse payload producers that provide partition/map data but omit aggregate scalar metrics.
