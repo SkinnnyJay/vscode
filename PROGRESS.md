@@ -2502,6 +2502,12 @@
     - future-schema warning is emitted once with supported-version reference.
   - `scripts/README.md` updated to document schema-version string normalization coverage.
   **Why:** ensures future-schema compatibility warnings remain reliable when sparse producers serialize schema versions as numeric strings.
+- **Invalid schema-version fallback coverage (2026-02-15 PM)** Added non-numeric schema guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `invalid_schema_version` scenario (`schemaVersion: "v99"`) and verifies:
+    - rendered schema version falls back to `unknown`
+    - no schema warning is emitted.
+  - `scripts/README.md` schema-version coverage updated to include non-numeric fallback behavior.
+  **Why:** prevents malformed non-numeric schema metadata from triggering misleading future-schema warnings.
 - **Invocation whitespace normalization (2026-02-15 PM)** Hardened rendered invocation metadata:
   - `scripts/publish-verify-gates-summary.sh` now normalizes `invocation` with non-empty-string semantics before rendering (`unknown` fallback for blank/whitespace values).
   - `scripts/test-verify-gates-summary.sh` adds `invocation_whitespace` scenario and verifies rendered `Invocation: unknown`.

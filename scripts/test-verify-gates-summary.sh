@@ -46,6 +46,8 @@ future_summary="$tmpdir/future.json"
 future_step_summary="$tmpdir/future-step.md"
 future_string_summary="$tmpdir/future-string.json"
 future_string_step_summary="$tmpdir/future-string-step.md"
+invalid_schema_version_summary="$tmpdir/invalid-schema-version.json"
+invalid_schema_version_step_summary="$tmpdir/invalid-schema-version-step.md"
 malformed_summary="$tmpdir/malformed\`name.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 missing_step_summary="$tmpdir/missing-step.md"
@@ -2193,6 +2195,25 @@ if (warningMatches.length !== 1) {
 	throw new Error('Future-string-schema output should contain exactly one schema warning line.');
 }
 NODE
+
+node - "$retry_summary" "$invalid_schema_version_summary" <<'NODE'
+const fs = require('node:fs');
+const [sourcePath, invalidPath] = process.argv.slice(2);
+const payload = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
+payload.schemaVersion = 'v99';
+fs.writeFileSync(invalidPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$invalid_schema_version_step_summary" ./scripts/publish-verify-gates-summary.sh "$invalid_schema_version_summary" "Verify Gates Invalid Schema Version Contract Test"
+
+if ! grep -Fq "**Summary schema version:** unknown" "$invalid_schema_version_step_summary"; then
+	echo "Expected invalid-schema-version summary to normalize non-numeric schema versions to unknown." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$invalid_schema_version_step_summary"; then
+	echo "Did not expect schema warning for invalid non-numeric schema version metadata." >&2
+	exit 1
+fi
 
 printf '{invalid json\n' > "$malformed_summary"
 GITHUB_STEP_SUMMARY="$malformed_step_summary" ./scripts/publish-verify-gates-summary.sh "$malformed_summary" "Verify Gates Malformed Summary Contract Test"
