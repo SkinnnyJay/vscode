@@ -61,6 +61,8 @@ derived_counts_summary="$tmpdir/derived-counts.json"
 derived_counts_step_summary="$tmpdir/derived-counts-step.md"
 duplicate_gate_rows_summary="$tmpdir/duplicate-gate-rows.json"
 duplicate_gate_rows_step_summary="$tmpdir/duplicate-gate-rows-step.md"
+malformed_gate_rows_summary="$tmpdir/malformed-gate-rows.json"
+malformed_gate_rows_step_summary="$tmpdir/malformed-gate-rows-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -342,6 +344,28 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$duplicate_gate_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$duplicate_gate_rows_summary" "Verify Gates Duplicate Gate Rows Contract Test"
+
+node - "$expected_schema_version" "$malformed_gate_rows_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'malformed-gate-rows-contract',
+	gates: [
+		null,
+		'not-an-object',
+		42,
+		{ id: ' lint ', command: 'make lint', status: ' PASS ', attempts: '1', retryCount: '0', retryBackoffSeconds: '0', durationSeconds: '1', exitCode: '0', startedAt: '20260215T030000Z', completedAt: '20260215T030001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$malformed_gate_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$malformed_gate_rows_summary" "Verify Gates Malformed Gate Rows Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1146,6 +1170,26 @@ if ! grep -Fq "**Executed gates list:** lint, typecheck" "$duplicate_gate_rows_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$duplicate_gate_rows_step_summary"; then
 	echo "Did not expect schema warning for duplicate-gate-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 1" "$malformed_gate_rows_step_summary"; then
+	echo "Expected malformed-gate-rows summary to count only normalized valid gate IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":0,\"skip\":0,\"not-run\":0}" "$malformed_gate_rows_step_summary"; then
+	echo "Expected malformed-gate-rows summary to derive status counts from valid normalized gate rows only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$malformed_gate_rows_step_summary"; then
+	echo "Expected malformed-gate-rows summary to derive selected gate IDs from valid normalized rows only." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass |' "$malformed_gate_rows_step_summary"; then
+	echo "Expected malformed-gate-rows summary table to include normalized valid row." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$malformed_gate_rows_step_summary"; then
+	echo "Did not expect schema warning for malformed-gate-rows summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
