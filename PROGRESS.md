@@ -1426,3 +1426,8 @@
   - `VSCODE_VERIFY_LOG_DIR="$(mktemp -d)" ./scripts/verify-gates.sh --quick --only lint,typecheck --from typecheck --summary-json "<tmp>/summary.json"` → **pass**
   - verified summary contains exactly one gate with `id: "typecheck"`.
   **Why:** confirms subset/resume behavior works correctly and emits machine-readable filtered results.
+- **Shared verify-gates summary publisher (2026-02-15 AM)** Added `scripts/publish-verify-gates-summary.sh` and switched both verify-gates workflows to call it instead of embedding duplicated inline Node snippets.
+  - `.github/workflows/pointer-quality.yml` now runs `./scripts/publish-verify-gates-summary.sh "${VSCODE_VERIFY_SUMMARY_FILE}" "Verify Gates Summary"`
+  - `.github/workflows/verify-gates-nightly.yml` now runs `./scripts/publish-verify-gates-summary.sh "${VSCODE_VERIFY_SUMMARY_FILE}" "Verify Gates Nightly Summary"`
+  - markdown output now includes both gate ID and command columns, plus run metadata/log path when present.
+  **Why:** centralizes summary rendering logic in one script for consistency, easier maintenance, and lower workflow duplication risk.

@@ -41,31 +41,7 @@ jobs:
 
       - name: Publish verify-gates summary
         if: always()
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const summaryPath = process.env.VSCODE_VERIFY_SUMMARY_FILE;
-          if (!summaryPath || !fs.existsSync(summaryPath)) {
-            process.exit(0);
-          }
-
-          const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
-          const gateRows = summary.gates.map((gate) => `| \`${gate.command}\` | ${gate.status} | ${gate.attempts} | ${gate.durationSeconds} |`);
-          const lines = [
-            '## Verify Gates Nightly Summary',
-            '',
-            '| Gate | Status | Attempts | Duration (s) |',
-            '| --- | --- | ---: | ---: |',
-            ...gateRows,
-            '',
-            `**Success:** ${summary.success}`,
-            `**Total duration:** ${summary.totalDurationSeconds}s`,
-            `**Started:** ${summary.startedAt}`,
-            `**Completed:** ${summary.completedAt}`
-          ];
-
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
-          NODE
+        run: ./scripts/publish-verify-gates-summary.sh "${VSCODE_VERIFY_SUMMARY_FILE}" "Verify Gates Nightly Summary"
 
       - name: Upload verify-gates logs
         if: always()

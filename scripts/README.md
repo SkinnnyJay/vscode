@@ -24,6 +24,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 | `make test-smoke` | `test-smoke.sh` | Smoke tests (`npm run smoketest`). |
 | `make test-e2e` | `test-e2e.sh` | E2E/integration (delegates to `test-integration.sh`). |
 | `./scripts/verify-gates.sh` | `verify-gates.sh` | Deterministic validation sweep across lint/typecheck/tests/build with retry support and per-run log/summary output. Use `./scripts/verify-gates.sh --quick` for lighter checks. |
+| `./scripts/publish-verify-gates-summary.sh` | `publish-verify-gates-summary.sh` | Append a verify-gates JSON summary to `GITHUB_STEP_SUMMARY` (CI step summaries). |
 | **Lint and format** | | |
 | `make lint` | `lint.sh` | ESLint + Stylelint (no fix). |
 | `make fmt` | `fmt.sh` | Apply formatting fixes. |
@@ -42,6 +43,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
   - Summary payload includes `startedAt`, `completedAt`, `totalDurationSeconds`, plus per-gate `status`, `attempts`, and `durationSeconds`.
+- **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
   - Gate IDs: `lint`, `typecheck`, `test-unit`, `test`, `test-smoke`, `test-integration`, `test-e2e`, `test-web-integration`, `build`.
 - **Before commit:** `make lint`, `make fmt-check` or `make hygiene`, `make typecheck`, then `make commit FILES="..." MSG="..."`.
