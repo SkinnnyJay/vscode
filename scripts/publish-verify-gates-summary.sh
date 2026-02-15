@@ -70,12 +70,34 @@ const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
 const normalizeNonEmptyString = (value) => (typeof value === 'string' && value.length > 0 ? value : null);
-const passedGateIdsFromSummary = Array.isArray(summary.passedGateIds) ? summary.passedGateIds : null;
-const failedGateIdsFromSummary = Array.isArray(summary.failedGateIds) ? summary.failedGateIds : null;
-const skippedGateIdsFromSummary = Array.isArray(summary.skippedGateIds) ? summary.skippedGateIds : null;
-const notRunGateIdsFromSummary = Array.isArray(summary.notRunGateIds) ? summary.notRunGateIds : null;
-const selectedGateIdsFromSummary = Array.isArray(summary.selectedGateIds) ? summary.selectedGateIds : null;
-const executedGateIdsFromSummary = Array.isArray(summary.executedGateIds) ? summary.executedGateIds : null;
+const normalizeGateIdList = (value) => {
+	if (!Array.isArray(value)) {
+		return null;
+	}
+	const seenGateIds = new Set();
+	const normalizedGateIds = [];
+	for (const gateIdValue of value) {
+		if (typeof gateIdValue !== 'string') {
+			continue;
+		}
+		const normalizedGateId = gateIdValue.trim();
+		if (normalizedGateId.length === 0 || seenGateIds.has(normalizedGateId)) {
+			continue;
+		}
+		seenGateIds.add(normalizedGateId);
+		normalizedGateIds.push(normalizedGateId);
+	}
+	return normalizedGateIds;
+};
+const passedGateIdsFromSummary = normalizeGateIdList(summary.passedGateIds);
+const failedGateIdsFromSummary = normalizeGateIdList(summary.failedGateIds);
+const skippedGateIdsFromSummary = normalizeGateIdList(summary.skippedGateIds);
+const notRunGateIdsFromSummary = normalizeGateIdList(summary.notRunGateIds);
+const selectedGateIdsFromSummary = normalizeGateIdList(summary.selectedGateIds);
+const executedGateIdsFromSummary = normalizeGateIdList(summary.executedGateIds);
+const retriedGateIdsFromSummary = normalizeGateIdList(summary.retriedGateIds);
+const nonSuccessGateIdsFromSummary = normalizeGateIdList(summary.nonSuccessGateIds);
+const attentionGateIdsFromSummary = normalizeGateIdList(summary.attentionGateIds);
 const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 	const status = gate?.status;
 	if (status === 'pass' || status === 'fail' || status === 'skip' || status === 'not-run') {
@@ -279,8 +301,8 @@ const sumIntegerValues = (values) => values.reduce((total, value) => {
 	}
 	return total + normalizedValue;
 }, 0);
-const retriedGateIds = Array.isArray(summary.retriedGateIds)
-	? summary.retriedGateIds
+const retriedGateIds = retriedGateIdsFromSummary
+	? retriedGateIdsFromSummary
 	: Object.entries(gateRetryCountById)
 		.filter(([gateId, retryCount]) => gateId.length > 0 && (toIntegerOrNull(retryCount) ?? 0) > 0)
 		.map(([gateId]) => gateId);
@@ -296,8 +318,8 @@ const uniqueGateIds = (gateIds) => {
 	}
 	return orderedGateIds;
 };
-const nonSuccessGateIds = Array.isArray(summary.nonSuccessGateIds)
-	? summary.nonSuccessGateIds
+const nonSuccessGateIds = nonSuccessGateIdsFromSummary
+	? nonSuccessGateIdsFromSummary
 	: (() => {
 		if (gates.length > 0) {
 			return gates
@@ -313,8 +335,8 @@ const nonSuccessGateIds = Array.isArray(summary.nonSuccessGateIds)
 		}
 		return uniqueGateIds([...failedGateIds, ...skippedGateIds, ...notRunGateIds]);
 	})();
-const attentionGateIds = Array.isArray(summary.attentionGateIds)
-	? summary.attentionGateIds
+const attentionGateIds = attentionGateIdsFromSummary
+	? attentionGateIdsFromSummary
 	: (() => {
 		if (selectedGateIds.length > 0) {
 			return selectedGateIds.filter((gateId) => nonSuccessGateIds.includes(gateId) || retriedGateIds.includes(gateId));

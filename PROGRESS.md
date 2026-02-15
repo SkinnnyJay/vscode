@@ -2241,3 +2241,8 @@
     - `Gate exit-code map: {"lint":null,"typecheck":2,"test-unit":null,"build":null}`.
   - `scripts/README.md` updated to mention bidirectional failed-exit-code derivation coverage.
   **Why:** ensures exit-code diagnostics remain complete even when sparse producers supply failed code lists but omit explicit per-gate exit-code maps.
+- **Gate-id list normalization/cleanup for sparse fallbacks (2026-02-15 PM)** Hardened list-based derivation inputs:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes gate-id list fields (`selected/passed/failed/skipped/not-run/executed/retried/nonSuccess/attention`) by trimming whitespace, dropping non-string/empty entries, and deduplicating while preserving first-seen order.
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload now injects noisy list values (whitespace, duplicates, empty strings, non-string values) and asserts derived summaries remain stable and correctly ordered.
+  - `scripts/README.md` updated to mention normalized/deduplicated gate-id handling in sparse fallback coverage.
+  **Why:** prevents malformed list payloads from inflating counts or producing inconsistent ordering in rendered summary metadata.
