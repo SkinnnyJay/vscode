@@ -1861,3 +1861,9 @@
   - `.github/workflows/verify-gates-nightly.yml`: nightly full sweep job now runs `./scripts/test-verify-gates-summary.sh` before `--full` sweep.
   - `scripts/README.md` now documents the contract-check position in CI.
   **Why:** catches summary schema/renderer regressions as a first-class CI gate instead of relying on manual or ad-hoc validation.
+- **Contract harness hardening for publisher failure modes (2026-02-15 PM)** Expanded the reusable contract script:
+  - `scripts/test-verify-gates-summary.sh` now additionally verifies:
+    - malformed summary JSON is handled gracefully by `publish-verify-gates-summary.sh` (warning markdown is appended instead of failing)
+    - unknown publisher CLI flag exits non-zero
+  - `scripts/README.md` updated to reflect expanded contract-test coverage.
+  **Why:** ensures CI guards both happy-path rendering and critical error-handling behavior of the summary publisher.

@@ -27,6 +27,8 @@ fail_fast_step_summary="$tmpdir/fail-fast-step.md"
 retry_step_summary="$tmpdir/retry-step.md"
 future_summary="$tmpdir/future.json"
 future_step_summary="$tmpdir/future-step.md"
+malformed_summary="$tmpdir/malformed.json"
+malformed_step_summary="$tmpdir/malformed-step.md"
 
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_summary" > "$tmpdir/dry.out"
 
@@ -145,5 +147,26 @@ if (!futureStep.includes('supported 17')) {
 	throw new Error('Future-schema warning should reference supported schema 17.');
 }
 NODE
+
+printf '{invalid json\n' > "$malformed_summary"
+GITHUB_STEP_SUMMARY="$malformed_step_summary" ./scripts/publish-verify-gates-summary.sh "$malformed_summary" "Verify Gates Malformed Summary Contract Test"
+
+node - "$malformed_step_summary" <<'NODE'
+const fs = require('node:fs');
+const [malformedStepPath] = process.argv.slice(2);
+const malformedStep = fs.readFileSync(malformedStepPath, 'utf8');
+if (!malformedStep.includes('Unable to parse verify-gates summary')) {
+	throw new Error('Malformed-summary handling message missing from published step summary.');
+}
+NODE
+
+set +e
+./scripts/publish-verify-gates-summary.sh --unknown > "$tmpdir/unknown-option.out" 2>&1
+unknown_option_status=$?
+set -e
+if [[ "$unknown_option_status" -eq 0 ]]; then
+	echo "Expected publish-verify-gates-summary.sh --unknown to fail." >&2
+	exit 1
+fi
 
 echo "verify-gates summary contract checks passed."
