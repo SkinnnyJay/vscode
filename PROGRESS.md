@@ -1370,3 +1370,7 @@
   - `./scripts/verify-gates.sh --quick` (default retries=1) → **pass**
   - script is executable and callable directly from repo root (`./scripts/verify-gates.sh ...`).
   **Why:** confirms command wiring works end-to-end and proves retry behavior addresses existing non-deterministic unit-test flakes without changing test code.
+- **CI adoption for verification automation (2026-02-15 AM)** Updated `.github/workflows/pointer-quality.yml` so the `test-pointer-owned` job now runs `./scripts/verify-gates.sh --quick` instead of calling `make test-unit` directly.
+  **Why:** aligns CI quality checks with the new deterministic quick sweep (lint + typecheck + unit tests with retry handling), reducing duplicated logic and improving resilience to known transient flakes.
+- **Post-CI-wireup validation (2026-02-15 AM)** Re-ran `./scripts/verify-gates.sh --quick` locally after workflow update to confirm the scripted gate still passes end-to-end.
+  **Why:** ensures the new CI invocation path is validated in the same repository state before merge.

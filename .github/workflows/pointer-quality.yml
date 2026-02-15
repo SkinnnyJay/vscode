@@ -37,7 +37,7 @@ jobs:
         run: make lint
 
   test-pointer-owned:
-    name: Unit tests for pointer-owned changes
+    name: Quick verification sweep for pointer-owned changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -57,5 +57,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run fast unit tests
-        run: make test-unit
+      - name: Run quick verification sweep
+        run: ./scripts/verify-gates.sh --quick
