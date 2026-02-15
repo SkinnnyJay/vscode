@@ -2303,6 +2303,14 @@
   - `scripts/test-verify-gates-summary.sh` explicit-exit-reason sparse case now sets `continueOnFailure: 'off'` and asserts rendered output normalizes to `Continue on failure: false` while preserving explicit-exit-reason-derived run classification.
   - `scripts/README.md` updated to document boolean-like run-state normalization coverage.
   **Why:** keeps renderer behavior deterministic for sparse producers that encode booleans as strings in CI payloads.
+- **Explicit exitReason normalization and invalid-reason fallback (2026-02-15 PM)** Tightened exitReason handling semantics:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes explicit `exitReason`/`runClassification` values to known enums (case-insensitive + trimmed) before applying precedence.
+  - Unknown explicit `exitReason` values are ignored for derivation so fallback logic uses objective sparse evidence (`gateStatusById`, not-run reasons, etc.) to infer fail-fast/continued/success states.
+  - `scripts/test-verify-gates-summary.sh` now covers:
+    - uppercase/whitespace explicit `exitReason` normalization (`COMPLETED-WITH-FAILURES`)
+    - invalid explicit `exitReason` fallback to derived fail-fast semantics with preserved failed-gate pointers.
+  - `scripts/README.md` updated to document explicit-exit-reason normalization + invalid-value fallback behavior.
+  **Why:** prevents malformed explicit reason strings from forcing ambiguous run-state output while preserving intended precedence for valid explicit reasons.
 - **Strict non-negative exit-code + known-gate map defaults (2026-02-15 PM)** Tightened sparse map semantics and partial-map behavior:
   - `scripts/publish-verify-gates-summary.sh` now:
     - treats exit codes as non-negative integers (invalid/negative values ignored)

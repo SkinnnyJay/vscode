@@ -92,6 +92,14 @@ const normalizeBoolean = (value) => {
 	}
 	return null;
 };
+const normalizeKnownValue = (value, allowedValues) => {
+	const normalizedValue = normalizeNonEmptyString(value);
+	if (!normalizedValue) {
+		return null;
+	}
+	const canonicalValue = normalizedValue.toLowerCase();
+	return allowedValues.includes(canonicalValue) ? canonicalValue : null;
+};
 const normalizeGateIdList = (value) => {
 	if (!Array.isArray(value)) {
 		return null;
@@ -635,7 +643,7 @@ const hasOutcomeEvidence = gates.length > 0
 	|| notRunGateCountFromSummary !== null
 	|| rawStatusCountsHasValues;
 const explicitDryRun = normalizeBoolean(summary.dryRun);
-const explicitExitReason = normalizeNonEmptyString(summary.exitReason);
+const explicitExitReason = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
 const explicitSuccess = normalizeBoolean(summary.success);
 const successValue = explicitSuccess !== null
 	? explicitSuccess
@@ -661,7 +669,7 @@ const derivedExitReason = explicitExitReason ?? (() => {
 	}
 	return 'completed-with-failures';
 })();
-const explicitRunClassification = normalizeNonEmptyString(summary.runClassification);
+const explicitRunClassification = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
 const derivedRunClassification = explicitRunClassification ?? (() => {
 	switch (derivedExitReason) {
 		case 'dry-run':
