@@ -2273,3 +2273,10 @@
   - `scripts/test-verify-gates-summary.sh` status-map sparse scenario now injects noisy map keys/values and verifies rendered maps/derived metrics use normalized data only (including retry totals/backoff share and attention list behavior).
   - `scripts/README.md` updated to call out sanitized per-gate map handling in contract coverage.
   **Why:** prevents malformed sparse map payloads from polluting derived metrics or producing inconsistent diagnostics.
+- **Scalar metric sanitization in sparse fallbacks (2026-02-15 PM)** Hardened top-level numeric field handling:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes/sanitizes scalar metric fields before use:
+    - count/timing/retry/rate fields accept only valid non-negative integers
+    - invalid/negative/string noise values are ignored in favor of safe derived fallbacks.
+  - `scripts/test-verify-gates-summary.sh` list-only sparse payload now injects invalid scalar metric/status-count values and verifies derived metrics remain correct (counts, retries, backoff share, durations) via fallback sources.
+  - `scripts/README.md` updated to document scalar-metric sanitization coverage in the summary contract harness.
+  **Why:** prevents malformed scalar fields from overriding trustworthy derived metrics and producing inconsistent CI summaries.

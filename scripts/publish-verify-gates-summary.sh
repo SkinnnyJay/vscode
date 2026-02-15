@@ -69,7 +69,13 @@ try {
 const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
-const normalizeNonEmptyString = (value) => (typeof value === 'string' && value.length > 0 ? value : null);
+const normalizeNonEmptyString = (value) => {
+	if (typeof value !== 'string') {
+		return null;
+	}
+	const normalizedValue = value.trim();
+	return normalizedValue.length > 0 ? normalizedValue : null;
+};
 const normalizeGateIdList = (value) => {
 	if (!Array.isArray(value)) {
 		return null;
@@ -106,6 +112,20 @@ const normalizeInteger = (value) => {
 		return Number.parseInt(value.trim(), 10);
 	}
 	return null;
+};
+const normalizeIntegerList = (value) => {
+	if (!Array.isArray(value)) {
+		return null;
+	}
+	const normalizedValues = [];
+	for (const item of value) {
+		const normalizedValue = normalizeInteger(item);
+		if (normalizedValue === null) {
+			continue;
+		}
+		normalizedValues.push(normalizedValue);
+	}
+	return normalizedValues;
 };
 const uniqueGateIds = (gateIds) => {
 	const seenGateIds = new Set();
@@ -225,13 +245,24 @@ const derivedStatusCountsFromStatusMap = gateStatusByIdFromSummary
 		return accumulator;
 	}, { pass: 0, fail: 0, skip: 0, 'not-run': 0 })
 	: null;
-const rawStatusCounts = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
+const rawStatusCountsInput = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
 	? summary.statusCounts
-	: {};
-const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? derivedStatusCounts.pass;
-const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? derivedStatusCounts.fail;
-const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? derivedStatusCounts.skip;
-const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? derivedStatusCounts['not-run'];
+	: null;
+const rawStatusCounts = {
+	pass: normalizeNonNegativeInteger(rawStatusCountsInput?.pass),
+	fail: normalizeNonNegativeInteger(rawStatusCountsInput?.fail),
+	skip: normalizeNonNegativeInteger(rawStatusCountsInput?.skip),
+	'not-run': normalizeNonNegativeInteger(rawStatusCountsInput?.['not-run']),
+};
+const rawStatusCountsHasValues = Object.values(rawStatusCounts).some((value) => value !== null);
+const passedGateCountFromSummary = normalizeNonNegativeInteger(summary.passedGateCount);
+const failedGateCountFromSummary = normalizeNonNegativeInteger(summary.failedGateCount);
+const skippedGateCountFromSummary = normalizeNonNegativeInteger(summary.skippedGateCount);
+const notRunGateCountFromSummary = normalizeNonNegativeInteger(summary.notRunGateCount);
+const passedGateCount = passedGateCountFromSummary ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? derivedStatusCounts.pass;
+const failedGateCount = failedGateCountFromSummary ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? derivedStatusCounts.fail;
+const skippedGateCount = skippedGateCountFromSummary ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? derivedStatusCounts.skip;
+const notRunGateCount = notRunGateCountFromSummary ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? derivedStatusCounts['not-run'];
 const statusCounts = {
 	pass: rawStatusCounts.pass ?? passedGateCount,
 	fail: rawStatusCounts.fail ?? failedGateCount,
@@ -250,7 +281,7 @@ const failedGateIds = failedGateIdsFromSummary
 		? gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'fail').map(([gateId]) => gateId));
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
-const failedGateExitCodesFromSummary = Array.isArray(summary.failedGateExitCodes) ? summary.failedGateExitCodes : null;
+const failedGateExitCodesFromSummary = normalizeIntegerList(summary.failedGateExitCodes);
 const passedGateIds = passedGateIdsFromSummary
 	? passedGateIdsFromSummary
 	: (gates.length > 0
@@ -269,8 +300,8 @@ const executedGateIds = executedGateIdsFromSummary
 		? gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
-const executedGateCount = summary.executedGateCount ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
-const gateCount = summary.gateCount ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
+const executedGateCount = normalizeNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
+const gateCount = normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
 const notRunGateIds = notRunGateIdsFromSummary
 	? notRunGateIdsFromSummary
 	: (gates.length > 0
@@ -477,17 +508,17 @@ const attentionGateIds = attentionGateIdsFromSummary
 const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
 const nonSuccessGateIdsLabel = nonSuccessGateIds.length > 0 ? nonSuccessGateIds.join(', ') : 'none';
 const attentionGateIdsLabel = attentionGateIds.length > 0 ? attentionGateIds.join(', ') : 'none';
-const retriedGateCount = summary.retriedGateCount ?? retriedGateIds.length;
-const totalRetryCount = summary.totalRetryCount ?? sumIntegerValues(Object.values(gateRetryCountById));
-const totalRetryBackoffSeconds = summary.totalRetryBackoffSeconds ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
-const executedDurationSeconds = summary.executedDurationSeconds ?? executedGateIds.reduce((total, gateId) => {
+const retriedGateCount = normalizeNonNegativeInteger(summary.retriedGateCount) ?? retriedGateIds.length;
+const totalRetryCount = normalizeNonNegativeInteger(summary.totalRetryCount) ?? sumIntegerValues(Object.values(gateRetryCountById));
+const totalRetryBackoffSeconds = normalizeNonNegativeInteger(summary.totalRetryBackoffSeconds) ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
+const executedDurationSeconds = normalizeNonNegativeInteger(summary.executedDurationSeconds) ?? executedGateIds.reduce((total, gateId) => {
 	const durationSeconds = toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0;
 	return total + durationSeconds;
 }, 0);
-const averageExecutedDurationSeconds = summary.averageExecutedDurationSeconds ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
-const retryRatePercent = summary.retryRatePercent ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
-const passRatePercent = summary.passRatePercent ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
-const retryBackoffSharePercent = summary.retryBackoffSharePercent ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
+const averageExecutedDurationSeconds = normalizeNonNegativeInteger(summary.averageExecutedDurationSeconds) ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
+const retryRatePercent = normalizeNonNegativeInteger(summary.retryRatePercent) ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
+const passRatePercent = normalizeNonNegativeInteger(summary.passRatePercent) ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
+const retryBackoffSharePercent = normalizeNonNegativeInteger(summary.retryBackoffSharePercent) ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
 const executedGateDurations = executedGateIds.map((gateId) => ({ gateId, durationSeconds: toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0 }));
 const slowestExecutedGate = executedGateDurations.reduce((slowestGate, gateDuration) => {
 	if (!slowestGate) {
@@ -501,9 +532,9 @@ const fastestExecutedGate = executedGateDurations.reduce((fastestGate, gateDurat
 	}
 	return gateDuration.durationSeconds < fastestGate.durationSeconds ? gateDuration : fastestGate;
 }, null);
-const failedGateId = summary.failedGateId ?? failedGateIds[0] ?? 'none';
-const failedGateExitCode = summary.failedGateExitCode ?? failedGateExitCodes[0] ?? 'none';
-const blockedByGateId = summary.blockedByGateId ?? (() => {
+const failedGateId = normalizeNonEmptyString(summary.failedGateId) ?? failedGateIds[0] ?? 'none';
+const failedGateExitCode = normalizeInteger(summary.failedGateExitCode) ?? failedGateExitCodes[0] ?? 'none';
+const blockedByGateId = normalizeNonEmptyString(summary.blockedByGateId) ?? (() => {
 	for (const reason of Object.values(gateNotRunReasonById)) {
 		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {
 			return reason.slice('blocked-by-fail-fast:'.length);
@@ -538,7 +569,7 @@ const completedAt = normalizeSummaryTimestamp(summary.completedAt) ?? (() => {
 	return latestTimestamp;
 })();
 const totalDurationSeconds = (() => {
-	const explicitTotalDurationSeconds = toIntegerOrNull(summary.totalDurationSeconds);
+	const explicitTotalDurationSeconds = normalizeNonNegativeInteger(summary.totalDurationSeconds);
 	if (explicitTotalDurationSeconds !== null) {
 		return explicitTotalDurationSeconds;
 	}
@@ -559,11 +590,11 @@ const hasOutcomeEvidence = gates.length > 0
 	|| failedGateIdsFromSummary !== null
 	|| skippedGateIdsFromSummary !== null
 	|| notRunGateIdsFromSummary !== null
-	|| typeof summary.passedGateCount === 'number'
-	|| typeof summary.failedGateCount === 'number'
-	|| typeof summary.skippedGateCount === 'number'
-	|| typeof summary.notRunGateCount === 'number'
-	|| Object.keys(rawStatusCounts).length > 0;
+	|| passedGateCountFromSummary !== null
+	|| failedGateCountFromSummary !== null
+	|| skippedGateCountFromSummary !== null
+	|| notRunGateCountFromSummary !== null
+	|| rawStatusCountsHasValues;
 const explicitDryRun = typeof summary.dryRun === 'boolean' ? summary.dryRun : null;
 const successValue = typeof summary.success === 'boolean'
 	? summary.success
