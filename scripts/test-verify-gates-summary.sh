@@ -335,6 +335,32 @@ if ! grep -q "Unknown gate id 'unknown' for --from" "$tmpdir/unknown-from.out"; 
 fi
 
 set +e
+./scripts/verify-gates.sh --quick --only " ,  " --dry-run > "$tmpdir/empty-only-list.out" 2>&1
+empty_only_list_status=$?
+set -e
+if [[ "$empty_only_list_status" -eq 0 ]]; then
+	echo "Expected --only with empty/whitespace gate list to fail." >&2
+	exit 1
+fi
+if ! grep -q -- "--only produced an empty gate list" "$tmpdir/empty-only-list.out"; then
+	echo "Expected empty --only list validation message." >&2
+	exit 1
+fi
+
+set +e
+./scripts/verify-gates.sh --quick --from "   " --dry-run > "$tmpdir/empty-from-value.out" 2>&1
+empty_from_value_status=$?
+set -e
+if [[ "$empty_from_value_status" -eq 0 ]]; then
+	echo "Expected --from with whitespace value to fail." >&2
+	exit 1
+fi
+if ! grep -q -- "--from requires a non-empty gate id." "$tmpdir/empty-from-value.out"; then
+	echo "Expected empty --from value validation message." >&2
+	exit 1
+fi
+
+set +e
 ./scripts/publish-verify-gates-summary.sh --help > "$tmpdir/help.out" 2>&1
 help_status=$?
 set -e

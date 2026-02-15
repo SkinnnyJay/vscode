@@ -1909,3 +1909,9 @@
     - `--from unknown` fails with explicit validation message
   - `scripts/README.md` updated to document `--only` normalization / `--from` validation coverage.
   **Why:** prevents regressions in gate-selection UX and keeps summary partitions aligned with selection behavior.
+- **Empty-selection validation coverage (2026-02-15 PM)** Added explicit checks for whitespace-only selection arguments:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `--only " ,  "` fails with `--only produced an empty gate list`
+    - `--from "   "` fails with `--from requires a non-empty gate id`
+  - `scripts/README.md` updated to include empty-list/empty-value validation coverage.
+  **Why:** ensures argument trimming edge cases keep producing clear failures instead of ambiguous behavior.
