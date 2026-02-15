@@ -1821,3 +1821,9 @@
   - schema baseline bumped to `15` in producer/renderer
   - `scripts/README.md` updated to schema version `15` and field list includes `gateDurationSecondsById`.
   **Why:** allows downstream tooling to access per-gate durations by id directly without scanning the gate array.
+- **Not-run reason map + schema v16 (2026-02-15 AM)** Added direct gate-id→not-run-reason lookup:
+  - `scripts/verify-gates.sh` now emits `gateNotRunReasonById` object for all selected gates (`null` for gates with no not-run reason)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Gate not-run reason map` and derives fallback from `gates[]` when missing
+  - schema baseline bumped to `16` in producer/renderer
+  - `scripts/README.md` updated to schema version `16` and field list includes `gateNotRunReasonById`.
+  **Why:** gives downstream tooling a constant-time way to inspect block reasons for not-run gates without scanning arrays.
