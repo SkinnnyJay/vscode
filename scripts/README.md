@@ -58,6 +58,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes gate-row status/ID case+whitespace normalization checks proving sparse `gates[].status` values are normalized case-insensitively and `gates[].id` values are trimmed + deduplicated before counter/list/table derivation.
   - Includes gate-row not-run-reason trimming checks proving sparse `gates[].notRunReason` values are whitespace-normalized in both map metadata and table rendering.
   - Includes gate-row not-run-reason type checks proving non-string `gates[].notRunReason` values are sanitized to `null`/`n/a` in derived metadata and table output.
+  - Includes gate-row command-type checks proving non-string/empty `gates[].command` values are sanitized to `unknown` in table output without affecting gate-ID derivation.
   - Includes malformed gate-row checks proving non-object/invalid rows are ignored for derived counters/lists/table rows while valid normalized rows still render correctly.
   - Includes numeric-boolean normalization checks proving `success`/`dryRun`/`continueOnFailure` accept numeric `1`/`0` encodings in sparse payloads.
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).

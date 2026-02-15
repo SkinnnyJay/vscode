@@ -65,6 +65,8 @@ malformed_gate_rows_summary="$tmpdir/malformed-gate-rows.json"
 malformed_gate_rows_step_summary="$tmpdir/malformed-gate-rows-step.md"
 row_not_run_reason_type_summary="$tmpdir/row-not-run-reason-type.json"
 row_not_run_reason_type_step_summary="$tmpdir/row-not-run-reason-type-step.md"
+row_command_type_summary="$tmpdir/row-command-type.json"
+row_command_type_step_summary="$tmpdir/row-command-type-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -387,6 +389,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$row_not_run_reason_type_step_summary" ./scripts/publish-verify-gates-summary.sh "$row_not_run_reason_type_summary" "Verify Gates Row Not-Run Reason Type Contract Test"
+
+node - "$expected_schema_version" "$row_command_type_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'row-command-type-contract',
+	gates: [
+		{ id: ' lint ', command: 9, status: 'PASS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T040000Z', completedAt: '20260215T040001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$row_command_type_step_summary" ./scripts/publish-verify-gates-summary.sh "$row_command_type_summary" "Verify Gates Row Command Type Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1235,6 +1256,18 @@ if ! grep -Fq '| `build` | `make build` | not-run | 0 | 0 | 0 | 0 | n/a | n/a |'
 fi
 if grep -q "\*\*Schema warning:\*\*" "$row_not_run_reason_type_step_summary"; then
 	echo "Did not expect schema warning for row-not-run-reason-type summary." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `unknown` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$row_command_type_step_summary"; then
+	echo "Expected row-command-type summary table to sanitize non-string row command values to unknown." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$row_command_type_step_summary"; then
+	echo "Expected row-command-type summary to preserve normalized row ID while sanitizing command value." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$row_command_type_step_summary"; then
+	echo "Did not expect schema warning for row-command-type summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

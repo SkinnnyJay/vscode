@@ -2452,3 +2452,10 @@
     - row table `Not-run reason` renders `n/a`.
   - `scripts/README.md` updated to document non-string row-reason sanitization coverage.
   **Why:** prevents malformed producer scalar values from leaking into rendered not-run reason cells while keeping row-derived diagnostics type-safe.
+- **Gate-row command type sanitization (2026-02-15 PM)** Hardened row-level command rendering:
+  - `scripts/publish-verify-gates-summary.sh` now sanitizes row `command` fields via non-empty-string normalization during `gates[]` normalization (non-string/blank values become `null` and render as `unknown`).
+  - `scripts/test-verify-gates-summary.sh` now adds `row_command_type` scenario with numeric command (`9`) and verifies:
+    - table command cell renders `unknown`
+    - normalized gate-ID metadata remains intact (`Selected gates: lint`).
+  - `scripts/README.md` updated to document row-command sanitization coverage.
+  **Why:** prevents malformed sparse row command values from polluting markdown table readability while preserving gate identity derivation.
