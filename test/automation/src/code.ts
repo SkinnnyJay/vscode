@@ -416,6 +416,10 @@ export class Code {
 					const importTargetTotalConsoleErrorCount = importTargetUrl
 						? this.driver.getImportTargetConsoleErrorCount(importTargetUrl)
 						: 0;
+					const importTargetFirstSeenTimes = importTargetUrl
+						? this.driver.getImportTargetFirstSeenTimes(importTargetUrl)
+						: undefined;
+					const cdpNetworkDiagnosticsStatus = this.driver.getCdpNetworkDiagnosticsStatus();
 					const importTargetDisplayWindowRequestFailureEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentFailures, importTargetUrl) : 0;
 					const importTargetDisplayWindowScriptResponseEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentScriptResponses, importTargetUrl) : 0;
 					const importTargetDisplayWindowCdpScriptLoadEventCount = importTargetUrl ? this.countEntriesContainingUrl(recentCdpScriptLoads, importTargetUrl) : 0;
@@ -438,6 +442,18 @@ export class Code {
 						: '';
 					const importTargetCdpScriptLifecycleStatus = importTargetUrl
 						? `\nImport target CDP script lifecycle: ${importTargetCdpScriptLifecycle ?? 'unseen'}`
+						: '';
+					const importTargetFirstSeenTimingsStatus = importTargetUrl
+						? `\nImport target first-seen timings: requestFailures=${this.formatElapsedMs(importTargetFirstSeenTimes?.requestFailureFirstSeenAtMs)}, scriptResponses=${this.formatElapsedMs(importTargetFirstSeenTimes?.scriptResponseFirstSeenAtMs)}, cdpLifecycle=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLifecycleFirstSeenAtMs)}, cdpScriptLoads=${this.formatElapsedMs(importTargetFirstSeenTimes?.cdpScriptLoadFirstSeenAtMs)}, consoleErrors=${this.formatElapsedMs(importTargetFirstSeenTimes?.consoleErrorFirstSeenAtMs)}`
+						: '';
+					const importTargetCdpAttachStatus = importTargetUrl
+						? `\nImport target CDP diagnostics attach: started=${this.formatElapsedMs(cdpNetworkDiagnosticsStatus.attachStartedAtMs)}, completed=${this.formatElapsedMs(cdpNetworkDiagnosticsStatus.attachCompletedAtMs)}, attached=${cdpNetworkDiagnosticsStatus.isAttached}${cdpNetworkDiagnosticsStatus.attachError ? `, error=${cdpNetworkDiagnosticsStatus.attachError}` : ''}`
+						: '';
+					const importTargetCdpCorrelationClass = importTargetUrl
+						? this.classifyImportTargetCdpCorrelation(importTargetFirstSeenTimes, cdpNetworkDiagnosticsStatus)
+						: 'no-import-target-url';
+					const importTargetCdpCorrelationStatus = importTargetUrl
+						? `\nImport target CDP correlation class: ${importTargetCdpCorrelationClass}`
 						: '';
 					const importTargetDisplayWindowChannelEventCounts = importTargetUrl
 						? `\nImport target display-window event counts: requestFailures=${importTargetDisplayWindowRequestFailureEventCount}, scriptResponses=${importTargetDisplayWindowScriptResponseEventCount}, cdpScriptLoads=${importTargetDisplayWindowCdpScriptLoadEventCount}`
@@ -647,7 +663,9 @@ export class Code {
 						importTargetGlobalBufferSignature,
 						importTargetGlobalCoverageSignature,
 						importTargetDiagnosticsConsistency,
-						globalChannelCoverageConsistency
+						globalChannelCoverageConsistency,
+						importTargetCdpCorrelationClass,
+						cdpNetworkDiagnosticsStatus
 					);
 					const importTargetCompositeSignatureStatus = importTargetUrl
 						? `\nImport target composite signature: ${importTargetCompositeSignature}`
@@ -686,6 +704,9 @@ export class Code {
 							retainedWindow: importTargetRetainedWindowConsoleErrorCount,
 							total: importTargetTotalConsoleErrorCount
 						},
+						importTargetFirstSeenTimes,
+						cdpNetworkDiagnosticsStatus,
+						importTargetCdpCorrelationClass,
 						trial,
 						retryInterval,
 						globalChannelBufferStats,
@@ -700,7 +721,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${globalChannelCoverageConsistencyStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetFirstSeenTimingsStatus}${importTargetCdpAttachStatus}${importTargetCdpCorrelationStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetConsoleWindowCoverageStatus}${importTargetConsoleWindowCoverageClassesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetGlobalCoverageSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${globalChannelBufferCoverageStatus}${globalChannelBufferCoverageClassesStatus}${globalChannelCoverageConsistencyStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -853,6 +874,44 @@ export class Code {
 		return 'unseen-across-all-channels';
 	}
 
+	private classifyImportTargetCdpCorrelation(
+		firstSeenTimes: {
+			requestFailureFirstSeenAtMs: number | undefined;
+			scriptResponseFirstSeenAtMs: number | undefined;
+			cdpScriptLoadFirstSeenAtMs: number | undefined;
+			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
+			consoleErrorFirstSeenAtMs: number | undefined;
+		} | undefined,
+		cdpDiagnosticsStatus: {
+			attachStartedAtMs: number | undefined;
+			attachCompletedAtMs: number | undefined;
+			attachError: string | undefined;
+			isAttached: boolean;
+		}
+	): string {
+		if (!firstSeenTimes || firstSeenTimes.scriptResponseFirstSeenAtMs === undefined) {
+			return 'no-script-response';
+		}
+
+		if (firstSeenTimes.cdpScriptLifecycleFirstSeenAtMs !== undefined || firstSeenTimes.cdpScriptLoadFirstSeenAtMs !== undefined) {
+			return 'cdp-correlated';
+		}
+
+		if (cdpDiagnosticsStatus.attachError) {
+			return 'cdp-attach-failed';
+		}
+
+		if (!cdpDiagnosticsStatus.isAttached || cdpDiagnosticsStatus.attachCompletedAtMs === undefined) {
+			return 'cdp-attach-incomplete';
+		}
+
+		if (firstSeenTimes.scriptResponseFirstSeenAtMs < cdpDiagnosticsStatus.attachCompletedAtMs) {
+			return 'response-before-cdp-ready';
+		}
+
+		return 'response-after-cdp-ready-no-cdp-events';
+	}
+
 	private classifyChannelVisibilityState(recentCount: number, totalCount: number): 'visible' | 'truncated' | 'unseen' {
 		if (recentCount > 0) {
 			return 'visible';
@@ -967,6 +1026,20 @@ export class Code {
 		globalCoverageSignature: string,
 		compositeSignature: string,
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number },
+		firstSeenTimes: {
+			requestFailureFirstSeenAtMs: number | undefined;
+			scriptResponseFirstSeenAtMs: number | undefined;
+			cdpScriptLoadFirstSeenAtMs: number | undefined;
+			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
+			consoleErrorFirstSeenAtMs: number | undefined;
+		} | undefined,
+		cdpDiagnosticsStatus: {
+			attachStartedAtMs: number | undefined;
+			attachCompletedAtMs: number | undefined;
+			attachError: string | undefined;
+			isAttached: boolean;
+		},
+		cdpCorrelationClass: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
 		globalChannelBufferStats: {
@@ -1063,6 +1136,20 @@ export class Code {
 		globalCoverageSignature: string;
 		compositeSignature: string;
 		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number };
+		firstSeenTimes: {
+			requestFailureFirstSeenAtMs: number | undefined;
+			scriptResponseFirstSeenAtMs: number | undefined;
+			cdpScriptLoadFirstSeenAtMs: number | undefined;
+			cdpScriptLifecycleFirstSeenAtMs: number | undefined;
+			consoleErrorFirstSeenAtMs: number | undefined;
+		};
+		cdpDiagnosticsStatus: {
+			attachStartedAtMs: number | undefined;
+			attachCompletedAtMs: number | undefined;
+			attachError: string | undefined;
+			isAttached: boolean;
+		};
+		cdpCorrelationClass: string;
 		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -1127,6 +1214,15 @@ export class Code {
 			globalCoverageSignature,
 			compositeSignature,
 			consoleErrorCounts,
+			firstSeenTimes: firstSeenTimes ?? {
+				requestFailureFirstSeenAtMs: undefined,
+				scriptResponseFirstSeenAtMs: undefined,
+				cdpScriptLoadFirstSeenAtMs: undefined,
+				cdpScriptLifecycleFirstSeenAtMs: undefined,
+				consoleErrorFirstSeenAtMs: undefined
+			},
+			cdpDiagnosticsStatus,
+			cdpCorrelationClass,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			displayWindowEventCounts,
@@ -1148,6 +1244,10 @@ export class Code {
 
 		const percent = Math.round((recentCount / totalCount) * 1000) / 10;
 		return `${percent}% (${recentCount}/${totalCount})`;
+	}
+
+	private formatElapsedMs(value: number | undefined): string {
+		return value === undefined ? 'unseen' : `${value}ms`;
 	}
 
 	private buildChannelCoverageStats(recentCount: number, totalCount: number): { recent: number; total: number; percent: number | null } {
@@ -1567,6 +1667,13 @@ export class Code {
 			classesMatchCoverage: boolean;
 			hierarchyMatchesStats: boolean;
 			isConsistent: boolean;
+		},
+		cdpCorrelationClass: string,
+		cdpDiagnosticsStatus: {
+			attachStartedAtMs: number | undefined;
+			attachCompletedAtMs: number | undefined;
+			attachError: string | undefined;
+			isAttached: boolean;
 		}
 	): string {
 		const payload = [
@@ -1586,7 +1693,12 @@ export class Code {
 			`globalCoverage.coverageMatchesStats=${globalChannelCoverageConsistency.coverageMatchesStats}`,
 			`globalCoverage.classesMatchCoverage=${globalChannelCoverageConsistency.classesMatchCoverage}`,
 			`globalCoverage.hierarchyMatchesStats=${globalChannelCoverageConsistency.hierarchyMatchesStats}`,
-			`globalCoverage.isConsistent=${globalChannelCoverageConsistency.isConsistent}`
+			`globalCoverage.isConsistent=${globalChannelCoverageConsistency.isConsistent}`,
+			`cdpCorrelationClass=${cdpCorrelationClass}`,
+			`cdpDiagnosticsAttached=${cdpDiagnosticsStatus.isAttached}`,
+			`cdpAttachStartedAtMs=${cdpDiagnosticsStatus.attachStartedAtMs ?? 'unseen'}`,
+			`cdpAttachCompletedAtMs=${cdpDiagnosticsStatus.attachCompletedAtMs ?? 'unseen'}`,
+			`cdpAttachError=${cdpDiagnosticsStatus.attachError ?? 'none'}`
 		].join('|');
 
 		return this.computeStableSignature(payload);

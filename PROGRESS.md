@@ -1065,3 +1065,36 @@
   - `xvfb-run -a ./scripts/code.sh --version` (**pass**, prints version after startup; only expected headless DBus/GPU warnings in this VM)
   - smoke startup failure remains the same known blocker (`TypeError: Failed to fetch dynamically imported module`), with the new `globalChannelCoverageConsistency` diagnostics present.
   **Why:** confirms recent diagnostic instrumentation remains isolated to smoke failure reporting and does not break baseline unit test/runtime startup behavior.
+- **Import-target timing + CDP correlation diagnostics (2026-02-15 AM)** Extended smoke diagnostics with startup-relative timing and CDP attach correlation:
+  - `test/automation/src/playwrightDriver.ts` now tracks first-seen timestamps (ms since diagnostics start) per URL for:
+    - request failures
+    - script responses
+    - CDP script lifecycle signals
+    - CDP script load completions
+    - console errors
+  - `PlaywrightDriver` now records CDP network diagnostics attach lifecycle:
+    - `attachStartedAtMs`
+    - `attachCompletedAtMs`
+    - `attachError`
+    - `isAttached`
+  - `test/automation/src/code.ts` fail-fast output now includes:
+    - `Import target first-seen timings: ...`
+    - `Import target CDP diagnostics attach: ...`
+    - `Import target CDP correlation class: ...`
+      (`no-script-response`, `cdp-correlated`, `cdp-attach-failed`, `cdp-attach-incomplete`, `response-before-cdp-ready`, `response-after-cdp-ready-no-cdp-events`)
+  - structured diagnostics record now includes:
+    - `firstSeenTimes`
+    - `cdpDiagnosticsStatus`
+    - `cdpCorrelationClass`
+  - composite signature payload now includes CDP correlation class + attach status fields.
+  **Why:** distinguishes “CDP missed because attach was late” from “CDP attached in time but still saw no events”, enabling tighter root-cause hypotheses for the import-target mismatch.
+- **Timing/correlation validation (2026-02-15 AM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target first-seen timings: requestFailures=unseen, scriptResponses=70ms, cdpLifecycle=unseen, cdpScriptLoads=unseen, consoleErrors=unseen`
+  - `Import target CDP diagnostics attach: started=1ms, completed=66ms, attached=true`
+  - `Import target CDP correlation class: response-after-cdp-ready-no-cdp-events`
+  - structured record fields:
+    - `"firstSeenTimes"` (with `scriptResponseFirstSeenAtMs` populated and other channels remaining unseen for this import target)
+    - `"cdpDiagnosticsStatus":{"attachStartedAtMs":1,"attachCompletedAtMs":66,"isAttached":true,...}`
+    - `"cdpCorrelationClass":"response-after-cdp-ready-no-cdp-events"`
+  Re-ran `make lint` (pass).
+  **Why:** provides direct runtime evidence that the import target’s script response was observed after CDP attach completed, yet no CDP lifecycle/load events were recorded for that URL in this failure mode.
