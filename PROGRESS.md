@@ -2222,3 +2222,14 @@
     - `Attention gates list: lint, typecheck, test-unit, build`.
   - `scripts/README.md` updated to document partition-driven status/non-success/attention fallback coverage.
   **Why:** keeps fallback summaries complete and ordered for sparse producers that emit partitions/maps but omit per-gate rows.
+- **Started/completed/total-duration fallback derivation (2026-02-15 PM)** Added timing metadata derivation for sparse summaries:
+  - `scripts/publish-verify-gates-summary.sh` now derives:
+    - `startedAt` (earliest gate `startedAt`)
+    - `completedAt` (latest gate `completedAt`)
+    - `totalDurationSeconds` (timestamp diff fallback, then gate-duration-map sum fallback)
+    when top-level timing fields are missing.
+  - `scripts/test-verify-gates-summary.sh` now validates:
+    - gate-row sparse payload derives `Started`, `Completed`, and `Total duration` from gate timestamps
+    - list/map-only sparse payload derives `Total duration` from duration map and keeps started/completed as `unknown`.
+  - `scripts/README.md` updated to include timing metadata derivation in sparse fallback coverage.
+  **Why:** preserves useful run timing metadata for sparse payload producers that omit top-level timing fields while still providing enough gate-level timing context.

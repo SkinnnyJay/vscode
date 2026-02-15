@@ -201,6 +201,26 @@ const toIntegerOrNull = (value) => {
 	}
 	return null;
 };
+const normalizeSummaryTimestamp = (value) => {
+	if (typeof value !== 'string') {
+		return null;
+	}
+	return /^\d{8}T\d{6}Z$/.test(value) ? value : null;
+};
+const timestampToEpochSeconds = (timestamp) => {
+	const normalizedTimestamp = normalizeSummaryTimestamp(timestamp);
+	if (!normalizedTimestamp) {
+		return null;
+	}
+	const year = Number.parseInt(normalizedTimestamp.slice(0, 4), 10);
+	const month = Number.parseInt(normalizedTimestamp.slice(4, 6), 10);
+	const day = Number.parseInt(normalizedTimestamp.slice(6, 8), 10);
+	const hour = Number.parseInt(normalizedTimestamp.slice(9, 11), 10);
+	const minute = Number.parseInt(normalizedTimestamp.slice(11, 13), 10);
+	const second = Number.parseInt(normalizedTimestamp.slice(13, 15), 10);
+	const millisecondsSinceEpoch = Date.UTC(year, month - 1, day, hour, minute, second);
+	return Number.isFinite(millisecondsSinceEpoch) ? Math.floor(millisecondsSinceEpoch / 1000) : null;
+};
 const computeRetryBackoffSeconds = (retryCount) => {
 	const normalizedRetryCount = toIntegerOrNull(retryCount);
 	if (normalizedRetryCount === null || normalizedRetryCount <= 0) {
@@ -293,6 +313,48 @@ const blockedByGateId = summary.blockedByGateId ?? (() => {
 		}
 	}
 	return 'none';
+})();
+const startedAt = normalizeSummaryTimestamp(summary.startedAt) ?? (() => {
+	let earliestTimestamp = null;
+	for (const gate of gates) {
+		const gateStartedAt = normalizeSummaryTimestamp(gate.startedAt);
+		if (!gateStartedAt) {
+			continue;
+		}
+		if (earliestTimestamp === null || gateStartedAt < earliestTimestamp) {
+			earliestTimestamp = gateStartedAt;
+		}
+	}
+	return earliestTimestamp;
+})();
+const completedAt = normalizeSummaryTimestamp(summary.completedAt) ?? (() => {
+	let latestTimestamp = null;
+	for (const gate of gates) {
+		const gateCompletedAt = normalizeSummaryTimestamp(gate.completedAt);
+		if (!gateCompletedAt) {
+			continue;
+		}
+		if (latestTimestamp === null || gateCompletedAt > latestTimestamp) {
+			latestTimestamp = gateCompletedAt;
+		}
+	}
+	return latestTimestamp;
+})();
+const totalDurationSeconds = (() => {
+	const explicitTotalDurationSeconds = toIntegerOrNull(summary.totalDurationSeconds);
+	if (explicitTotalDurationSeconds !== null) {
+		return explicitTotalDurationSeconds;
+	}
+	const startedAtEpochSeconds = timestampToEpochSeconds(startedAt);
+	const completedAtEpochSeconds = timestampToEpochSeconds(completedAt);
+	if (startedAtEpochSeconds !== null && completedAtEpochSeconds !== null && completedAtEpochSeconds >= startedAtEpochSeconds) {
+		return completedAtEpochSeconds - startedAtEpochSeconds;
+	}
+	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
+	if (derivedDurationFromGateMap > 0 || gateCount > 0) {
+		return derivedDurationFromGateMap;
+	}
+	return 'unknown';
 })();
 const hasOutcomeEvidence = gates.length > 0
 	|| passedGateIdsFromSummary !== null
@@ -419,9 +481,9 @@ const lines = [
 	`**Blocked by gate:** ${sanitizeCell(blockedByGateId)}`,
 	`**Failed gate:** ${sanitizeCell(failedGateId)}`,
 	`**Failed gate exit code:** ${sanitizeCell(failedGateExitCode)}`,
-	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
-	`**Started:** ${summary.startedAt ?? 'unknown'}`,
-	`**Completed:** ${summary.completedAt ?? 'unknown'}`,
+	`**Total duration:** ${totalDurationSeconds === 'unknown' ? 'unknown' : `${totalDurationSeconds}s`}`,
+	`**Started:** ${startedAt ?? 'unknown'}`,
+	`**Completed:** ${completedAt ?? 'unknown'}`,
 ];
 
 if (summary.logFile) {

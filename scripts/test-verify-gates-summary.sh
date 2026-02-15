@@ -754,6 +754,18 @@ if ! grep -Fq "**Executed gates:** 2" "$derived_counts_step_summary"; then
 	echo "Expected derived-count fallback summary to derive executed gate count from gate rows." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total duration:** 3s" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive total duration from gate timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T010000Z" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive started timestamp from gate rows." >&2
+	exit 1
+fi
+if ! grep -Fq "**Completed:** 20260215T010003Z" "$derived_counts_step_summary"; then
+	echo "Expected derived-count fallback summary to derive completed timestamp from gate rows." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_counts_step_summary"; then
 	echo "Did not expect schema warning for derived-count fallback summary." >&2
 	exit 1
@@ -856,6 +868,14 @@ if ! grep -Fq "**Failed gate:** typecheck" "$derived_lists_step_summary"; then
 fi
 if ! grep -Fq "**Failed gate exit code:** 2" "$derived_lists_step_summary"; then
 	echo "Expected derived-list fallback summary to derive failed gate exit code from failedGateIds + gateExitCodeById." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 8s" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to derive total duration from gate duration map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$derived_lists_step_summary" || ! grep -Fq "**Completed:** unknown" "$derived_lists_step_summary"; then
+	echo "Expected derived-list fallback summary to keep started/completed unknown without gate timestamps." >&2
 	exit 1
 fi
 if ! grep -Fq "**Continue on failure:** false" "$derived_lists_step_summary"; then
