@@ -1915,3 +1915,10 @@
     - `--from "   "` fails with `--from requires a non-empty gate id`
   - `scripts/README.md` updated to include empty-list/empty-value validation coverage.
   **Why:** ensures argument trimming edge cases keep producing clear failures instead of ambiguous behavior.
+- **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - repeated identical dry-run inputs produce identical `resultSignature`
+    - changed selection shape (`lint` vs `lint,typecheck`) produces different `resultSignature`
+    - `resultSignatureAlgorithm` is populated.
+  - `scripts/README.md` updated to include signature stability coverage.
+  **Why:** protects downstream consumers that rely on signature equality for run-shape comparisons and flaky-triage grouping.
