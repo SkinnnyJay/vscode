@@ -2023,6 +2023,13 @@
     - `Run classification: dry-run`
   - `scripts/README.md` updated to include step-summary boolean metadata coverage.
   **Why:** ensures critical operator-facing booleans/classification are surfaced correctly in CI summaries, not just JSON payloads.
+- **Array-payload sparse rendering coverage (2026-02-15 PM)** Expanded sparse-payload compatibility assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies that a JSON array payload (`[]`) still renders safely:
+    - heading is emitted
+    - placeholder `n/a` gate row is shown
+    - schema line falls back to `unknown`
+  - `scripts/README.md` updated to document sparse payload coverage as minimal object + scalar/array JSON.
+  **Why:** protects renderer resilience when upstream summary input is valid JSON but not an object payload.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

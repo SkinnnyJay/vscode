@@ -48,6 +48,8 @@ env_path_step_summary="$tmpdir/env-path-step.md"
 scalar_summary="$tmpdir/scalar.json"
 scalar_step_summary="$tmpdir/scalar-step.md"
 append_step_summary="$tmpdir/append-step.md"
+array_summary="$tmpdir/array.json"
+array_step_summary="$tmpdir/array-step.md"
 
 expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
 supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
@@ -643,6 +645,21 @@ if ! grep -q "^## Verify Gates Scalar Summary Contract Test" "$scalar_step_summa
 fi
 if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$scalar_step_summary"; then
 	echo "Expected scalar summary rendering to include placeholder gate row." >&2
+	exit 1
+fi
+
+printf '[]\n' > "$array_summary"
+GITHUB_STEP_SUMMARY="$array_step_summary" ./scripts/publish-verify-gates-summary.sh "$array_summary" "Verify Gates Array Summary Contract Test"
+if ! grep -q "^## Verify Gates Array Summary Contract Test" "$array_step_summary"; then
+	echo "Expected array summary heading to be rendered." >&2
+	exit 1
+fi
+if ! grep -q "| \`n/a\` | \`n/a\` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |" "$array_step_summary"; then
+	echo "Expected array summary rendering to include placeholder gate row." >&2
+	exit 1
+fi
+if ! grep -q "\*\*Summary schema version:\*\* unknown" "$array_step_summary"; then
+	echo "Expected array summary rendering to use unknown schema placeholder." >&2
 	exit 1
 fi
 
