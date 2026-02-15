@@ -21,8 +21,11 @@ fi
 
 VSCODECRASHDIR=$ROOT/.build/crashes
 ELECTRON_TEST_ARGS=()
+DISABLE_DEV_SHM_WORKAROUND=${VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND:-0}
 
-if [[ "$OSTYPE" != "darwin"* ]]; then
+# Headless Linux environments can hit /dev/shm pressure and fail dynamic imports.
+# Keep the mitigation on by default for tests, with an opt-out for local debugging.
+if [[ "$OSTYPE" != "darwin"* ]] && [[ "$DISABLE_DEV_SHM_WORKAROUND" != "1" ]]; then
 	ELECTRON_TEST_ARGS+=(--disable-dev-shm-usage)
 fi
 

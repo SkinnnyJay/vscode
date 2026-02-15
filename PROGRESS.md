@@ -1150,3 +1150,16 @@
   - `xvfb-run -a make test-smoke` (re-run) → **pass** (`34 passing`, `61 pending`, `0 failing`)
   - `make lint` → **pass**
   **Why:** verifies the Linux `/dev/shm` mitigation integrates cleanly with compile/build, node-unit, electron-unit, and smoke workflows without introducing regressions.
+- **Mitigation flexibility: explicit opt-out switch (2026-02-15 AM)** Added a controlled escape hatch for the Linux `/dev/shm` workaround while keeping safe defaults:
+  - `test/automation/src/electron.ts`
+    - honors `VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1` to skip auto-appending `--disable-dev-shm-usage`
+    - added code comments documenting why the workaround exists and when to opt out.
+  - `scripts/test.sh`
+    - same env-gated behavior for Electron unit runs (`VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1`)
+    - added script comments for maintainers.
+  **Why:** preserves reliability-by-default in headless Linux, while allowing targeted local experimentation/perf comparisons without patching scripts.
+- **Opt-out wiring validation (2026-02-15 AM)** Re-ran full impacted checks after introducing the opt-out plumbing (without enabling opt-out, i.e. default-safe path):
+  - `xvfb-run -a make test-smoke` → **pass** (`34 passing`, `61 pending`, `0 failing`)
+  - `xvfb-run -a make test` → **pass** (Electron unit target exits 0)
+  - `make lint` → **pass**
+  **Why:** confirms the new configurability did not regress the stabilized default behavior.

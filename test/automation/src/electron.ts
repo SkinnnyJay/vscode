@@ -21,6 +21,7 @@ export interface IElectronConfiguration {
 export async function resolveElectronConfiguration(options: LaunchOptions): Promise<IElectronConfiguration> {
 	const { codePath, workspacePath, extensionsPath, userDataDir, remote, logger, logsPath, crashesPath, extraArgs } = options;
 	const env = { ...process.env };
+	const disableDevShmWorkaround = env['VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND'] === '1';
 
 	const args: string[] = [
 		'--skip-release-notes',
@@ -35,7 +36,10 @@ export async function resolveElectronConfiguration(options: LaunchOptions): Prom
 		`--logsPath=${logsPath}`
 	];
 
-	if (process.platform === 'linux' && !extraArgs?.includes('--disable-dev-shm-usage')) {
+	// In headless/container Linux environments Chromium can exhaust /dev/shm and
+	// fail script/module loading. Keep this enabled by default for test reliability,
+	// with an explicit opt-out for local debugging/perf comparisons.
+	if (process.platform === 'linux' && !disableDevShmWorkaround && !extraArgs?.includes('--disable-dev-shm-usage')) {
 		args.push('--disable-dev-shm-usage');
 	}
 
