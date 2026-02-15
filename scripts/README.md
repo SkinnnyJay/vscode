@@ -46,6 +46,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.
   - The helper is fail-safe for CI `if: always()` steps: malformed/missing payload fields are rendered as warnings/placeholders instead of failing the workflow step.
   - Rendered metadata includes run mode context (`dryRun`, gate count, selected gates, failed gate) for faster CI triage.
+  - Summary values are markdown-escaped to keep tables readable when commands/IDs contain special characters (pipes/backticks/newlines).
   - Both helper scripts print usage and exit non-zero on unknown flags/missing required option values.
 - **Gate selection:** resume from a specific gate with `--from <gate-id>` or run a subset with `--only gate1,gate2`.
 - **Dry-run planning:** use `--dry-run` to validate gate selection/filtering and emit summary/log metadata without executing gates.

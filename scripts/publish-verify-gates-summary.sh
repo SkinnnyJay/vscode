@@ -67,13 +67,15 @@ const selectedGateIds = Array.isArray(summary.selectedGateIds)
 	? summary.selectedGateIds
 	: gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
+const sanitizeCell = (value) => String(value).replace(/\n/g, ' ').replace(/\|/g, '\\|');
+const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
 const gateRows = gates.map((gate) => {
 	const gateId = gate.id ?? 'unknown';
 	const command = gate.command ?? 'unknown';
 	const status = gate.status ?? 'unknown';
 	const attempts = gate.attempts ?? '-';
 	const durationSeconds = gate.durationSeconds ?? '-';
-	return `| \`${gateId}\` | \`${command}\` | ${status} | ${attempts} | ${durationSeconds} |`;
+	return `| \`${sanitizeCodeCell(gateId)}\` | \`${sanitizeCodeCell(command)}\` | ${sanitizeCell(status)} | ${sanitizeCell(attempts)} | ${sanitizeCell(durationSeconds)} |`;
 });
 
 const lines = [
@@ -86,8 +88,8 @@ const lines = [
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
 	`**Gate count:** ${summary.gateCount ?? gates.length}`,
-	`**Selected gates:** ${selectedGateIdsLabel}`,
-	`**Failed gate:** ${summary.failedGateId ?? 'none'}`,
+	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
+	`**Failed gate:** ${sanitizeCell(summary.failedGateId ?? 'none')}`,
 	`**Total duration:** ${summary.totalDurationSeconds ?? 'unknown'}s`,
 	`**Started:** ${summary.startedAt ?? 'unknown'}`,
 	`**Completed:** ${summary.completedAt ?? 'unknown'}`,

@@ -1474,3 +1474,8 @@
   - Uses `selectedGateIds` when present in summary JSON, with fallback to gate-row IDs.
   - Displays `none` when no selected IDs are available.
   **Why:** provides immediate confirmation of the exact gate subset executed (or dry-run planned) without opening raw JSON artifacts.
+- **Markdown-safe summary rendering (2026-02-15 AM)** Hardened `scripts/publish-verify-gates-summary.sh` markdown output:
+  - escapes table/meta values for pipes (`|`) and newlines
+  - escapes inline-code backticks in gate IDs/commands
+  - applies escaping to selected/failed gate metadata as well.
+  **Why:** prevents malformed GitHub step-summary tables when gate metadata contains markdown-special characters, preserving readability and parser stability.
