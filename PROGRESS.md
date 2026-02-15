@@ -806,3 +806,13 @@
   - existing coverage line and record remain present.
   Re-ran `make lint` (pass).
   **Why:** confirms class labels are emitted correctly and consistent with underlying coverage metrics.
+- **Import-target consistency checks (2026-02-14 PM)** Added derived consistency checks for import-target diagnostics and emitted:
+  - text line: `Import target diagnostics consistency: pass|fail (...)`
+  - JSON record field: `consistencyChecks`.
+  Checks validate internal agreement across signal class, visibility class, dropped deltas, and coverage counts.
+  **Why:** hardens confidence in diagnostics by explicitly reporting whether derived fields agree with their source counters.
+- **Consistency-check validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target diagnostics consistency: pass (signal=true, visibility=true, deltas=true, coverage=true)`
+  - JSON `consistencyChecks` object with all booleans true.
+  Re-ran `make lint` (pass).
+  **Why:** confirms consistency checks are active and coherent with the current failure-shape diagnostics.

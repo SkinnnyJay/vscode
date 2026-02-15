@@ -490,6 +490,21 @@ export class Code {
 					const importTargetDiagnosticsSignatureStatus = importTargetUrl
 						? `\nImport target diagnostics signature: ${importTargetDiagnosticsSignature}`
 						: '';
+					const importTargetDiagnosticsConsistency = this.buildImportTargetDiagnosticsConsistency(
+						importTargetSignalClass,
+						importTargetVisibilityClass,
+						{
+							requestFailures: importTargetRequestFailureEventCount,
+							scriptResponses: importTargetScriptResponseEventCount,
+							cdpScriptLoads: importTargetCdpScriptLoadEventCount
+						},
+						importTargetTotalEventCounts,
+						importTargetDroppedEventEstimates,
+						importTargetChannelCoverage
+					);
+					const importTargetDiagnosticsConsistencyStatus = importTargetUrl
+						? `\nImport target diagnostics consistency: ${importTargetDiagnosticsConsistency.isConsistent ? 'pass' : 'fail'} (signal=${importTargetDiagnosticsConsistency.signalMatchesTotals}, visibility=${importTargetDiagnosticsConsistency.visibilityMatchesCounts}, deltas=${importTargetDiagnosticsConsistency.droppedMatchesDelta}, coverage=${importTargetDiagnosticsConsistency.coverageMatchesCounts})`
+						: '';
 					const globalChannelBufferStats = {
 						requestFailures: {
 							displayed: recentFailures.length,
@@ -530,6 +545,7 @@ export class Code {
 						importTargetChannelStates,
 						importTargetChannelCoverage,
 						importTargetChannelCoverageClasses,
+						importTargetDiagnosticsConsistency,
 						importTargetDiagnosticsSignature,
 						trial,
 						retryInterval,
@@ -542,7 +558,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -751,6 +767,13 @@ export class Code {
 			scriptResponses: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
 			cdpScriptLoads: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
 		},
+		consistencyChecks: {
+			signalMatchesTotals: boolean;
+			visibilityMatchesCounts: boolean;
+			droppedMatchesDelta: boolean;
+			coverageMatchesCounts: boolean;
+			isConsistent: boolean;
+		},
 		signature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
@@ -774,6 +797,13 @@ export class Code {
 			requestFailures: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
 			scriptResponses: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
 			cdpScriptLoads: 'n-a' | 'none-visible' | 'partial-visible' | 'fully-visible';
+		};
+		consistencyChecks: {
+			signalMatchesTotals: boolean;
+			visibilityMatchesCounts: boolean;
+			droppedMatchesDelta: boolean;
+			coverageMatchesCounts: boolean;
+			isConsistent: boolean;
 		};
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
@@ -799,6 +829,7 @@ export class Code {
 			channelStates,
 			channelCoverage,
 			channelCoverageClasses,
+			consistencyChecks,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
@@ -841,6 +872,55 @@ export class Code {
 		}
 
 		return 'partial-visible';
+	}
+
+	private buildImportTargetDiagnosticsConsistency(
+		signalClass: string,
+		visibilityClass: string,
+		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
+		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
+		channelCoverage: {
+			requestFailures: { recent: number; total: number; percent: number | null };
+			scriptResponses: { recent: number; total: number; percent: number | null };
+			cdpScriptLoads: { recent: number; total: number; percent: number | null };
+		}
+	): {
+		signalMatchesTotals: boolean;
+		visibilityMatchesCounts: boolean;
+		droppedMatchesDelta: boolean;
+		coverageMatchesCounts: boolean;
+		isConsistent: boolean;
+	} {
+		const normalizedTotals = totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 };
+		const normalizedDropped = droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 };
+		const expectedSignalClass = this.classifyImportTargetSignal(normalizedTotals);
+		const expectedVisibilityClass = this.classifyImportTargetVisibility(recentEventCounts, normalizedTotals);
+		const expectedDropped = {
+			requestFailures: Math.max(0, normalizedTotals.requestFailures - recentEventCounts.requestFailures),
+			scriptResponses: Math.max(0, normalizedTotals.scriptResponses - recentEventCounts.scriptResponses),
+			cdpScriptLoads: Math.max(0, normalizedTotals.cdpScriptLoads - recentEventCounts.cdpScriptLoads)
+		};
+		const signalMatchesTotals = signalClass === expectedSignalClass;
+		const visibilityMatchesCounts = visibilityClass === expectedVisibilityClass;
+		const droppedMatchesDelta = normalizedDropped.requestFailures === expectedDropped.requestFailures
+			&& normalizedDropped.scriptResponses === expectedDropped.scriptResponses
+			&& normalizedDropped.cdpScriptLoads === expectedDropped.cdpScriptLoads;
+		const coverageMatchesCounts = channelCoverage.requestFailures.recent === recentEventCounts.requestFailures
+			&& channelCoverage.scriptResponses.recent === recentEventCounts.scriptResponses
+			&& channelCoverage.cdpScriptLoads.recent === recentEventCounts.cdpScriptLoads
+			&& channelCoverage.requestFailures.total === normalizedTotals.requestFailures
+			&& channelCoverage.scriptResponses.total === normalizedTotals.scriptResponses
+			&& channelCoverage.cdpScriptLoads.total === normalizedTotals.cdpScriptLoads;
+		const isConsistent = signalMatchesTotals && visibilityMatchesCounts && droppedMatchesDelta && coverageMatchesCounts;
+
+		return {
+			signalMatchesTotals,
+			visibilityMatchesCounts,
+			droppedMatchesDelta,
+			coverageMatchesCounts,
+			isConsistent
+		};
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {
