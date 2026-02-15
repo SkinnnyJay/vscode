@@ -1226,3 +1226,5 @@
   - `make test-e2e` → first run hit a transient early Electron child-process ENOENT flake; immediate re-run **pass**
   - `make lint` → **pass**
   **Why:** confirms the policy export path is materially more resilient in the long-running e2e sequence while preserving lint-clean state.
+- **E2E stability confirmation rerun (2026-02-15 AM)** Ran `make test-e2e` once more after the above hardening and observed a clean pass on the first attempt.
+  **Why:** provides additional evidence that the new policy export timing margins and launch flags hold across repeated full e2e executions.
