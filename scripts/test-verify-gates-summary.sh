@@ -169,6 +169,12 @@ if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== ex
 if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
+if (dry.exitReason !== 'dry-run' || dry.runClassification !== 'dry-run') {
+	throw new Error('Dry-run exit reason/classification mismatch.');
+}
+if (continueTrue.exitReason !== 'dry-run' || continueTrue.runClassification !== 'dry-run' || continueFalse.exitReason !== 'dry-run' || continueFalse.runClassification !== 'dry-run' || continueFlag.exitReason !== 'dry-run' || continueFlag.runClassification !== 'dry-run') {
+	throw new Error('Continue-on-failure dry-run classification mismatch.');
+}
 if (typeof dry.resultSignatureAlgorithm !== 'string' || dry.resultSignatureAlgorithm.length === 0) {
 	throw new Error('Dry-run resultSignatureAlgorithm should be populated.');
 }
@@ -204,6 +210,15 @@ if (from.skippedGateIds.join(',') !== 'typecheck,test-unit') {
 if (failFast.gateStatusById.lint !== 'fail' || failFast.gateStatusById.typecheck !== 'not-run') {
 	throw new Error('Fail-fast gate status map mismatch.');
 }
+if (failFast.exitReason !== 'fail-fast' || failFast.runClassification !== 'failed-fail-fast') {
+	throw new Error('Fail-fast exit reason/classification mismatch.');
+}
+if (failFast.failedGateId !== 'lint' || failFast.failedGateExitCode !== 7 || failFast.blockedByGateId !== 'lint') {
+	throw new Error('Fail-fast first-failure metadata mismatch.');
+}
+if (failFast.nonSuccessGateIds.join(',') !== 'lint,typecheck' || failFast.attentionGateIds.join(',') !== 'lint,typecheck') {
+	throw new Error('Fail-fast partition metadata mismatch.');
+}
 if (failFast.gateNotRunReasonById.typecheck !== 'blocked-by-fail-fast:lint') {
 	throw new Error('Fail-fast not-run reason map mismatch.');
 }
@@ -214,11 +229,17 @@ if (failFast.gateAttemptCountById.lint !== 1 || failFast.gateAttemptCountById.ty
 if (retry.gateStatusById.lint !== 'pass' || retry.gateStatusById.typecheck !== 'pass') {
 	throw new Error('Retry-success gate status map mismatch.');
 }
+if (retry.exitReason !== 'success' || retry.runClassification !== 'success-with-retries') {
+	throw new Error('Retry-success exit reason/classification mismatch.');
+}
 if (retry.gateRetryCountById.lint !== 1 || retry.gateAttemptCountById.lint !== 2 || retry.gateAttemptCountById.typecheck !== 1) {
 	throw new Error('Retry-success retry/attempt map mismatch.');
 }
 if (retry.attentionGateIds.join(',') !== 'lint') {
 	throw new Error('Retry-success attention-gates partition mismatch.');
+}
+if (retry.nonSuccessGateIds.length !== 0 || retry.failedGateId !== null || retry.failedGateExitCode !== null || retry.blockedByGateId !== null) {
+	throw new Error('Retry-success failure metadata should be empty.');
 }
 
 if (!/\*\*Gate not-run reason map:\*\* \{[^\n]*typecheck[^\n]*blocked-by-fail-fast:lint/.test(failFastStep)) {

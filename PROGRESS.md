@@ -1940,6 +1940,14 @@
     - negative `--retries -1`
   - `scripts/README.md` updated to include missing/invalid retries validation coverage.
   **Why:** ensures retry-policy input validation remains strict and user-facing error messages stay clear.
+- **Run-classification and failure-causality coverage (2026-02-15 PM)** Expanded contract assertions for top-level run semantics:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - dry-run scenarios emit `exitReason=dry-run`, `runClassification=dry-run`
+    - fail-fast scenario emits `exitReason=fail-fast`, `runClassification=failed-fail-fast`, and consistent first-failure metadata (`failedGateId`, `failedGateExitCode`, `blockedByGateId`)
+    - retry-success scenario emits `exitReason=success`, `runClassification=success-with-retries`, and empty failure metadata
+  - also validates fail-fast/retry partition consistency (`nonSuccessGateIds`, `attentionGateIds`).
+  - `scripts/README.md` updated to mention run-classification/exit-reason coverage.
+  **Why:** guards the highest-signal summary metadata used for CI triage and downstream automation branching.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
