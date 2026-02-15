@@ -1797,3 +1797,9 @@
   - schema baseline bumped to `11` in producer/renderer
   - `scripts/README.md` updated to current schema version `11` and field list includes `nonSuccessGateIds`.
   **Why:** gives dashboards and post-processing a single high-signal list for anything that was not a successful gate.
+- **Attention gate partition + schema v12 (2026-02-15 AM)** Added a triage-focused gate list that includes retries:
+  - `scripts/verify-gates.sh` now emits `attentionGateIds` (all non-pass gates plus pass gates that required retries)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Attention gates list` and derives fallback from `gates[]` (`status != pass || retryCount > 0`)
+  - schema baseline bumped to `12` in producer/renderer
+  - `scripts/README.md` updated to schema version `12` and field list includes `attentionGateIds`.
+  **Why:** surfaces flaky-but-passing gates alongside failures/skips/not-runs in one actionable list for faster run triage.

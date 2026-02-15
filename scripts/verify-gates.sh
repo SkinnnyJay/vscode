@@ -18,7 +18,7 @@ CONTINUE_ON_FAILURE="${VSCODE_VERIFY_CONTINUE_ON_FAILURE:-0}"
 RUN_TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
 RUN_ID=""
 RUN_START_EPOCH_SECONDS="$(date +%s)"
-SUMMARY_SCHEMA_VERSION=11
+SUMMARY_SCHEMA_VERSION=12
 SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
@@ -853,6 +853,27 @@ write_non_success_gate_ids_json() {
 	done
 }
 
+write_attention_gate_ids_json() {
+	local -a attention_gate_ids=()
+	local i
+	for i in "${!gate_results[@]}"; do
+		local retry_count
+		retry_count="$(compute_gate_retry_count_by_index "$i")"
+		if [[ "${gate_results[$i]}" == "pass" ]] && ((retry_count == 0)); then
+			continue
+		fi
+		attention_gate_ids+=("${gate_ids[$i]}")
+	done
+
+	for i in "${!attention_gate_ids[@]}"; do
+		local delimiter=","
+		if ((i == ${#attention_gate_ids[@]} - 1)); then
+			delimiter=""
+		fi
+		echo "    \"$(json_escape "${attention_gate_ids[$i]}")\"${delimiter}"
+	done
+}
+
 write_gate_status_by_id_json() {
 	local i
 	for i in "${!gate_ids[@]}"; do
@@ -1081,6 +1102,9 @@ write_summary_json() {
 		echo "  ],"
 		echo "  \"nonSuccessGateIds\": ["
 		write_non_success_gate_ids_json
+		echo "  ],"
+		echo "  \"attentionGateIds\": ["
+		write_attention_gate_ids_json
 		echo "  ],"
 		echo "  \"selectedGateIds\": ["
 		write_selected_gate_ids_json
