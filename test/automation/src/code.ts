@@ -531,6 +531,10 @@ export class Code {
 					const globalChannelBufferStatsStatus = importTargetUrl
 						? `\nImport target global channel buffers: requestFailures=${globalChannelBufferStats.requestFailures.displayed}/${globalChannelBufferStats.requestFailures.retained} (capacity=${globalChannelBufferStats.requestFailures.capacity}, observed=${globalChannelBufferStats.requestFailures.observed}, dropped=${globalChannelBufferStats.requestFailures.dropped}), scriptResponses=${globalChannelBufferStats.scriptResponses.displayed}/${globalChannelBufferStats.scriptResponses.retained} (capacity=${globalChannelBufferStats.scriptResponses.capacity}, observed=${globalChannelBufferStats.scriptResponses.observed}, dropped=${globalChannelBufferStats.scriptResponses.dropped}), cdpScriptLoads=${globalChannelBufferStats.cdpScriptLoads.displayed}/${globalChannelBufferStats.cdpScriptLoads.retained} (capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}, observed=${globalChannelBufferStats.cdpScriptLoads.observed}, dropped=${globalChannelBufferStats.cdpScriptLoads.dropped})`
 						: '';
+					const importTargetGlobalBufferSignature = this.computeGlobalBufferSignature(globalChannelBufferStats);
+					const importTargetGlobalBufferSignatureStatus = importTargetUrl
+						? `\nImport target global buffer signature: ${importTargetGlobalBufferSignature}`
+						: '';
 					const importTargetDiagnosticsRecord = this.buildImportTargetDiagnosticsRecord(
 						importTargetUrl,
 						importTargetTotalEventCounts,
@@ -547,6 +551,7 @@ export class Code {
 						importTargetChannelCoverageClasses,
 						importTargetDiagnosticsConsistency,
 						importTargetDiagnosticsSignature,
+						importTargetGlobalBufferSignature,
 						trial,
 						retryInterval,
 						globalChannelBufferStats
@@ -558,7 +563,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetCdpScriptLifecycleStatus}${importTargetChannelEventCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}`);
 				}
 			}
 
@@ -775,6 +780,7 @@ export class Code {
 			isConsistent: boolean;
 		},
 		signature: string,
+		globalBufferSignature: string,
 		detectedAtTrial: number,
 		retryIntervalMs: number,
 		globalChannelBufferStats: {
@@ -807,6 +813,7 @@ export class Code {
 		};
 		detectedAtTrial: number;
 		detectedAtElapsedMs: number;
+		globalBufferSignature: string;
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
 		droppedEventEstimates: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number };
@@ -830,6 +837,7 @@ export class Code {
 			channelCoverage,
 			channelCoverageClasses,
 			consistencyChecks,
+			globalBufferSignature,
 			detectedAtTrial,
 			detectedAtElapsedMs: (detectedAtTrial - 1) * retryIntervalMs,
 			recentEventCounts,
@@ -921,6 +929,32 @@ export class Code {
 			coverageMatchesCounts,
 			isConsistent
 		};
+	}
+
+	private computeGlobalBufferSignature(globalChannelBufferStats: {
+		requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+	}): string {
+		const payload = [
+			`requestFailures.displayed=${globalChannelBufferStats.requestFailures.displayed}`,
+			`requestFailures.retained=${globalChannelBufferStats.requestFailures.retained}`,
+			`requestFailures.capacity=${globalChannelBufferStats.requestFailures.capacity}`,
+			`requestFailures.observed=${globalChannelBufferStats.requestFailures.observed}`,
+			`requestFailures.dropped=${globalChannelBufferStats.requestFailures.dropped}`,
+			`scriptResponses.displayed=${globalChannelBufferStats.scriptResponses.displayed}`,
+			`scriptResponses.retained=${globalChannelBufferStats.scriptResponses.retained}`,
+			`scriptResponses.capacity=${globalChannelBufferStats.scriptResponses.capacity}`,
+			`scriptResponses.observed=${globalChannelBufferStats.scriptResponses.observed}`,
+			`scriptResponses.dropped=${globalChannelBufferStats.scriptResponses.dropped}`,
+			`cdpScriptLoads.displayed=${globalChannelBufferStats.cdpScriptLoads.displayed}`,
+			`cdpScriptLoads.retained=${globalChannelBufferStats.cdpScriptLoads.retained}`,
+			`cdpScriptLoads.capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}`,
+			`cdpScriptLoads.observed=${globalChannelBufferStats.cdpScriptLoads.observed}`,
+			`cdpScriptLoads.dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}`
+		].join('|');
+
+		return this.computeStableSignature(payload);
 	}
 
 	private extractFirstFileLikeUrl(value: string): string | undefined {

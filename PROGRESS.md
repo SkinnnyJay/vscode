@@ -816,3 +816,11 @@
   - JSON `consistencyChecks` object with all booleans true.
   Re-ran `make lint` (pass).
   **Why:** confirms consistency checks are active and coherent with the current failure-shape diagnostics.
+- **Global buffer signature in target diagnostics (2026-02-14 PM)** Added `Import target global buffer signature: <hex>` line plus `globalBufferSignature` field in structured diagnostics record, derived from global channel buffer stats.
+  **Why:** provides a compact fingerprint for channel-buffer pressure/state at failure time, enabling quick run-to-run comparisons independent of target-signal signature.
+- **Global-buffer signature validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified output includes:
+  - `Import target global buffer signature: 2a1a4687`
+  - `Import target diagnostics consistency: pass (...)`
+  - structured record fields `"globalBufferSignature":"2a1a4687"` and `"consistencyChecks":{...}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms global buffer signature is emitted correctly and aligned with structured consistency diagnostics.
