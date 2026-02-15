@@ -1309,3 +1309,14 @@
   - `make test-smoke` → **pass** (`34 passing`, `61 pending`)
   - `make lint` → **pass**
   **Why:** confirms helper behavior remains non-regressive while preserving green test and lint gates.
+- **Comprehensive gate sweep + transient reruns (2026-02-15 AM)** Ran an additional full validation cycle on latest head:
+  - `make build` → **pass**
+  - `make lint` → **pass**
+  - `make typecheck` → **pass**
+  - `make test-unit` → first run had 1 transient failure (`McpStdioStateHandler sigterm after grace`), targeted test stress (`10x`) passed, immediate `make test-unit` rerun → **pass** (`7584 passing`, `134 pending`)
+  - `make test` → **pass**
+  - `make test-integration` → **pass**
+  - `make test-smoke` (run in parallel with integration) → transient failure with Electron launch `Invalid file descriptor to ICU data`/`SIGTRAP`; immediate standalone rerun → **pass** (`34 passing`, `61 pending`)
+  - `make test-e2e` → **pass**
+  - `make test-web-integration` → **pass**
+  **Why:** provides another high-confidence end-to-end verification pass while explicitly documenting observed VM-only transient launch/test flakes and their successful reruns.
