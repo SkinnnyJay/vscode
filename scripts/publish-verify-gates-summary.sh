@@ -253,10 +253,11 @@ const normalizeGateStatusMap = (value) => {
 			continue;
 		}
 		const gateId = gateIdValue.trim();
-		if (gateId.length === 0 || (statusValue !== 'pass' && statusValue !== 'fail' && statusValue !== 'skip' && statusValue !== 'not-run')) {
+		const normalizedStatus = normalizeKnownValue(statusValue, ['pass', 'fail', 'skip', 'not-run']);
+		if (gateId.length === 0 || normalizedStatus === null) {
 			continue;
 		}
-		normalizedMap[gateId] = statusValue;
+		normalizedMap[gateId] = normalizedStatus;
 	}
 	return normalizedMap;
 };

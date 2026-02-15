@@ -372,7 +372,7 @@ if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
 const payload = {
 	schemaVersion,
 	runId: 'derived-status-map-contract',
-	gateStatusById: { ' lint ': 'pass', typecheck: 'fail', build: 'not-run', ignored: 'unknown', '': 'pass' },
+	gateStatusById: { ' lint ': ' PASS ', typecheck: 'FAIL', build: ' Not-Run ', ignored: 'unknown', '': 'pass' },
 	gateExitCodeById: { ' lint ': '-7', typecheck: '5', build: null, bad: 'x' },
 	failedGateId: 'typecheck',
 	failedGateExitCode: '-2',

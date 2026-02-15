@@ -2405,3 +2405,8 @@
     and verifies coherent output (`Success: true`, `Dry run: false`, `Exit reason: success`, `Run classification: success-with-retries`) while preserving explicit continue flag visibility (`Continue on failure: true`).
   - `scripts/README.md` updated to document classification-driven non-failure contradiction handling and continue-flag preservation.
   **Why:** ensures classification-only sparse payloads enforce consistent non-failure state while still surfacing explicit continue-on-failure configuration for operators.
+- **Case/whitespace normalization for sparse status maps (2026-02-15 PM)** Hardened `gateStatusById` ingestion:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes status-map values via canonical enum normalization (`pass`/`fail`/`skip`/`not-run`) so uppercase or padded inputs are accepted.
+  - `scripts/test-verify-gates-summary.sh` derived-status-map sparse scenario now supplies noisy status values (`" PASS "`, `"FAIL"`, `" Not-Run "`) and keeps existing derived-count/state assertions unchanged.
+  - `scripts/README.md` updated to document case/whitespace status-map normalization coverage.
+  **Why:** prevents sparse producer formatting differences from silently dropping valid gate statuses during summary derivation.
