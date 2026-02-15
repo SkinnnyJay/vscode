@@ -1986,6 +1986,12 @@
       - `.github/workflows/verify-gates-nightly.yml`
   - `scripts/README.md` updated to mention schema/docs/workflow linkage validation.
   **Why:** prevents silent drift where schema/docs/CI wiring become inconsistent even if core scripts still compile.
+- **Unknown-option usage-text coverage (2026-02-15 PM)** Tightened publisher CLI error-output checks:
+  - `scripts/test-verify-gates-summary.sh` now verifies `publish-verify-gates-summary.sh --unknown` emits both:
+    - explicit unknown-option error message
+    - usage text block (`Usage:`)
+  - `scripts/README.md` updated to call out unknown-option failure with usage output coverage.
+  **Why:** ensures CLI failures remain immediately actionable instead of requiring users to re-run with `--help`.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`

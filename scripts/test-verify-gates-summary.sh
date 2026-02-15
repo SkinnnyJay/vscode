@@ -354,6 +354,10 @@ if ! grep -q "Unknown option" "$tmpdir/unknown-option.out"; then
 	echo "Expected unknown-option output to include an explicit error message." >&2
 	exit 1
 fi
+if ! grep -q "^Usage:" "$tmpdir/unknown-option.out"; then
+	echo "Expected unknown-option output to include usage text." >&2
+	exit 1
+fi
 
 set +e
 GITHUB_STEP_SUMMARY="$missing_step_summary" ./scripts/publish-verify-gates-summary.sh "$tmpdir/does-not-exist.json" "Missing Summary File Test" > "$tmpdir/missing-summary.out" 2>&1
