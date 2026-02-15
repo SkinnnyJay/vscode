@@ -95,6 +95,8 @@ derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
 derived_status_map_step_summary="$tmpdir/derived-status-map-step.md"
+status_map_duplicate_keys_summary="$tmpdir/status-map-duplicate-keys.json"
+status_map_duplicate_keys_step_summary="$tmpdir/status-map-duplicate-keys-step.md"
 derived_dry_run_summary="$tmpdir/derived-dry-run.json"
 derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
 derived_continued_failure_summary="$tmpdir/derived-continued-failure.json"
@@ -683,6 +685,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_status_map_summary" "Verify Gates Derived Status-Map Contract Test"
+
+node - "$expected_schema_version" "$status_map_duplicate_keys_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'status-map-duplicate-keys-contract',
+	gateStatusById: { ' lint ': ' PASS ', lint: 'fail' },
+	gateExitCodeById: { ' lint ': '1', lint: '7' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$status_map_duplicate_keys_step_summary" ./scripts/publish-verify-gates-summary.sh "$status_map_duplicate_keys_summary" "Verify Gates Status-Map Duplicate Keys Contract Test"
 
 node - "$expected_schema_version" "$derived_dry_run_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1849,6 +1870,22 @@ if ! grep -Fq "**Total duration:** 3s" "$derived_status_map_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_status_map_step_summary"; then
 	echo "Did not expect schema warning for derived-status-map fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 1" "$status_map_duplicate_keys_step_summary" || ! grep -Fq "**Failed gates:** 1" "$status_map_duplicate_keys_step_summary"; then
+	echo "Expected status-map-duplicate-keys summary to resolve duplicate normalized map keys into one failed gate." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate status map:** {\"lint\":\"fail\"}" "$status_map_duplicate_keys_step_summary"; then
+	echo "Expected status-map-duplicate-keys summary to apply deterministic last-write behavior for duplicate normalized status-map keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate exit-code map:** {\"lint\":7}" "$status_map_duplicate_keys_step_summary"; then
+	echo "Expected status-map-duplicate-keys summary to apply deterministic last-write behavior for duplicate normalized exit-code map keys." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$status_map_duplicate_keys_step_summary"; then
+	echo "Did not expect schema warning for status-map-duplicate-keys summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Success:** true" "$derived_dry_run_step_summary"; then

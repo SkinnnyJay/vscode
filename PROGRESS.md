@@ -2410,6 +2410,13 @@
   - `scripts/test-verify-gates-summary.sh` derived-status-map sparse scenario now supplies noisy status values (`" PASS "`, `"FAIL"`, `" Not-Run "`) and keeps existing derived-count/state assertions unchanged.
   - `scripts/README.md` updated to document case/whitespace status-map normalization coverage.
   **Why:** prevents sparse producer formatting differences from silently dropping valid gate statuses during summary derivation.
+- **Status-map duplicate normalized-key coverage (2026-02-15 PM)** Added collision-behavior regression guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `status_map_duplicate_keys` scenario with duplicate normalized map keys (`' lint '`, `lint`) carrying conflicting status/exit-code values.
+  - Assertions verify deterministic collision behavior:
+    - one normalized gate (`lint`)
+    - last-write status/exit-code values preserved (`fail`, `7`).
+  - `scripts/README.md` updated to document duplicate normalized-key coverage for status/exit-code maps.
+  **Why:** locks down predictable behavior when sparse producers emit colliding map keys that normalize to the same gate ID.
 - **Case/whitespace normalization for sparse gate rows (2026-02-15 PM)** Hardened `gates[]` status/ID ingestion:
   - `scripts/publish-verify-gates-summary.sh` now:
     - normalizes each gate-row `status` value with canonical enum normalization (`pass`/`fail`/`skip`/`not-run`) before derived counters/lists are computed
