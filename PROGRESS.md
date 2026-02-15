@@ -1241,3 +1241,5 @@
   - `make test-e2e` → **pass** (first attempt)
   - `make test-web-integration` → **pass**
   **Why:** reconfirms both Electron-hosted and browser-hosted integration paths stay green after introducing the binary preflight fallback.
+- **Launcher guard docs refresh (2026-02-15 AM)** Updated `scripts/README.md` Linux headless stability section to explicitly document the new Electron binary preflight-and-retry behavior in `scripts/test.sh`.
+  **Why:** keeps operator-facing docs aligned with launcher reliability logic so CI/debug workflows are discoverable without reading shell internals.
