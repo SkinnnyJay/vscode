@@ -87,6 +87,7 @@ const lines = [
 	'',
 	`**Success:** ${summary.success ?? 'unknown'}`,
 	`**Run ID:** ${sanitizeCell(summary.runId ?? 'unknown')}`,
+	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
 	`**Gate count:** ${summary.gateCount ?? gates.length}`,

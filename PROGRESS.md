@@ -1512,3 +1512,9 @@
 - **Nightly workflow full-failure visibility (2026-02-15 AM)** Updated `.github/workflows/verify-gates-nightly.yml` to set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1`.
   - nightly full sweeps now keep executing subsequent gates after a failure and still fail the job at the end if any gate failed.
   **Why:** improves nightly diagnostics by capturing all failing gates in one run instead of stopping at the first failure.
+- **Invocation capture in verify summaries (2026-02-15 AM)** Added command invocation tracing to verify artifacts:
+  - `scripts/verify-gates.sh` now records a shell-escaped invocation string (`./scripts/verify-gates.sh ...`) derived from original CLI args
+  - terminal summary now prints the invocation
+  - JSON summary now includes top-level `invocation`
+  - `scripts/publish-verify-gates-summary.sh` now renders `Invocation` in GitHub step summaries.
+  **Why:** makes it easier to reproduce CI/local runs exactly from summary artifacts without reconstructing flags manually.

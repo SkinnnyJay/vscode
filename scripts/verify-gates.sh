@@ -23,6 +23,8 @@ FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 DRY_RUN=0
 FAILED_GATE_ID=""
+INVOCATION=""
+declare -a ORIGINAL_ARGS=("$@")
 
 print_usage() {
 	cat <<'USAGE'
@@ -63,6 +65,17 @@ normalize_boolean_flag() {
 			return 1
 			;;
 	esac
+}
+
+build_invocation() {
+	local rendered="./scripts/verify-gates.sh"
+	local arg
+	for arg in "${ORIGINAL_ARGS[@]}"; do
+		local quoted_arg
+		printf -v quoted_arg "%q" "$arg"
+		rendered+=" ${quoted_arg}"
+	done
+	echo "$rendered"
 }
 
 while (($# > 0)); do
@@ -144,6 +157,7 @@ fi
 cd "$ROOT"
 
 RUN_ID="${MODE}-${RUN_TIMESTAMP}"
+INVOCATION="$(build_invocation)"
 
 declare -a gate_ids
 declare -a gate_commands
@@ -304,6 +318,7 @@ print_summary() {
 	echo
 	echo "Verification summary:"
 	echo "  Run ID: ${RUN_ID}"
+	echo "  Invocation: ${INVOCATION}"
 	echo "  Mode: ${MODE} (retries=${RETRIES}, dryRun=$([[ "$DRY_RUN" == "1" ]] && echo "true" || echo "false"), continueOnFailure=$([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"))"
 	echo "  Gate count: ${#gate_commands[@]}"
 	echo "  Gate outcomes: pass=${pass_count} fail=${fail_count} skip=${skip_count} not-run=${not_run_count}"
@@ -369,6 +384,7 @@ write_summary_json() {
 	{
 		echo "{"
 		echo "  \"runId\": \"$(json_escape "$RUN_ID")\","
+		echo "  \"invocation\": \"$(json_escape "$INVOCATION")\","
 		echo "  \"mode\": \"$(json_escape "$MODE")\","
 		echo "  \"retries\": ${RETRIES},"
 		echo "  \"continueOnFailure\": $([[ "$CONTINUE_ON_FAILURE" == "1" ]] && echo "true" || echo "false"),"
