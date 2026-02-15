@@ -1748,6 +1748,10 @@ if ! grep -Fq "**Gate status map:** {\"lint\":\"pass\"}" "$selected_subset_rows_
 	echo "Expected selected-subset-rows summary to scope row-derived per-gate maps to explicitly selected gates only." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":0}" "$selected_subset_rows_step_summary" || ! grep -Fq "**Gate duration map (s):** {\"lint\":1}" "$selected_subset_rows_step_summary" || ! grep -Fq "**Gate attempt-count map:** {\"lint\":1}" "$selected_subset_rows_step_summary"; then
+	echo "Expected selected-subset-rows summary to scope row-derived retry/duration/attempt maps to explicitly selected gates only." >&2
+	exit 1
+fi
 if ! grep -Fq '| `lint` | `make lint` | pass | 1 | 0 | 0 | 1 | 0 | n/a |' "$selected_subset_rows_step_summary" || grep -Fq '| `build` | `make build` |' "$selected_subset_rows_step_summary"; then
 	echo "Expected selected-subset-rows summary table to render only rows matching explicit selectedGateIds subset." >&2
 	exit 1
