@@ -61,6 +61,8 @@ derived_counts_summary="$tmpdir/derived-counts.json"
 derived_counts_step_summary="$tmpdir/derived-counts-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
+derived_status_map_summary="$tmpdir/derived-status-map.json"
+derived_status_map_step_summary="$tmpdir/derived-status-map-step.md"
 derived_dry_run_summary="$tmpdir/derived-dry-run.json"
 derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
 derived_continued_failure_summary="$tmpdir/derived-continued-failure.json"
@@ -319,6 +321,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_lists_summary" "Verify Gates Derived List Fallback Contract Test"
+
+node - "$expected_schema_version" "$derived_status_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'derived-status-map-contract',
+	gateStatusById: { ' lint ': 'pass', typecheck: 'fail', build: 'not-run', ignored: 'unknown', '': 'pass' },
+	gateExitCodeById: { typecheck: 5, build: null },
+	gateRetryCountById: { lint: 0, typecheck: 0, build: 0 },
+	gateDurationSecondsById: { lint: 1, typecheck: 2, build: 0 },
+	gateAttemptCountById: { lint: 1, typecheck: 1, build: 0 },
+	gateNotRunReasonById: { lint: null, typecheck: null, build: 'blocked-by-fail-fast:typecheck' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$derived_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_status_map_summary" "Verify Gates Derived Status-Map Contract Test"
 
 node - "$expected_schema_version" "$derived_dry_run_summary" <<'NODE'
 const fs = require('node:fs');
@@ -896,6 +921,46 @@ if ! grep -Fq "**Run classification:** failed-fail-fast" "$derived_lists_step_su
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then
 	echo "Did not expect schema warning for derived-list fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 3" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive gate count from status map keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$derived_status_map_step_summary" || ! grep -Fq "**Failed gates:** 1" "$derived_status_map_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive counts from status map values." >&2
+	exit 1
+fi
+if ! grep -Fq "**Status counts:** {\"pass\":1,\"fail\":1,\"skip\":0,\"not-run\":1}" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive statusCounts from normalized status map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive selected gates from status map keys." >&2
+	exit 1
+fi
+if ! grep -Fq "\"lint\":\"pass\"" "$derived_status_map_step_summary" || ! grep -Fq "\"typecheck\":\"fail\"" "$derived_status_map_step_summary" || ! grep -Fq "\"build\":\"not-run\"" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to normalize status-map keys and values." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate:** typecheck" "$derived_status_map_step_summary" || ! grep -Fq "**Failed gate exit code:** 5" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive failed gate pointers from status/exit maps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** false" "$derived_status_map_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$derived_status_map_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to infer fail-fast run-state metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck, build" "$derived_status_map_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, build" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive non-success/attention lists from status map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 3s" "$derived_status_map_step_summary"; then
+	echo "Expected derived-status-map fallback summary to derive total duration from duration map." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$derived_status_map_step_summary"; then
+	echo "Did not expect schema warning for derived-status-map fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Success:** true" "$derived_dry_run_step_summary"; then

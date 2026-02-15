@@ -2246,3 +2246,13 @@
   - `scripts/test-verify-gates-summary.sh` list-only sparse payload now injects noisy list values (whitespace, duplicates, empty strings, non-string values) and asserts derived summaries remain stable and correctly ordered.
   - `scripts/README.md` updated to mention normalized/deduplicated gate-id handling in sparse fallback coverage.
   **Why:** prevents malformed list payloads from inflating counts or producing inconsistent ordering in rendered summary metadata.
+- **Status-map-only sparse fallback coverage (2026-02-15 PM)** Expanded renderer derivation when only `gateStatusById` is provided:
+  - `scripts/publish-verify-gates-summary.sh` now treats normalized `gateStatusById` as outcome evidence for run-state derivation (avoids `unknown` run-state on sparse fail-fast data).
+  - Added status-map fallbacks to derive gate-id partitions/counts from explicit status maps when gate rows and partition lists are absent.
+  - `scripts/test-verify-gates-summary.sh` now adds a status-map-only sparse payload case (with noisy keys/invalid statuses) and verifies:
+    - normalized status-map rendering (`lint/typecheck/build`)
+    - derived counts/status map/selected gates
+    - derived fail-fast run-state metadata
+    - derived non-success/attention lists and failed-gate pointers.
+  - `scripts/README.md` updated to call out status-map-based sparse derivation coverage.
+  **Why:** keeps sparse summaries fully informative when producers provide status maps without per-gate rows or partition arrays.

@@ -98,6 +98,24 @@ const executedGateIdsFromSummary = normalizeGateIdList(summary.executedGateIds);
 const retriedGateIdsFromSummary = normalizeGateIdList(summary.retriedGateIds);
 const nonSuccessGateIdsFromSummary = normalizeGateIdList(summary.nonSuccessGateIds);
 const attentionGateIdsFromSummary = normalizeGateIdList(summary.attentionGateIds);
+const normalizeGateStatusMap = (value) => {
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return null;
+	}
+	const normalizedMap = {};
+	for (const [gateIdValue, statusValue] of Object.entries(value)) {
+		if (typeof gateIdValue !== 'string') {
+			continue;
+		}
+		const gateId = gateIdValue.trim();
+		if (gateId.length === 0 || (statusValue !== 'pass' && statusValue !== 'fail' && statusValue !== 'skip' && statusValue !== 'not-run')) {
+			continue;
+		}
+		normalizedMap[gateId] = statusValue;
+	}
+	return normalizedMap;
+};
+const gateStatusByIdFromSummary = normalizeGateStatusMap(summary.gateStatusById);
 const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 	const status = gate?.status;
 	if (status === 'pass' || status === 'fail' || status === 'skip' || status === 'not-run') {
@@ -105,13 +123,19 @@ const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 	}
 	return accumulator;
 }, { pass: 0, fail: 0, skip: 0, 'not-run': 0 });
+const derivedStatusCountsFromStatusMap = gateStatusByIdFromSummary
+	? Object.values(gateStatusByIdFromSummary).reduce((accumulator, status) => {
+		accumulator[status] += 1;
+		return accumulator;
+	}, { pass: 0, fail: 0, skip: 0, 'not-run': 0 })
+	: null;
 const rawStatusCounts = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
 	? summary.statusCounts
 	: {};
-const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCounts.pass;
-const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCounts.fail;
-const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCounts.skip;
-const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCounts['not-run'];
+const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? derivedStatusCounts.pass;
+const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? derivedStatusCounts.fail;
+const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? derivedStatusCounts.skip;
+const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? derivedStatusCounts['not-run'];
 const statusCounts = {
 	pass: rawStatusCounts.pass ?? passedGateCount,
 	fail: rawStatusCounts.fail ?? failedGateCount,
@@ -120,30 +144,42 @@ const statusCounts = {
 };
 const selectedGateIds = selectedGateIdsFromSummary
 	? selectedGateIdsFromSummary
-	: gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.keys(gateStatusByIdFromSummary ?? {}));
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
 const failedGateIds = failedGateIdsFromSummary
 	? failedGateIdsFromSummary
-	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'fail').map(([gateId]) => gateId));
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
 const failedGateExitCodesFromSummary = Array.isArray(summary.failedGateExitCodes) ? summary.failedGateExitCodes : null;
 const passedGateIds = passedGateIdsFromSummary
 	? passedGateIdsFromSummary
-	: gates.filter((gate) => gate.status === 'pass').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.filter((gate) => gate.status === 'pass').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass').map(([gateId]) => gateId));
 const passedGateIdsLabel = passedGateIds.length > 0 ? passedGateIds.join(', ') : 'none';
 const skippedGateIds = skippedGateIdsFromSummary
 	? skippedGateIdsFromSummary
-	: gates.filter((gate) => gate.status === 'skip').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.filter((gate) => gate.status === 'skip').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'skip').map(([gateId]) => gateId));
 const skippedGateIdsLabel = skippedGateIds.length > 0 ? skippedGateIds.join(', ') : 'none';
 const executedGateIds = executedGateIdsFromSummary
 	? executedGateIdsFromSummary
-	: gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
 const executedGateCount = summary.executedGateCount ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
 const gateCount = summary.gateCount ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
 const notRunGateIds = notRunGateIdsFromSummary
 	? notRunGateIdsFromSummary
-	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
+	: (gates.length > 0
+		? gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string')
+		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'not-run').map(([gateId]) => gateId));
 const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
 const buildStatusMapFromGateIdLists = () => {
 	const statusPriority = { 'not-run': 1, skip: 2, pass: 3, fail: 4 };
@@ -165,8 +201,8 @@ const buildStatusMapFromGateIdLists = () => {
 	assignStatus(failedGateIds, 'fail');
 	return statusByGateId;
 };
-const gateStatusById = summary.gateStatusById && typeof summary.gateStatusById === 'object' && !Array.isArray(summary.gateStatusById)
-	? summary.gateStatusById
+const gateStatusById = gateStatusByIdFromSummary
+	? gateStatusByIdFromSummary
 	: (gates.length > 0
 		? Object.fromEntries(
 			gates
@@ -423,6 +459,7 @@ const totalDurationSeconds = (() => {
 	return 'unknown';
 })();
 const hasOutcomeEvidence = gates.length > 0
+	|| gateStatusByIdFromSummary !== null
 	|| passedGateIdsFromSummary !== null
 	|| failedGateIdsFromSummary !== null
 	|| skippedGateIdsFromSummary !== null
