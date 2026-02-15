@@ -968,3 +968,22 @@
     - `"globalChannelBufferStats":{"...","consoleErrors":{"displayed":8,"retained":25,"capacity":25,"observed":344,"dropped":319}}`.
   Re-ran `make lint` (pass).
   **Why:** confirms console window-state, consistency extension, and global-buffer integration are emitted and internally coherent.
+- **Console window-coverage consistency (2026-02-14 PM)** Extended console diagnostics parity in `test/automation/src/code.ts`:
+  - added line:
+    - `Import target console window coverage: display=<...>, retained=<...>`
+  - added structured field:
+    - `consoleWindowCoverage` (`displayInRetained`, `retainedInTotal`)
+  - extended consistency checks with:
+    - `consoleWindowCoverageMatchesCounts`
+    - consistency line now includes `consoleCoverage=<bool>`
+    - `consistencyChecks` JSON includes `consoleWindowCoverageMatchesCounts`
+    - composite signature now includes this flag.
+  **Why:** ensures console diagnostics expose and validate the same dual-window coverage semantics as other channels.
+- **Console coverage validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target console window coverage: display=n/a (0/0), retained=n/a (0/0)`
+  - `Import target diagnostics consistency: pass (..., consoleCoverage=true, consoleWindow=true)`
+  - structured record fields:
+    - `"consoleWindowCoverage":{"displayInRetained":{"recent":0,"total":0,"percent":null},"retainedInTotal":{"recent":0,"total":0,"percent":null}}`
+    - `"consistencyChecks":{"...","consoleWindowCoverageMatchesCounts":true,"consoleWindowStateMatchesCounts":true,"isConsistent":true}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms console coverage metrics are emitted and internally consistent with display/retained/total console counters.
