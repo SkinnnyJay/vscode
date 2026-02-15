@@ -2030,6 +2030,11 @@
     - schema line falls back to `unknown`
   - `scripts/README.md` updated to document sparse payload coverage as minimal object + scalar/array JSON.
   **Why:** protects renderer resilience when upstream summary input is valid JSON but not an object payload.
+- **Heading sanitization coverage (2026-02-15 PM)** Added contract checks for markdown heading safety:
+  - `scripts/publish-verify-gates-summary.sh` now sanitizes summary headings by collapsing newline characters to spaces before rendering.
+  - `scripts/test-verify-gates-summary.sh` now verifies multiline heading input renders as a single markdown heading line.
+  - `scripts/README.md` updated to include heading sanitization coverage.
+  **Why:** prevents malformed multi-line headings from breaking step-summary structure while preserving custom heading usability.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

@@ -48,6 +48,7 @@ env_path_step_summary="$tmpdir/env-path-step.md"
 scalar_summary="$tmpdir/scalar.json"
 scalar_step_summary="$tmpdir/scalar-step.md"
 append_step_summary="$tmpdir/append-step.md"
+multiline_heading_step_summary="$tmpdir/multiline-heading-step.md"
 array_summary="$tmpdir/array.json"
 array_step_summary="$tmpdir/array-step.md"
 
@@ -690,6 +691,12 @@ append_heading_one_line="$(grep -n "^## Append Heading One$" "$append_step_summa
 append_heading_two_line="$(grep -n "^## Append Heading Two$" "$append_step_summary" | awk -F: 'NR==1 {print $1}')"
 if [[ -z "$append_heading_one_line" ]] || [[ -z "$append_heading_two_line" ]] || ((append_heading_one_line >= append_heading_two_line)); then
 	echo "Expected appended headings to appear in write order." >&2
+	exit 1
+fi
+
+GITHUB_STEP_SUMMARY="$multiline_heading_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" $'Multiline Heading\nSecond Line'
+if ! grep -q "^## Multiline Heading Second Line$" "$multiline_heading_step_summary"; then
+	echo "Expected multiline heading to be sanitized into a single heading line." >&2
 	exit 1
 fi
 

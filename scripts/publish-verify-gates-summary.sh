@@ -49,6 +49,8 @@ const summaryPath = process.env.SUMMARY_FILE_PATH;
 const heading = process.env.SUMMARY_HEADING;
 const summaryOutputPath = process.env.GITHUB_STEP_SUMMARY;
 const supportedSchemaVersion = 17;
+const sanitizeHeading = (value) => String(value ?? '').replace(/\r?\n/g, ' ').trim();
+const renderedHeading = sanitizeHeading(heading) || 'Verify Gates Summary';
 
 if (!summaryPath || !summaryOutputPath) {
 	process.exit(0);
@@ -59,7 +61,7 @@ try {
 	summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
 } catch (error) {
 	const message = error instanceof Error ? error.message : String(error);
-	fs.appendFileSync(summaryOutputPath, `## ${heading}\n\nUnable to parse verify-gates summary at \`${summaryPath}\`: ${message}\n`);
+	fs.appendFileSync(summaryOutputPath, `## ${renderedHeading}\n\nUnable to parse verify-gates summary at \`${summaryPath}\`: ${message}\n`);
 	process.exit(0);
 }
 
@@ -170,7 +172,7 @@ const gateRows = gates.map((gate) => {
 });
 
 const lines = [
-	`## ${heading}`,
+	`## ${renderedHeading}`,
 	'',
 	'| Gate ID | Command | Status | Attempts | Retries | Retry backoff (s) | Duration (s) | Exit code | Not-run reason |',
 	'| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |',
