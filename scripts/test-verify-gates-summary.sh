@@ -79,6 +79,8 @@ conflicting_run_state_flags_summary="$tmpdir/conflicting-run-state-flags.json"
 conflicting_run_state_flags_step_summary="$tmpdir/conflicting-run-state-flags-step.md"
 conflicting_classification_flags_summary="$tmpdir/conflicting-classification-flags.json"
 conflicting_classification_flags_step_summary="$tmpdir/conflicting-classification-flags-step.md"
+invalid_reason_with_classification_summary="$tmpdir/invalid-reason-with-classification.json"
+invalid_reason_with_classification_step_summary="$tmpdir/invalid-reason-with-classification-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -547,6 +549,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$conflicting_classification_flags_step_summary" ./scripts/publish-verify-gates-summary.sh "$conflicting_classification_flags_summary" "Verify Gates Conflicting Classification Flags Contract Test"
+
+node - "$expected_schema_version" "$invalid_reason_with_classification_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'invalid-reason-with-classification-contract',
+	exitReason: 'definitely-not-valid',
+	runClassification: 'FAILED-FAIL-FAST',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$invalid_reason_with_classification_step_summary" ./scripts/publish-verify-gates-summary.sh "$invalid_reason_with_classification_summary" "Verify Gates Invalid Reason With Classification Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1315,6 +1336,23 @@ if ! grep -Fq "**Run classification:** failed-continued" "$conflicting_classific
 fi
 if grep -q "\*\*Schema warning:\*\*" "$conflicting_classification_flags_step_summary"; then
 	echo "Did not expect schema warning for conflicting classification-flags summary." >&2
+	exit 1
+fi
+
+if ! grep -Fq "**Success:** false" "$invalid_reason_with_classification_step_summary"; then
+	echo "Expected invalid-reason-with-classification summary to derive success from explicit runClassification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** fail-fast" "$invalid_reason_with_classification_step_summary"; then
+	echo "Expected invalid-reason-with-classification summary to ignore unknown explicit exitReason and derive from runClassification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** failed-fail-fast" "$invalid_reason_with_classification_step_summary"; then
+	echo "Expected invalid-reason-with-classification summary to normalize explicit runClassification value." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$invalid_reason_with_classification_step_summary"; then
+	echo "Did not expect schema warning for invalid-reason-with-classification summary." >&2
 	exit 1
 fi
 

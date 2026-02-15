@@ -2360,3 +2360,10 @@
     and verifies rendered summary honors classification semantics (`Success: false`, `Dry run: false`, `Continue on failure: true`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`).
   - `scripts/README.md` updated to document classification-only conflicting-flag coverage in the summary contract harness.
   **Why:** ensures sparse payloads remain internally coherent even when producers emit contradictory boolean flags without an explicit exit reason.
+- **Invalid exitReason + explicit runClassification fallback coverage (2026-02-15 PM)** Added sparse precedence regression guard:
+  - `scripts/test-verify-gates-summary.sh` now adds a payload with:
+    - unknown `exitReason: definitely-not-valid`
+    - explicit `runClassification: FAILED-FAIL-FAST`
+    and verifies renderer behavior stays consistent (`Success: false`, `Exit reason: fail-fast`, `Run classification: failed-fail-fast`).
+  - `scripts/README.md` updated to document unknown-reason + explicit-classification fallback coverage.
+  **Why:** prevents malformed explicit reasons from suppressing otherwise valid explicit classification semantics in sparse CI payloads.
