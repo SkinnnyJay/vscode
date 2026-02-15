@@ -2397,3 +2397,11 @@
     and verified renderer preserves explicit continue flag while still deriving success classification (`success-no-retries`).
   - `scripts/README.md` updated to note boolean-like explicit continue-value preservation in non-failure scenarios.
   **Why:** locks down distinction between contradiction normalization (reason/classification conflicts) and explicit non-failure configuration visibility (continue-on-failure flag preservation).
+- **Classification-driven success contradiction + explicit continue preservation coverage (2026-02-15 PM)** Extended non-failure sparse contracts to classification-only evidence:
+  - `scripts/test-verify-gates-summary.sh` now adds `success_classification_explicit_continue` scenario with:
+    - explicit `runClassification: SUCCESS-WITH-RETRIES`
+    - conflicting explicit `success: false` and `dryRun: true`
+    - explicit `continueOnFailure: "yes"`
+    and verifies coherent output (`Success: true`, `Dry run: false`, `Exit reason: success`, `Run classification: success-with-retries`) while preserving explicit continue flag visibility (`Continue on failure: true`).
+  - `scripts/README.md` updated to document classification-driven non-failure contradiction handling and continue-flag preservation.
+  **Why:** ensures classification-only sparse payloads enforce consistent non-failure state while still surfacing explicit continue-on-failure configuration for operators.

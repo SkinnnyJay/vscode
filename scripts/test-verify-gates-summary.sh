@@ -89,6 +89,8 @@ success_reason_conflicts_summary="$tmpdir/success-reason-conflicts.json"
 success_reason_conflicts_step_summary="$tmpdir/success-reason-conflicts-step.md"
 success_reason_explicit_continue_summary="$tmpdir/success-reason-explicit-continue.json"
 success_reason_explicit_continue_step_summary="$tmpdir/success-reason-explicit-continue-step.md"
+success_classification_explicit_continue_summary="$tmpdir/success-classification-explicit-continue.json"
+success_classification_explicit_continue_step_summary="$tmpdir/success-classification-explicit-continue-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -658,6 +660,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$success_reason_explicit_continue_step_summary" ./scripts/publish-verify-gates-summary.sh "$success_reason_explicit_continue_summary" "Verify Gates Success Reason Explicit Continue Contract Test"
+
+node - "$expected_schema_version" "$success_classification_explicit_continue_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'success-classification-explicit-continue-contract',
+	runClassification: '  SUCCESS-WITH-RETRIES  ',
+	success: false,
+	dryRun: true,
+	continueOnFailure: 'yes',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$success_classification_explicit_continue_step_summary" ./scripts/publish-verify-gates-summary.sh "$success_classification_explicit_continue_summary" "Verify Gates Success Classification Explicit Continue Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1531,6 +1554,31 @@ if ! grep -Fq "**Run classification:** success-no-retries" "$success_reason_expl
 fi
 if grep -q "\*\*Schema warning:\*\*" "$success_reason_explicit_continue_step_summary"; then
 	echo "Did not expect schema warning for success-reason-explicit-continue summary." >&2
+	exit 1
+fi
+
+if ! grep -Fq "**Success:** true" "$success_classification_explicit_continue_step_summary"; then
+	echo "Expected success-classification-explicit-continue summary to ignore conflicting explicit success value and derive success=true from runClassification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Dry run:** false" "$success_classification_explicit_continue_step_summary"; then
+	echo "Expected success-classification-explicit-continue summary to ignore conflicting explicit dry-run value under success classification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$success_classification_explicit_continue_step_summary"; then
+	echo "Expected success-classification-explicit-continue summary to preserve explicit continue-on-failure configuration for non-failure outcomes." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** success" "$success_classification_explicit_continue_step_summary"; then
+	echo "Expected success-classification-explicit-continue summary to derive success exit reason from explicit runClassification." >&2
+	exit 1
+fi
+if ! grep -Fq "**Run classification:** success-with-retries" "$success_classification_explicit_continue_step_summary"; then
+	echo "Expected success-classification-explicit-continue summary to normalize explicit runClassification value." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$success_classification_explicit_continue_step_summary"; then
+	echo "Did not expect schema warning for success-classification-explicit-continue summary." >&2
 	exit 1
 fi
 
