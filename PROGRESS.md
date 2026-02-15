@@ -1838,3 +1838,13 @@
   - schema baseline bumped to `17` in producer/renderer
   - `scripts/README.md` updated to schema version `17` and field list includes `gateAttemptCountById`.
   **Why:** gives downstream tooling constant-time visibility into per-gate attempt pressure (including retries) without recomputation.
+- **Post-plan validation sweep (2026-02-15 PM)** Ran end-to-end gate validation on current branch state:
+  - `./scripts/verify-gates.sh --quick --retries 1` (summary: `quick-20260215T123035Z`)
+    - result: `success-with-retries`
+    - retries observed: `1` (`test-unit` retried once, then passed)
+    - pass rate: `100%` across `lint`, `typecheck`, `test-unit`
+  - `./scripts/verify-gates.sh --full --only build --retries 0` (summary: `full-20260215T123253Z`)
+    - result: `success-no-retries`
+    - build gate passed cleanly.
+  - Both runs emitted schema version `17` payloads and rendered markdown summaries successfully.
+  **Why:** reconfirms finish-state stability with real gate execution (not only synthetic/mocked runs) on the latest summary contract.
