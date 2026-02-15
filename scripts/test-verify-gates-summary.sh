@@ -188,6 +188,17 @@ if (dry.resultSignature !== dryRepeat.resultSignature) {
 if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
 }
+for (const [label, summary] of [['dry', dry], ['fail-fast', failFast], ['retry', retry]]) {
+	if (typeof summary.logFile !== 'string' || summary.logFile.length === 0) {
+		throw new Error(`${label} summary missing logFile path.`);
+	}
+	if (!summary.logFile.includes('/logs/')) {
+		throw new Error(`${label} logFile path should point to log directory.`);
+	}
+	if (!fs.existsSync(summary.logFile)) {
+		throw new Error(`${label} logFile path does not exist on disk.`);
+	}
+}
 if (continueTrue.continueOnFailure !== true) {
 	throw new Error('continue-on-failure env=true normalization mismatch.');
 }
@@ -254,6 +265,9 @@ if (!/\*\*Gate attempt-count map:\*\* \{[^\n]*lint[^\n]*2[^\n]*typecheck[^\n]*1/
 }
 if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.test(retryStep)) {
 	throw new Error('Retry step summary missing retry-count map.');
+}
+if (!failFastStep.includes('**Log file:** `') || !retryStep.includes('**Log file:** `')) {
+	throw new Error('Step summaries should include log-file metadata line.');
 }
 if (!/\*\*Gate status map:\*\* \{[^\n]*lint[^\n]*pass[^\n]*typecheck[^\n]*pass/.test(fallbackStep)) {
 	throw new Error('Fallback summary did not derive gate status map from gate rows.');

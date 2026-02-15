@@ -1953,6 +1953,12 @@
     - `Ignoring duplicate gate ids from --only: lint`
   - `scripts/README.md` updated to include duplicate-warning validation coverage.
   **Why:** ensures selection dedupe remains transparent to operators instead of silently mutating requested gate sets.
+- **Log-file metadata coverage (2026-02-15 PM)** Expanded contract checks for run artifact traceability:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - summary `logFile` paths are populated, point into the logs directory, and exist on disk for dry/fail-fast/retry scenarios
+    - published markdown summaries include the `Log file` metadata line
+  - `scripts/README.md` updated to include log-file metadata coverage.
+  **Why:** guards observability guarantees relied on during CI triage and flaky-run investigation.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
