@@ -30,6 +30,24 @@ future_step_summary="$tmpdir/future-step.md"
 malformed_summary="$tmpdir/malformed.json"
 malformed_step_summary="$tmpdir/malformed-step.md"
 
+expected_schema_version="$(sed -n 's/^SUMMARY_SCHEMA_VERSION=\([0-9][0-9]*\)$/\1/p' ./scripts/verify-gates.sh | awk 'NR==1{print;exit}')"
+supported_schema_version="$(sed -n 's/^const supportedSchemaVersion = \([0-9][0-9]*\);$/\1/p' ./scripts/publish-verify-gates-summary.sh | awk 'NR==1{print;exit}')"
+
+if [[ -z "$expected_schema_version" ]]; then
+	echo "Unable to resolve SUMMARY_SCHEMA_VERSION from scripts/verify-gates.sh." >&2
+	exit 1
+fi
+
+if [[ -z "$supported_schema_version" ]]; then
+	echo "Unable to resolve supportedSchemaVersion from scripts/publish-verify-gates-summary.sh." >&2
+	exit 1
+fi
+
+if [[ "$expected_schema_version" != "$supported_schema_version" ]]; then
+	echo "Schema version mismatch: verify-gates=${expected_schema_version}, publish=${supported_schema_version}." >&2
+	exit 1
+fi
+
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_summary" > "$tmpdir/dry.out"
 
 function make() {
@@ -80,10 +98,13 @@ unset -f make
 GITHUB_STEP_SUMMARY="$fail_fast_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_summary" "Verify Gates Fail-fast Contract Test"
 GITHUB_STEP_SUMMARY="$retry_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Verify Gates Retry Contract Test"
 
-node - "$dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" <<'NODE'
 const fs = require('node:fs');
-const expectedSchemaVersion = 17;
-const [dryPath, failFastPath, retryPath, failFastStepPath, retryStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, failFastPath, retryPath, failFastStepPath, retryStepPath] = process.argv.slice(2);
+const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
+if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
+	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
+}
 const dry = JSON.parse(fs.readFileSync(dryPath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
@@ -139,12 +160,16 @@ NODE
 
 GITHUB_STEP_SUMMARY="$future_step_summary" ./scripts/publish-verify-gates-summary.sh "$future_summary" "Verify Gates Future Schema Contract Test"
 
-node - "$future_step_summary" <<'NODE'
+node - "$supported_schema_version" "$future_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [futureStepPath] = process.argv.slice(2);
+const [supportedSchemaVersionRaw, futureStepPath] = process.argv.slice(2);
+const supportedSchemaVersion = Number.parseInt(supportedSchemaVersionRaw, 10);
+if (!Number.isInteger(supportedSchemaVersion) || supportedSchemaVersion <= 0) {
+	throw new Error(`Invalid supported schema version: ${supportedSchemaVersionRaw}`);
+}
 const futureStep = fs.readFileSync(futureStepPath, 'utf8');
-if (!futureStep.includes('supported 17')) {
-	throw new Error('Future-schema warning should reference supported schema 17.');
+if (!futureStep.includes(`supported ${supportedSchemaVersion}`)) {
+	throw new Error(`Future-schema warning should reference supported schema ${supportedSchemaVersion}.`);
 }
 NODE
 

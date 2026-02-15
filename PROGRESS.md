@@ -1867,3 +1867,10 @@
     - unknown publisher CLI flag exits non-zero
   - `scripts/README.md` updated to reflect expanded contract-test coverage.
   **Why:** ensures CI guards both happy-path rendering and critical error-handling behavior of the summary publisher.
+- **Schema-version sync guard in contract harness (2026-02-15 PM)** Removed hardcoded schema constants from the regression test:
+  - `scripts/test-verify-gates-summary.sh` now reads:
+    - `SUMMARY_SCHEMA_VERSION` from `scripts/verify-gates.sh`
+    - `supportedSchemaVersion` from `scripts/publish-verify-gates-summary.sh`
+  - test fails early if producer and renderer schema versions diverge.
+  - future-schema warning assertion now validates against the dynamically discovered supported version.
+  **Why:** prevents silent drift between producer and renderer schema baselines and avoids brittle test updates on future schema bumps.
