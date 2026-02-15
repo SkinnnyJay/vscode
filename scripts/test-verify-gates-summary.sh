@@ -34,8 +34,10 @@ mode_precedence_full_summary="$tmpdir/mode-precedence-full.json"
 mode_precedence_quick_summary="$tmpdir/mode-precedence-quick.json"
 env_retries_summary="$tmpdir/env-retries.json"
 cli_retries_override_summary="$tmpdir/cli-retries-override.json"
+continue_fail_summary="$tmpdir/continue-fail.json"
 fail_fast_summary="$tmpdir/fail-fast.json"
 retry_summary="$tmpdir/retry.json"
+continue_fail_step_summary="$tmpdir/continue-fail-step.md"
 fail_fast_step_summary="$tmpdir/fail-fast-step.md"
 retry_step_summary="$tmpdir/retry-step.md"
 future_summary="$tmpdir/future.json"
@@ -136,6 +138,28 @@ fi
 
 unset -f make
 
+function make() {
+	if [[ "$1" == "lint" ]]; then
+		return 7
+	fi
+	if [[ "$1" == "typecheck" ]]; then
+		return 0
+	fi
+	return 0
+}
+export -f make
+
+set +e
+VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint,typecheck --continue-on-failure --retries 0 --summary-json "$continue_fail_summary" > "$tmpdir/continue-fail.out" 2>&1
+continue_fail_status=$?
+set -e
+if [[ "$continue_fail_status" -ne 1 ]]; then
+	echo "Expected continue-on-failure run with lint failure to exit with code 1, got ${continue_fail_status}." >&2
+	exit 1
+fi
+
+unset -f make
+
 lint_attempt_file="$tmpdir/lint-attempt.txt"
 echo "0" > "$lint_attempt_file"
 function make() {
@@ -162,6 +186,7 @@ unset -f make
 GITHUB_STEP_SUMMARY="$fail_fast_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_summary" "Verify Gates Fail-fast Contract Test"
 GITHUB_STEP_SUMMARY="$retry_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Verify Gates Retry Contract Test"
 GITHUB_STEP_SUMMARY="$continue_flag_step_summary" ./scripts/publish-verify-gates-summary.sh "$continue_flag_summary" "Verify Gates Continue-on-Failure Dry-Run Contract Test"
+GITHUB_STEP_SUMMARY="$continue_fail_step_summary" ./scripts/publish-verify-gates-summary.sh "$continue_fail_summary" "Verify Gates Continue-on-Failure Failure Contract Test"
 
 node - "$retry_summary" "$fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -188,9 +213,9 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, modePrecedenceFullPath, modePrecedenceQuickPath, envRetriesPath, cliRetriesOverridePath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, defaultModeDryPath, modePrecedenceFullPath, modePrecedenceQuickPath, envRetriesPath, cliRetriesOverridePath, continueFailPath, failFastPath, retryPath, continueFailStepPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -208,20 +233,22 @@ const modePrecedenceFull = JSON.parse(fs.readFileSync(modePrecedenceFullPath, 'u
 const modePrecedenceQuick = JSON.parse(fs.readFileSync(modePrecedenceQuickPath, 'utf8'));
 const envRetries = JSON.parse(fs.readFileSync(envRetriesPath, 'utf8'));
 const cliRetriesOverride = JSON.parse(fs.readFileSync(cliRetriesOverridePath, 'utf8'));
+const continueFail = JSON.parse(fs.readFileSync(continueFailPath, 'utf8'));
 const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
+const continueFailStep = fs.readFileSync(continueFailStepPath, 'utf8');
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
 const retryStep = fs.readFileSync(retryStepPath, 'utf8');
 const continueFlagStep = fs.readFileSync(continueFlagStepPath, 'utf8');
 const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 
-if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
+if (dry.schemaVersion !== expectedSchemaVersion || continueFail.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for all runs.`);
 }
 if (dryRepeat.schemaVersion !== expectedSchemaVersion || continueTrue.schemaVersion !== expectedSchemaVersion || continueFalse.schemaVersion !== expectedSchemaVersion || continueFlag.schemaVersion !== expectedSchemaVersion || dedupe.schemaVersion !== expectedSchemaVersion || from.schemaVersion !== expectedSchemaVersion || fullDry.schemaVersion !== expectedSchemaVersion || defaultModeDry.schemaVersion !== expectedSchemaVersion || modePrecedenceFull.schemaVersion !== expectedSchemaVersion || modePrecedenceQuick.schemaVersion !== expectedSchemaVersion || envRetries.schemaVersion !== expectedSchemaVersion || cliRetriesOverride.schemaVersion !== expectedSchemaVersion) {
 	throw new Error(`Expected schema version ${expectedSchemaVersion} for dedupe/from runs.`);
 }
-for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['fail-fast', failFast], ['retry', retry]]) {
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['continue-true', continueTrue], ['continue-false', continueFalse], ['continue-flag', continueFlag], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['continue-fail', continueFail], ['fail-fast', failFast], ['retry', retry]]) {
 	const statusCounts = summary.statusCounts ?? {};
 	const passCount = summary.passedGateCount ?? 0;
 	const failCount = summary.failedGateCount ?? 0;
@@ -259,7 +286,7 @@ if (dry.resultSignature === dedupe.resultSignature) {
 	throw new Error('Different gate selections should produce different result signatures.');
 }
 const timestampPattern = /^\d{8}T\d{6}Z$/;
-for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['fail-fast', failFast], ['retry', retry]]) {
+for (const [label, summary] of [['dry', dry], ['dry-repeat', dryRepeat], ['dedupe', dedupe], ['from', from], ['full-dry', fullDry], ['default-mode-dry', defaultModeDry], ['mode-precedence-full', modePrecedenceFull], ['mode-precedence-quick', modePrecedenceQuick], ['env-retries', envRetries], ['cli-retries-override', cliRetriesOverride], ['continue-fail', continueFail], ['fail-fast', failFast], ['retry', retry]]) {
 	const expectedRunIdPrefix = label === 'full-dry' || label === 'default-mode-dry' || label === 'mode-precedence-full' ? 'full-' : 'quick-';
 	if (typeof summary.runId !== 'string' || !summary.runId.startsWith(expectedRunIdPrefix)) {
 		throw new Error(`${label} summary runId should start with ${expectedRunIdPrefix}.`);
@@ -303,6 +330,36 @@ if (envRetries.retries !== 2 || envRetries.mode !== 'quick' || envRetries.select
 }
 if (cliRetriesOverride.retries !== 0 || cliRetriesOverride.mode !== 'quick' || cliRetriesOverride.selectedGateIds.join(',') !== 'lint') {
 	throw new Error('Expected --retries flag to override VSCODE_VERIFY_RETRIES.');
+}
+if (continueFail.continueOnFailure !== true || continueFail.dryRun !== false || continueFail.mode !== 'quick') {
+	throw new Error('Continue-on-failure failure run metadata mismatch.');
+}
+if (continueFail.exitReason !== 'completed-with-failures' || continueFail.runClassification !== 'failed-continued') {
+	throw new Error('Continue-on-failure failure exit reason/classification mismatch.');
+}
+if (continueFail.gateStatusById.lint !== 'fail' || continueFail.gateStatusById.typecheck !== 'pass') {
+	throw new Error('Continue-on-failure failure gate status map mismatch.');
+}
+if (continueFail.gateAttemptCountById.lint !== 1 || continueFail.gateAttemptCountById.typecheck !== 1 || continueFail.gateRetryCountById.lint !== 0 || continueFail.gateRetryCountById.typecheck !== 0) {
+	throw new Error('Continue-on-failure failure gate attempt/retry map mismatch.');
+}
+if (continueFail.gateExitCodeById.lint !== 7 || continueFail.gateExitCodeById.typecheck !== 0 || continueFail.failedGateExitCode !== 7) {
+	throw new Error('Continue-on-failure failure exit-code metadata mismatch.');
+}
+if (continueFail.failedGateId !== 'lint' || continueFail.blockedByGateId !== null) {
+	throw new Error('Continue-on-failure failure gate pointers mismatch.');
+}
+if (continueFail.failedGateIds.join(',') !== 'lint' || continueFail.failedGateExitCodes.join(',') !== '7') {
+	throw new Error('Continue-on-failure failure partitions mismatch for failed gates.');
+}
+if (continueFail.executedGateIds.join(',') !== 'lint,typecheck' || continueFail.notRunGateIds.length !== 0) {
+	throw new Error('Continue-on-failure failure executed/not-run partition mismatch.');
+}
+if (continueFail.nonSuccessGateIds.join(',') !== 'lint' || continueFail.attentionGateIds.join(',') !== 'lint') {
+	throw new Error('Continue-on-failure failure non-success/attention partition mismatch.');
+}
+if (continueFail.retriedGateIds.length !== 0 || continueFail.retriedGateCount !== 0) {
+	throw new Error('Continue-on-failure failure should not report retries.');
 }
 if (!Array.isArray(failFast.executedGateIds) || failFast.executedGateCount !== failFast.executedGateIds.length) {
 	throw new Error('Fail-fast executed gate count/list mismatch.');
@@ -382,6 +439,9 @@ if (retry.nonSuccessGateIds.length !== 0 || retry.failedGateId !== null || retry
 if (!/\*\*Gate not-run reason map:\*\* \{[^\n]*typecheck[^\n]*blocked-by-fail-fast:lint/.test(failFastStep)) {
 	throw new Error('Fail-fast step summary missing compact not-run reason map.');
 }
+if (!continueFailStep.includes('**Continue on failure:** true') || !continueFailStep.includes('**Dry run:** false') || !continueFailStep.includes('**Exit reason:** completed-with-failures') || !continueFailStep.includes('**Run classification:** failed-continued')) {
+	throw new Error('Continue-on-failure failure step summary metadata mismatch.');
+}
 if (!/\*\*Gate attempt-count map:\*\* \{[^\n]*lint[^\n]*2[^\n]*typecheck[^\n]*1/.test(retryStep)) {
 	throw new Error('Retry step summary missing attempt-count map.');
 }
@@ -391,7 +451,7 @@ if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.t
 if (!failFastStep.includes('**Log file:** `') || !retryStep.includes('**Log file:** `')) {
 	throw new Error('Step summaries should include log-file metadata line.');
 }
-if (failFastStep.includes('**Schema warning:**') || retryStep.includes('**Schema warning:**') || continueFlagStep.includes('**Schema warning:**') || fallbackStep.includes('**Schema warning:**')) {
+if (continueFailStep.includes('**Schema warning:**') || failFastStep.includes('**Schema warning:**') || retryStep.includes('**Schema warning:**') || continueFlagStep.includes('**Schema warning:**') || fallbackStep.includes('**Schema warning:**')) {
 	throw new Error('Did not expect schema warning for current-schema summaries.');
 }
 if (!continueFlagStep.includes('**Continue on failure:** true') || !continueFlagStep.includes('**Dry run:** true') || !continueFlagStep.includes('**Run classification:** dry-run')) {

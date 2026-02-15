@@ -2110,3 +2110,11 @@
     - explicit `--retries` overrides `VSCODE_VERIFY_RETRIES`.
   - `scripts/README.md` now documents these precedence checks under CI contract coverage notes.
   **Why:** guarantees deterministic CLI/env precedence semantics for automation wrappers and CI callers that compose flags dynamically.
+- **Continue-on-failure failure-path contract coverage (2026-02-15 PM)** Expanded producer/renderer assertions for non-fail-fast failures:
+  - `scripts/test-verify-gates-summary.sh` now runs a mocked failure scenario with `--continue-on-failure` where:
+    - `lint` fails and `typecheck` still executes/passes
+    - run exits non-zero with `exitReason=completed-with-failures` and `runClassification=failed-continued`
+    - summary metadata/partitions/maps remain internally consistent (`failedGateIds`, `failedGateExitCodes`, `executedGateIds`, `nonSuccessGateIds`, `attentionGateIds`, retry counts).
+  - The same scenario is rendered through `scripts/publish-verify-gates-summary.sh`, and the contract checks now assert expected markdown metadata lines for continue-on-failure + failed-continued output.
+  - `scripts/README.md` updated to note continue-on-failure failure-path coverage in contract test scope.
+  **Why:** closes a key behavioral gap between fail-fast and continued-failure modes so CI consumers can reliably distinguish and triage both failure classes.
