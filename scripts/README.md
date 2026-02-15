@@ -41,7 +41,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - **Full gate:** `make build && make test && make test-integration` (and optionally `make test-smoke`).
 - **One-command sweep:** `./scripts/verify-gates.sh` (or `./scripts/verify-gates.sh --quick`).
 - **Retry and logs:** set `VSCODE_VERIFY_RETRIES=<n>` (or `--retries <n>`), logs are written to `.build/logs/verify-gates/` (override via `VSCODE_VERIFY_LOG_DIR`).
-- **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.
+- **Failure strategy:** default is fail-fast; set `VSCODE_VERIFY_CONTINUE_ON_FAILURE=1` (also accepts `true/yes/on`) or pass `--continue-on-failure` to run all selected gates before returning a failing exit code.
 - **Machine-readable summary:** each run also writes `<mode>-<timestamp>.json`; override with `--summary-json <path>` or `VSCODE_VERIFY_SUMMARY_FILE`.
   - Summary payload includes `runId`, `startedAt`, `completedAt`, `totalDurationSeconds`, `continueOnFailure`, `dryRun`, `gateCount`, `passedGateCount`, `failedGateCount`, `skippedGateCount`, `notRunGateCount`, `failedGateId`, plus per-gate `status`, `attempts`, and `durationSeconds`.
 - **GitHub step summary helper:** use `./scripts/publish-verify-gates-summary.sh` to render the JSON payload into markdown for CI run summaries.

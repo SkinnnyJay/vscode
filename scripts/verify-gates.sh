@@ -44,6 +44,27 @@ lint typecheck test-unit test test-smoke test-integration test-e2e test-web-inte
 USAGE
 }
 
+normalize_boolean_flag() {
+	local raw_value="$1"
+	local flag_label="$2"
+	local normalized_value="${raw_value,,}"
+
+	case "$normalized_value" in
+		1|true|yes|on)
+			echo "1"
+			return 0
+			;;
+		0|false|no|off)
+			echo "0"
+			return 0
+			;;
+		*)
+			echo "Invalid ${flag_label} value '$raw_value' (expected one of: 0,1,true,false,yes,no,on,off)." >&2
+			return 1
+			;;
+	esac
+}
+
 while (($# > 0)); do
 	case "$1" in
 		-h|--help)
@@ -112,8 +133,7 @@ if ! [[ "$RETRIES" =~ ^[0-9]+$ ]]; then
 	exit 1
 fi
 
-if ! [[ "$CONTINUE_ON_FAILURE" =~ ^[01]$ ]]; then
-	echo "Invalid continue-on-failure value '$CONTINUE_ON_FAILURE' (expected 0 or 1)." >&2
+if ! CONTINUE_ON_FAILURE="$(normalize_boolean_flag "$CONTINUE_ON_FAILURE" "continue-on-failure")"; then
 	exit 1
 fi
 

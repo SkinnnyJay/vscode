@@ -1505,3 +1505,7 @@
   - GitHub summary renderer output includes `Continue on failure` and `Not-run gates`
   - after unsetting mock function, real `./scripts/verify-gates.sh --quick --only typecheck --retries 0` and `make lint` both passed.
   **Why:** demonstrates behavior under controlled failure and real gate execution while preventing false positives from shell-state test doubles.
+- **Continue-on-failure env parsing hardening (2026-02-15 AM)** Improved `scripts/verify-gates.sh` boolean env parsing:
+  - `VSCODE_VERIFY_CONTINUE_ON_FAILURE` now accepts `0/1`, `true/false`, `yes/no`, `on/off` (case-insensitive)
+  - invalid values now fail fast with a precise allowed-values error.
+  **Why:** prevents brittle CI failures from common boolean env conventions and provides clearer feedback on misconfiguration.
