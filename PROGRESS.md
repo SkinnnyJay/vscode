@@ -1286,3 +1286,10 @@
   - `make test` → first run transiently failed in this VM, immediate rerun **pass**
   - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
   **Why:** confirms launcher hardening changes remain stable across repeated long/short suites and captures ongoing evidence of occasional environment-level flakiness with successful reruns.
+- **Fresh post-consolidation build+test sweep (2026-02-15 AM)** Ran another full set of core gates on current head:
+  - `make test-smoke` → **pass**
+  - `make test-integration` → **pass**
+  - `make test` → first run transient VM failure, immediate rerun **pass**
+  - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
+  - `make build` → **pass** (0 compile errors)
+  **Why:** reconfirms launcher-helper refactor remains stable across smoke/integration/electron-unit/node-unit/build paths under repeated execution pressure.
