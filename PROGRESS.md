@@ -1143,3 +1143,10 @@
   - `make lint` → **pass**
   - `npm run compile` in `test/smoke` → **pass**
   **Why:** confirms the blocker moved from immediate renderer import failure to stable execution for both smoke and Electron unit targets in this Linux headless environment.
+- **Post-fix regression sweep (2026-02-15 AM)** Ran broader post-mitigation validation to ensure stability beyond the immediate fix path:
+  - `make build` → **pass**
+  - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
+  - `xvfb-run -a ./scripts/code.sh --version` → **pass**
+  - `xvfb-run -a make test-smoke` (re-run) → **pass** (`34 passing`, `61 pending`, `0 failing`)
+  - `make lint` → **pass**
+  **Why:** verifies the Linux `/dev/shm` mitigation integrates cleanly with compile/build, node-unit, electron-unit, and smoke workflows without introducing regressions.
