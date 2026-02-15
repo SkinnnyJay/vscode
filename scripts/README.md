@@ -44,8 +44,13 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 - Electron test/smoke launchers auto-apply `--disable-dev-shm-usage` on Linux to reduce `/dev/shm` exhaustion failures in container/headless environments.
 - To intentionally disable this mitigation for local experiments, set:
   - `VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND=1`
+- Test launchers also auto-fallback to `xvfb-run -a` when Linux display detection fails (`DISPLAY` missing or points to a dead X server), so default `make test`, `make test-smoke`, and integration flows can run in headless VMs without manual wrapping.
+- To bypass the internal xvfb re-exec guard (mainly for debugging launcher behavior), set:
+  - `VSCODE_SKIP_XVFB_WRAPPER=1`
 - Applies to:
   - `make test` (`scripts/test.sh`)
+  - `make test-smoke` (`scripts/test-smoke.sh`)
+  - integration extension launches via `scripts/code.sh`
   - smoke/electron automation launches (`test/automation/src/electron.ts`)
 
 Scripts are documented at the top of each file (purpose, usage, and what they delegate to).

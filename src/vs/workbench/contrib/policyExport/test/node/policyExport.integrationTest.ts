@@ -13,9 +13,11 @@ import { dirname, join } from '../../../../../base/common/path.js';
 import { FileAccess } from '../../../../../base/common/network.js';
 import * as util from 'util';
 
-const exec = util.promisify(cp.exec);
+const execFile = util.promisify(cp.execFile);
 const policyExportRetries = 3;
 const policyExportRetryDelayMs = 500;
+const policyExportAttemptTimeoutMs = 30000;
+const policyExportTestTimeoutMs = 180000;
 const policyExportFileWaitTimeoutMs = 5000;
 const policyExportFileWaitIntervalMs = 200;
 
@@ -29,7 +31,7 @@ suite('PolicyExport Integration Tests', () => {
 		}
 
 		// This test launches VS Code with --export-policy-data flag, so it takes longer
-		this.timeout(60000);
+		this.timeout(policyExportTestTimeoutMs);
 
 		// Get the repository root (FileAccess.asFileUri('') points to the 'out' directory)
 		const rootPath = dirname(FileAccess.asFileUri('').fsPath);
@@ -73,9 +75,10 @@ async function runPolicyExportWithRetry(scriptPath: string, targetPath: string, 
 	for (let attempt = 1; attempt <= policyExportRetries; attempt++) {
 		try {
 			await fs.unlink(targetPath).catch(() => undefined);
-			const execResult = await exec(`"${scriptPath}" --export-policy-data="${targetPath}"`, {
+			const execResult = await execFile(scriptPath, [`--export-policy-data=${targetPath}`], {
 				cwd,
-				env: { ...process.env, VSCODE_SKIP_PRELAUNCH: '1' }
+				env: { ...process.env, VSCODE_SKIP_PRELAUNCH: '1' },
+				timeout: policyExportAttemptTimeoutMs
 			});
 
 			const fileCreated = await waitForFile(targetPath, policyExportFileWaitTimeoutMs, policyExportFileWaitIntervalMs);

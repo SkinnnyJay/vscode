@@ -1185,3 +1185,18 @@
   - `xvfb-run -a make test-integration` → **pass**
   - `make lint` → **pass**
   **Why:** confirms both previously intermittent integration failure points are now stable within the full integration workflow.
+- **Headless-display fallback in test launchers (2026-02-15 AM)** Hardened shell entrypoints to auto-recover from missing/stale X11 displays on Linux:
+  - `scripts/test.sh`, `scripts/code.sh`, `scripts/test-smoke.sh` now detect unavailable displays (`DISPLAY` unset or `xdpyinfo` probe failure) and re-exec under `xvfb-run -a`.
+  - added recursion guard (`VSCODE_SKIP_XVFB_WRAPPER=1`) so wrapper handoff happens once.
+  **Why:** default `make test`/`make test-integration`/`make test-smoke` should succeed in headless CI/VMs without requiring manual `xvfb-run` prefixes, even when `DISPLAY` is set to a dead socket.
+- **Policy export timeout hardening (2026-02-15 AM)** Extended policy export integration resiliency for slow CI hosts:
+  - switched subprocess launch to `execFile` with explicit attempt timeout (`30s`) and increased overall test timeout (`180s`).
+  - preserved retry/poll behavior while avoiding shell-quoting ambiguity.
+  **Why:** real run showed the policy export command succeeding at ~74s in this VM, exceeding the previous 60s Mocha timeout and causing false failures.
+- **Post-hardening validation (2026-02-15 AM)** Re-ran affected gates using default make targets (no manual xvfb wrapper):
+  - `make test` → **pass**
+  - `make test-smoke` → **pass** (`34 passing`, `61 pending`, `0 failing`)
+  - `./scripts/test.sh --runGlob "**/policyExport.integrationTest.js"` → **pass** (`2 passing`, policy export case ~74s)
+  - `make test-integration` → **pass**
+  - `make lint` → **pass**
+  **Why:** verifies launcher fallback + timeout adjustments eliminate headless-environment failures while keeping full integration and lint gates green.
