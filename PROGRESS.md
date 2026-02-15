@@ -1205,3 +1205,7 @@
   - `make build` → **pass** (full compile: 0 errors)
   - `make test-unit` → **pass** (`7584 passing`, `134 pending`)
   **Why:** reconfirms no regressions on compile + fast unit gates after the latest headless stability fixes, while verifying PLAN completion state remains intact.
+- **Extended validation sweep (2026-02-15 AM)** Ran additional cross-surface checks to keep post-plan confidence high:
+  - `make typecheck` → **pass**
+  - `make test-web-integration` → **pass** (API/ipynb/config suites green; expected informational 404/log noise only)
+  **Why:** validates typed build consistency and browser-hosted integration paths after recent Linux headless hardening.
