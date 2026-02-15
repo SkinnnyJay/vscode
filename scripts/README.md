@@ -23,8 +23,8 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
 | `make test-web-integration` | `test-web-integration.sh` | Web/browser integration tests (Playwright). |
 | `make test-smoke` | `test-smoke.sh` | Smoke tests (`npm run smoketest`). |
 | `make test-e2e` | `test-e2e.sh` | E2E/integration (delegates to `test-integration.sh`). |
-| `./scripts/verify-gates.sh` | `verify-gates.sh` | Deterministic validation sweep across lint/typecheck/tests/build with retry support and per-run log/summary output. Use `./scripts/verify-gates.sh --quick` for lighter checks. |
-| `./scripts/publish-verify-gates-summary.sh` | `publish-verify-gates-summary.sh` | Append a verify-gates JSON summary to `GITHUB_STEP_SUMMARY` (CI step summaries). |
+| `./scripts/verify-gates.sh` | `verify-gates.sh` | Deterministic validation sweep across lint/typecheck/tests/build with retry support and per-run log/summary output. Use `./scripts/verify-gates.sh --quick` for lighter checks; run with `--help` for options/gate IDs. |
+| `./scripts/publish-verify-gates-summary.sh` | `publish-verify-gates-summary.sh` | Append a verify-gates JSON summary to `GITHUB_STEP_SUMMARY` (CI step summaries). Run with `--help` for usage and env details. |
 | **Lint and format** | | |
 | `make lint` | `lint.sh` | ESLint + Stylelint (no fix). |
 | `make fmt` | `fmt.sh` | Apply formatting fixes. |

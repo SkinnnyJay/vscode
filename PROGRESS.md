@@ -1436,3 +1436,8 @@
   - renders placeholder table row when `gates` is absent/empty
   - tolerates missing metadata fields by rendering `unknown` placeholders.
   **Why:** keeps `if: always()` summary steps reliable and informative even when upstream verification fails before writing a complete summary payload.
+- **Script CLI help ergonomics (2026-02-15 AM)** Added explicit `--help`/`-h` support to validation helper scripts:
+  - `scripts/verify-gates.sh` now prints option docs + canonical gate IDs via `--help`
+  - unknown options now print the same shared usage output
+  - `scripts/publish-verify-gates-summary.sh` now supports `--help` with argument/env documentation.
+  **Why:** improves discoverability and reduces operator error for local debugging/CI maintenance without changing core gate behavior.

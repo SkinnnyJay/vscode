@@ -4,6 +4,26 @@
 # Defaults to VSCODE_VERIFY_SUMMARY_FILE when path is omitted.
 set -euo pipefail
 
+print_usage() {
+	cat <<'USAGE'
+Usage: ./scripts/publish-verify-gates-summary.sh [summary-json-path] [summary-heading]
+
+Arguments:
+summary-json-path    Optional path to verify-gates summary JSON.
+Defaults to VSCODE_VERIFY_SUMMARY_FILE.
+summary-heading      Optional markdown heading text.
+Defaults to "Verify Gates Summary".
+
+Environment:
+GITHUB_STEP_SUMMARY  Target markdown file to append.
+USAGE
+}
+
+if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
+	print_usage
+	exit 0
+fi
+
 SUMMARY_FILE_PATH="${1:-${VSCODE_VERIFY_SUMMARY_FILE:-}}"
 SUMMARY_HEADING="${2:-Verify Gates Summary}"
 

@@ -20,8 +20,30 @@ SUMMARY_FILE=""
 FROM_GATE_ID=""
 ONLY_GATE_IDS_RAW=""
 
+print_usage() {
+	cat <<'USAGE'
+Usage: ./scripts/verify-gates.sh [options]
+
+Options:
+--quick                     Run quick gate set (lint, typecheck, test-unit).
+--full                      Run full gate set (default).
+--retries <n>               Retry count per gate (default: VSCODE_VERIFY_RETRIES or 1).
+--summary-json <path>       Write run summary JSON to path.
+--from <gate-id>            Start execution from matching gate ID.
+--only <id[,id...]>         Run only listed gate IDs.
+-h, --help                  Show this help message.
+
+Gate IDs:
+lint typecheck test-unit test test-smoke test-integration test-e2e test-web-integration build
+USAGE
+}
+
 while (($# > 0)); do
 	case "$1" in
+		-h|--help)
+			print_usage
+			exit 0
+			;;
 		--quick)
 			MODE="quick"
 			;;
@@ -46,7 +68,7 @@ while (($# > 0)); do
 			;;
 		*)
 			echo "Unknown option: $1" >&2
-			echo "Usage: ./scripts/verify-gates.sh [--quick|--full] [--retries <n>] [--summary-json <path>] [--from <gate-id>] [--only <gate-id[,gate-id...]>]" >&2
+			print_usage >&2
 			exit 1
 			;;
 	esac
