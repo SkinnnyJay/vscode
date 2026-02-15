@@ -1735,6 +1735,10 @@
   - terminal output and markdown summary include the expected classification string for each validated path.
   - `make lint` → **pass**.
   **Why:** confirms taxonomy values are deterministic and correctly mapped to run behavior in dry/fail/continue/retry/success scenarios.
+- **Status-count map in summary payload (2026-02-15 AM)** Added normalized status-count object:
+  - `scripts/verify-gates.sh` now emits top-level `statusCounts` object (`pass`, `fail`, `skip`, `not-run`) aligned with existing scalar counters
+  - `scripts/publish-verify-gates-summary.sh` now renders `Status counts` metadata line (JSON string form).
+  **Why:** gives downstream consumers a single structured status-count field without having to read multiple sibling scalar keys.
 - **Deterministic result signature telemetry (2026-02-15 AM)** Added run-shape fingerprinting:
   - `scripts/verify-gates.sh` now computes `resultSignature` (sha256 over ordered gate outcome facts) and includes it in terminal + JSON summary
   - `scripts/publish-verify-gates-summary.sh` now renders `Result signature` in step summaries.

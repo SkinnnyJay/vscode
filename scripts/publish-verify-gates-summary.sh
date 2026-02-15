@@ -133,6 +133,7 @@ const lines = [
 	`**Failed gates:** ${summary.failedGateCount ?? 'unknown'}`,
 	`**Skipped gates:** ${summary.skippedGateCount ?? 'unknown'}`,
 	`**Not-run gates:** ${summary.notRunGateCount ?? 'unknown'}`,
+	`**Status counts:** ${sanitizeCell(JSON.stringify(summary.statusCounts ?? { pass: summary.passedGateCount ?? 'unknown', fail: summary.failedGateCount ?? 'unknown', skip: summary.skippedGateCount ?? 'unknown', 'not-run': summary.notRunGateCount ?? 'unknown' }))}`,
 	`**Executed gates:** ${summary.executedGateCount ?? 'unknown'}`,
 	`**Total retries:** ${summary.totalRetryCount ?? 'unknown'}`,
 	`**Total retry backoff:** ${summary.totalRetryBackoffSeconds ?? 'unknown'}s`,

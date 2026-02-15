@@ -971,6 +971,7 @@ write_summary_json() {
 		echo "  \"failedGateCount\": ${failed_gate_count},"
 		echo "  \"skippedGateCount\": ${skipped_gate_count},"
 		echo "  \"notRunGateCount\": ${not_run_gate_count},"
+		echo "  \"statusCounts\": {\"pass\": ${passed_gate_count}, \"fail\": ${failed_gate_count}, \"skip\": ${skipped_gate_count}, \"not-run\": ${not_run_gate_count}},"
 		echo "  \"executedGateCount\": ${executed_gate_count},"
 		echo "  \"totalRetryCount\": ${total_retry_count},"
 		echo "  \"totalRetryBackoffSeconds\": ${total_retry_backoff_seconds},"
