@@ -79,6 +79,8 @@ selected_order_missing_rows_summary="$tmpdir/selected-order-missing-rows.json"
 selected_order_missing_rows_step_summary="$tmpdir/selected-order-missing-rows-step.md"
 selected_order_unmatched_rows_summary="$tmpdir/selected-order-unmatched-rows.json"
 selected_order_unmatched_rows_step_summary="$tmpdir/selected-order-unmatched-rows-step.md"
+invocation_whitespace_summary="$tmpdir/invocation-whitespace.json"
+invocation_whitespace_step_summary="$tmpdir/invocation-whitespace-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -540,6 +542,24 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_order_unmatched_rows_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_order_unmatched_rows_summary" "Verify Gates Selected Order Unmatched Rows Contract Test"
+
+node - "$expected_schema_version" "$invocation_whitespace_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'invocation-whitespace-contract',
+	invocation: '   ',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$invocation_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$invocation_whitespace_summary" "Verify Gates Invocation Whitespace Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1527,6 +1547,14 @@ if grep -Fq '| `n/a` | `n/a` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |' "$sele
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_order_unmatched_rows_step_summary"; then
 	echo "Did not expect schema warning for selected-order-unmatched-rows summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Invocation:** unknown" "$invocation_whitespace_step_summary"; then
+	echo "Expected invocation-whitespace summary to normalize whitespace-only invocation values to unknown." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$invocation_whitespace_step_summary"; then
+	echo "Did not expect schema warning for invocation-whitespace summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

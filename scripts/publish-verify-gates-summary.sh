@@ -869,6 +869,7 @@ const continueOnFailureValue = explicitContinueOnFailure !== null
 		: (derivedExitReason === 'fail-fast' || derivedExitReason === 'success' || derivedExitReason === 'dry-run' ? false : 'unknown'));
 const gateNotRunReasonEntries = Object.entries(gateNotRunReasonById).filter(([, reason]) => typeof reason === 'string' && reason.length > 0);
 const gateNotRunReasonMapLabel = gateNotRunReasonEntries.length > 0 ? JSON.stringify(Object.fromEntries(gateNotRunReasonEntries)) : 'none';
+const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown';
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');
 const orderedRowsFromSelectedIds = selectedGateIdsFromSummary && selectedGateIdsFromSummary.length > 0
@@ -902,7 +903,7 @@ const lines = [
 	`**Result signature algorithm:** ${sanitizeCell(summary.resultSignatureAlgorithm ?? 'unknown')}`,
 	`**Result signature:** ${sanitizeCell(summary.resultSignature ?? 'unknown')}`,
 	`**Exit reason:** ${sanitizeCell(derivedExitReason)}`,
-	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
+	`**Invocation:** ${sanitizeCell(invocationValue)}`,
 	`**Continue on failure:** ${continueOnFailureValue}`,
 	`**Dry run:** ${dryRunValue}`,
 	`**Gate count:** ${gateCount}`,

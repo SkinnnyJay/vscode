@@ -72,6 +72,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes selected-gate missing-row map-default checks proving missing selected gates still appear in per-gate maps with safe defaults (`unknown` status, `null` exit code).
   - Includes row-derived map-default parity checks proving missing selected gates receive safe defaults in row-derived maps too (`null`/`0`), not just explicit summary maps.
   - Includes selected-gate unmatched-row table fallback checks proving table rendering falls back to available rows when explicit `selectedGateIds` match no row IDs.
+  - Includes invocation-whitespace checks proving blank/whitespace `invocation` values normalize to `unknown` in rendered metadata.
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.
   - Includes unknown-status row-table checks proving unresolved row status tokens are normalized to `unknown` in markdown table output (no raw unknown-status leakage).
