@@ -2016,6 +2016,13 @@
     - `selectedGateIds` / `skippedGateIds` both resolve to `build` in dry-run mode.
   - `scripts/README.md` updated to include mode-specific metadata coverage.
   **Why:** ensures consumers can reliably distinguish quick/full runs from summary metadata and trust mode-specific partitions.
+- **Step-summary boolean metadata coverage (2026-02-15 PM)** Expanded renderer assertions for boolean/label fields:
+  - `scripts/test-verify-gates-summary.sh` now publishes a continue-on-failure dry-run summary and verifies markdown contains:
+    - `Continue on failure: true`
+    - `Dry run: true`
+    - `Run classification: dry-run`
+  - `scripts/README.md` updated to include step-summary boolean metadata coverage.
+  **Why:** ensures critical operator-facing booleans/classification are surfaced correctly in CI summaries, not just JSON payloads.
 - **Sparse-payload + malformed-path warning coverage (2026-02-15 PM)** Expanded renderer robustness assertions:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - scalar JSON payload (e.g. `17`) still renders a placeholder row and heading

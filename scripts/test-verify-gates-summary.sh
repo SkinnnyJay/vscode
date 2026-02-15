@@ -25,6 +25,7 @@ dry_repeat_summary="$tmpdir/dry-repeat.json"
 continue_true_summary="$tmpdir/continue-true.json"
 continue_false_summary="$tmpdir/continue-false.json"
 continue_flag_summary="$tmpdir/continue-flag.json"
+continue_flag_step_summary="$tmpdir/continue-flag-step.md"
 dedupe_summary="$tmpdir/dedupe.json"
 from_summary="$tmpdir/from.json"
 full_dry_summary="$tmpdir/full-dry.json"
@@ -141,6 +142,7 @@ unset -f make
 
 GITHUB_STEP_SUMMARY="$fail_fast_step_summary" ./scripts/publish-verify-gates-summary.sh "$fail_fast_summary" "Verify Gates Fail-fast Contract Test"
 GITHUB_STEP_SUMMARY="$retry_step_summary" ./scripts/publish-verify-gates-summary.sh "$retry_summary" "Verify Gates Retry Contract Test"
+GITHUB_STEP_SUMMARY="$continue_flag_step_summary" ./scripts/publish-verify-gates-summary.sh "$continue_flag_summary" "Verify Gates Continue-on-Failure Dry-Run Contract Test"
 
 node - "$retry_summary" "$fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -167,9 +169,9 @@ NODE
 
 GITHUB_STEP_SUMMARY="$fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$fallback_summary" "Verify Gates Fallback Contract Test"
 
-node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$fallback_step_summary" <<'NODE'
+node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$fail_fast_summary" "$retry_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
-const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, fallbackStepPath] = process.argv.slice(2);
+const [expectedSchemaVersionRaw, dryPath, dryRepeatPath, continueTruePath, continueFalsePath, continueFlagPath, dedupePath, fromPath, fullDryPath, failFastPath, retryPath, failFastStepPath, retryStepPath, continueFlagStepPath, fallbackStepPath] = process.argv.slice(2);
 const expectedSchemaVersion = Number.parseInt(expectedSchemaVersionRaw, 10);
 if (!Number.isInteger(expectedSchemaVersion) || expectedSchemaVersion <= 0) {
 	throw new Error(`Invalid expected schema version: ${expectedSchemaVersionRaw}`);
@@ -186,6 +188,7 @@ const failFast = JSON.parse(fs.readFileSync(failFastPath, 'utf8'));
 const retry = JSON.parse(fs.readFileSync(retryPath, 'utf8'));
 const failFastStep = fs.readFileSync(failFastStepPath, 'utf8');
 const retryStep = fs.readFileSync(retryStepPath, 'utf8');
+const continueFlagStep = fs.readFileSync(continueFlagStepPath, 'utf8');
 const fallbackStep = fs.readFileSync(fallbackStepPath, 'utf8');
 
 if (dry.schemaVersion !== expectedSchemaVersion || failFast.schemaVersion !== expectedSchemaVersion || retry.schemaVersion !== expectedSchemaVersion) {
@@ -317,6 +320,9 @@ if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.t
 }
 if (!failFastStep.includes('**Log file:** `') || !retryStep.includes('**Log file:** `')) {
 	throw new Error('Step summaries should include log-file metadata line.');
+}
+if (!continueFlagStep.includes('**Continue on failure:** true') || !continueFlagStep.includes('**Dry run:** true') || !continueFlagStep.includes('**Run classification:** dry-run')) {
+	throw new Error('Continue-on-failure dry-run step summary metadata mismatch.');
 }
 if (!/\*\*Gate status map:\*\* \{[^\n]*lint[^\n]*pass[^\n]*typecheck[^\n]*pass/.test(fallbackStep)) {
 	throw new Error('Fallback summary did not derive gate status map from gate rows.');
