@@ -101,6 +101,8 @@ derived_status_map_summary="$tmpdir/derived-status-map.json"
 derived_status_map_step_summary="$tmpdir/derived-status-map-step.md"
 status_map_duplicate_keys_summary="$tmpdir/status-map-duplicate-keys.json"
 status_map_duplicate_keys_step_summary="$tmpdir/status-map-duplicate-keys-step.md"
+duplicate_normalized_map_keys_summary="$tmpdir/duplicate-normalized-map-keys.json"
+duplicate_normalized_map_keys_step_summary="$tmpdir/duplicate-normalized-map-keys-step.md"
 derived_dry_run_summary="$tmpdir/derived-dry-run.json"
 derived_dry_run_step_summary="$tmpdir/derived-dry-run-step.md"
 derived_continued_failure_summary="$tmpdir/derived-continued-failure.json"
@@ -751,6 +753,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$status_map_duplicate_keys_step_summary" ./scripts/publish-verify-gates-summary.sh "$status_map_duplicate_keys_summary" "Verify Gates Status-Map Duplicate Keys Contract Test"
+
+node - "$expected_schema_version" "$duplicate_normalized_map_keys_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'duplicate-normalized-map-keys-contract',
+	gateStatusById: { ' lint ': 'pass' },
+	gateRetryCountById: { ' lint ': '1', lint: '4' },
+	gateNotRunReasonById: { ' lint ': ' first ', lint: ' second ' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$duplicate_normalized_map_keys_step_summary" ./scripts/publish-verify-gates-summary.sh "$duplicate_normalized_map_keys_summary" "Verify Gates Duplicate Normalized Map Keys Contract Test"
 
 node - "$expected_schema_version" "$derived_dry_run_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1998,6 +2020,22 @@ if ! grep -Fq "**Gate exit-code map:** {\"lint\":7}" "$status_map_duplicate_keys
 fi
 if grep -q "\*\*Schema warning:\*\*" "$status_map_duplicate_keys_step_summary"; then
 	echo "Did not expect schema warning for status-map-duplicate-keys summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":4}" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Expected duplicate-normalized-map-keys summary to apply deterministic last-write behavior for duplicate normalized retry-count map keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate not-run reason map:** {\"lint\":\"second\"}" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Expected duplicate-normalized-map-keys summary to apply deterministic last-write behavior for duplicate normalized reason map keys." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 4" "$duplicate_normalized_map_keys_step_summary" || ! grep -Fq "**Total retry backoff:** 15s" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Expected duplicate-normalized-map-keys summary to derive retry aggregates from normalized duplicate-map values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$duplicate_normalized_map_keys_step_summary"; then
+	echo "Did not expect schema warning for duplicate-normalized-map-keys summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Success:** true" "$derived_dry_run_step_summary"; then

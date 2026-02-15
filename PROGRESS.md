@@ -2417,6 +2417,13 @@
     - last-write status/exit-code values preserved (`fail`, `7`).
   - `scripts/README.md` updated to document duplicate normalized-key coverage for status/exit-code maps.
   **Why:** locks down predictable behavior when sparse producers emit colliding map keys that normalize to the same gate ID.
+- **Duplicate normalized retry/reason map-key coverage (2026-02-15 PM)** Extended map-collision guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `duplicate_normalized_map_keys` scenario with duplicate normalized keys in:
+    - `gateRetryCountById` (`' lint '` + `lint`)
+    - `gateNotRunReasonById` (`' lint '` + `lint`).
+  - Assertions verify deterministic last-write behavior (`retryCount=4`, reason=`second`) and derived retry aggregates (`Total retries: 4`, `Total retry backoff: 15s`).
+  - `scripts/README.md` updated to document duplicate normalized-key coverage for retry/reason maps.
+  **Why:** ensures collision handling stays consistent across all normalized per-gate map inputs, not just status/exit-code maps.
 - **Case/whitespace normalization for sparse gate rows (2026-02-15 PM)** Hardened `gates[]` status/ID ingestion:
   - `scripts/publish-verify-gates-summary.sh` now:
     - normalizes each gate-row `status` value with canonical enum normalization (`pass`/`fail`/`skip`/`not-run`) before derived counters/lists are computed

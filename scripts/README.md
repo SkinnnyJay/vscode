@@ -56,6 +56,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes classification-driven success contradiction checks proving conflicting explicit `success`/`dryRun` values are ignored while explicit `continueOnFailure` remains visible for non-failure summaries.
   - Includes status-map case/whitespace normalization checks proving sparse `gateStatusById` values are normalized case-insensitively (`PASS`/`FAIL`/`Not-Run`) before derivation.
   - Includes status-map duplicate-key checks proving normalized key collisions resolve deterministically (last-write wins) for status/exit-code map values.
+  - Includes duplicate normalized retry/reason map-key checks proving deterministic last-write behavior is preserved across `gateRetryCountById` and `gateNotRunReasonById` inputs too.
   - Includes gate-row status/ID case+whitespace normalization checks proving sparse `gates[].status` values are normalized case-insensitively and `gates[].id` values are trimmed + deduplicated before counter/list/table derivation.
   - Includes gate-row not-run-reason trimming checks proving sparse `gates[].notRunReason` values are whitespace-normalized in both map metadata and table rendering.
   - Includes gate-row not-run-reason type checks proving non-string `gates[].notRunReason` values are sanitized to `null`/`n/a` in derived metadata and table output.
