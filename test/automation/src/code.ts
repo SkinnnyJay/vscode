@@ -448,6 +448,10 @@ export class Code {
 					const importTargetConsoleErrorCounts = importTargetUrl
 						? `\nImport target console error counts: displayWindow=${importTargetDisplayWindowConsoleErrorCount}, retainedWindow=${importTargetRetainedWindowConsoleErrorCount}, total=${importTargetTotalConsoleErrorCount}`
 						: '';
+					const importTargetConsoleWindowState = this.classifyChannelWindowState(importTargetDisplayWindowConsoleErrorCount, importTargetRetainedWindowConsoleErrorCount, importTargetTotalConsoleErrorCount);
+					const importTargetConsoleWindowStateStatus = importTargetUrl
+						? `\nImport target console window state: ${importTargetConsoleWindowState}`
+						: '';
 					const importTargetTotalChannelEventCounts = importTargetUrl
 						? `\nImport target total event counts: requestFailures=${importTargetTotalEventCounts?.requestFailures ?? 0}, scriptResponses=${importTargetTotalEventCounts?.scriptResponses ?? 0}, cdpScriptLoads=${importTargetTotalEventCounts?.cdpScriptLoads ?? 0}`
 						: '';
@@ -540,6 +544,7 @@ export class Code {
 					const importTargetDiagnosticsConsistency = this.buildImportTargetDiagnosticsConsistency(
 						importTargetSignalClass,
 						importTargetVisibilityClass,
+						importTargetConsoleWindowState,
 						{
 							requestFailures: importTargetDisplayWindowRequestFailureEventCount,
 							scriptResponses: importTargetDisplayWindowScriptResponseEventCount,
@@ -553,10 +558,15 @@ export class Code {
 						importTargetTotalEventCounts,
 						importTargetDroppedEventEstimates,
 						importTargetChannelCoverage,
-						importTargetChannelWindowCoverage
+						importTargetChannelWindowCoverage,
+						{
+							displayWindow: importTargetDisplayWindowConsoleErrorCount,
+							retainedWindow: importTargetRetainedWindowConsoleErrorCount,
+							total: importTargetTotalConsoleErrorCount
+						}
 					);
 					const importTargetDiagnosticsConsistencyStatus = importTargetUrl
-						? `\nImport target diagnostics consistency: ${importTargetDiagnosticsConsistency.isConsistent ? 'pass' : 'fail'} (signal=${importTargetDiagnosticsConsistency.signalMatchesTotals}, visibility=${importTargetDiagnosticsConsistency.visibilityMatchesCounts}, deltas=${importTargetDiagnosticsConsistency.droppedMatchesDelta}, coverage=${importTargetDiagnosticsConsistency.coverageMatchesCounts}, windowCoverage=${importTargetDiagnosticsConsistency.windowCoverageMatchesCounts}, windows=${importTargetDiagnosticsConsistency.windowHierarchyMatchesCounts})`
+						? `\nImport target diagnostics consistency: ${importTargetDiagnosticsConsistency.isConsistent ? 'pass' : 'fail'} (signal=${importTargetDiagnosticsConsistency.signalMatchesTotals}, visibility=${importTargetDiagnosticsConsistency.visibilityMatchesCounts}, deltas=${importTargetDiagnosticsConsistency.droppedMatchesDelta}, coverage=${importTargetDiagnosticsConsistency.coverageMatchesCounts}, windowCoverage=${importTargetDiagnosticsConsistency.windowCoverageMatchesCounts}, windows=${importTargetDiagnosticsConsistency.windowHierarchyMatchesCounts}, consoleWindow=${importTargetDiagnosticsConsistency.consoleWindowStateMatchesCounts})`
 						: '';
 					const globalChannelBufferStats = {
 						requestFailures: {
@@ -579,10 +589,17 @@ export class Code {
 							capacity: recentCdpScriptLoadCapacity,
 							observed: totalObservedCdpScriptLoads,
 							dropped: droppedRecentCdpScriptLoads
+						},
+						consoleErrors: {
+							displayed: recentConsoleErrors.length,
+							retained: allRecentConsoleErrors.length,
+							capacity: recentConsoleErrorCapacity,
+							observed: totalObservedConsoleErrors,
+							dropped: droppedRecentConsoleErrors
 						}
 					};
 					const globalChannelBufferStatsStatus = importTargetUrl
-						? `\nImport target global channel buffers: requestFailures=${globalChannelBufferStats.requestFailures.displayed}/${globalChannelBufferStats.requestFailures.retained} (capacity=${globalChannelBufferStats.requestFailures.capacity}, observed=${globalChannelBufferStats.requestFailures.observed}, dropped=${globalChannelBufferStats.requestFailures.dropped}), scriptResponses=${globalChannelBufferStats.scriptResponses.displayed}/${globalChannelBufferStats.scriptResponses.retained} (capacity=${globalChannelBufferStats.scriptResponses.capacity}, observed=${globalChannelBufferStats.scriptResponses.observed}, dropped=${globalChannelBufferStats.scriptResponses.dropped}), cdpScriptLoads=${globalChannelBufferStats.cdpScriptLoads.displayed}/${globalChannelBufferStats.cdpScriptLoads.retained} (capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}, observed=${globalChannelBufferStats.cdpScriptLoads.observed}, dropped=${globalChannelBufferStats.cdpScriptLoads.dropped})`
+						? `\nImport target global channel buffers: requestFailures=${globalChannelBufferStats.requestFailures.displayed}/${globalChannelBufferStats.requestFailures.retained} (capacity=${globalChannelBufferStats.requestFailures.capacity}, observed=${globalChannelBufferStats.requestFailures.observed}, dropped=${globalChannelBufferStats.requestFailures.dropped}), scriptResponses=${globalChannelBufferStats.scriptResponses.displayed}/${globalChannelBufferStats.scriptResponses.retained} (capacity=${globalChannelBufferStats.scriptResponses.capacity}, observed=${globalChannelBufferStats.scriptResponses.observed}, dropped=${globalChannelBufferStats.scriptResponses.dropped}), cdpScriptLoads=${globalChannelBufferStats.cdpScriptLoads.displayed}/${globalChannelBufferStats.cdpScriptLoads.retained} (capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}, observed=${globalChannelBufferStats.cdpScriptLoads.observed}, dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}), consoleErrors=${globalChannelBufferStats.consoleErrors.displayed}/${globalChannelBufferStats.consoleErrors.retained} (capacity=${globalChannelBufferStats.consoleErrors.capacity}, observed=${globalChannelBufferStats.consoleErrors.observed}, dropped=${globalChannelBufferStats.consoleErrors.dropped})`
 						: '';
 					const importTargetGlobalBufferSignature = this.computeGlobalBufferSignature(globalChannelBufferStats);
 					const importTargetGlobalBufferSignatureStatus = importTargetUrl
@@ -614,6 +631,7 @@ export class Code {
 						importTargetVisibilityClass,
 						importTargetChannelStates,
 						importTargetChannelWindowStates,
+						importTargetConsoleWindowState,
 						importTargetChannelWindowCoverage,
 						importTargetChannelCoverage,
 						importTargetChannelCoverageClasses,
@@ -637,7 +655,7 @@ export class Code {
 						? `\nImport target detection timing: trial=${trial}, elapsedMs=${(trial - 1) * retryInterval}`
 						: '';
 
-					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetChannelWindowCoverageStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
+					throw new Error(`Workbench startup failed due to renderer module import error: ${pageError}${importTargetStatus}${importTargetScriptResponseStatus}${importTargetRequestFailureStatus}${importTargetCdpScriptLoadStatus}${importTargetConsoleErrorStatus}${importTargetCdpScriptLifecycleStatus}${importTargetDisplayWindowChannelEventCounts}${importTargetChannelEventCounts}${importTargetConsoleErrorCounts}${importTargetTotalChannelEventCounts}${importTargetSignalClassStatus}${importTargetVisibilityClassStatus}${importTargetChannelStatesStatus}${importTargetChannelWindowStatesStatus}${importTargetConsoleWindowStateStatus}${importTargetChannelWindowCoverageStatus}${importTargetDroppedEventEstimatesStatus}${importTargetCoverageStatus}${importTargetChannelCoverageClassesStatus}${importTargetDiagnosticsSchemaStatus}${importTargetDiagnosticsSignatureStatus}${importTargetGlobalBufferSignatureStatus}${importTargetCompositeSignatureStatus}${importTargetDiagnosticsConsistencyStatus}${importTargetDetectionTimingStatus}${globalChannelBufferStatsStatus}${importTargetDiagnosticsRecordStatus}${failureSummary}${scriptResponseSummary}${cdpScriptLoadSummary}${consoleErrorSummary}`);
 				}
 			}
 
@@ -854,6 +872,7 @@ export class Code {
 		visibilityClass: string,
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' },
 		channelWindowStates: { requestFailures: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; scriptResponses: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; cdpScriptLoads: 'displayed' | 'retained-only' | 'historical-only' | 'unseen' },
+		consoleWindowState: 'displayed' | 'retained-only' | 'historical-only' | 'unseen',
 		channelWindowCoverage: {
 			requestFailures: {
 				displayInRetained: { recent: number; total: number; percent: number | null };
@@ -885,6 +904,7 @@ export class Code {
 			coverageMatchesCounts: boolean;
 			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
+			consoleWindowStateMatchesCounts: boolean;
 			isConsistent: boolean;
 		},
 		signature: string,
@@ -897,6 +917,7 @@ export class Code {
 			requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 		}
 	): {
 		schemaVersion: number;
@@ -905,6 +926,7 @@ export class Code {
 		visibilityClass: string;
 		channelStates: { requestFailures: 'visible' | 'truncated' | 'unseen'; scriptResponses: 'visible' | 'truncated' | 'unseen'; cdpScriptLoads: 'visible' | 'truncated' | 'unseen' };
 		channelWindowStates: { requestFailures: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; scriptResponses: 'displayed' | 'retained-only' | 'historical-only' | 'unseen'; cdpScriptLoads: 'displayed' | 'retained-only' | 'historical-only' | 'unseen' };
+		consoleWindowState: 'displayed' | 'retained-only' | 'historical-only' | 'unseen';
 		channelWindowCoverage: {
 			requestFailures: {
 				displayInRetained: { recent: number; total: number; percent: number | null };
@@ -936,6 +958,7 @@ export class Code {
 			coverageMatchesCounts: boolean;
 			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
+			consoleWindowStateMatchesCounts: boolean;
 			isConsistent: boolean;
 		};
 		detectedAtTrial: number;
@@ -951,6 +974,7 @@ export class Code {
 			requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 			cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+			consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 		};
 		signature: string;
 	} | undefined {
@@ -965,6 +989,7 @@ export class Code {
 			visibilityClass,
 			channelStates,
 			channelWindowStates,
+			consoleWindowState,
 			channelWindowCoverage,
 			channelCoverage,
 			channelCoverageClasses,
@@ -1037,6 +1062,7 @@ export class Code {
 	private buildImportTargetDiagnosticsConsistency(
 		signalClass: string,
 		visibilityClass: string,
+		consoleWindowState: 'displayed' | 'retained-only' | 'historical-only' | 'unseen',
 		displayWindowEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		recentEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number },
 		totalEventCounts: { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } | undefined,
@@ -1059,7 +1085,8 @@ export class Code {
 				displayInRetained: { recent: number; total: number; percent: number | null };
 				retainedInTotal: { recent: number; total: number; percent: number | null };
 			};
-		}
+		},
+		consoleErrorCounts: { displayWindow: number; retainedWindow: number; total: number }
 	): {
 		signalMatchesTotals: boolean;
 		visibilityMatchesCounts: boolean;
@@ -1067,12 +1094,14 @@ export class Code {
 		coverageMatchesCounts: boolean;
 		windowCoverageMatchesCounts: boolean;
 		windowHierarchyMatchesCounts: boolean;
+		consoleWindowStateMatchesCounts: boolean;
 		isConsistent: boolean;
 	} {
 		const normalizedTotals = totalEventCounts ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 };
 		const normalizedDropped = droppedEventEstimates ?? { requestFailures: 0, scriptResponses: 0, cdpScriptLoads: 0 };
 		const expectedSignalClass = this.classifyImportTargetSignal(normalizedTotals);
 		const expectedVisibilityClass = this.classifyImportTargetVisibility(recentEventCounts, normalizedTotals);
+		const expectedConsoleWindowState = this.classifyChannelWindowState(consoleErrorCounts.displayWindow, consoleErrorCounts.retainedWindow, consoleErrorCounts.total);
 		const expectedDropped = {
 			requestFailures: Math.max(0, normalizedTotals.requestFailures - recentEventCounts.requestFailures),
 			scriptResponses: Math.max(0, normalizedTotals.scriptResponses - recentEventCounts.scriptResponses),
@@ -1080,6 +1109,7 @@ export class Code {
 		};
 		const signalMatchesTotals = signalClass === expectedSignalClass;
 		const visibilityMatchesCounts = visibilityClass === expectedVisibilityClass;
+		const consoleWindowStateMatchesCounts = consoleWindowState === expectedConsoleWindowState;
 		const droppedMatchesDelta = normalizedDropped.requestFailures === expectedDropped.requestFailures
 			&& normalizedDropped.scriptResponses === expectedDropped.scriptResponses
 			&& normalizedDropped.cdpScriptLoads === expectedDropped.cdpScriptLoads;
@@ -1107,7 +1137,13 @@ export class Code {
 			&& recentEventCounts.requestFailures <= normalizedTotals.requestFailures
 			&& recentEventCounts.scriptResponses <= normalizedTotals.scriptResponses
 			&& recentEventCounts.cdpScriptLoads <= normalizedTotals.cdpScriptLoads;
-		const isConsistent = signalMatchesTotals && visibilityMatchesCounts && droppedMatchesDelta && coverageMatchesCounts && windowCoverageMatchesCounts && windowHierarchyMatchesCounts;
+		const isConsistent = signalMatchesTotals
+			&& visibilityMatchesCounts
+			&& droppedMatchesDelta
+			&& coverageMatchesCounts
+			&& windowCoverageMatchesCounts
+			&& windowHierarchyMatchesCounts
+			&& consoleWindowStateMatchesCounts;
 
 		return {
 			signalMatchesTotals,
@@ -1116,6 +1152,7 @@ export class Code {
 			coverageMatchesCounts,
 			windowCoverageMatchesCounts,
 			windowHierarchyMatchesCounts,
+			consoleWindowStateMatchesCounts,
 			isConsistent
 		};
 	}
@@ -1124,6 +1161,7 @@ export class Code {
 		requestFailures: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 		scriptResponses: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 		cdpScriptLoads: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
+		consoleErrors: { displayed: number; retained: number; capacity: number; observed: number; dropped: number };
 	}): string {
 		const payload = [
 			`requestFailures.displayed=${globalChannelBufferStats.requestFailures.displayed}`,
@@ -1140,7 +1178,12 @@ export class Code {
 			`cdpScriptLoads.retained=${globalChannelBufferStats.cdpScriptLoads.retained}`,
 			`cdpScriptLoads.capacity=${globalChannelBufferStats.cdpScriptLoads.capacity}`,
 			`cdpScriptLoads.observed=${globalChannelBufferStats.cdpScriptLoads.observed}`,
-			`cdpScriptLoads.dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}`
+			`cdpScriptLoads.dropped=${globalChannelBufferStats.cdpScriptLoads.dropped}`,
+			`consoleErrors.displayed=${globalChannelBufferStats.consoleErrors.displayed}`,
+			`consoleErrors.retained=${globalChannelBufferStats.consoleErrors.retained}`,
+			`consoleErrors.capacity=${globalChannelBufferStats.consoleErrors.capacity}`,
+			`consoleErrors.observed=${globalChannelBufferStats.consoleErrors.observed}`,
+			`consoleErrors.dropped=${globalChannelBufferStats.consoleErrors.dropped}`
 		].join('|');
 
 		return this.computeStableSignature(payload);
@@ -1156,6 +1199,7 @@ export class Code {
 			coverageMatchesCounts: boolean;
 			windowCoverageMatchesCounts: boolean;
 			windowHierarchyMatchesCounts: boolean;
+			consoleWindowStateMatchesCounts: boolean;
 			isConsistent: boolean;
 		}
 	): string {
@@ -1168,6 +1212,7 @@ export class Code {
 			`coverageMatchesCounts=${consistencyChecks.coverageMatchesCounts}`,
 			`windowCoverageMatchesCounts=${consistencyChecks.windowCoverageMatchesCounts}`,
 			`windowHierarchyMatchesCounts=${consistencyChecks.windowHierarchyMatchesCounts}`,
+			`consoleWindowStateMatchesCounts=${consistencyChecks.consoleWindowStateMatchesCounts}`,
 			`isConsistent=${consistencyChecks.isConsistent}`
 		].join('|');
 

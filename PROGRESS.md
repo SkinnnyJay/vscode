@@ -944,3 +944,27 @@
   - retained console summary block still present with bounded counters/signature.
   Re-ran `make lint` (pass).
   **Why:** confirms target-level console correlation now reports both latest summary and cumulative total count consistently.
+- **Console window-state consistency + global buffer integration (2026-02-14 PM)** Extended import-target diagnostics with console channel parity:
+  - `test/automation/src/code.ts`
+    - added `Import target console window state: <displayed|retained-only|historical-only|unseen>`
+    - extended consistency checks with `consoleWindowStateMatchesCounts`
+      - consistency line now includes `consoleWindow=<bool>`
+      - `consistencyChecks` JSON includes `consoleWindowStateMatchesCounts`
+      - composite signature now includes this flag
+    - integrated console channel into `globalChannelBufferStats` and global buffer status line/signature:
+      - added `consoleErrors` buffer stats (`displayed`, `retained`, `capacity`, `observed`, `dropped`)
+      - `computeGlobalBufferSignature(...)` now hashes console buffer dimensions too
+    - structured diagnostics record now includes:
+      - `consoleWindowState`
+      - `globalChannelBufferStats.consoleErrors`.
+  **Why:** keeps console diagnostics channel first-class with the same state/consistency/signature semantics as other channels, reducing blind spots when only console evidence is available.
+- **Console-state integration validation (2026-02-14 PM)** Recompiled smoke/automation and re-ran `xvfb-run -a make test-smoke` (unchanged **1 failing / 94 pending / 0 passing**), verified fail-fast output includes:
+  - `Import target console window state: unseen`
+  - `Import target diagnostics consistency: pass (..., consoleWindow=true)`
+  - `Import target global channel buffers: ... consoleErrors=8/25 (capacity=25, observed=344, dropped=319)`
+  - structured record fields:
+    - `"consoleWindowState":"unseen"`
+    - `"consistencyChecks":{"...","consoleWindowStateMatchesCounts":true,"isConsistent":true}`
+    - `"globalChannelBufferStats":{"...","consoleErrors":{"displayed":8,"retained":25,"capacity":25,"observed":344,"dropped":319}}`.
+  Re-ran `make lint` (pass).
+  **Why:** confirms console window-state, consistency extension, and global-buffer integration are emitted and internally coherent.
