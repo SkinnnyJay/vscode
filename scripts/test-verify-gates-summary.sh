@@ -131,6 +131,8 @@ success_classification_explicit_continue_summary="$tmpdir/success-classification
 success_classification_explicit_continue_step_summary="$tmpdir/success-classification-explicit-continue-step.md"
 numeric_boolean_flags_summary="$tmpdir/numeric-boolean-flags.json"
 numeric_boolean_flags_step_summary="$tmpdir/numeric-boolean-flags-step.md"
+invalid_numeric_boolean_flags_summary="$tmpdir/invalid-numeric-boolean-flags.json"
+invalid_numeric_boolean_flags_step_summary="$tmpdir/invalid-numeric-boolean-flags-step.md"
 minimal_summary="$tmpdir/minimal.json"
 minimal_step_summary="$tmpdir/minimal-step.md"
 env_path_step_summary="$tmpdir/env-path-step.md"
@@ -1064,6 +1066,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$numeric_boolean_flags_step_summary" ./scripts/publish-verify-gates-summary.sh "$numeric_boolean_flags_summary" "Verify Gates Numeric Boolean Flags Contract Test"
+
+node - "$expected_schema_version" "$invalid_numeric_boolean_flags_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'invalid-numeric-boolean-flags-contract',
+	exitReason: 'fail-fast',
+	success: 2,
+	dryRun: 2,
+	continueOnFailure: 2,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$invalid_numeric_boolean_flags_step_summary" ./scripts/publish-verify-gates-summary.sh "$invalid_numeric_boolean_flags_summary" "Verify Gates Invalid Numeric Boolean Flags Contract Test"
 
 node - "$expected_schema_version" "$dry_summary" "$dry_repeat_summary" "$continue_true_summary" "$continue_false_summary" "$continue_flag_summary" "$dedupe_summary" "$from_summary" "$full_dry_summary" "$default_mode_dry_summary" "$mode_precedence_full_summary" "$mode_precedence_quick_summary" "$env_retries_summary" "$cli_retries_override_summary" "$continue_fail_summary" "$continue_multi_fail_summary" "$fail_fast_summary" "$retry_summary" "$continue_fail_step_summary" "$continue_multi_fail_step_summary" "$fail_fast_step_summary" "$retry_step_summary" "$continue_flag_step_summary" "$dry_fallback_step_summary" "$fail_fast_fallback_step_summary" "$fallback_step_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2302,6 +2325,26 @@ if ! grep -Fq "**Run classification:** success-no-retries" "$numeric_boolean_fla
 fi
 if grep -q "\*\*Schema warning:\*\*" "$numeric_boolean_flags_step_summary"; then
 	echo "Did not expect schema warning for numeric-boolean-flags summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$invalid_numeric_boolean_flags_step_summary"; then
+	echo "Expected invalid-numeric-boolean-flags summary to ignore unsupported numeric boolean values and derive success from explicit exitReason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Dry run:** false" "$invalid_numeric_boolean_flags_step_summary"; then
+	echo "Expected invalid-numeric-boolean-flags summary to ignore unsupported numeric dryRun value and derive false from explicit fail-fast reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** false" "$invalid_numeric_boolean_flags_step_summary"; then
+	echo "Expected invalid-numeric-boolean-flags summary to ignore unsupported numeric continue-on-failure value and derive false from explicit fail-fast reason." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** fail-fast" "$invalid_numeric_boolean_flags_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$invalid_numeric_boolean_flags_step_summary"; then
+	echo "Expected invalid-numeric-boolean-flags summary to preserve explicit fail-fast reason semantics." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$invalid_numeric_boolean_flags_step_summary"; then
+	echo "Did not expect schema warning for invalid-numeric-boolean-flags summary." >&2
 	exit 1
 fi
 
