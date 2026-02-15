@@ -337,6 +337,8 @@ print_summary() {
 	executed_duration_seconds="$(compute_executed_duration_seconds)"
 	local average_executed_duration_seconds
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_count")"
+	local slowest_executed_gate_index
+	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
 	local failed_gate_labels
 	failed_gate_labels="$(collect_failed_gate_labels)"
 
@@ -358,6 +360,13 @@ print_summary() {
 		echo "  Executed duration average: ${average_executed_duration_seconds}s"
 	else
 		echo "  Executed duration average: n/a"
+	fi
+	if ((slowest_executed_gate_index >= 0)); then
+		local slowest_executed_gate_id="${gate_ids[$slowest_executed_gate_index]}"
+		local slowest_executed_gate_duration_seconds="${gate_durations_seconds[$slowest_executed_gate_index]}"
+		echo "  Slowest executed gate: ${slowest_executed_gate_id} (${slowest_executed_gate_duration_seconds}s)"
+	else
+		echo "  Slowest executed gate: n/a"
 	fi
 	echo "  Failed gates: ${failed_gate_labels}"
 	for i in "${!gate_commands[@]}"; do
@@ -443,6 +452,25 @@ compute_average_executed_duration_seconds() {
 	fi
 
 	echo $((executed_duration_seconds / executed_gate_count))
+}
+
+find_slowest_executed_gate_index() {
+	local slowest_index="-1"
+	local slowest_duration="-1"
+	local i
+	for i in "${!gate_results[@]}"; do
+		if [[ "${gate_results[$i]}" != "pass" ]] && [[ "${gate_results[$i]}" != "fail" ]]; then
+			continue
+		fi
+
+		local gate_duration="${gate_durations_seconds[$i]}"
+		if ((gate_duration > slowest_duration)); then
+			slowest_duration="$gate_duration"
+			slowest_index="$i"
+		fi
+	done
+
+	echo "$slowest_index"
 }
 
 collect_failed_gate_labels() {
@@ -556,6 +584,8 @@ write_summary_json() {
 	executed_duration_seconds="$(compute_executed_duration_seconds)"
 	local average_executed_duration_seconds
 	average_executed_duration_seconds="$(compute_average_executed_duration_seconds "$executed_duration_seconds" "$executed_gate_count")"
+	local slowest_executed_gate_index
+	slowest_executed_gate_index="$(find_slowest_executed_gate_index)"
 
 	mkdir -p "$(dirname "$SUMMARY_FILE")"
 	{
@@ -584,6 +614,13 @@ write_summary_json() {
 			echo "  \"averageExecutedDurationSeconds\": ${average_executed_duration_seconds},"
 		else
 			echo "  \"averageExecutedDurationSeconds\": null,"
+		fi
+		if ((slowest_executed_gate_index >= 0)); then
+			echo "  \"slowestExecutedGateId\": \"$(json_escape "${gate_ids[$slowest_executed_gate_index]}")\","
+			echo "  \"slowestExecutedGateDurationSeconds\": ${gate_durations_seconds[$slowest_executed_gate_index]},"
+		else
+			echo "  \"slowestExecutedGateId\": null,"
+			echo "  \"slowestExecutedGateDurationSeconds\": null,"
 		fi
 		if [[ -n "$FAILED_GATE_ID" ]]; then
 			echo "  \"failedGateId\": \"$(json_escape "$FAILED_GATE_ID")\","

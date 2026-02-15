@@ -1595,3 +1595,8 @@
   - terminal summary now prints executed duration total + average
   - `scripts/publish-verify-gates-summary.sh` now renders `Executed duration total` and `Executed duration average`.
   **Why:** provides immediate throughput context for regression detection and run-shape comparisons without manual per-gate arithmetic.
+- **Slowest executed gate telemetry (2026-02-15 AM)** Added worst-case gate duration metadata:
+  - `scripts/verify-gates.sh` now computes `slowestExecutedGateId` and `slowestExecutedGateDurationSeconds` (null/n/a when no executed gates)
+  - terminal summary now prints `Slowest executed gate: <id> (<n>s)` (or `n/a`)
+  - `scripts/publish-verify-gates-summary.sh` now renders `Slowest executed gate` and `Slowest executed gate duration`.
+  **Why:** highlights the dominant gate bottleneck directly in summaries, improving perf-triage speed on long verification runs.

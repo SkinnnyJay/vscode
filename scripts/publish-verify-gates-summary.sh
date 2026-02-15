@@ -114,6 +114,8 @@ const lines = [
 	`**Pass rate (executed gates):** ${summary.passRatePercent ?? 'n/a'}${summary.passRatePercent === null || summary.passRatePercent === undefined ? '' : '%'}`,
 	`**Executed duration total:** ${summary.executedDurationSeconds ?? 'unknown'}s`,
 	`**Executed duration average:** ${summary.averageExecutedDurationSeconds === null || summary.averageExecutedDurationSeconds === undefined ? 'n/a' : `${summary.averageExecutedDurationSeconds}s`}`,
+	`**Slowest executed gate:** ${sanitizeCell(summary.slowestExecutedGateId ?? 'n/a')}`,
+	`**Slowest executed gate duration:** ${summary.slowestExecutedGateDurationSeconds === null || summary.slowestExecutedGateDurationSeconds === undefined ? 'n/a' : `${summary.slowestExecutedGateDurationSeconds}s`}`,
 	`**Selected gates:** ${sanitizeCell(selectedGateIdsLabel)}`,
 	`**Failed gates list:** ${sanitizeCell(failedGateIdsLabel)}`,
 	`**Failed gate exit codes:** ${sanitizeCell(failedGateExitCodesLabel)}`,
