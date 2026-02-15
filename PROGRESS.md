@@ -2165,3 +2165,15 @@
     - no schema warning for current schema.
   - `scripts/README.md` updated to document derived-counter fallback coverage.
   **Why:** guarantees step summaries remain informative and numerically correct even when upstream payloads omit scalar counter fields.
+- **Gate-id list counter fallback coverage (2026-02-15 PM)** Extended renderer fallback derivation beyond `gates[]`:
+  - `scripts/publish-verify-gates-summary.sh` now also derives:
+    - gate totals from `selectedGateIds`
+    - pass/fail/skip/not-run counts from corresponding gate-id lists
+    - executed count from `executedGateIds`
+    when scalar counters and `statusCounts` are omitted.
+  - `scripts/test-verify-gates-summary.sh` now publishes a synthetic summary with:
+    - empty `gates[]`
+    - populated `selectedGateIds` + partition lists
+    and asserts markdown reflects the derived counters/status map/executed count.
+  - `scripts/README.md` updated to note fallback derivation from both `gates[]` and gate-id lists.
+  **Why:** keeps summary output numerically useful for sparse payloads that provide partition lists but omit per-gate rows and scalar counters.

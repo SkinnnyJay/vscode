@@ -69,6 +69,12 @@ try {
 const summary = parsedSummary ?? {};
 
 const gates = Array.isArray(summary.gates) ? summary.gates : [];
+const passedGateIdsFromSummary = Array.isArray(summary.passedGateIds) ? summary.passedGateIds : null;
+const failedGateIdsFromSummary = Array.isArray(summary.failedGateIds) ? summary.failedGateIds : null;
+const skippedGateIdsFromSummary = Array.isArray(summary.skippedGateIds) ? summary.skippedGateIds : null;
+const notRunGateIdsFromSummary = Array.isArray(summary.notRunGateIds) ? summary.notRunGateIds : null;
+const selectedGateIdsFromSummary = Array.isArray(summary.selectedGateIds) ? summary.selectedGateIds : null;
+const executedGateIdsFromSummary = Array.isArray(summary.executedGateIds) ? summary.executedGateIds : null;
 const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 	const status = gate?.status;
 	if (status === 'pass' || status === 'fail' || status === 'skip' || status === 'not-run') {
@@ -79,22 +85,22 @@ const derivedStatusCounts = gates.reduce((accumulator, gate) => {
 const rawStatusCounts = summary.statusCounts && typeof summary.statusCounts === 'object' && !Array.isArray(summary.statusCounts)
 	? summary.statusCounts
 	: {};
-const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? derivedStatusCounts.pass;
-const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? derivedStatusCounts.fail;
-const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? derivedStatusCounts.skip;
-const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? derivedStatusCounts['not-run'];
+const passedGateCount = summary.passedGateCount ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCounts.pass;
+const failedGateCount = summary.failedGateCount ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCounts.fail;
+const skippedGateCount = summary.skippedGateCount ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCounts.skip;
+const notRunGateCount = summary.notRunGateCount ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCounts['not-run'];
 const statusCounts = {
 	pass: rawStatusCounts.pass ?? passedGateCount,
 	fail: rawStatusCounts.fail ?? failedGateCount,
 	skip: rawStatusCounts.skip ?? skippedGateCount,
 	'not-run': rawStatusCounts['not-run'] ?? notRunGateCount,
 };
-const selectedGateIds = Array.isArray(summary.selectedGateIds)
-	? summary.selectedGateIds
+const selectedGateIds = selectedGateIdsFromSummary
+	? selectedGateIdsFromSummary
 	: gates.map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
-const failedGateIds = Array.isArray(summary.failedGateIds)
-	? summary.failedGateIds
+const failedGateIds = failedGateIdsFromSummary
+	? failedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
 const failedGateExitCodes = Array.isArray(summary.failedGateExitCodes)
@@ -105,21 +111,22 @@ const retriedGateIds = Array.isArray(summary.retriedGateIds)
 	? summary.retriedGateIds
 	: gates.filter((gate) => (gate.retryCount ?? 0) > 0).map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
-const passedGateIds = Array.isArray(summary.passedGateIds)
-	? summary.passedGateIds
+const passedGateIds = passedGateIdsFromSummary
+	? passedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'pass').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const passedGateIdsLabel = passedGateIds.length > 0 ? passedGateIds.join(', ') : 'none';
-const skippedGateIds = Array.isArray(summary.skippedGateIds)
-	? summary.skippedGateIds
+const skippedGateIds = skippedGateIdsFromSummary
+	? skippedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'skip').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const skippedGateIdsLabel = skippedGateIds.length > 0 ? skippedGateIds.join(', ') : 'none';
-const executedGateIds = Array.isArray(summary.executedGateIds)
-	? summary.executedGateIds
+const executedGateIds = executedGateIdsFromSummary
+	? executedGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'pass' || gate.status === 'fail').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
-const executedGateCount = summary.executedGateCount ?? executedGateIds.length;
-const notRunGateIds = Array.isArray(summary.notRunGateIds)
-	? summary.notRunGateIds
+const executedGateCount = summary.executedGateCount ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
+const gateCount = summary.gateCount ?? selectedGateIdsFromSummary?.length ?? selectedGateIds.length ?? gates.length;
+const notRunGateIds = notRunGateIdsFromSummary
+	? notRunGateIdsFromSummary
 	: gates.filter((gate) => gate.status === 'not-run').map((gate) => gate.id).filter((gateId) => typeof gateId === 'string');
 const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
 const nonSuccessGateIds = Array.isArray(summary.nonSuccessGateIds)
@@ -212,7 +219,7 @@ const lines = [
 	`**Invocation:** ${sanitizeCell(summary.invocation ?? 'unknown')}`,
 	`**Continue on failure:** ${summary.continueOnFailure ?? 'unknown'}`,
 	`**Dry run:** ${summary.dryRun ?? 'unknown'}`,
-	`**Gate count:** ${summary.gateCount ?? gates.length}`,
+	`**Gate count:** ${gateCount}`,
 	`**Passed gates:** ${passedGateCount}`,
 	`**Failed gates:** ${failedGateCount}`,
 	`**Skipped gates:** ${skippedGateCount}`,
