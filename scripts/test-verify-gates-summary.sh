@@ -278,6 +278,18 @@ if (!/\*\*Gate retry-count map:\*\* \{[^\n]*lint[^\n]*1[^\n]*typecheck[^\n]*0/.t
 if (!fallbackStep.includes('**Attention gates list:** lint')) {
 	throw new Error('Fallback summary did not derive attention-gate list from gate rows.');
 }
+if (!fallbackStep.includes('**Executed gates list:** lint, typecheck')) {
+	throw new Error('Fallback summary did not derive executed-gates list from gate rows.');
+}
+if (!fallbackStep.includes('**Passed gates list:** lint, typecheck')) {
+	throw new Error('Fallback summary did not derive passed-gates list from gate rows.');
+}
+if (!fallbackStep.includes('**Retried gates:** lint')) {
+	throw new Error('Fallback summary did not derive retried-gates list from gate rows.');
+}
+if (!fallbackStep.includes('**Failed gates list:** none') || !fallbackStep.includes('**Not-run gates list:** none')) {
+	throw new Error('Fallback summary did not derive failed/not-run gate lists from gate rows.');
+}
 NODE
 
 node - "$retry_summary" "$future_summary" <<'NODE'

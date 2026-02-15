@@ -1959,6 +1959,14 @@
     - published markdown summaries include the `Log file` metadata line
   - `scripts/README.md` updated to include log-file metadata coverage.
   **Why:** guards observability guarantees relied on during CI triage and flaky-run investigation.
+- **Fallback gate-list derivation coverage (2026-02-15 PM)** Expanded fallback rendering assertions:
+  - `scripts/test-verify-gates-summary.sh` now verifies fallback summaries derive list metadata from `gates[]` when top-level arrays are missing:
+    - `Executed gates list`
+    - `Passed gates list`
+    - `Retried gates`
+    - `Failed gates list` / `Not-run gates list`
+  - `scripts/README.md` updated to clarify that fallback checks cover both maps and lists.
+  **Why:** ensures backward-compatible rendering for partial payloads stays complete, not just map fields.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
