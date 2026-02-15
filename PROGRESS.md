@@ -2559,6 +2559,13 @@
   - Assertions verify non-string values are sanitized to `unknown` (run/signature) and log-file line suppression is preserved.
   - `scripts/README.md` updated to document non-string metadata sanitization coverage.
   **Why:** ensures sparse producers cannot leak arbitrary non-string metadata values into rendered summary lines.
+- **Slow/fast metadata string parsing coverage (2026-02-15 PM)** Added numeric-string gate-timing guard:
+  - `scripts/test-verify-gates-summary.sh` now adds `slow_fast_string_metadata` scenario with:
+    - padded slow/fast gate IDs
+    - numeric-string slow/fast durations.
+  - Assertions verify rendered slow/fast lines use trimmed gate IDs and parsed duration seconds (`5s`, `1s`).
+  - `scripts/README.md` updated to document slow/fast string metadata coverage.
+  **Why:** preserves readable/accurate slowest/fastest metadata when sparse producers emit these fields as strings.
 - **Row-derived map defaults for missing selected gates (2026-02-15 PM)** Implemented map-defaulting parity:
   - `scripts/publish-verify-gates-summary.sh` now applies known-gate defaults to row-derived per-gate maps (exit code/retry/duration/attempt/not-run-reason), not only summary-provided maps.
   - This ensures explicitly selected gates without row data still appear in maps with safe defaults (`null`/`0`), matching sparse-summary map-default behavior.

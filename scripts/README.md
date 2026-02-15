@@ -78,6 +78,7 @@ Runnable scripts for setup, build, test, lint, and tooling. All are invoked via 
   - Includes invocation-whitespace checks proving blank/whitespace `invocation` values normalize to `unknown` in rendered metadata.
   - Includes run/signature/log metadata whitespace checks proving blank `runId`/signature fields normalize to `unknown`, blank `logFile` is suppressed, and invalid slow/fast metadata falls back to derived `n/a` values.
   - Includes run/signature/log metadata non-string checks proving non-string `runId`/signature/log-file values are sanitized (`unknown`/suppressed) instead of rendered raw.
+  - Includes slow/fast metadata string checks proving gate IDs are trimmed and duration strings are parsed as integers for rendered `slowest/fastest` lines.
   - Includes schema-version normalization checks proving numeric strings (e.g. `" 99 "`) are parsed for warning logic while non-numeric or non-positive versions (e.g. `"v99"`, `0`) fall back to `unknown` without warning.
   - Includes duplicate unknown-status row checks proving invalid duplicate statuses do not pollute non-success/attention lists when a canonical status already resolves the gate.
   - Includes unknown-status-only row checks proving unresolved row statuses render as `unknown` and still surface in non-success/attention lists for operator visibility.

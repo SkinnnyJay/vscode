@@ -93,6 +93,8 @@ metadata_whitespace_summary="$tmpdir/metadata-whitespace.json"
 metadata_whitespace_step_summary="$tmpdir/metadata-whitespace-step.md"
 metadata_nonstring_summary="$tmpdir/metadata-nonstring.json"
 metadata_nonstring_step_summary="$tmpdir/metadata-nonstring-step.md"
+slow_fast_string_metadata_summary="$tmpdir/slow-fast-string-metadata.json"
+slow_fast_string_metadata_step_summary="$tmpdir/slow-fast-string-metadata-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -639,6 +641,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$metadata_nonstring_step_summary" ./scripts/publish-verify-gates-summary.sh "$metadata_nonstring_summary" "Verify Gates Metadata Nonstring Contract Test"
+
+node - "$expected_schema_version" "$slow_fast_string_metadata_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	slowestExecutedGateId: ' lint ',
+	slowestExecutedGateDurationSeconds: '5',
+	fastestExecutedGateId: ' typecheck ',
+	fastestExecutedGateDurationSeconds: '1',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$slow_fast_string_metadata_step_summary" ./scripts/publish-verify-gates-summary.sh "$slow_fast_string_metadata_summary" "Verify Gates Slow/Fast String Metadata Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -1725,6 +1747,18 @@ if grep -Fq "**Log file:**" "$metadata_nonstring_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$metadata_nonstring_step_summary"; then
 	echo "Did not expect schema warning for metadata-nonstring summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate:** lint" "$slow_fast_string_metadata_step_summary" || ! grep -Fq "**Fastest executed gate:** typecheck" "$slow_fast_string_metadata_step_summary"; then
+	echo "Expected slow-fast-string-metadata summary to trim slow/fast gate IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate duration:** 5s" "$slow_fast_string_metadata_step_summary" || ! grep -Fq "**Fastest executed gate duration:** 1s" "$slow_fast_string_metadata_step_summary"; then
+	echo "Expected slow-fast-string-metadata summary to parse numeric-string slow/fast durations." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$slow_fast_string_metadata_step_summary"; then
+	echo "Did not expect schema warning for slow-fast-string-metadata summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
