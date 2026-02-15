@@ -62,6 +62,21 @@ if [[ "$expected_schema_version" != "$supported_schema_version" ]]; then
 	exit 1
 fi
 
+if ! grep -q "Current summary schema version: \`${expected_schema_version}\`." ./scripts/README.md; then
+	echo "scripts/README.md summary schema version does not match ${expected_schema_version}." >&2
+	exit 1
+fi
+
+if ! grep -q "./scripts/test-verify-gates-summary.sh" "./.github/workflows/pointer-quality.yml"; then
+	echo "pointer-quality workflow is missing verify-gates summary contract step." >&2
+	exit 1
+fi
+
+if ! grep -q "./scripts/test-verify-gates-summary.sh" "./.github/workflows/verify-gates-nightly.yml"; then
+	echo "verify-gates-nightly workflow is missing verify-gates summary contract step." >&2
+	exit 1
+fi
+
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_summary" > "$tmpdir/dry.out"
 VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$dry_repeat_summary" > "$tmpdir/dry-repeat.out"
 VSCODE_VERIFY_CONTINUE_ON_FAILURE=true VSCODE_VERIFY_LOG_DIR="$tmpdir/logs" ./scripts/verify-gates.sh --quick --only lint --dry-run --summary-json "$continue_true_summary" > "$tmpdir/continue-true.out"

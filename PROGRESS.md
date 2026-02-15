@@ -1978,6 +1978,14 @@
     - publisher `--help` includes `GITHUB_STEP_SUMMARY` env documentation
   - `scripts/README.md` updated to include missing-option-value and help-content coverage.
   **Why:** protects CLI usability/documentation quality and prevents regressions in actionable error output.
+- **Docs/workflow contract-linkage checks (2026-02-15 PM)** Expanded harness to guard integration drift:
+  - `scripts/test-verify-gates-summary.sh` now verifies:
+    - `scripts/README.md` reports the same current schema version as `verify-gates.sh`
+    - both workflows keep the contract-step invocation:
+      - `.github/workflows/pointer-quality.yml`
+      - `.github/workflows/verify-gates-nightly.yml`
+  - `scripts/README.md` updated to mention schema/docs/workflow linkage validation.
+  **Why:** prevents silent drift where schema/docs/CI wiring become inconsistent even if core scripts still compile.
 - **Result-signature determinism coverage (2026-02-15 PM)** Expanded contract harness to guard signature semantics:
   - `scripts/test-verify-gates-summary.sh` now verifies:
     - repeated identical dry-run inputs produce identical `resultSignature`
