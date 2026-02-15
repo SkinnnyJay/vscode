@@ -1297,3 +1297,8 @@
   - `make typecheck` → **pass**
   - `make test-web-integration` → **pass**
   **Why:** verifies both TS static validation and browser-hosted extension integration paths remain stable after repeated launcher-hardening iterations.
+- **Latest regression refresh (2026-02-15 AM)** Executed another validation pass to keep confidence high on current branch tip:
+  - `make test-e2e` → **pass**
+  - `make typecheck` → **pass**
+  - `make test-web-integration` → **pass**
+  **Why:** reconfirms full e2e flow plus static and browser integration gates remain green after ongoing launcher resilience refinements.
