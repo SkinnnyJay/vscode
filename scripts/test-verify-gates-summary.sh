@@ -115,6 +115,8 @@ selected_aggregate_metrics_scope_summary="$tmpdir/selected-aggregate-metrics-sco
 selected_aggregate_metrics_scope_step_summary="$tmpdir/selected-aggregate-metrics-scope-step.md"
 selected_aggregate_metrics_malformed_scope_summary="$tmpdir/selected-aggregate-metrics-malformed-scope.json"
 selected_aggregate_metrics_malformed_scope_step_summary="$tmpdir/selected-aggregate-metrics-malformed-scope-step.md"
+selected_aggregate_metrics_no_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-scope.json"
+selected_aggregate_metrics_no_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-scope-step.md"
 selected_failed_exit_codes_without_ids_scope_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope.json"
 selected_failed_exit_codes_without_ids_scope_step_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope-step.md"
 selected_timestamps_scope_summary="$tmpdir/selected-timestamps-scope.json"
@@ -1103,6 +1105,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_malformed_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_malformed_scope_summary" "Verify Gates Selected Aggregate Metrics Malformed Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_no_evidence_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-no-evidence-scope-contract',
+	selectedGateIds: ['lint'],
+	retriedGateCount: 8,
+	totalRetryCount: 8,
+	totalRetryBackoffSeconds: 8,
+	executedDurationSeconds: 99,
+	averageExecutedDurationSeconds: 99,
+	retryRatePercent: 80,
+	retryBackoffSharePercent: 80,
+	passRatePercent: 0,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_no_evidence_scope_summary" "Verify Gates Selected Aggregate Metrics No Evidence Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_failed_exit_codes_without_ids_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4405,6 +4433,30 @@ if ! grep -Fq "**Retry rate (executed gates):** 100%" "$selected_aggregate_metri
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_malformed_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-aggregate-metrics-malformed-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 0" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-scope summary to ignore conflicting selected aggregate retry scalars when selected retry evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-scope summary to ignore conflicting selected aggregate duration scalars when selected duration evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-scope summary to ignore conflicting selected aggregate rate scalars and render n/a without selected execution evidence." >&2
+	exit 1
+fi
+if grep -Fq "99" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || grep -Fq "80%" "$selected_aggregate_metrics_no_evidence_scope_step_summary" || grep -Fq "8s" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-scope summary to exclude conflicting selected aggregate scalar values without selected execution evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_no_evidence_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-no-evidence-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then

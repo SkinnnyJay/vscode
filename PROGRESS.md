@@ -2996,3 +2996,12 @@
     - duration average + retry/pass/share rates -> `n/a`.
   - `scripts/README.md` unscoped aggregate scalar coverage notes updated to include no-evidence fallback behavior.
   **Why:** ensures sparse unscoped payloads with malformed aggregate scalars do not emit ambiguous values and consistently collapse to safe zero/`n/a` aggregates.
+- **Selected aggregate scalar no-evidence fallback coverage (2026-02-16 AM)** Completed selected-scope sparse aggregate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_scope`.
+  - Scenario verifies selected scope with conflicting explicit aggregate retry/duration/rate scalars but no selected retry/duration execution evidence.
+  - Assertions confirm selected aggregate scalar inputs are ignored under explicit selected scope and normalized to deterministic no-evidence outputs:
+    - retry totals/counts/backoff -> `0`
+    - executed duration total -> `0s`
+    - duration average + retry/pass/share rates -> `n/a`.
+  - `scripts/README.md` selected aggregate scalar coverage notes updated to include selected no-evidence fallback behavior.
+  **Why:** closes the selected-scope aggregate sanitization matrix for sparse payloads, ensuring conflicting selected scalar aggregates cannot leak into summaries when selected execution evidence is absent.
