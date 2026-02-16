@@ -3099,3 +3099,9 @@
   - Assertions confirm selected sparse no-evidence behavior remains deterministic (`0`/`n/a`) and all mixed invalid scalar literals are suppressed.
   - `scripts/README.md` selected aggregate notes updated to explicitly include mixed-invalid selected no-evidence suppression behavior.
   **Why:** ensures selected sparse summaries remain robust when upstream payloads contain heterogeneous malformed aggregate scalar types in the same object.
+- **Unscoped no-evidence mixed-invalid aggregate fallback coverage (2026-02-16 AM)** Extended unscoped sparse aggregate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_no_evidence_mixed_invalid`.
+  - Scenario injects mixed invalid unscoped aggregate scalar types (decimal-string, scientific-string, float, negative) with no execution evidence.
+  - Assertions confirm unscoped sparse no-evidence behavior remains deterministic (`0`/`n/a`) and mixed invalid scalar literals are suppressed.
+  - `scripts/README.md` unscoped aggregate notes updated to explicitly include mixed-invalid sparse fallback behavior.
+  **Why:** ensures unscoped sparse summaries remain robust when upstream payloads include heterogeneous malformed scalar formats in one aggregate object.
