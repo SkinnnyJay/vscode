@@ -2862,3 +2862,11 @@
     - `selected_timestamps_malformed_rows_scope` (selected row timestamp derivation ignores malformed row literals and uses canonical row timestamps only).
   - `scripts/README.md` updated to document timestamp canonicalization and conflicting selected no-row fallback coverage.
   **Why:** prevents invalid calendar literals from leaking into summary metadata and avoids misleading zero-duration output when timestamp evidence is malformed or contradictory.
+- **Selected zero-duration map no-row coverage (2026-02-16 AM)** Reinforced duration fallback contract after timestamp hardening:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_duration_zero_map_no_rows_scope` and verifies selected sparse payloads with explicit `gateDurationSecondsById: {lint: 0}` preserve:
+    - `Gate duration map (s): {"lint":0}`
+    - `Total duration: 0s`
+    - `Started/Completed: unknown`.
+  - This guards against regressions where selected no-row payloads with explicit zero duration evidence might be incorrectly treated as lacking duration evidence (`unknown`).
+  - `scripts/README.md` updated to document zero-valued explicit selected duration-map fallback coverage.
+  **Why:** keeps selected-scope duration behavior deterministic for explicit zero-duration evidence while still suppressing synthetic zero totals when no timing evidence exists.

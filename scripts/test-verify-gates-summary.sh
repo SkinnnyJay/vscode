@@ -127,6 +127,8 @@ selected_timestamps_unmatched_rows_scope_summary="$tmpdir/selected-timestamps-un
 selected_timestamps_unmatched_rows_scope_step_summary="$tmpdir/selected-timestamps-unmatched-rows-scope-step.md"
 selected_timestamps_malformed_rows_scope_summary="$tmpdir/selected-timestamps-malformed-rows-scope.json"
 selected_timestamps_malformed_rows_scope_step_summary="$tmpdir/selected-timestamps-malformed-rows-scope-step.md"
+selected_duration_zero_map_no_rows_scope_summary="$tmpdir/selected-duration-zero-map-no-rows-scope.json"
+selected_duration_zero_map_no_rows_scope_step_summary="$tmpdir/selected-duration-zero-map-no-rows-scope-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
@@ -1166,6 +1168,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_malformed_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_malformed_rows_scope_summary" "Verify Gates Selected Timestamps Malformed Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_duration_zero_map_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-duration-zero-map-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	gateDurationSecondsById: { lint: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_duration_zero_map_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_duration_zero_map_no_rows_scope_summary" "Verify Gates Selected Duration Zero Map No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3890,6 +3911,26 @@ if grep -Fq "20260001T000000Z" "$selected_timestamps_malformed_rows_scope_step_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_malformed_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-malformed-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-duration-zero-map-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate duration map (s):** {\"lint\":0}" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-duration-zero-map-no-rows-scope summary to preserve explicit zero-valued selected duration-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 0s" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-duration-zero-map-no-rows-scope summary to preserve deterministic zero total duration when explicit duration evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$selected_duration_zero_map_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** unknown" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-duration-zero-map-no-rows-scope summary to keep timestamps unknown when only explicit zero-duration map evidence exists." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-duration-zero-map-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then
