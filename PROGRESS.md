@@ -3527,3 +3527,10 @@
   - Assertions also confirm executed-rate metrics render `n/a` from normalized zero scalar denominator and reject list-length-driven fallback (`Executed gates: 2`, pass rate `50%`).
   - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention zero integer/numeric-string executed-count scalar overrides over explicit non-empty executed lists.
   **Why:** closes the unscoped numeric-string zero executed-count + explicit non-empty executed-list branch so normalized zero scalars remain authoritative over explicit executed-list count/rate fallback while preserving list-label metadata.
+- **Selected numeric-string zero executed-count scalar suppression under explicit non-empty executed-list scope coverage (2026-02-16 PM)** Extended selected executed-list precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_string_zero_scalar_count_ignored_nonempty_list_scope`.
+  - Scenario keeps explicit selected non-empty executed-list evidence while injecting conflicting numeric-string zero `executedGateCount: ' 0 '`.
+  - Assertions confirm selected scope ignores conflicting numeric-string zero scalar and preserves explicit selected executed-list derivation (`Executed gates: 2`, pass/retry rates `50%`).
+  - Assertions also reject zero-scalar-driven executed/rate fallback (`Executed gates: 0`, rates `n/a`) under explicit selected scope.
+  - `scripts/README.md` selected executed-list precedence note updated to explicitly mention normalized zero scalar suppression alongside integer/numeric-string executed-count scalar suppression under explicit selected non-empty executed-list overrides.
+  **Why:** closes the selected numeric-string zero executed-count scalar + explicit non-empty executed-list branch so normalized zero scalars cannot override explicit selected executed-list evidence.
