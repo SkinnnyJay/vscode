@@ -3534,3 +3534,10 @@
   - Assertions also reject zero-scalar-driven executed/rate fallback (`Executed gates: 0`, rates `n/a`) under explicit selected scope.
   - `scripts/README.md` selected executed-list precedence note updated to explicitly mention normalized zero scalar suppression alongside integer/numeric-string executed-count scalar suppression under explicit selected non-empty executed-list overrides.
   **Why:** closes the selected numeric-string zero executed-count scalar + explicit non-empty executed-list branch so normalized zero scalars cannot override explicit selected executed-list evidence.
+- **Selected numeric-string zero executed-count scalar suppression under partial selected status-map fallback coverage (2026-02-16 PM)** Extended selected sparse executed fallback precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_string_zero_scalar_ignored_partial_status_map_scope`.
+  - Scenario omits explicit `executedGateIds`, keeps selected sparse `gateStatusById` + selected partition fallback evidence, and injects conflicting numeric-string zero `executedGateCount: ' 0 '`.
+  - Assertions confirm selected sparse status-map/partition fallback remains authoritative (`Executed gates: 2`, pass rate `50%`, executed list `lint, typecheck`) while conflicting numeric-string zero scalar is ignored.
+  - Assertions also reject zero-scalar-driven fallback (`Executed gates: 0`, pass rate `n/a`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
+  - `scripts/README.md` selected executed fallback note updated to explicitly mention normalized numeric-string zero scalar suppression alongside broader selected `executedGateCount` scalar suppression.
+  **Why:** closes the selected numeric-string zero executed-count scalar + partial selected status-map/partition fallback branch so normalized zero scalars cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
