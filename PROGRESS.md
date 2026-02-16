@@ -2959,3 +2959,8 @@
     - this prevents explicit selected total-duration scalars from incorrectly overriding explicit selected zero-valued duration-map evidence.
   - `scripts/README.md` selected aggregate-conflict notes updated to explicitly include zero-valued selected duration-map precedence behavior.
   **Why:** fixes an inconsistency where selected duration-map precedence was enforced for positive durations but accidentally bypassed for explicit zero-valued selected duration-map evidence.
+- **Selected non-selected duration-map scoping precedence coverage (2026-02-16 AM)** Extended selected no-row duration precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_nonselected_duration_map_no_rows_scope`.
+  - Scenario verifies selected no-row payloads with only non-selected duration-map entries (`gateDurationSecondsById: {build: 3}`) keep selected scoped map defaults (`{"lint":0}`) and preserve explicit selected `totalDurationSeconds` when selected duration-map evidence is absent.
+  - `scripts/README.md` updated to document selected no-row duration-map scoping behavior before duration precedence decisions.
+  **Why:** ensures selected total-duration precedence uses only selected-scoped duration evidence and does not treat non-selected duration-map entries as selected timing evidence.
