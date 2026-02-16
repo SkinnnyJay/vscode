@@ -3662,3 +3662,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T232400Z`, classification `success-with-retries`)
   **Why:** closes numeric-string-form parity for explicit-empty executed-list mixed-source precedence so unscoped scalar+raw aggregate bundles stay deterministic across integer and normalized numeric-string encodings.
+- **Unscoped explicit non-empty executed-list + scalar/raw statusCounts executed precedence coverage (2026-02-16 PM)** Extended unscoped executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_executed_scalar_and_raw_status_counts_overrides_explicit_list`
+    - `unscoped_executed_zero_scalar_and_raw_status_counts_overrides_explicit_list`
+  - Both scenarios keep explicit non-empty `executedGateIds: ['lint', 'typecheck']`, retain sparse pass/fail partition and retry evidence, and inject raw `statusCounts` (`pass: 2`, `fail: 3`, `skip: 0`, `not-run: 0`) with integer `executedGateCount` scalars (`5` and `0`).
+  - Assertions confirm deterministic split precedence:
+    - raw `statusCounts` remains authoritative for pass/fail count lines and rendered status-count metadata
+    - integer executed-count scalar remains authoritative for denominator/rate semantics (`Executed gates: 5` + pass/retry `40%`/`20%`; or `Executed gates: 0` + executed rates `n/a`)
+    - explicit non-empty executed-list label (`Executed gates list: lint, typecheck`) stays intact while scalar denominator controls rates
+    - sparse fallback branches are suppressed (`Executed gates: 2` / `Pass rate: 50%` and non-zero leakage under zero-scalar case).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly include combined integer scalar+raw precedence for explicit non-empty executed-list overrides.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T233313Z`, classification `success-with-retries`)
+  **Why:** closes explicit non-empty executed-list mixed-source precedence gaps so unscoped payloads keep deterministic per-field ownership when scalar executed-count and raw status-count aggregates conflict with explicit executed-list evidence.
