@@ -2971,3 +2971,12 @@
     - `Total duration` remains `unknown`.
   - `scripts/README.md` selected duration-map scoping notes updated to include no-explicit-total fallback behavior.
   **Why:** confirms scoped duration-map fallback does not accidentally synthesize deterministic zero totals when selected duration evidence is absent and no explicit total-duration scalar exists.
+- **Malformed selected aggregate-metric scalar fallback coverage (2026-02-16 AM)** Hardened selected-scope scalar sanitization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_malformed_scope`.
+  - Scenario injects malformed selected aggregate scalar fields (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `retryBackoffSharePercent`, `passRatePercent`) while selected retry/duration maps remain valid.
+  - Assertions confirm renderer ignores malformed selected scalar aggregates and re-derives:
+    - retry totals/backoff/count from selected retry-count map evidence
+    - executed duration totals/averages from selected duration-map evidence
+    - retry/pass/backoff-share rates from derived selected counts/durations.
+  - `scripts/README.md` selected scope contract-coverage notes updated with malformed aggregate-scalar fallback behavior.
+  **Why:** ensures selected scope remains deterministic and resilient when aggregate scalar fields are malformed or non-numeric, preventing ambiguous or polluted retry/duration/rate metadata.
