@@ -3041,3 +3041,9 @@
     - non-selected gate IDs and conflicting selected aggregate scalar values are suppressed.
   - `scripts/README.md` selected aggregate notes updated to explicitly include non-selected-evidence scoping behavior.
   **Why:** prevents selected-scope aggregate summaries from leaking unselected execution evidence in sparse or mixed payloads.
+- **Selected numeric-string aggregate scalar scope coverage (2026-02-16 AM)** Extended selected aggregate scalar matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_string_scalar_scope`.
+  - Scenario injects whitespace-padded numeric-string aggregate retry/duration/rate scalars under explicit `selectedGateIds` with selected retry/duration evidence.
+  - Assertions confirm selected-scope aggregate derivation remains authoritative and numeric-string aggregate scalars are ignored the same as numeric scalars under explicit selected scope.
+  - `scripts/README.md` selected aggregate notes updated to include selected numeric-string scalar suppression behavior.
+  **Why:** closes a normalization edge where numeric-string aggregate values could otherwise be misinterpreted as selected-scope overrides despite explicit selected scoping rules.
