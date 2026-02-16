@@ -3362,3 +3362,9 @@
   - Assertions confirm selected status-map projections remain authoritative for count/status lines and executed/pass-rate metadata, while conflicting scalar/raw count inputs stay ignored under selected scope.
   - `scripts/README.md` selected scope note updated to explicitly mention selected status-map-evidence suppression of conflicting scalar/raw counters.
   **Why:** closes the remaining selected status-map conflict branch so scalar/raw counter bundles cannot override selected status-map evidence.
+- **Unscoped partial raw status-count fallback to status-map evidence coverage (2026-02-16 PM)** Extended unscoped per-field fallback matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_status_counts_partial_status_map_fallback`.
+  - Scenario injects partially valid raw `statusCounts` (only fail valid) with status-map evidence and no partition-id list for not-run status.
+  - Assertions confirm per-field status-count derivation merges raw values with status-map fallback for missing/malformed fields, while partition labels/executed metadata stay deterministic.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention partial raw status-count fallback to status-map/list evidence.
+  **Why:** closes the remaining unscoped partial-raw fallback branch so missing/malformed raw status-count fields cannot destabilize status-map-driven fallback outputs.
