@@ -169,6 +169,8 @@ selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-succe
 selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
 selected_attention_retried_scope_summary="$tmpdir/selected-attention-retried-scope.json"
 selected_attention_retried_scope_step_summary="$tmpdir/selected-attention-retried-scope-step.md"
+selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
+selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1617,6 +1619,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_attention_retried_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_attention_retried_scope_summary" "Verify Gates Selected Attention Retried Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-explicit-attention-scope-contract',
+	selectedGateIds: ['lint'],
+	nonSuccessGateIds: [' lint ', 'build'],
+	attentionGateIds: ['build', ' lint '],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_explicit_attention_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_attention_scope_summary" "Verify Gates Selected Explicit Attention Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3471,6 +3493,22 @@ if grep -Fq "build" "$selected_attention_retried_scope_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_attention_retried_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-attention-retried-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then
+	echo "Expected selected-explicit-attention-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$selected_explicit_attention_scope_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_attention_scope_step_summary"; then
+	echo "Expected selected-explicit-attention-scope summary to scope explicit non-success/attention lists to selected IDs." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_explicit_attention_scope_step_summary"; then
+	echo "Expected selected-explicit-attention-scope summary to exclude non-selected explicit non-success/attention IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_attention_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-explicit-attention-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
