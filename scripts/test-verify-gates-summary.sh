@@ -407,6 +407,8 @@ unscoped_partition_scalar_invalid_fallback_status_counts_summary="$tmpdir/unscop
 unscoped_partition_scalar_invalid_fallback_status_counts_step_summary="$tmpdir/unscoped-partition-scalar-invalid-fallback-status-counts-step.md"
 unscoped_status_counts_partial_status_map_fallback_summary="$tmpdir/unscoped-status-counts-partial-status-map-fallback.json"
 unscoped_status_counts_partial_status_map_fallback_step_summary="$tmpdir/unscoped-status-counts-partial-status-map-fallback-step.md"
+unscoped_status_counts_zero_authoritative_summary="$tmpdir/unscoped-status-counts-zero-authoritative.json"
+unscoped_status_counts_zero_authoritative_step_summary="$tmpdir/unscoped-status-counts-zero-authoritative-step.md"
 unscoped_status_counts_partial_fallback_summary="$tmpdir/unscoped-status-counts-partial-fallback.json"
 unscoped_status_counts_partial_fallback_step_summary="$tmpdir/unscoped-status-counts-partial-fallback-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
@@ -4687,6 +4689,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_status_counts_partial_status_map_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_status_counts_partial_status_map_fallback_summary" "Verify Gates Unscoped Status Counts Partial Status-Map Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_status_counts_zero_authoritative_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-status-counts-zero-authoritative-contract',
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	gateStatusById: { lint: 'pass', typecheck: 'fail', docs: 'not-run' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_status_counts_zero_authoritative_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_status_counts_zero_authoritative_summary" "Verify Gates Unscoped Status Counts Zero Authoritative Contract Test"
 
 node - "$expected_schema_version" "$unscoped_status_counts_partial_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -9141,6 +9162,34 @@ if ! grep -Fq "**Executed gates:** 2" "$unscoped_status_counts_partial_status_ma
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_status_counts_partial_status_map_fallback_step_summary"; then
 	echo "Did not expect schema warning for unscoped-status-counts-partial-status-map-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 3" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to derive gate count from status-map evidence while explicit zero raw statusCounts remain authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Failed gates:** 0" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to preserve explicit zero raw statusCounts for all partition counters despite sparse status-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to keep raw zero statusCounts values authoritative across rendered status map totals." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Failed gates list:** typecheck" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Not-run gates list:** docs" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to continue deriving sparse partition list labels from status-map evidence while zero status-count scalars remain authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 0%" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to keep executed metadata status-map-derived while pass-rate remains anchored to explicit zero pass-count raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck, docs" "$unscoped_status_counts_zero_authoritative_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, docs" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Expected unscoped-status-counts-zero-authoritative summary to preserve non-success/attention derivation from sparse status-map evidence under explicit zero raw statusCounts." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_status_counts_zero_authoritative_step_summary"; then
+	echo "Did not expect schema warning for unscoped-status-counts-zero-authoritative summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 3" "$unscoped_status_counts_partial_fallback_step_summary"; then

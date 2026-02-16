@@ -3374,3 +3374,9 @@
   - Assertions confirm selected status-map-derived count/status lines remain authoritative while mixed scalar + partially malformed raw counters are ignored, with executed/pass-rate metadata remaining selection-scoped.
   - `scripts/README.md` selected scope note updated to explicitly mention partially malformed raw status-count suppression under selected status-map evidence.
   **Why:** closes the remaining selected status-map suppression edge so partially malformed raw status-count inputs cannot leak into selected status-map-derived counters.
+- **Unscoped zero raw status-count authority coverage (2026-02-16 PM)** Extended unscoped status-count precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_status_counts_zero_authoritative`.
+  - Scenario injects explicit zero raw `statusCounts` alongside sparse status-map evidence that would otherwise derive non-zero pass/fail/not-run partitions.
+  - Assertions confirm explicit zero raw status-count fields remain authoritative for rendered partition counters/status-count totals, while sparse status-map evidence still drives list labels plus executed/non-success metadata.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention zero raw `statusCounts` authority under sparse status-map evidence.
+  **Why:** closes the explicit-zero branch so falsy raw status-count values cannot accidentally fall through to status-map/list-derived non-zero counters.
