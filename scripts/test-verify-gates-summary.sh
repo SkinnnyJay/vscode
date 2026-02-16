@@ -401,6 +401,8 @@ unscoped_partition_scalar_counts_precedence_summary="$tmpdir/unscoped-partition-
 unscoped_partition_scalar_counts_precedence_step_summary="$tmpdir/unscoped-partition-scalar-counts-precedence-step.md"
 unscoped_partition_scalar_vs_status_counts_conflict_summary="$tmpdir/unscoped-partition-scalar-vs-status-counts-conflict.json"
 unscoped_partition_scalar_vs_status_counts_conflict_step_summary="$tmpdir/unscoped-partition-scalar-vs-status-counts-conflict-step.md"
+unscoped_partition_scalar_zero_raw_status_counts_conflict_summary="$tmpdir/unscoped-partition-scalar-zero-raw-status-counts-conflict.json"
+unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary="$tmpdir/unscoped-partition-scalar-zero-raw-status-counts-conflict-step.md"
 unscoped_partition_scalar_partial_mix_summary="$tmpdir/unscoped-partition-scalar-partial-mix.json"
 unscoped_partition_scalar_partial_mix_step_summary="$tmpdir/unscoped-partition-scalar-partial-mix-step.md"
 unscoped_partition_scalar_raw_list_hybrid_summary="$tmpdir/unscoped-partition-scalar-raw-list-hybrid.json"
@@ -4622,6 +4624,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_vs_status_counts_conflict_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_vs_status_counts_conflict_summary" "Verify Gates Unscoped Partition Scalar Vs Status Counts Conflict Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-scalar-zero-raw-status-counts-conflict-contract',
+	passedGateCount: 9,
+	failedGateCount: 8,
+	skippedGateCount: 7,
+	notRunGateCount: 6,
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	skippedGateIds: ['build'],
+	notRunGateIds: ['deploy'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_zero_raw_status_counts_conflict_summary" "Verify Gates Unscoped Partition Scalar Zero Raw Status Counts Conflict Contract Test"
 
 node - "$expected_schema_version" "$unscoped_partition_scalar_partial_mix_summary" <<'NODE'
 const fs = require('node:fs');
@@ -9158,6 +9186,30 @@ if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_scalar_vs_status_coun
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_vs_status_counts_conflict_step_summary"; then
 	echo "Did not expect schema warning for unscoped-partition-scalar-vs-status-counts-conflict summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" || ! grep -Fq "**Gate count:** 4" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Expected unscoped-partition-scalar-zero-raw-status-counts-conflict summary to preserve sparse partition gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 9" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" || ! grep -Fq "**Failed gates:** 8" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" || ! grep -Fq "**Skipped gates:** 7" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" || ! grep -Fq "**Not-run gates:** 6" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Expected unscoped-partition-scalar-zero-raw-status-counts-conflict summary to keep valid partition-count scalars authoritative over explicit zero raw statusCounts for count fields." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Expected unscoped-partition-scalar-zero-raw-status-counts-conflict summary to preserve explicit zero raw statusCounts metadata when provided." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Expected unscoped-partition-scalar-zero-raw-status-counts-conflict summary to derive executed metadata from sparse pass/fail lists while scalar pass-count precedence still drives pass-rate clamping." >&2
+	exit 1
+fi
+if grep -Fq '**Status counts:** {"pass":9,' "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Expected unscoped-partition-scalar-zero-raw-status-counts-conflict summary to prevent scalar partition counts from overwriting explicit zero raw statusCounts map metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-scalar-zero-raw-status-counts-conflict summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$unscoped_partition_scalar_partial_mix_step_summary" || ! grep -Fq "**Gate count:** 4" "$unscoped_partition_scalar_partial_mix_step_summary"; then

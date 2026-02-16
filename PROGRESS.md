@@ -3397,3 +3397,9 @@
   - Assertions confirm selected status-map-derived counters/status map/executed-rate metadata remain authoritative while explicit zero scalar/raw counter bundles are ignored under selected scope.
   - `scripts/README.md` selected status-map scope note updated to explicitly mention explicit-zero raw `statusCounts` suppression under selected status-map evidence.
   **Why:** closes the explicit-zero selected scalar/raw suppression branch so falsy selected count bundles cannot override selected status-map evidence.
+- **Unscoped scalar-count vs explicit-zero raw status-count map precedence coverage (2026-02-16 PM)** Extended unscoped count/map precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_zero_raw_status_counts_conflict`.
+  - Scenario injects valid unscoped partition-count scalars with explicit zero raw `statusCounts` values to stress count-line vs map precedence separation.
+  - Assertions confirm partition count lines stay scalar-authoritative while rendered `statusCounts` map preserves explicit zero raw values, with executed/pass-rate metadata remaining deterministic.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention zero raw status-map preservation under conflicting scalar count lines.
+  **Why:** closes the explicit-zero raw map + scalar-count conflict branch so falsy raw status-count map values cannot be overwritten by scalar partition count fields.
