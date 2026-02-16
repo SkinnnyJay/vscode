@@ -167,6 +167,8 @@ selected_non_success_partition_fallback_scope_summary="$tmpdir/selected-non-succ
 selected_non_success_partition_fallback_scope_step_summary="$tmpdir/selected-non-success-partition-fallback-scope-step.md"
 selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-success-status-precedence-scope.json"
 selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
+selected_attention_retried_scope_summary="$tmpdir/selected-attention-retried-scope.json"
+selected_attention_retried_scope_step_summary="$tmpdir/selected-attention-retried-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1594,6 +1596,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_non_success_status_precedence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_status_precedence_scope_summary" "Verify Gates Selected Non-Success Status Precedence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_attention_retried_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-attention-retried-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass', build: 'fail' },
+	retriedGateIds: ['lint', 'build'],
+	gateRetryCountById: { lint: 2, build: 4 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_attention_retried_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_attention_retried_scope_summary" "Verify Gates Selected Attention Retried Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3424,6 +3447,30 @@ if ! grep -Fq "**Non-success gates list:** none" "$selected_non_success_status_p
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-status-precedence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$selected_attention_retried_scope_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to scope retried metadata to selected IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to include selected retried pass gates in attention list." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to keep non-success list clear when selected status is pass." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to exclude non-selected retried/status IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_attention_retried_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-attention-retried-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
