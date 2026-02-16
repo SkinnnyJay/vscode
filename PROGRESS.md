@@ -3111,3 +3111,12 @@
   - Assertions confirm no-evidence fallback values are not substituted when padded numeric-string aggregate scalars are valid after trimming.
   - `scripts/README.md` unscoped aggregate notes updated to explicitly mention sparse no-evidence trimmed numeric-string precedence.
   **Why:** ensures unscoped sparse payloads preserve valid explicit aggregate metadata even when scalar values are whitespace-padded strings from shell/env serialization paths.
+- **Plus-prefixed aggregate scalar rejection coverage (2026-02-16 AM)** Extended sparse aggregate sanitization matrix for signed-string edge cases:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_plus_string_scope`.
+  - Selected sparse scenario injects plus-prefixed scalar strings across retry/duration/rate aggregate fields under explicit `selectedGateIds` with no selected execution evidence.
+  - Assertions confirm selected no-evidence aggregate metadata remains deterministic (`0`/`n/a`) and plus-prefixed scalar literals are suppressed.
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_explicit_no_evidence_string_plus`.
+  - Unscoped sparse scenario injects plus-prefixed scalar strings across retry/duration/rate aggregate fields without execution evidence.
+  - Assertions confirm plus-prefixed scalar strings are rejected as malformed in unscoped mode and no-evidence fallback metrics (`0`/`n/a`) are rendered.
+  - `scripts/README.md` selected/unscoped aggregate notes updated to explicitly include plus-prefixed scalar rejection behavior.
+  **Why:** ensures integer normalization stays strictly unsigned-digit only (`^\d+$`) so signed-string payloads from loose serializers cannot bypass aggregate fallback guards.

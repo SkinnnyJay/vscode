@@ -129,6 +129,8 @@ selected_aggregate_metrics_nonselected_evidence_scope_summary="$tmpdir/selected-
 selected_aggregate_metrics_nonselected_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-nonselected-evidence-scope-step.md"
 selected_aggregate_metrics_no_evidence_string_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-string-scope.json"
 selected_aggregate_metrics_no_evidence_string_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-string-scope-step.md"
+selected_aggregate_metrics_no_evidence_plus_string_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-plus-string-scope.json"
+selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-plus-string-scope-step.md"
 selected_aggregate_metrics_no_evidence_mixed_invalid_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-mixed-invalid-scope.json"
 selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-mixed-invalid-scope-step.md"
 selected_failed_exit_codes_without_ids_scope_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope.json"
@@ -307,6 +309,8 @@ unscoped_aggregate_metrics_explicit_no_evidence_string_summary="$tmpdir/unscoped
 unscoped_aggregate_metrics_explicit_no_evidence_string_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-step.md"
 unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace.json"
 unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace-step.md"
+unscoped_aggregate_metrics_explicit_no_evidence_string_plus_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-plus.json"
+unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-plus-step.md"
 unscoped_aggregate_metrics_no_evidence_mixed_invalid_summary="$tmpdir/unscoped-aggregate-metrics-no-evidence-mixed-invalid.json"
 unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary="$tmpdir/unscoped-aggregate-metrics-no-evidence-mixed-invalid-step.md"
 unscoped_aggregate_metrics_decimal_string_fallback_summary="$tmpdir/unscoped-aggregate-metrics-decimal-string-fallback.json"
@@ -1343,6 +1347,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_no_evidence_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_no_evidence_string_scope_summary" "Verify Gates Selected Aggregate Metrics No Evidence String Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_no_evidence_plus_string_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-no-evidence-plus-string-scope-contract',
+	selectedGateIds: ['lint'],
+	retriedGateCount: '+8',
+	totalRetryCount: '+8',
+	totalRetryBackoffSeconds: '+8',
+	executedDurationSeconds: '+99',
+	averageExecutedDurationSeconds: '+99',
+	retryRatePercent: '+80',
+	retryBackoffSharePercent: '+80',
+	passRatePercent: '+0',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_no_evidence_plus_string_scope_summary" "Verify Gates Selected Aggregate Metrics No Evidence Plus String Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3338,6 +3368,31 @@ NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence String Whitespace Contract Test"
 
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-explicit-no-evidence-string-plus-contract',
+	retriedGateCount: '+5',
+	totalRetryCount: '+7',
+	totalRetryBackoffSeconds: '+11',
+	executedDurationSeconds: '+13',
+	averageExecutedDurationSeconds: '+13',
+	retryRatePercent: '+90',
+	retryBackoffSharePercent: '+84',
+	passRatePercent: '+10',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence String Plus Contract Test"
+
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -5131,6 +5186,30 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_no_evidence_st
 	echo "Did not expect schema warning for selected-aggregate-metrics-no-evidence-string-scope summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-plus-string-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 0" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-plus-string-scope summary to ignore plus-prefixed selected aggregate retry scalars when selected retry evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-plus-string-scope summary to ignore plus-prefixed selected aggregate duration scalars when selected duration evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-plus-string-scope summary to ignore plus-prefixed selected aggregate rate scalars without selected execution evidence." >&2
+	exit 1
+fi
+if grep -Fq "+99" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || grep -Fq "+80%" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary" || grep -Fq "+8" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-plus-string-scope summary to suppress plus-prefixed selected aggregate scalar values when selected evidence is absent." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_no_evidence_plus_string_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-no-evidence-plus-string-scope summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
 	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to preserve selected-gate metadata." >&2
 	exit 1
@@ -6801,6 +6880,26 @@ if grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || ! grep -Fq "**Total retries:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-plus summary to ignore plus-prefixed numeric-string retry aggregates when evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-plus summary to ignore plus-prefixed numeric-string duration aggregates when evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-plus summary to ignore plus-prefixed numeric-string rate aggregates when evidence is absent." >&2
+	exit 1
+fi
+if grep -Fq "+13" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || grep -Fq "+90%" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary" || grep -Fq "+7" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-plus summary to suppress plus-prefixed numeric-string aggregate literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_string_plus_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence-string-plus summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary" || ! grep -Fq "**Total retries:** 0" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary"; then
