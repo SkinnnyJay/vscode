@@ -135,6 +135,8 @@ selected_run_state_failure_scope_summary="$tmpdir/selected-run-state-failure-sco
 selected_run_state_failure_scope_step_summary="$tmpdir/selected-run-state-failure-scope-step.md"
 selected_run_state_not_run_scope_summary="$tmpdir/selected-run-state-not-run-scope.json"
 selected_run_state_not_run_scope_step_summary="$tmpdir/selected-run-state-not-run-scope-step.md"
+selected_run_state_not_run_blocked_selected_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-scope.json"
+selected_run_state_not_run_blocked_selected_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-scope-step.md"
 selected_run_state_scalar_failure_only_scope_summary="$tmpdir/selected-run-state-scalar-failure-only-scope.json"
 selected_run_state_scalar_failure_only_scope_step_summary="$tmpdir/selected-run-state-scalar-failure-only-scope-step.md"
 selected_run_state_scalar_blocked_only_scope_summary="$tmpdir/selected-run-state-scalar-blocked-only-scope.json"
@@ -1182,6 +1184,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_not_run_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_scope_summary" "Verify Gates Selected Run-State Not-Run Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_not_run_blocked_selected_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-not-run-blocked-selected-scope-contract',
+	selectedGateIds: ['lint'],
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'NOT-RUN', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:lint' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_selected_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_selected_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Selected Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_scalar_failure_only_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2821,6 +2848,22 @@ if ! grep -Fq '| `lint` | `make lint` | not-run |' "$selected_run_state_not_run_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to override conflicting explicit success state with selected blocked-by-fail-fast evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to derive blocked-by gate from selected not-run reason." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_scalar_failure_only_scope_step_summary"; then
