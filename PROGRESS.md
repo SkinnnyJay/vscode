@@ -3018,3 +3018,11 @@
   - Contract assertions updated to use `grep --` for dash-prefixed sentinel checks, avoiding false option parsing for negative-value literals.
   - `scripts/README.md` unscoped scalar notes updated to explicitly include negative-number sanitization behavior.
   **Why:** hardens aggregate scalar normalization against negative values and prevents contract-harness hangs when asserting dash-prefixed literals.
+- **Unscoped partial aggregate scalar precedence coverage (2026-02-16 AM)** Expanded per-field precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_partial_scalar_precedence`.
+  - Scenario mixes valid explicit unscoped aggregate scalars with malformed siblings to verify precedence is applied per field, not all-or-nothing.
+  - Assertions confirm:
+    - valid explicit fields remain authoritative (`totalRetryCount`, `executedDurationSeconds`, `passRatePercent`)
+    - malformed fields re-derive from normalized evidence (`retriedGateCount`, `totalRetryBackoffSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `retryBackoffSharePercent`).
+  - `scripts/README.md` unscoped aggregate precedence notes updated to include mixed explicit/malformed per-field resolution semantics.
+  **Why:** prevents partial scalar payloads from either over-trusting malformed fields or incorrectly discarding valid explicit operator-provided aggregate metrics.
