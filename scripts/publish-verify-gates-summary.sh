@@ -964,10 +964,14 @@ const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown'
 const runIdValue = normalizeNonEmptyString(summary.runId) ?? 'unknown';
 const resultSignatureAlgorithmValue = normalizeNonEmptyString(summary.resultSignatureAlgorithm) ?? 'unknown';
 const resultSignatureValue = normalizeNonEmptyString(summary.resultSignature) ?? 'unknown';
-const slowestExecutedGateIdFromSummary = normalizeNonEmptyString(summary.slowestExecutedGateId);
-const slowestExecutedGateDurationFromSummary = normalizeNonNegativeInteger(summary.slowestExecutedGateDurationSeconds);
-const fastestExecutedGateIdFromSummary = normalizeNonEmptyString(summary.fastestExecutedGateId);
-const fastestExecutedGateDurationFromSummary = normalizeNonNegativeInteger(summary.fastestExecutedGateDurationSeconds);
+const slowestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeNonEmptyString(summary.slowestExecutedGateId));
+const slowestExecutedGateDurationFromSummary = selectedGateIdsFromSummary !== null && slowestExecutedGateIdFromSummary === null
+	? null
+	: normalizeNonNegativeInteger(summary.slowestExecutedGateDurationSeconds);
+const fastestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeNonEmptyString(summary.fastestExecutedGateId));
+const fastestExecutedGateDurationFromSummary = selectedGateIdsFromSummary !== null && fastestExecutedGateIdFromSummary === null
+	? null
+	: normalizeNonNegativeInteger(summary.fastestExecutedGateDurationSeconds);
 const logFileValue = normalizeNonEmptyString(summary.logFile);
 const sanitizeCell = (value) => String(value).replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
 const sanitizeCodeCell = (value) => sanitizeCell(value).replace(/`/g, '\\`');

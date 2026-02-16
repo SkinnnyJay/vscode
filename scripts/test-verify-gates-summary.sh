@@ -107,6 +107,8 @@ selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
 selected_scalar_counts_scope_step_summary="$tmpdir/selected-scalar-counts-scope-step.md"
 selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-alignment.json"
 selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
+selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
+selected_slow_fast_scope_step_summary="$tmpdir/selected-slow-fast-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -815,6 +817,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_failed_exit_code_alignment_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_failed_exit_code_alignment_summary" "Verify Gates Selected Failed Exit-Code Alignment Contract Test"
+
+node - "$expected_schema_version" "$selected_slow_fast_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-slow-fast-scope-contract',
+	selectedGateIds: ['lint'],
+	executedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateDurationSecondsById: { lint: 3 },
+	slowestExecutedGateId: 'build',
+	slowestExecutedGateDurationSeconds: 9,
+	fastestExecutedGateId: 'build',
+	fastestExecutedGateDurationSeconds: 1,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_slow_fast_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_slow_fast_scope_summary" "Verify Gates Selected Slow/Fast Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2092,6 +2119,26 @@ if grep -Fq "9" "$selected_failed_exit_code_alignment_step_summary" || grep -Fq 
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_failed_exit_code_alignment_step_summary"; then
 	echo "Did not expect schema warning for selected-failed-exit-code-alignment summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_slow_fast_scope_step_summary"; then
+	echo "Expected selected-slow-fast-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate:** lint" "$selected_slow_fast_scope_step_summary" || ! grep -Fq "**Fastest executed gate:** lint" "$selected_slow_fast_scope_step_summary"; then
+	echo "Expected selected-slow-fast-scope summary to ignore non-selected explicit slow/fast gate IDs and fall back to selected-scope derived values." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate duration:** 3s" "$selected_slow_fast_scope_step_summary" || ! grep -Fq "**Fastest executed gate duration:** 3s" "$selected_slow_fast_scope_step_summary"; then
+	echo "Expected selected-slow-fast-scope summary to ignore non-selected explicit slow/fast durations and use selected-scope derived durations." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_slow_fast_scope_step_summary" || grep -Fq "9s" "$selected_slow_fast_scope_step_summary"; then
+	echo "Expected selected-slow-fast-scope summary to exclude non-selected explicit slow/fast metadata from rendered output." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_slow_fast_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-slow-fast-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
