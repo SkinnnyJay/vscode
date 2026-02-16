@@ -3445,3 +3445,9 @@
   - Assertions confirm selected executed metadata still derives from merged selected status-map/partition fallback (`Executed gates: 2`, `Pass rate: 50%`) while conflicting scalar executed-count zero stays ignored.
   - `scripts/README.md` selected executed-list scope note updated to explicitly mention selected partial status-map+partition executed fallback suppressing conflicting scalar executed-count inputs.
   **Why:** closes the selected fallback-executed branch so conflicting scalar executed-count values cannot override selected executed metadata when executed lists are omitted and fallback evidence is present.
+- **Selected status-map pass precedence suppression of conflicting executed-count scalar under non-success partition conflict coverage (2026-02-16 PM)** Tightened selected executed/non-success precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` updates `selected_non_success_status_precedence_scope` to include conflicting `executedGateCount: 0`.
+  - Scenario keeps selected status-map pass evidence for `lint` while selected not-run partition membership still conflicts for diagnostics.
+  - Assertions confirm selected executed metadata/rates stay status-map-driven (`Executed gates: 1`, list `lint`, pass rate `100%`) while conflicting selected scalar executed-count zero remains ignored.
+  - `scripts/README.md` selected executed precedence note updated to explicitly mention selected status-map pass precedence over conflicting selected not-run partition membership with scalar executed-count suppression.
+  **Why:** closes the selected status-map-pass + conflicting not-run partition branch so conflicting scalar executed-count values cannot nullify selected status-map-driven executed metadata/rates.

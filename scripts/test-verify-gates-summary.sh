@@ -3405,6 +3405,7 @@ const payload = {
 	selectedGateIds: ['lint'],
 	gateStatusById: { lint: 'pass' },
 	notRunGateIds: ['lint'],
+	executedGateCount: 0,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -8172,6 +8173,14 @@ if ! grep -Fq "**Selected gates:** lint" "$selected_non_success_status_precedenc
 fi
 if ! grep -Fq "**Passed gates:** 1" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_non_success_status_precedence_scope_step_summary"; then
 	echo "Expected selected-non-success-status-precedence-scope summary to surface conflicting pass/not-run aggregate metadata for diagnostic visibility." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 1" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Executed gates list:** lint" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to derive executed metadata from selected status-map pass evidence despite conflicting selected not-run partition and executedGateCount scalar inputs." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 0" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to suppress conflicting selected executedGateCount scalar and preserve selected status-map-driven executed-rate derivation." >&2
 	exit 1
 fi
 if ! grep -Fq "**Non-success gates list:** none" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Attention gates list:** none" "$selected_non_success_status_precedence_scope_step_summary"; then
