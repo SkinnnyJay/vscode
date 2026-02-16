@@ -323,6 +323,8 @@ selected_executed_string_zero_scalar_count_ignored_nonempty_list_scope_summary="
 selected_executed_string_zero_scalar_count_ignored_nonempty_list_scope_step_summary="$tmpdir/selected-executed-string-zero-scalar-count-ignored-nonempty-list-scope-step.md"
 selected_executed_fallback_partial_status_map_scope_summary="$tmpdir/selected-executed-fallback-partial-status-map-scope.json"
 selected_executed_fallback_partial_status_map_scope_step_summary="$tmpdir/selected-executed-fallback-partial-status-map-scope-step.md"
+selected_executed_scalar_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-scalar-ignored-partial-status-map-scope.json"
+selected_executed_scalar_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-scalar-ignored-partial-status-map-scope-step.md"
 selected_executed_string_scalar_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-scalar-ignored-partial-status-map-scope.json"
 selected_executed_string_scalar_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-string-scalar-ignored-partial-status-map-scope-step.md"
 selected_executed_string_zero_scalar_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-zero-scalar-ignored-partial-status-map-scope.json"
@@ -3702,6 +3704,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_executed_fallback_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_fallback_partial_status_map_scope_summary" "Verify Gates Selected Executed Fallback Partial Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_scalar_ignored_partial_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-scalar-ignored-partial-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass' },
+	failedGateIds: ['typecheck'],
+	executedGateCount: 5,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_scalar_ignored_partial_status_map_scope_summary" "Verify Gates Selected Executed Scalar Ignored Partial Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_executed_string_scalar_ignored_partial_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8780,6 +8803,34 @@ if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_fallbac
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_executed_fallback_partial_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-executed-fallback-partial-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Executed gates:** 2" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to derive executed counts from merged selected status-map and sparse partition fallback data despite conflicting executedGateCount scalar." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to derive executed list/pass-rate from merged selected status-map and sparse partition fallback data despite conflicting executedGateCount scalar." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 5" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 20%" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to suppress executed-count override under selected sparse status-map/partition fallback evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to align selected non-success metadata with merged status-map/partition evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-ignored-partial-status-map-scope summary to preserve explicit partial selected status-map metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-scalar-ignored-partial-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_string_scalar_ignored_partial_status_map_scope_step_summary"; then

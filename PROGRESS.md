@@ -3548,3 +3548,10 @@
   - Assertions also reject non-zero-scalar-driven fallback (`Executed gates: 5`, pass rate `20%`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
   - `scripts/README.md` selected executed fallback note updated to explicitly mention normalized numeric-string non-zero and zero scalar suppression alongside broader selected `executedGateCount` scalar suppression.
   **Why:** closes the selected numeric-string non-zero executed-count scalar + partial selected status-map/partition fallback branch so normalized non-zero scalars cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
+- **Selected integer executed-count scalar suppression under partial selected status-map fallback coverage (2026-02-16 PM)** Extended selected sparse executed fallback precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_scalar_ignored_partial_status_map_scope`.
+  - Scenario omits explicit `executedGateIds`, keeps selected sparse `gateStatusById` + selected partition fallback evidence, and injects conflicting integer `executedGateCount: 5`.
+  - Assertions confirm selected sparse status-map/partition fallback remains authoritative (`Executed gates: 2`, pass rate `50%`, executed list `lint, typecheck`) while conflicting integer scalar is ignored.
+  - Assertions also reject integer-scalar-driven fallback (`Executed gates: 5`, pass rate `20%`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
+  - `scripts/README.md` selected executed fallback note updated to explicitly mention integer non-zero scalar suppression alongside numeric-string scalar suppression for selected sparse fallback paths.
+  **Why:** closes the selected integer non-zero executed-count scalar + partial selected status-map/partition fallback branch so integer non-zero scalars cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
