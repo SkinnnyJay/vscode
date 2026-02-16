@@ -3630,3 +3630,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T225111Z`, classification `success-with-retries`)
   **Why:** closes the remaining integer-form combined scalar+raw executed precedence gap so unscoped mixed aggregate bundles remain deterministic across both integer and numeric-string scalar encodings under sparse status-map/partition fallback evidence.
+- **Unscoped explicit-empty executed-list + scalar/raw statusCounts executed precedence coverage (2026-02-16 PM)** Extended unscoped executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list`
+    - `unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list`
+  - Both scenarios keep `executedGateIds: []` explicit-empty-list evidence, retain sparse status-map fallback context, and inject raw `statusCounts` (`pass: 2`, `fail: 3`, `skip: 0`, `not-run: 0`) with integer `executedGateCount` scalars (`5` and `0`).
+  - Assertions confirm deterministic split precedence:
+    - raw `statusCounts` remains authoritative for pass/fail count lines and rendered status-count metadata
+    - integer executed-count scalar remains authoritative for executed denominator semantics (`Executed gates: 5` + pass/retry `40%`/`0%`; or `Executed gates: 0` + executed rates `n/a`)
+    - explicit empty executed-list label (`Executed gates list: none`) stays intact while scalar denominator drives rate behavior
+    - sparse fallback branches (`Executed gates: 0` for non-zero scalar case, or non-zero executed/rate leakage for zero scalar case) are suppressed.
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly include combined integer scalar+raw precedence when `executedGateIds` is explicitly empty.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T231058Z`, classification `success-with-retries`)
+  **Why:** closes explicit-empty executed-list mixed-source precedence gaps so unscoped payloads with concurrent scalar executed counts and raw status-count maps remain deterministic even when executed-list evidence is explicitly empty.

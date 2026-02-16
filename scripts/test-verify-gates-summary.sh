@@ -471,8 +471,12 @@ unscoped_executed_explicit_empty_list_summary="$tmpdir/unscoped-executed-explici
 unscoped_executed_explicit_empty_list_step_summary="$tmpdir/unscoped-executed-explicit-empty-list-step.md"
 unscoped_executed_scalar_count_overrides_empty_list_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list.json"
 unscoped_executed_scalar_count_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list-step.md"
+unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_summary="$tmpdir/unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list.json"
+unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list-step.md"
 unscoped_executed_string_scalar_count_overrides_empty_list_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-empty-list.json"
 unscoped_executed_string_scalar_count_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-empty-list-step.md"
+unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_summary="$tmpdir/unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list.json"
+unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list-step.md"
 unscoped_executed_zero_scalar_overrides_explicit_list_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list.json"
 unscoped_executed_zero_scalar_overrides_explicit_list_step_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list-step.md"
 unscoped_executed_string_zero_scalar_overrides_explicit_list_summary="$tmpdir/unscoped-executed-string-zero-scalar-overrides-explicit-list.json"
@@ -5486,6 +5490,27 @@ NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_scalar_count_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_scalar_count_overrides_empty_list_summary" "Verify Gates Unscoped Executed Scalar Count Overrides Empty List Contract Test"
 
+node - "$expected_schema_version" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list-contract',
+	gateStatusById: { lint: 'pass', build: 'fail' },
+	executedGateIds: [],
+	executedGateCount: 5,
+	statusCounts: { pass: 2, fail: 3, skip: 0, 'not-run': 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_summary" "Verify Gates Unscoped Executed Scalar And Raw Status Counts Override Empty List Contract Test"
+
 node - "$expected_schema_version" "$unscoped_executed_string_scalar_count_overrides_empty_list_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -5505,6 +5530,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_scalar_count_overrides_empty_list_summary" "Verify Gates Unscoped Executed String Scalar Count Overrides Empty List Contract Test"
+
+node - "$expected_schema_version" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list-contract',
+	gateStatusById: { lint: 'pass', build: 'fail' },
+	executedGateIds: [],
+	executedGateCount: 0,
+	statusCounts: { pass: 2, fail: 3, skip: 0, 'not-run': 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_summary" "Verify Gates Unscoped Executed Zero Scalar And Raw Status Counts Override Empty List Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_zero_scalar_overrides_explicit_list_summary" <<'NODE'
 const fs = require('node:fs');
@@ -10861,6 +10907,38 @@ if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_scalar_count_overrides_
 	echo "Did not expect schema warning for unscoped-executed-scalar-count-overrides-empty-list summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to preserve gate count from sparse status-map IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 2" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Failed gates:** 3" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to keep raw statusCounts pass/fail counters authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":2,"fail":3,"skip":0,"not-run":0}' "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to preserve explicit raw statusCounts metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 5" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to keep explicit executedGateCount scalar authoritative over explicit empty executed-list metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 40%" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Retry rate (executed gates):** 0%" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to derive executed-rate metrics from scalar executed-count denominator plus raw statusCounts pass counter." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** build" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to preserve non-success-derived attention metadata under combined scalar+raw precedence." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 0" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary to suppress explicit empty executed-list fallback when scalar executed count is authoritative." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-scalar-and-raw-status-counts-overrides-empty-list summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
 	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to preserve gate count from sparse status-map IDs." >&2
 	exit 1
@@ -10887,6 +10965,38 @@ if grep -Fq "**Executed gates:** 0" "$unscoped_executed_string_scalar_count_over
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
 	echo "Did not expect schema warning for unscoped-executed-string-scalar-count-overrides-empty-list summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to preserve gate count from sparse status-map IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 2" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Failed gates:** 3" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to keep raw statusCounts pass/fail counters authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":2,"fail":3,"skip":0,"not-run":0}' "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to preserve explicit raw statusCounts metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to keep explicit executedGateCount zero scalar authoritative over explicit empty executed-list metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to render executed-rate metrics as n/a from explicit zero scalar denominator despite raw status-count evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** build" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to preserve non-success-derived attention metadata under combined zero-scalar+raw precedence." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 5" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary" || grep -Fq "**Pass rate (executed gates):** 40%" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary to suppress non-zero executed-count/rate derivation under explicit zero scalar precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_zero_scalar_and_raw_status_counts_overrides_empty_list_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-zero-scalar-and-raw-status-counts-overrides-empty-list summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
