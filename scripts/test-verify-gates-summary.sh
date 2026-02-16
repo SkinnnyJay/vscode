@@ -403,6 +403,8 @@ unscoped_partition_scalar_vs_status_counts_conflict_summary="$tmpdir/unscoped-pa
 unscoped_partition_scalar_vs_status_counts_conflict_step_summary="$tmpdir/unscoped-partition-scalar-vs-status-counts-conflict-step.md"
 unscoped_partition_scalar_zero_raw_status_counts_conflict_summary="$tmpdir/unscoped-partition-scalar-zero-raw-status-counts-conflict.json"
 unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary="$tmpdir/unscoped-partition-scalar-zero-raw-status-counts-conflict-step.md"
+unscoped_partition_scalar_partial_zero_raw_status_counts_mix_summary="$tmpdir/unscoped-partition-scalar-partial-zero-raw-status-counts-mix.json"
+unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary="$tmpdir/unscoped-partition-scalar-partial-zero-raw-status-counts-mix-step.md"
 unscoped_partition_scalar_partial_mix_summary="$tmpdir/unscoped-partition-scalar-partial-mix.json"
 unscoped_partition_scalar_partial_mix_step_summary="$tmpdir/unscoped-partition-scalar-partial-mix-step.md"
 unscoped_partition_scalar_raw_list_hybrid_summary="$tmpdir/unscoped-partition-scalar-raw-list-hybrid.json"
@@ -4650,6 +4652,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_zero_raw_status_counts_conflict_summary" "Verify Gates Unscoped Partition Scalar Zero Raw Status Counts Conflict Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-scalar-partial-zero-raw-status-counts-mix-contract',
+	passedGateCount: 5,
+	failedGateCount: 'bad',
+	skippedGateCount: 4,
+	notRunGateCount: -1,
+	statusCounts: { pass: ' 0 ', fail: null, skip: 0, 'not-run': 'bad' },
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	notRunGateIds: ['build'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_summary" "Verify Gates Unscoped Partition Scalar Partial Zero Raw Status Counts Mix Contract Test"
 
 node - "$expected_schema_version" "$unscoped_partition_scalar_partial_mix_summary" <<'NODE'
 const fs = require('node:fs');
@@ -9210,6 +9237,34 @@ if grep -Fq '**Status counts:** {"pass":9,' "$unscoped_partition_scalar_zero_raw
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_zero_raw_status_counts_conflict_step_summary"; then
 	echo "Did not expect schema warning for unscoped-partition-scalar-zero-raw-status-counts-conflict summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Gate count:** 3" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to preserve sparse gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 5" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Skipped gates:** 4" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to merge scalar and list fallback count lines while malformed branches fall through." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":1,"skip":0,"not-run":1}' "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to keep explicit zero/raw statusCounts fields authoritative while unresolved fields fall back per status key." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to keep executed metadata deterministic while scalar pass-count precedence drives pass-rate clamping." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Failed gates list:** typecheck" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || ! grep -Fq "**Not-run gates list:** build" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to preserve sparse partition labels while mixed scalar/raw precedence is applied." >&2
+	exit 1
+fi
+if grep -Fq '**Status counts:** {"pass":5,' "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary" || grep -Fq '"skip":4' "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Expected unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary to prevent scalar partition counts from leaking into explicit zero raw statusCounts map keys." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_partial_zero_raw_status_counts_mix_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-scalar-partial-zero-raw-status-counts-mix summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$unscoped_partition_scalar_partial_mix_step_summary" || ! grep -Fq "**Gate count:** 4" "$unscoped_partition_scalar_partial_mix_step_summary"; then

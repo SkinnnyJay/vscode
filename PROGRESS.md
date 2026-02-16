@@ -3403,3 +3403,9 @@
   - Assertions confirm partition count lines stay scalar-authoritative while rendered `statusCounts` map preserves explicit zero raw values, with executed/pass-rate metadata remaining deterministic.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention zero raw status-map preservation under conflicting scalar count lines.
   **Why:** closes the explicit-zero raw map + scalar-count conflict branch so falsy raw status-count map values cannot be overwritten by scalar partition count fields.
+- **Unscoped mixed scalar + partial zero-raw status-count fallback coverage (2026-02-16 PM)** Extended unscoped per-field precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_partial_zero_raw_status_counts_mix`.
+  - Scenario combines valid/malformed unscoped partition-count scalars with partial explicit zero raw `statusCounts` keys and sparse partition-list fallback evidence.
+  - Assertions confirm count lines still resolve per-field scalar/list precedence while explicit zero raw `statusCounts` keys remain authoritative in the rendered status-count map and unresolved keys fall back per status key.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed scalar + partial zero-raw map fallback behavior.
+  **Why:** closes the partial-zero raw branch so mixed scalar/raw payloads preserve explicit zero map keys without losing deterministic per-field fallback for malformed or missing raw status-count keys.
