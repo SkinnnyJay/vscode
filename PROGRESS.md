@@ -2936,3 +2936,8 @@
     - `timestamps_conflicting_no_rows_unscoped` validating reversed explicit unscoped no-row timestamps preserve diagnostic start/end values while rendering `Total duration: unknown`.
   - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-minute rejection and unscoped conflicting no-row duration behavior.
   **Why:** rounds out canonical parser edge coverage for malformed minute fields and confirms negative-duration avoidance applies consistently in unscoped sparse summaries.
+- **Selected no-row duration-map precedence over conflicting total-duration scalar coverage (2026-02-16 AM)** Strengthened selected aggregate precedence contracts:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_conflict_duration_map_no_rows_scope`.
+  - Scenario verifies selected no-row payloads with both `totalDurationSeconds` and selected `gateDurationSecondsById` use selected duration-map evidence (`Total duration: 3s`) instead of conflicting explicit total-duration scalar (`7`).
+  - `scripts/README.md` selected-scope aggregate-conflict notes updated to include selected no-row duration-map precedence.
+  **Why:** prevents stale scalar `totalDurationSeconds` values from overriding higher-fidelity selected duration-map evidence in sparse selected payloads.

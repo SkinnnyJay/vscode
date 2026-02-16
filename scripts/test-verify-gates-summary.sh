@@ -161,6 +161,8 @@ timestamps_conflicting_no_rows_unscoped_summary="$tmpdir/timestamps-conflicting-
 timestamps_conflicting_no_rows_unscoped_step_summary="$tmpdir/timestamps-conflicting-no-rows-unscoped-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
+selected_total_duration_conflict_duration_map_no_rows_scope_summary="$tmpdir/selected-total-duration-conflict-duration-map-no-rows-scope.json"
+selected_total_duration_conflict_duration_map_no_rows_scope_step_summary="$tmpdir/selected-total-duration-conflict-duration-map-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
 selected_run_state_scope_step_summary="$tmpdir/selected-run-state-scope-step.md"
 selected_run_state_no_evidence_scope_summary="$tmpdir/selected-run-state-no-evidence-scope.json"
@@ -1538,6 +1540,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_total_duration_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_total_duration_no_rows_scope_summary" "Verify Gates Selected Total Duration No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_total_duration_conflict_duration_map_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-total-duration-conflict-duration-map-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	totalDurationSeconds: 7,
+	gateDurationSecondsById: { lint: 3 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_total_duration_conflict_duration_map_no_rows_scope_summary" "Verify Gates Selected Total Duration Conflict Duration Map No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4563,6 +4585,22 @@ if ! grep -Fq "**Total duration:** 7s" "$selected_total_duration_no_rows_scope_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_total_duration_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-total-duration-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-duration-map-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate duration map (s):** {"lint":3}' "$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-duration-map-no-rows-scope summary to preserve selected duration-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 3s" "$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-duration-map-no-rows-scope summary to prioritize selected duration-map evidence over conflicting explicit totalDurationSeconds." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-total-duration-conflict-duration-map-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_scope_step_summary"; then
