@@ -4218,8 +4218,8 @@ if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_subset_retry_map_step_su
 	echo "Did not expect schema warning for explicit-retried-subset-retry-map summary." >&2
 	exit 1
 fi
-if ! grep -Fq "**Selected gates:** none" "$explicit_retried_missing_retry_map_key_step_summary"; then
-	echo "Expected explicit-retried-missing-retry-map-key summary to keep selected-gate metadata empty when no gate IDs are otherwise known." >&2
+if ! grep -Fq "**Selected gates:** lint" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to derive selected-gate metadata from explicit retried IDs when no rows/status maps are provided." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_missing_retry_map_key_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$explicit_retried_missing_retry_map_key_step_summary"; then

@@ -462,7 +462,17 @@ const selectedGateIds = selectedGateIdsFromSummary
 	? selectedGateIdsFromSummary
 	: (gates.length > 0
 		? gateIdsFromRows(() => true)
-		: Object.keys(gateStatusByIdFromSummary ?? {}));
+		: uniqueGateIds([
+			...Object.keys(gateStatusByIdFromSummary ?? {}),
+			...(passedGateIdsFromSummary ?? []),
+			...(failedGateIdsFromSummary ?? []),
+			...(skippedGateIdsFromSummary ?? []),
+			...(notRunGateIdsFromSummary ?? []),
+			...(executedGateIdsFromSummary ?? []),
+			...(retriedGateIdsFromSummary ?? []),
+			...(nonSuccessGateIdsFromSummary ?? []),
+			...(attentionGateIdsFromSummary ?? []),
+		]));
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
 let failedGateIds = failedGateIdsFromSummary
 	!== null
