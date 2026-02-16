@@ -2980,3 +2980,11 @@
     - retry/pass/backoff-share rates from derived selected counts/durations.
   - `scripts/README.md` selected scope contract-coverage notes updated with malformed aggregate-scalar fallback behavior.
   **Why:** ensures selected scope remains deterministic and resilient when aggregate scalar fields are malformed or non-numeric, preventing ambiguous or polluted retry/duration/rate metadata.
+- **Unscoped aggregate-metric scalar precedence + malformed fallback coverage (2026-02-16 AM)** Expanded unscoped scalar matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_aggregate_metrics_explicit_precedence`
+    - `unscoped_aggregate_metrics_malformed_fallback`
+  - Explicit precedence scenario verifies valid unscoped retry/duration/rate scalars (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `retryBackoffSharePercent`, `passRatePercent`) remain authoritative over conflicting map/list-derived values.
+  - Malformed fallback scenario verifies malformed unscoped scalar values are ignored and re-derived deterministically from unscoped retry/duration map evidence.
+  - `scripts/README.md` contract coverage notes updated with unscoped aggregate-metric precedence/fallback behavior.
+  **Why:** closes remaining aggregate scalar precedence gaps between selected and unscoped payloads, preventing silent drift when unscoped summaries provide conflicting or malformed scalar metrics.

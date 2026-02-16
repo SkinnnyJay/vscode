@@ -283,6 +283,10 @@ selected_explicit_retried_nonselected_scope_summary="$tmpdir/selected-explicit-r
 selected_explicit_retried_nonselected_scope_step_summary="$tmpdir/selected-explicit-retried-nonselected-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
+unscoped_aggregate_metrics_explicit_precedence_summary="$tmpdir/unscoped-aggregate-metrics-explicit-precedence.json"
+unscoped_aggregate_metrics_explicit_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-precedence-step.md"
+unscoped_aggregate_metrics_malformed_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback.json"
+unscoped_aggregate_metrics_malformed_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -2959,6 +2963,68 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_unmatched_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_unmatched_rows_scope_summary" "Verify Gates Selected Run-State Unmatched Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_explicit_precedence_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-explicit-precedence-contract',
+	executedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gateDurationSecondsById: { lint: 4, typecheck: 6 },
+	retriedGateCount: 9,
+	totalRetryCount: 13,
+	totalRetryBackoffSeconds: 21,
+	executedDurationSeconds: 30,
+	averageExecutedDurationSeconds: 15,
+	retryRatePercent: 77,
+	retryBackoffSharePercent: 70,
+	passRatePercent: 88,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_precedence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_precedence_summary" "Verify Gates Unscoped Aggregate Metrics Explicit Precedence Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_malformed_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-malformed-fallback-contract',
+	executedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gateDurationSecondsById: { lint: 4, typecheck: 6 },
+	retriedGateCount: 'bad',
+	totalRetryCount: 'bad',
+	totalRetryBackoffSeconds: 'bad',
+	executedDurationSeconds: 'bad',
+	averageExecutedDurationSeconds: 'bad',
+	retryRatePercent: 'bad',
+	retryBackoffSharePercent: 'bad',
+	passRatePercent: 'bad',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_malformed_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_malformed_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Malformed Fallback Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -5880,6 +5946,42 @@ if ! grep -Fq '| `lint` | `make lint` | pass |' "$selected_run_state_unmatched_r
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_unmatched_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-unmatched-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 9" "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || ! grep -Fq "**Total retries:** 13" "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || ! grep -Fq "**Total retry backoff:** 21s" "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-precedence summary to preserve explicit aggregate retry scalars in unscoped mode." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 30s" "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || ! grep -Fq "**Executed duration average:** 15s" "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-precedence summary to preserve explicit aggregate duration scalars in unscoped mode." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 77%" "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 70%" "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 88%" "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-precedence summary to preserve explicit aggregate retry/pass/share rate scalars in unscoped mode." >&2
+	exit 1
+fi
+if grep -Eq '^\*\*Total retries:\*\* 1$' "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || grep -Eq '^\*\*Executed duration total:\*\* 10s$' "$unscoped_aggregate_metrics_explicit_precedence_step_summary" || grep -Eq '^\*\*Retry rate \(executed gates\):\*\* 50%$' "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-precedence summary to avoid replacing explicit aggregate scalars with derived fallback values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-precedence summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retries:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-malformed-fallback summary to ignore malformed aggregate retry scalars and derive retry metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 10s" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Executed duration average:** 5s" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-malformed-fallback summary to ignore malformed aggregate duration scalars and derive duration metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 50%" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 10%" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-malformed-fallback summary to ignore malformed aggregate rate scalars and derive rate metrics." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-malformed-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
