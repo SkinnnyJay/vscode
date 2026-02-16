@@ -3513,3 +3513,10 @@
   - Assertions also reject scalar-driven executed/rate derivation (`Executed gates: 5`, pass rate `20%`) under explicit selected scope.
   - `scripts/README.md` selected executed-list precedence note updated to explicitly mention conflicting selected integer/numeric-string scalar suppression for explicit selected executed-list overrides.
   **Why:** closes the selected numeric-string executed-count scalar + explicit empty executed-list branch so normalized numeric-string scalars cannot override explicit selected empty executed-list evidence.
+- **Unscoped numeric-string executed-count scalar override over explicit empty executed-list coverage (2026-02-16 PM)** Extended unscoped executed scalar normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_string_scalar_count_overrides_empty_list`.
+  - Scenario keeps explicit unscoped empty executed-list evidence while injecting explicit numeric-string `executedGateCount: ' 5 '` and sparse status/retry evidence.
+  - Assertions confirm normalized numeric-string scalar executed-count remains authoritative (`Executed gates: 5`) while explicit empty executed-list label remains visible (`Executed gates list: none`).
+  - Assertions also confirm executed-rate metrics derive from normalized scalar denominator (`Pass rate: 20%`, `Retry rate: 0%`) and reject empty-list-driven executed/rate fallback (`Executed gates: 0`, rates `n/a`).
+  - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention integer/numeric-string executed-count scalar overrides over explicit empty executed lists.
+  **Why:** closes the unscoped numeric-string executed-count + explicit empty executed-list branch so normalized numeric-string scalars remain authoritative over explicit empty-list counts/rates while preserving list-label metadata.

@@ -449,6 +449,8 @@ unscoped_executed_explicit_empty_list_summary="$tmpdir/unscoped-executed-explici
 unscoped_executed_explicit_empty_list_step_summary="$tmpdir/unscoped-executed-explicit-empty-list-step.md"
 unscoped_executed_scalar_count_overrides_empty_list_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list.json"
 unscoped_executed_scalar_count_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list-step.md"
+unscoped_executed_string_scalar_count_overrides_empty_list_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-empty-list.json"
+unscoped_executed_string_scalar_count_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-empty-list-step.md"
 unscoped_executed_zero_scalar_overrides_explicit_list_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list.json"
 unscoped_executed_zero_scalar_overrides_explicit_list_step_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list-step.md"
 unscoped_executed_scalar_count_overrides_partial_status_map_summary="$tmpdir/unscoped-executed-scalar-count-overrides-partial-status-map.json"
@@ -5214,6 +5216,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_scalar_count_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_scalar_count_overrides_empty_list_summary" "Verify Gates Unscoped Executed Scalar Count Overrides Empty List Contract Test"
+
+node - "$expected_schema_version" "$unscoped_executed_string_scalar_count_overrides_empty_list_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-string-scalar-count-overrides-empty-list-contract',
+	gateStatusById: { lint: 'pass', build: 'fail' },
+	executedGateIds: [],
+	executedGateCount: ' 5 ',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_scalar_count_overrides_empty_list_summary" "Verify Gates Unscoped Executed String Scalar Count Overrides Empty List Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_zero_scalar_overrides_explicit_list_summary" <<'NODE'
 const fs = require('node:fs');
@@ -10157,6 +10179,34 @@ if ! grep -Fq "**Attention gates list:** build" "$unscoped_executed_scalar_count
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_scalar_count_overrides_empty_list_step_summary"; then
 	echo "Did not expect schema warning for unscoped-executed-scalar-count-overrides-empty-list summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to preserve gate count from sparse status-map IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 5" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to normalize explicit numeric-string executedGateCount scalar over explicit empty executed list metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to preserve sparse pass/fail counters while normalized explicit executed scalar override is applied." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 20%" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" || ! grep -Fq "**Retry rate (executed gates):** 0%" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to derive rate metrics from normalized explicit executedGateCount override and sparse pass/retry evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** build" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to preserve non-success-derived attention metadata under normalized explicit executed count override." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 0" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-count-overrides-empty-list summary to suppress explicit empty executed-list override when normalized numeric-string executedGateCount scalar is authoritative." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_scalar_count_overrides_empty_list_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-string-scalar-count-overrides-empty-list summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
