@@ -353,6 +353,8 @@ unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_summary="$tmpdir/u
 unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence-step.md"
 unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_precedence_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-precedence.json"
 unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-precedence-step.md"
+unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_summary="$tmpdir/unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback.json"
+unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback-step.md"
 unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-lower-bound-precedence.json"
 unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-lower-bound-precedence-step.md"
 unscoped_aggregate_metrics_rate_scalar_mixed_boundary_precedence_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-mixed-boundary-precedence.json"
@@ -3960,6 +3962,30 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_precedence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_precedence_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Mixed Boundary No Evidence Precedence Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback-contract',
+	executedGateIds: ['lint'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateRetryCountById: { lint: 1 },
+	gateDurationSecondsById: { lint: 4 },
+	retriedGateCount: 5,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Retry Rate Scalar Count Clamp Fallback Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7708,6 +7734,22 @@ if grep -Fq "101%" "$unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_ev
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_precedence_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-precedence summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 5" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary" || ! grep -Fq "**Executed gates:** 1" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback summary to preserve conflicting scalar retried count inputs for diagnostic visibility." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 100%" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback summary to clamp retry-rate derivation to 100% when scalar retried counts exceed executed counts." >&2
+	exit 1
+fi
+if grep -Fq "500%" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback summary to suppress unclamped retry-rate values above 100%." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-retry-rate-scalar-count-clamp-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retry rate (executed gates):** 0%" "$unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 0%" "$unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 0%" "$unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence_step_summary"; then

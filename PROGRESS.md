@@ -3211,3 +3211,9 @@
   - Assertions confirm selected precedence remains evidence-first: selected rate scalars (including valid boundaries) are suppressed under selected scope, selected evidence-derived rates stay authoritative when present, and selected no-evidence rates remain `n/a` when execution evidence is absent.
   - `scripts/README.md` selected aggregate note updated to include mixed boundary+overflow selected no-evidence suppression behavior.
   **Why:** closes a selected-scope parity gap by proving mixed valid/invalid selected rate scalar bundles cannot override selected derivation rules in either evidence-backed or sparse no-evidence payloads.
+- **Retry-rate scalar-count clamp coverage (2026-02-16 AM)** Extended bounded-derivation matrix for conflicting counts:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_retry_rate_scalar_count_clamp_fallback`.
+  - Scenario injects conflicting scalar counts (`retriedGateCount=5`, `executedGateCount=1`) while keeping sparse retry/execution evidence valid.
+  - Assertions confirm retry-rate derivation clamps to `100%` and suppresses unclamped `500%` output while preserving conflicting scalar count metadata for diagnostics.
+  - `scripts/README.md` unscoped aggregate note updated to explicitly include scalar-count conflict clamping semantics.
+  **Why:** guarantees bounded percentage output even when explicit scalar count metadata is internally inconsistent, closing the remaining >100% retry-rate edge case.
