@@ -373,6 +373,8 @@ unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap
 unscoped_partition_list_overlap_step_summary="$tmpdir/unscoped-partition-list-overlap-step.md"
 unscoped_executed_fallback_empty_status_map_summary="$tmpdir/unscoped-executed-fallback-empty-status-map.json"
 unscoped_executed_fallback_empty_status_map_step_summary="$tmpdir/unscoped-executed-fallback-empty-status-map-step.md"
+unscoped_executed_explicit_empty_list_summary="$tmpdir/unscoped-executed-explicit-empty-list.json"
+unscoped_executed_explicit_empty_list_step_summary="$tmpdir/unscoped-executed-explicit-empty-list-step.md"
 unscoped_executed_fallback_partial_status_map_summary="$tmpdir/unscoped-executed-fallback-partial-status-map.json"
 unscoped_executed_fallback_partial_status_map_step_summary="$tmpdir/unscoped-executed-fallback-partial-status-map-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -4229,6 +4231,28 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_fallback_empty_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_fallback_empty_status_map_summary" "Verify Gates Unscoped Executed Fallback Empty Status-Map Contract Test"
+
+node - "$expected_schema_version" "$unscoped_executed_explicit_empty_list_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-explicit-empty-list-contract',
+	passedGateIds: ['typecheck'],
+	failedGateIds: ['lint'],
+	executedGateIds: [],
+	retriedGateIds: ['typecheck'],
+	gateRetryCountById: { typecheck: 2, lint: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_explicit_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_explicit_empty_list_summary" "Verify Gates Unscoped Executed Explicit Empty List Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_fallback_partial_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8149,6 +8173,34 @@ if ! grep -Fq '**Gate status map:** {}' "$unscoped_executed_fallback_empty_statu
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_fallback_empty_status_map_step_summary"; then
 	echo "Did not expect schema warning for unscoped-executed-fallback-empty-status-map summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to preserve sparse gate count metadata while explicit executed list is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to preserve sparse partition counts when explicit executed list is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to keep explicit empty executed list authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to render executed-rate metrics as n/a for explicit empty executed list overrides." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** typecheck" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Total retries:** 2" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Total retry backoff:** 3s" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to retain retry metadata while executed list override remains explicit and empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$unscoped_executed_explicit_empty_list_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, lint" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Expected unscoped-executed-explicit-empty-list summary to keep non-success/attention lists aligned with sparse fail and retried evidence under empty executed-list override." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_explicit_empty_list_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-explicit-empty-list summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_fallback_partial_status_map_step_summary"; then

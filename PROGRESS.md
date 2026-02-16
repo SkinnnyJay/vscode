@@ -3235,3 +3235,9 @@
   - Assertions confirm explicit empty selected executed list remains authoritative (`Executed gates: 0`, `Executed gates list: none`) and executed-rate metrics render `n/a` despite non-empty selected partition/retry evidence.
   - `scripts/README.md` selected-scope notes updated to explicitly document explicit empty executed-list override semantics.
   **Why:** locks selected executed-list precedence so explicit empty overrides cannot be silently replaced by selected partition fallback execution metadata.
+- **Unscoped explicit empty executed-list override coverage (2026-02-16 PM)** Extended unscoped executed-precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_explicit_empty_list`.
+  - Scenario provides unscoped pass/fail partition evidence plus retry evidence while explicitly setting `executedGateIds: []`.
+  - Assertions confirm explicit empty unscoped executed list remains authoritative (`Executed gates: 0`, `Executed gates list: none`) and executed-rate metrics render `n/a` while partition + retry metadata remain visible.
+  - `scripts/README.md` overlapping partition-list note updated to explicitly mention unscoped explicit empty executed-list override behavior.
+  **Why:** closes unscoped parity so explicit empty executed-list overrides are preserved instead of silently drifting back to partition-derived execution metadata.
