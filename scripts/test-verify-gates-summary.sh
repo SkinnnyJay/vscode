@@ -275,6 +275,8 @@ selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-succe
 selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
 selected_executed_fallback_empty_status_map_scope_summary="$tmpdir/selected-executed-fallback-empty-status-map-scope.json"
 selected_executed_fallback_empty_status_map_scope_step_summary="$tmpdir/selected-executed-fallback-empty-status-map-scope-step.md"
+selected_executed_explicit_empty_list_scope_summary="$tmpdir/selected-executed-explicit-empty-list-scope.json"
+selected_executed_explicit_empty_list_scope_step_summary="$tmpdir/selected-executed-explicit-empty-list-scope-step.md"
 selected_executed_fallback_partial_status_map_scope_summary="$tmpdir/selected-executed-fallback-partial-status-map-scope.json"
 selected_executed_fallback_partial_status_map_scope_step_summary="$tmpdir/selected-executed-fallback-partial-status-map-scope-step.md"
 selected_attention_retried_scope_summary="$tmpdir/selected-attention-retried-scope.json"
@@ -3040,6 +3042,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_executed_fallback_empty_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_fallback_empty_status_map_scope_summary" "Verify Gates Selected Executed Fallback Empty Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_explicit_empty_list_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-explicit-empty-list-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	executedGateIds: [],
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_explicit_empty_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_explicit_empty_list_scope_summary" "Verify Gates Selected Executed Explicit Empty List Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_executed_fallback_partial_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6988,6 +7013,34 @@ if ! grep -Fq '**Gate status map:** {}' "$selected_executed_fallback_empty_statu
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_executed_fallback_empty_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-executed-fallback-empty-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_executed_explicit_empty_list_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to preserve selected partition counts when explicit executed list is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_executed_explicit_empty_list_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to keep explicit empty selected executed list authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_executed_explicit_empty_list_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to render executed-rate metrics as n/a when explicit selected executed list is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$selected_executed_explicit_empty_list_scope_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to keep selected retried metadata scoped when executed list override is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint, typecheck" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-explicit-empty-list-scope summary to preserve selected attention derivation from non-success + retried evidence despite empty executed list override." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_explicit_empty_list_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-explicit-empty-list-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_fallback_partial_status_map_scope_step_summary"; then

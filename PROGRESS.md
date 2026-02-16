@@ -3229,3 +3229,9 @@
   - Assertions confirm selected list normalization remains deterministic: selected IDs are trimmed/deduped/scoped, overlapping partition memberships collapse by status priority, sparse status maps/counters stay aligned with normalized selected partitions, explicit executed/retried/non-success/attention lists remain scoped/deduped, and conflicting selected scalar counters are ignored.
   - `scripts/README.md` overlapping partition-list note updated to explicitly mention malformed selected list + conflicting selected scalar counter behavior.
   **Why:** closes list/count alignment parity for selected sparse payloads so malformed gate-ID lists cannot desynchronize selected partition metadata, executed/retried/non-success projections, or selected counter derivation.
+- **Selected explicit empty executed-list override coverage (2026-02-16 PM)** Extended selected executed-precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_explicit_empty_list_scope`.
+  - Scenario provides selected pass/fail partition evidence plus selected retry evidence while explicitly setting `executedGateIds: []`.
+  - Assertions confirm explicit empty selected executed list remains authoritative (`Executed gates: 0`, `Executed gates list: none`) and executed-rate metrics render `n/a` despite non-empty selected partition/retry evidence.
+  - `scripts/README.md` selected-scope notes updated to explicitly document explicit empty executed-list override semantics.
+  **Why:** locks selected executed-list precedence so explicit empty overrides cannot be silently replaced by selected partition fallback execution metadata.
