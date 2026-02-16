@@ -318,6 +318,9 @@ const scopeGateIdToSelection = (gateId) => {
 	return selectedGateIdSetFromSummary.has(gateId) ? gateId : null;
 };
 const normalizeSelectedScopedNonNegativeInteger = (value) => selectedGateIdsFromSummary === null ? normalizeNonNegativeInteger(value) : null;
+const scopedSummaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
+const scopedSummaryBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.blockedByGateId));
+const scopedSummaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
 const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
 const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
 const skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
@@ -412,7 +415,12 @@ const failedGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(sum
 const skippedGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.skippedGateCount);
 const notRunGateCountFromSummary = normalizeSelectedScopedNonNegativeInteger(summary.notRunGateCount);
 const passedGateCount = passedGateCountFromSummary ?? rawStatusCounts.pass ?? passedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.pass ?? (gates.length > 0 ? derivedRowStatusCounts.pass : derivedStatusCounts.pass);
-const failedGateCount = failedGateCountFromSummary ?? rawStatusCounts.fail ?? failedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.fail ?? (gates.length > 0 ? derivedRowStatusCounts.fail : derivedStatusCounts.fail);
+const failedGateCount = failedGateCountFromSummary
+	?? rawStatusCounts.fail
+	?? failedGateIdsFromSummary?.length
+	?? (scopedSummaryFailedGateId !== null ? 1 : null)
+	?? derivedStatusCountsFromStatusMap?.fail
+	?? (gates.length > 0 ? derivedRowStatusCounts.fail : derivedStatusCounts.fail);
 const skippedGateCount = skippedGateCountFromSummary ?? rawStatusCounts.skip ?? skippedGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.skip ?? (gates.length > 0 ? derivedRowStatusCounts.skip : derivedStatusCounts.skip);
 const notRunGateCount = notRunGateCountFromSummary ?? rawStatusCounts['not-run'] ?? notRunGateIdsFromSummary?.length ?? derivedStatusCountsFromStatusMap?.['not-run'] ?? (gates.length > 0 ? derivedRowStatusCounts['not-run'] : derivedStatusCounts['not-run']);
 const statusCounts = {
@@ -456,12 +464,15 @@ const selectedGateIds = selectedGateIdsFromSummary
 		? gateIdsFromRows(() => true)
 		: Object.keys(gateStatusByIdFromSummary ?? {}));
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
-const failedGateIds = failedGateIdsFromSummary
+let failedGateIds = failedGateIdsFromSummary
 	!== null
 	? failedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'fail').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'fail').map(([gateId]) => gateId));
+if (failedGateIds.length === 0 && scopedSummaryFailedGateId !== null) {
+	failedGateIds = [scopedSummaryFailedGateId];
+}
 const failedGateIdsLabel = failedGateIds.length > 0 ? failedGateIds.join(', ') : 'none';
 const failedGateExitCodesFromSummary = (() => {
 	if (failedGateExitCodesByIndexFromSummary === null) {
@@ -584,10 +595,8 @@ const buildGateExitCodeMapFromSparseData = () => {
 			}
 		}
 	}
-	const summaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
-	const summaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
-	if (summaryFailedGateId && summaryFailedGateExitCode !== null) {
-		gateExitCodeMap[summaryFailedGateId] = summaryFailedGateExitCode;
+	if (scopedSummaryFailedGateId && scopedSummaryFailedGateExitCode !== null) {
+		gateExitCodeMap[scopedSummaryFailedGateId] = scopedSummaryFailedGateExitCode;
 	}
 	return gateExitCodeMap;
 };
@@ -752,14 +761,11 @@ const fastestExecutedGate = executedGateDurations.reduce((fastestGate, gateDurat
 	}
 	return gateDuration.durationSeconds < fastestGate.durationSeconds ? gateDuration : fastestGate;
 }, null);
-const summaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
-const summaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
-const failedGateId = summaryFailedGateId ?? failedGateIds[0] ?? 'none';
-const failedGateExitCode = (summaryFailedGateExitCode !== null && summaryFailedGateId !== null)
-	? summaryFailedGateExitCode
+const failedGateId = scopedSummaryFailedGateId ?? failedGateIds[0] ?? 'none';
+const failedGateExitCode = (scopedSummaryFailedGateExitCode !== null && scopedSummaryFailedGateId !== null)
+	? scopedSummaryFailedGateExitCode
 	: failedGateExitCodes[0] ?? 'none';
-const summaryBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.blockedByGateId));
-const blockedByGateId = summaryBlockedByGateId ?? (() => {
+const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 	for (const reason of Object.values(gateNotRunReasonById)) {
 		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {
 			return scopeGateIdToSelection(reason.slice('blocked-by-fail-fast:'.length)) ?? null;
@@ -819,6 +825,8 @@ const hasOutcomeEvidence = resolvedRowsForSelectionScope.length > 0
 	|| (failedGateIdsFromSummary?.length ?? 0) > 0
 	|| (skippedGateIdsFromSummary?.length ?? 0) > 0
 	|| (notRunGateIdsFromSummary?.length ?? 0) > 0
+	|| scopedSummaryFailedGateId !== null
+	|| scopedSummaryBlockedByGateId !== null
 	|| passedGateCountFromSummary !== null
 	|| failedGateCountFromSummary !== null
 	|| skippedGateCountFromSummary !== null
@@ -830,7 +838,7 @@ const selectedScopeHasUnresolvedStatuses = selectedGateIdsFromSummary !== null
 		const gateStatus = gateStatusById[gateId];
 		return gateStatus !== 'pass' && gateStatus !== 'fail' && gateStatus !== 'skip' && gateStatus !== 'not-run';
 	});
-const selectedScopeHasFailures = failedGateCount > 0;
+const selectedScopeHasFailures = failedGateCount > 0 || scopedSummaryFailedGateId !== null;
 const selectedScopeHasExecuted = executedGateCount > 0;
 const explicitDryRunRaw = normalizeBoolean(summary.dryRun);
 const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === true && selectedScopeHasExecuted
