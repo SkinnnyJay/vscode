@@ -826,7 +826,10 @@ const hasOutcomeEvidence = resolvedRowsForSelectionScope.length > 0
 	|| rawStatusCountsHasValues;
 const selectedScopeHasOutcomeEvidence = selectedGateIdsFromSummary !== null && hasOutcomeEvidence;
 const selectedScopeHasUnresolvedStatuses = selectedGateIdsFromSummary !== null
-	&& selectedGateIds.some((gateId) => gateStatusById[gateId] === 'unknown');
+	&& selectedGateIds.some((gateId) => {
+		const gateStatus = gateStatusById[gateId];
+		return gateStatus !== 'pass' && gateStatus !== 'fail' && gateStatus !== 'skip' && gateStatus !== 'not-run';
+	});
 const selectedScopeHasFailures = failedGateCount > 0;
 const selectedScopeHasExecuted = executedGateCount > 0;
 const explicitDryRunRaw = normalizeBoolean(summary.dryRun);
