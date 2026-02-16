@@ -328,14 +328,52 @@ const normalizeSelectedScopedNonNegativeInteger = (value) => selectedGateIdsFrom
 const scopedSummaryFailedGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.failedGateId));
 const scopedSummaryBlockedByGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.blockedByGateId));
 const scopedSummaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
-const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
-const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
-const skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
-const notRunGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.notRunGateIds));
+let passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
+let failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));
+let skippedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.skippedGateIds));
+let notRunGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.notRunGateIds));
 const executedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.executedGateIds));
 const retriedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.retriedGateIds));
 const nonSuccessGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.nonSuccessGateIds));
 const attentionGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.attentionGateIds));
+const normalizePartitionGateIdLists = ({ passed, failed, skipped, notRun }) => {
+	const statusPriority = { 'not-run': 1, skip: 2, pass: 3, fail: 4 };
+	const statusByGateId = {};
+	const assignStatus = (gateIds, status) => {
+		if (gateIds === null) {
+			return;
+		}
+		for (const gateId of gateIds) {
+			const currentStatus = statusByGateId[gateId];
+			if (!currentStatus || statusPriority[status] > statusPriority[currentStatus]) {
+				statusByGateId[gateId] = status;
+			}
+		}
+	};
+	assignStatus(notRun, 'not-run');
+	assignStatus(skipped, 'skip');
+	assignStatus(passed, 'pass');
+	assignStatus(failed, 'fail');
+	const filterByStatus = (gateIds, status) => gateIds === null
+		? null
+		: gateIds.filter((gateId) => statusByGateId[gateId] === status);
+	return {
+		passed: filterByStatus(passed, 'pass'),
+		failed: filterByStatus(failed, 'fail'),
+		skipped: filterByStatus(skipped, 'skip'),
+		notRun: filterByStatus(notRun, 'not-run'),
+	};
+};
+const normalizedPartitionGateIdListsFromSummary = normalizePartitionGateIdLists({
+	passed: passedGateIdsFromSummary,
+	failed: failedGateIdsFromSummary,
+	skipped: skippedGateIdsFromSummary,
+	notRun: notRunGateIdsFromSummary,
+});
+passedGateIdsFromSummary = normalizedPartitionGateIdListsFromSummary.passed;
+failedGateIdsFromSummary = normalizedPartitionGateIdListsFromSummary.failed;
+skippedGateIdsFromSummary = normalizedPartitionGateIdListsFromSummary.skipped;
+notRunGateIdsFromSummary = normalizedPartitionGateIdListsFromSummary.notRun;
 const normalizeGateStatusMap = (value) => {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) {
 		return null;
@@ -528,15 +566,6 @@ const skippedGateIds = skippedGateIdsFromSummary
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'skip').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'skip').map(([gateId]) => gateId));
 const skippedGateIdsLabel = skippedGateIds.length > 0 ? skippedGateIds.join(', ') : 'none';
-const executedGateIds = executedGateIdsFromSummary
-	!== null
-	? executedGateIdsFromSummary
-	: (gates.length > 0
-		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId)
-		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
-const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
-const executedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
-const gateCount = selectedGateIdsFromSummary?.length ?? normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIds.length ?? gates.length;
 const notRunGateIds = notRunGateIdsFromSummary
 	!== null
 	? notRunGateIdsFromSummary
@@ -544,24 +573,6 @@ const notRunGateIds = notRunGateIdsFromSummary
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'not-run').map(([gateId]) => gateId)
 		: Object.entries(gateStatusByIdFromSummary ?? {}).filter(([, status]) => status === 'not-run').map(([gateId]) => gateId));
 const notRunGateIdsLabel = notRunGateIds.length > 0 ? notRunGateIds.join(', ') : 'none';
-const knownGateIdsForMaps = uniqueGateIds([
-	...selectedGateIds,
-	...passedGateIds,
-	...failedGateIds,
-	...skippedGateIds,
-	...notRunGateIds,
-	...executedGateIds,
-	...gateIdsFromRows(() => true),
-]);
-const applyKnownGateDefaults = (mapValue, defaultValue) => {
-	const normalizedMap = { ...mapValue };
-	for (const gateId of knownGateIdsForMaps) {
-		if (!(gateId in normalizedMap)) {
-			normalizedMap[gateId] = defaultValue;
-		}
-	}
-	return normalizedMap;
-};
 const buildStatusMapFromGateIdLists = () => {
 	const statusPriority = { 'not-run': 1, skip: 2, pass: 3, fail: 4 };
 	const statusByGateId = {};
@@ -581,6 +592,33 @@ const buildStatusMapFromGateIdLists = () => {
 	assignStatus(passedGateIds, 'pass');
 	assignStatus(failedGateIds, 'fail');
 	return statusByGateId;
+};
+const executedGateIds = executedGateIdsFromSummary
+	!== null
+	? executedGateIdsFromSummary
+	: (gates.length > 0
+		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId)
+		: Object.entries(gateStatusByIdFromSummary ?? buildStatusMapFromGateIdLists()).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
+const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
+const executedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
+const gateCount = selectedGateIdsFromSummary?.length ?? normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIds.length ?? gates.length;
+const knownGateIdsForMaps = uniqueGateIds([
+	...selectedGateIds,
+	...passedGateIds,
+	...failedGateIds,
+	...skippedGateIds,
+	...notRunGateIds,
+	...executedGateIds,
+	...gateIdsFromRows(() => true),
+]);
+const applyKnownGateDefaults = (mapValue, defaultValue) => {
+	const normalizedMap = { ...mapValue };
+	for (const gateId of knownGateIdsForMaps) {
+		if (!(gateId in normalizedMap)) {
+			normalizedMap[gateId] = defaultValue;
+		}
+	}
+	return normalizedMap;
 };
 const gateStatusById = gateStatusByIdFromSummary
 	? gateStatusByIdFromSummary

@@ -3111,6 +3111,15 @@
   - Assertions confirm no-evidence fallback values are not substituted when padded numeric-string aggregate scalars are valid after trimming.
   - `scripts/README.md` unscoped aggregate notes updated to explicitly mention sparse no-evidence trimmed numeric-string precedence.
   **Why:** ensures unscoped sparse payloads preserve valid explicit aggregate metadata even when scalar values are whitespace-padded strings from shell/env serialization paths.
+- **Overlapping partition-list normalization hardening (2026-02-16 AM)** Added deterministic sparse partition conflict handling:
+  - `scripts/publish-verify-gates-summary.sh` now normalizes overlapping sparse partition memberships across `passedGateIds` / `failedGateIds` / `skippedGateIds` / `notRunGateIds` before deriving counts/maps/lists.
+  - Normalization applies status-priority resolution (`fail` > `pass` > `skip` > `not-run`) so each gate appears in exactly one resolved partition when upstream lists conflict.
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_partition_list_overlap_scope` (selected scope with conflicting sparse partition lists plus scoped-out IDs),
+    - `unscoped_partition_list_overlap` (unscoped sparse conflicting partition lists).
+  - Assertions verify normalized partition counts, status counts, executed/non-success/attention lists, and lower-priority overlap suppression.
+  - `scripts/README.md` updated to document overlap normalization behavior for selected and unscoped sparse payloads.
+  **Why:** removes ambiguity in sparse malformed payloads where the same gate appeared in multiple partition lists, ensuring deterministic and internally consistent summary metadata.
 - **Plus-prefixed aggregate scalar rejection coverage (2026-02-16 AM)** Extended sparse aggregate sanitization matrix for signed-string edge cases:
   - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_plus_string_scope`.
   - Selected sparse scenario injects plus-prefixed scalar strings across retry/duration/rate aggregate fields under explicit `selectedGateIds` with no selected execution evidence.

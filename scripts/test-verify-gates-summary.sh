@@ -281,6 +281,8 @@ scalar_none_sentinel_gate_ids_case_scope_summary="$tmpdir/scalar-none-sentinel-g
 scalar_none_sentinel_gate_ids_case_scope_step_summary="$tmpdir/scalar-none-sentinel-gate-ids-case-scope-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
+selected_partition_list_overlap_scope_summary="$tmpdir/selected-partition-list-overlap-scope.json"
+selected_partition_list_overlap_scope_step_summary="$tmpdir/selected-partition-list-overlap-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
 selected_explicit_empty_attention_with_retries_scope_step_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope-step.md"
 selected_explicit_empty_non_success_with_retries_scope_summary="$tmpdir/selected-explicit-empty-non-success-with-retries-scope.json"
@@ -331,6 +333,8 @@ unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary="$tmpdir/unsco
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
+unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
+unscoped_partition_list_overlap_step_summary="$tmpdir/unscoped-partition-list-overlap-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
 derived_status_map_step_summary="$tmpdir/derived-status-map-step.md"
 status_map_duplicate_keys_summary="$tmpdir/status-map-duplicate-keys.json"
@@ -3048,6 +3052,28 @@ NODE
 
 GITHUB_STEP_SUMMARY="$selected_explicit_attention_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_attention_scope_summary" "Verify Gates Selected Explicit Attention Scope Contract Test"
 
+node - "$expected_schema_version" "$selected_partition_list_overlap_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-partition-list-overlap-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	passedGateIds: ['lint', 'typecheck'],
+	failedGateIds: ['lint', 'build'],
+	skippedGateIds: ['typecheck'],
+	notRunGateIds: ['lint', 'typecheck'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_partition_list_overlap_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_partition_list_overlap_scope_summary" "Verify Gates Selected Partition List Overlap Scope Contract Test"
+
 node - "$expected_schema_version" "$selected_explicit_empty_attention_with_retries_scope_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -3703,6 +3729,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_lists_summary" "Verify Gates Derived List Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_list_overlap_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-list-overlap-contract',
+	passedGateIds: ['lint', 'typecheck'],
+	failedGateIds: ['lint'],
+	skippedGateIds: ['typecheck', 'build'],
+	notRunGateIds: ['build', 'lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_list_overlap_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_list_overlap_summary" "Verify Gates Unscoped Partition List Overlap Contract Test"
 
 node - "$expected_schema_version" "$derived_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6578,6 +6625,38 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_attention_scope_step_su
 	echo "Did not expect schema warning for selected-explicit-attention-scope summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to preserve explicit selected-gate ordering." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to normalize overlapping selected partition lists by status-priority." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":0,"not-run":0}' "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to keep status counts aligned with normalized selected partition lists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** typecheck" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Skipped gates list:** none" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to retain only highest-priority selected partition membership per gate." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to derive executed metadata from normalized selected pass/fail partitions." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$selected_partition_list_overlap_scope_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to keep non-success/attention lists aligned with normalized selected partitions." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Expected selected-partition-list-overlap-scope summary to scope out non-selected overlapping partition IDs." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_partition_list_overlap_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-partition-list-overlap-scope summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_empty_attention_with_retries_scope_step_summary"; then
 	echo "Expected selected-explicit-empty-attention-with-retries-scope summary to preserve selected-gate metadata." >&2
 	exit 1
@@ -7204,6 +7283,38 @@ if ! grep -Fq "**Run classification:** failed-fail-fast" "$derived_lists_step_su
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then
 	echo "Did not expect schema warning for derived-list fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 3" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to derive gate count from normalized sparse partition IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to normalize overlapping sparse partition counts by status-priority." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":1,"not-run":0}' "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to align statusCounts with normalized sparse partition memberships." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** typecheck" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Skipped gates list:** build" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to keep each sparse gate in only its highest-priority partition list." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to derive executed sparse metadata from normalized pass/fail partitions." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint, build" "$unscoped_partition_list_overlap_step_summary" || ! grep -Fq "**Attention gates list:** lint, build" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to align non-success/attention lists with normalized sparse partition outcomes." >&2
+	exit 1
+fi
+if grep -Fq "**Not-run gates list:** lint" "$unscoped_partition_list_overlap_step_summary" || grep -Fq "**Passed gates list:** lint" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Expected unscoped-partition-list-overlap summary to suppress lower-priority overlapping sparse partition memberships." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_list_overlap_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-list-overlap summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 3" "$derived_status_map_step_summary"; then
