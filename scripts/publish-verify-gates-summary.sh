@@ -778,7 +778,7 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 		if (!gateHasNotRunStatus) {
 			continue;
 		}
-		const scopedBlockedByGateId = scopeGateIdToSelection(reason.slice('blocked-by-fail-fast:'.length));
+		const scopedBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(reason.slice('blocked-by-fail-fast:'.length)));
 		if (scopedBlockedByGateId !== null) {
 			return scopedBlockedByGateId;
 		}
