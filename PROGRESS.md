@@ -2924,3 +2924,9 @@
     - `timestamps_whitespace_no_rows_unscoped` validating padded explicit unscoped timestamps are trimmed and still derive `Total duration: 5s` when structurally valid.
   - `scripts/README.md` timestamp-canonicalization notes updated to include unscoped no-row malformed/whitespace behavior.
   **Why:** locks expected sparse unscoped timestamp handling so canonical parsing remains strict for malformed values while preserving trimmed valid explicit values.
+- **Invalid-hour + year-boundary selected no-row timestamp coverage (2026-02-16 AM)** Broadened clock/calendar edge contracts:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_timestamps_invalid_hour_no_rows_scope` validating invalid-hour timestamps (`24:00:00`) are rejected (`Started/Completed: unknown`, `Total duration: unknown`)
+    - `selected_timestamps_year_boundary_valid_no_rows_scope` validating valid year-boundary timestamps (`20261231T235959Z` -> `20270101T000004Z`) are preserved and derive `Total duration: 5s`.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-hour rejection and year-boundary acceptance coverage.
+  **Why:** closes remaining clock-boundary gaps so canonical parsing rejects invalid hour values while preserving valid cross-year duration derivation.

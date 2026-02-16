@@ -129,6 +129,10 @@ selected_timestamps_century_leap_valid_no_rows_scope_summary="$tmpdir/selected-t
 selected_timestamps_century_leap_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-century-leap-valid-no-rows-scope-step.md"
 selected_timestamps_invalid_second_no_rows_scope_summary="$tmpdir/selected-timestamps-invalid-second-no-rows-scope.json"
 selected_timestamps_invalid_second_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-second-no-rows-scope-step.md"
+selected_timestamps_invalid_hour_no_rows_scope_summary="$tmpdir/selected-timestamps-invalid-hour-no-rows-scope.json"
+selected_timestamps_invalid_hour_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-hour-no-rows-scope-step.md"
+selected_timestamps_year_boundary_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-year-boundary-valid-no-rows-scope.json"
+selected_timestamps_year_boundary_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-year-boundary-valid-no-rows-scope-step.md"
 selected_timestamps_day_boundary_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-day-boundary-valid-no-rows-scope.json"
 selected_timestamps_day_boundary_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-day-boundary-valid-no-rows-scope-step.md"
 selected_timestamps_whitespace_no_rows_scope_summary="$tmpdir/selected-timestamps-whitespace-no-rows-scope.json"
@@ -1207,6 +1211,46 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_invalid_second_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_invalid_second_no_rows_scope_summary" "Verify Gates Selected Timestamps Invalid Second No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_invalid_hour_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-invalid-hour-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20260215T240000Z',
+	completedAt: '20260215T240005Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_invalid_hour_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_invalid_hour_no_rows_scope_summary" "Verify Gates Selected Timestamps Invalid Hour No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_year_boundary_valid_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-year-boundary-valid-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20261231T235959Z',
+	completedAt: '20270101T000004Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_year_boundary_valid_no_rows_scope_summary" "Verify Gates Selected Timestamps Year Boundary Valid No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_timestamps_day_boundary_valid_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4168,6 +4212,42 @@ if grep -Fq "20260215T110060Z" "$selected_timestamps_invalid_second_no_rows_scop
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_invalid_second_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-invalid-second-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-hour-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** unknown" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-hour-no-rows-scope summary to suppress invalid-hour timestamp literals." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-hour-no-rows-scope summary to render unknown duration for invalid-hour timestamps." >&2
+	exit 1
+fi
+if grep -Fq "20260215T240000Z" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary" || grep -Fq "20260215T240005Z" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-hour-no-rows-scope summary to ignore invalid-hour timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_invalid_hour_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-invalid-hour-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-year-boundary-valid-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20261231T235959Z" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** 20270101T000004Z" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-year-boundary-valid-no-rows-scope summary to preserve valid year-boundary timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-year-boundary-valid-no-rows-scope summary to derive duration across year boundaries." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-year-boundary-valid-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_day_boundary_valid_no_rows_scope_step_summary"; then
