@@ -3093,3 +3093,9 @@
   - Scenario injects numeric-string aggregate retry/duration/rate scalars in sparse unscoped no-evidence payloads.
   - Assertions confirm normalized numeric-string aggregate scalars remain authoritative and no-evidence fallback values are not substituted.
   **Why:** guarantees unscoped sparse payloads preserve valid explicit numeric-string aggregate metadata with the same precedence as numeric values.
+- **Selected no-evidence mixed-invalid aggregate suppression coverage (2026-02-16 AM)** Extended selected sparse aggregate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_mixed_invalid_scope`.
+  - Scenario injects mixed invalid selected aggregate scalar types (decimal-string, scientific-string, float, negative) with no selected execution evidence.
+  - Assertions confirm selected sparse no-evidence behavior remains deterministic (`0`/`n/a`) and all mixed invalid scalar literals are suppressed.
+  - `scripts/README.md` selected aggregate notes updated to explicitly include mixed-invalid selected no-evidence suppression behavior.
+  **Why:** ensures selected sparse summaries remain robust when upstream payloads contain heterogeneous malformed aggregate scalar types in the same object.

@@ -129,6 +129,8 @@ selected_aggregate_metrics_nonselected_evidence_scope_summary="$tmpdir/selected-
 selected_aggregate_metrics_nonselected_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-nonselected-evidence-scope-step.md"
 selected_aggregate_metrics_no_evidence_string_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-string-scope.json"
 selected_aggregate_metrics_no_evidence_string_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-string-scope-step.md"
+selected_aggregate_metrics_no_evidence_mixed_invalid_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-mixed-invalid-scope.json"
+selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-mixed-invalid-scope-step.md"
 selected_failed_exit_codes_without_ids_scope_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope.json"
 selected_failed_exit_codes_without_ids_scope_step_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope-step.md"
 selected_timestamps_scope_summary="$tmpdir/selected-timestamps-scope.json"
@@ -1337,6 +1339,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_no_evidence_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_no_evidence_string_scope_summary" "Verify Gates Selected Aggregate Metrics No Evidence String Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-no-evidence-mixed-invalid-scope-contract',
+	selectedGateIds: ['lint'],
+	retriedGateCount: '8.5',
+	totalRetryCount: '8e1',
+	totalRetryBackoffSeconds: 8.5,
+	executedDurationSeconds: '99.5',
+	averageExecutedDurationSeconds: '99e1',
+	retryRatePercent: 80.5,
+	retryBackoffSharePercent: '80e1',
+	passRatePercent: -1,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_summary" "Verify Gates Selected Aggregate Metrics No Evidence Mixed Invalid Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_failed_exit_codes_without_ids_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -5047,6 +5075,30 @@ if grep -Fq "99" "$selected_aggregate_metrics_no_evidence_string_scope_step_summ
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_no_evidence_string_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-aggregate-metrics-no-evidence-string-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 0" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to ignore mixed invalid selected aggregate retry scalars when selected retry evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to ignore mixed invalid selected aggregate duration scalars when selected duration evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to ignore mixed invalid selected aggregate rate scalars without selected execution evidence." >&2
+	exit 1
+fi
+if grep -Fq "8.5" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || grep -Fq "8e1" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || grep -Fq "99.5" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || grep -Fq "99e1" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || grep -Fq "80.5" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary" || grep -Fq "80e1" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary to suppress mixed invalid selected aggregate scalar literals when selected evidence is absent." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_no_evidence_mixed_invalid_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-no-evidence-mixed-invalid-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
