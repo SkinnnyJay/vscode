@@ -2596,6 +2596,7 @@
   - Selected status-map values now remain authoritative over fallback partition memberships during selected non-success/attention derivation (prevents fallback not-run membership from overriding explicit selected `pass` status).
   - Selected attention derivation now explicitly preserves selected retried-gate visibility even when selected non-success list is empty, while still scoping out non-selected retried IDs.
   - Explicit selected `nonSuccessGateIds` / `attentionGateIds` inputs are now explicitly contract-validated as selected-scope trimmed (non-selected IDs excluded).
+  - Explicit empty selected `attentionGateIds` is now explicitly contract-validated as authoritative even when selected retried gates exist.
   - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - Conflicting `dryRun: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + dry-run inconsistency.
   - Conflicting explicit `exitReason: dry-run` / `runClassification: dry-run` is now explicitly ignored when selected fail-fast evidence exists.
@@ -2643,6 +2644,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_status_precedence_scope` scenario and verifies explicit selected status-map `pass` keeps non-success/attention lists empty even when fallback `notRunGateIds` also includes the gate.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_attention_retried_scope` scenario and verifies selected retried pass gates remain in attention list while non-selected retried/status IDs are scoped out.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
