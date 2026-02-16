@@ -3457,3 +3457,10 @@
   - Assertions confirm selected executed metadata/rates stay status-map-fail-driven (`Executed gates: 1`, list `lint`, pass rate `0%`) while conflicting selected scalar executed-count zero remains ignored.
   - `scripts/README.md` selected executed precedence note updated to explicitly mention selected status-map precedence over conflicting selected not-run partition membership for both pass and fail outcomes.
   **Why:** closes the selected status-map-fail + conflicting not-run partition branch so conflicting scalar executed-count values cannot nullify selected status-map-fail-driven executed metadata/rates.
+- **Selected status-map skip precedence suppression of conflicting executed-count scalar under partition conflict coverage (2026-02-16 PM)** Extended selected executed/non-success precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_status_precedence_skip_scope`.
+  - Scenario keeps selected status-map skip evidence for `lint` while conflicting selected pass-partition membership and conflicting `executedGateCount: 5` scalar are provided.
+  - Assertions confirm selected executed metadata stays non-executed/status-map-skip-driven (`Executed gates: 0`, list `none`, pass rate `n/a`) while conflicting selected partition/scalar executed evidence remains ignored.
+  - Assertions also confirm non-success/attention derivation remains status-map-skip-driven (`lint`), and diagnostic conflicting pass/skip aggregate metadata remains visible.
+  - `scripts/README.md` selected executed precedence note updated to explicitly mention pass/fail/skip-vs-not-run selected partition conflict suppression under status-map precedence.
+  **Why:** closes the selected status-map-skip + conflicting partition/scalar branch so conflicting selected executed-count/list evidence cannot override selected status-map non-executed outcomes.
