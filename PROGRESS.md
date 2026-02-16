@@ -2878,3 +2878,11 @@
     - no schema warning.
   - `scripts/README.md` timestamp-canonicalization notes updated to include leap-day acceptance coverage.
   **Why:** ensures strict calendar validation hardening does not over-reject valid leap-day timestamps.
+- **Malformed selected-row timestamp explicit-fallback suppression coverage (2026-02-16 AM)** Locked selected-scope timestamp precedence in malformed-row edge cases:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_malformed_rows_explicit_scope`.
+  - Scenario verifies when selected rows exist but selected row `startedAt/completedAt` literals are malformed:
+    - explicit summary `startedAt/completedAt` values remain ignored (selected-row precedence preserved)
+    - rendered `Started/Completed` become `unknown`
+    - `Total duration` still derives from selected row duration evidence (`durationSeconds` map fallback).
+  - `scripts/README.md` selected-scope timestamp behavior notes updated to include malformed selected-row explicit-fallback suppression coverage.
+  **Why:** prevents selected-scope timestamp precedence regressions where explicit summary timestamps might incorrectly leak back in when selected row timestamps are malformed.
