@@ -287,6 +287,8 @@ selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unma
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 unscoped_aggregate_metrics_explicit_precedence_summary="$tmpdir/unscoped-aggregate-metrics-explicit-precedence.json"
 unscoped_aggregate_metrics_explicit_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-precedence-step.md"
+unscoped_aggregate_metrics_explicit_no_evidence_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence.json"
+unscoped_aggregate_metrics_explicit_no_evidence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-step.md"
 unscoped_aggregate_metrics_malformed_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback.json"
 unscoped_aggregate_metrics_malformed_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback-step.md"
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback.json"
@@ -3024,6 +3026,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_precedence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_precedence_summary" "Verify Gates Unscoped Aggregate Metrics Explicit Precedence Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_explicit_no_evidence_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-explicit-no-evidence-contract',
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 11,
+	executedDurationSeconds: 13,
+	averageExecutedDurationSeconds: 13,
+	retryRatePercent: 90,
+	retryBackoffSharePercent: 84,
+	passRatePercent: 10,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_malformed_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6045,6 +6072,26 @@ if grep -Eq '^\*\*Total retries:\*\* 1$' "$unscoped_aggregate_metrics_explicit_p
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_precedence_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-precedence summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 5" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || ! grep -Fq "**Total retries:** 7" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || ! grep -Fq "**Total retry backoff:** 11s" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence summary to preserve explicit retry aggregates even when retry evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 13s" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || ! grep -Fq "**Executed duration average:** 13s" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence summary to preserve explicit duration aggregates even when execution evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 90%" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 84%" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 10%" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence summary to preserve explicit retry/pass/share rates even when execution evidence is absent." >&2
+	exit 1
+fi
+if grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || grep -Fq "**Total retries:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || grep -Fq "**Total retry backoff:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || grep -Fq "**Executed duration total:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" || grep -Fq "**Executed duration average:** n/a" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence summary to avoid replacing explicit aggregate scalars with no-evidence fallback values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gate count:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retries:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then
