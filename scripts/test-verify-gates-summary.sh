@@ -145,6 +145,8 @@ selected_run_state_not_run_blocked_selected_spaced_colon_scope_summary="$tmpdir/
 selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-spaced-colon-scope-step.md"
 selected_run_state_not_run_blocked_empty_scope_summary="$tmpdir/selected-run-state-not-run-blocked-empty-scope.json"
 selected_run_state_not_run_blocked_empty_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-empty-scope-step.md"
+selected_run_state_not_run_blocked_none_sentinel_scope_summary="$tmpdir/selected-run-state-not-run-blocked-none-sentinel-scope.json"
+selected_run_state_not_run_blocked_none_sentinel_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-none-sentinel-scope-step.md"
 selected_run_state_not_run_blocked_selected_continue_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continue-scope.json"
 selected_run_state_not_run_blocked_selected_continue_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continue-scope-step.md"
 selected_run_state_not_run_blocked_selected_dry_reason_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-dry-reason-scope.json"
@@ -1389,6 +1391,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_empty_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_empty_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Empty Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_not_run_blocked_none_sentinel_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-not-run-blocked-none-sentinel-scope-contract',
+	selectedGateIds: ['lint'],
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'NOT-RUN', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast: NONE ' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_none_sentinel_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked None Sentinel Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_not_run_blocked_selected_continue_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3926,6 +3953,22 @@ if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_not_run_blocked_e
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_empty_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-empty-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-none-sentinel-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** true" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || ! grep -Fq "**Exit reason:** success" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || ! grep -Fq "**Run classification:** success-no-retries" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-none-sentinel-scope summary to ignore blocked-by-fail-fast reasons targeting scalar 'none' sentinel IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-none-sentinel-scope summary to suppress blocked-by-fail-fast sentinel gate IDs." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-not-run-blocked-none-sentinel-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary"; then

@@ -816,7 +816,7 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 		if (!/^blocked-by-fail-fast\s*:/i.test(normalizedReason)) {
 			return null;
 		}
-		return normalizeNonEmptyString(normalizedReason.replace(/^blocked-by-fail-fast\s*:/i, ''));
+		return normalizeSummaryScalarGateId(normalizedReason.replace(/^blocked-by-fail-fast\s*:/i, ''));
 	};
 	const orderedGateIdsForBlockedReason = selectedGateIds.length > 0 ? selectedGateIds : Object.keys(gateNotRunReasonById);
 	for (const gateId of orderedGateIdsForBlockedReason) {
