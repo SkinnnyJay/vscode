@@ -2899,3 +2899,9 @@
     - `selected_timestamps_century_leap_valid_no_rows_scope` validating century leap-day timestamps (`20000229`) remain accepted (`Started/Completed` preserved, `Total duration: 5s`).
   - `scripts/README.md` timestamp-canonicalization notes updated to explicitly include century leap/non-leap handling coverage.
   **Why:** protects canonical timestamp parsing against subtle Gregorian century leap-year regressions while keeping valid century leap dates supported.
+- **Invalid-second + day-boundary timestamp canonicalization coverage (2026-02-16 AM)** Expanded timestamp edge-case contracts:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_timestamps_invalid_second_no_rows_scope` validating invalid second fields (`...60Z`) are rejected (`Started/Completed: unknown`, `Total duration: unknown`)
+    - `selected_timestamps_day_boundary_valid_no_rows_scope` validating valid cross-day timestamp ranges (`20260228T235959Z` -> `20260301T000004Z`) remain accepted and derive `Total duration: 5s`.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-second rejection and day-boundary acceptance coverage.
+  **Why:** closes remaining timestamp-shape edge cases so canonical parsing rejects malformed clock components while preserving valid day rollover durations.
