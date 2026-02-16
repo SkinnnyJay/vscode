@@ -3289,3 +3289,9 @@
   - Assertions confirm per-field precedence: valid raw status-count fields remain authoritative while malformed siblings fall back to normalized sparse partition counts; executed/pass-rate metadata remains coherent under mixed count sources.
   - `scripts/README.md` overlapping partition-list note updated to explicitly mention per-field mixed valid+malformed `statusCounts` fallback behavior.
   **Why:** closes a per-field precedence gap so partially malformed unscoped `statusCounts` payloads stay deterministic without discarding valid fields.
+- **Selected executed-count scalar suppression under explicit empty executed-list coverage (2026-02-16 PM)** Extended selected executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_scalar_count_ignored_empty_list_scope`.
+  - Scenario injects explicit selected empty executed list (`executedGateIds: []`) with conflicting selected `executedGateCount: 5` and selected status-map evidence.
+  - Assertions confirm selected explicit scope still ignores selected scalar `executedGateCount`, preserving empty executed metadata and `n/a` executed-rate outputs.
+  - `scripts/README.md` selected empty executed-list note updated to explicitly mention conflicting selected executed-count scalar suppression.
+  **Why:** closes selected parity with scalar suppression rules by ensuring selected explicit scope never allows scalar executed-count overrides to bypass explicit empty executed-list behavior.
