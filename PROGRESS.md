@@ -3155,3 +3155,8 @@
   - Assertions verify overflow literal suppression plus bounded derived-rate rendering.
   - `scripts/README.md` unscoped aggregate note updated to include >100 scalar rejection and derived-rate clamp behavior.
   **Why:** prevents malformed/ambiguous sparse payloads from rendering impossible percentage metrics (e.g. `500%`/`700%`) while preserving deterministic fallback behavior.
+- **Rate overflow no-evidence fallback coverage (2026-02-16 AM)** Extended bounded-rate matrix for sparse payloads:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback`.
+  - Scenario injects overflow numeric-string rate scalars (`"150"`, `"140"`, `"120"`) without execution evidence.
+  - Assertions confirm overflow scalar values are rejected and sparse no-evidence defaults remain `n/a` for all rate fields (with overflow literals suppressed from rendered output).
+  **Why:** ensures rate bound enforcement also holds in sparse no-evidence payloads where fallback should stay `n/a` rather than leaking invalid explicit percentages.

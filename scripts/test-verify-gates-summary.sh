@@ -337,6 +337,8 @@ unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary="$tmpdir/unsco
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback-step.md"
 unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-fallback.json"
 unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-fallback-step.md"
+unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback.json"
+unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback-step.md"
 unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback.json"
 unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -3763,6 +3765,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Overflow Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback-contract',
+	retryRatePercent: '150',
+	retryBackoffSharePercent: '140',
+	passRatePercent: '120',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Overflow No Evidence Fallback Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7343,6 +7365,18 @@ if grep -Fq "150%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_st
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-overflow-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback summary to reject overflow rate scalars and preserve sparse no-evidence n/a defaults." >&2
+	exit 1
+fi
+if grep -Fq "150%" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" || grep -Fq "140%" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" || grep -Fq "120%" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback summary to suppress overflow numeric-string rate scalar literals in sparse payloads." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Passed gates:** 5" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || ! grep -Fq "**Executed gates:** 1" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
