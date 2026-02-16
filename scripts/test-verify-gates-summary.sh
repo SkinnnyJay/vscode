@@ -195,6 +195,8 @@ explicit_retried_subset_retry_map_summary="$tmpdir/explicit-retried-subset-retry
 explicit_retried_subset_retry_map_step_summary="$tmpdir/explicit-retried-subset-retry-map-step.md"
 explicit_retried_missing_retry_map_key_summary="$tmpdir/explicit-retried-missing-retry-map-key.json"
 explicit_retried_missing_retry_map_key_step_summary="$tmpdir/explicit-retried-missing-retry-map-key-step.md"
+scalar_failed_gate_selected_fallback_summary="$tmpdir/scalar-failed-gate-selected-fallback.json"
+scalar_failed_gate_selected_fallback_step_summary="$tmpdir/scalar-failed-gate-selected-fallback-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -1971,6 +1973,30 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_retried_missing_retry_map_key_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_missing_retry_map_key_summary" "Verify Gates Explicit Retried Missing Retry Map Key Contract Test"
+
+node - "$expected_schema_version" "$scalar_failed_gate_selected_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'scalar-failed-gate-selected-fallback-contract',
+	failedGateId: 'lint',
+	failedGateExitCode: 2,
+	success: false,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'failed',
+	runClassification: 'failed',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$scalar_failed_gate_selected_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_failed_gate_selected_fallback_summary" "Verify Gates Scalar Failed-Gate Selected Fallback Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4240,6 +4266,26 @@ if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_missing_retry_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_missing_retry_map_key_step_summary"; then
 	echo "Did not expect schema warning for explicit-retried-missing-retry-map-key summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$scalar_failed_gate_selected_fallback_step_summary"; then
+	echo "Expected scalar-failed-gate-selected-fallback summary to derive selected-gate metadata from scalar failed-gate identifiers." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 1" "$scalar_failed_gate_selected_fallback_step_summary"; then
+	echo "Expected scalar-failed-gate-selected-fallback summary to align gate count with scalar-derived selected gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gates list:** lint" "$scalar_failed_gate_selected_fallback_step_summary" || ! grep -Fq "**Failed gate exit code:** 2" "$scalar_failed_gate_selected_fallback_step_summary"; then
+	echo "Expected scalar-failed-gate-selected-fallback summary to preserve scalar failed-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$scalar_failed_gate_selected_fallback_step_summary" || ! grep -Fq "**Exit reason:** completed-with-failures" "$scalar_failed_gate_selected_fallback_step_summary" || ! grep -Fq "**Run classification:** failed-continued" "$scalar_failed_gate_selected_fallback_step_summary"; then
+	echo "Expected scalar-failed-gate-selected-fallback summary to derive consistent failure run-state metadata from scalar failed-gate evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$scalar_failed_gate_selected_fallback_step_summary"; then
+	echo "Did not expect schema warning for scalar-failed-gate-selected-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then

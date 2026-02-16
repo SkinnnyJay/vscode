@@ -472,6 +472,8 @@ const selectedGateIds = selectedGateIdsFromSummary
 			...(retriedGateIdsFromSummary ?? []),
 			...(nonSuccessGateIdsFromSummary ?? []),
 			...(attentionGateIdsFromSummary ?? []),
+			...(scopedSummaryFailedGateId !== null ? [scopedSummaryFailedGateId] : []),
+			...(scopedSummaryBlockedByGateId !== null ? [scopedSummaryBlockedByGateId] : []),
 		]));
 const selectedGateIdsLabel = selectedGateIds.length > 0 ? selectedGateIds.join(', ') : 'none';
 let failedGateIds = failedGateIdsFromSummary
