@@ -189,6 +189,8 @@ selected_attention_retried_scope_summary="$tmpdir/selected-attention-retried-sco
 selected_attention_retried_scope_step_summary="$tmpdir/selected-attention-retried-scope-step.md"
 selected_attention_retried_without_map_scope_summary="$tmpdir/selected-attention-retried-without-map-scope.json"
 selected_attention_retried_without_map_scope_step_summary="$tmpdir/selected-attention-retried-without-map-scope-step.md"
+explicit_retried_zero_count_retry_map_summary="$tmpdir/explicit-retried-zero-count-retry-map.json"
+explicit_retried_zero_count_retry_map_step_summary="$tmpdir/explicit-retried-zero-count-retry-map-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -1903,6 +1905,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_attention_retried_without_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_attention_retried_without_map_scope_summary" "Verify Gates Selected Attention Retried Without Map Scope Contract Test"
+
+node - "$expected_schema_version" "$explicit_retried_zero_count_retry_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-retried-zero-count-retry-map-contract',
+	gateStatusById: { lint: 'pass', build: 'pass' },
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 0, build: 4 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_retried_zero_count_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_zero_count_retry_map_summary" "Verify Gates Explicit Retried Zero Count Retry Map Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4060,6 +4082,30 @@ if grep -Fq "build" "$selected_attention_retried_without_map_scope_step_summary"
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_attention_retried_without_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-attention-retried-without-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, build" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to preserve derived gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_zero_count_retry_map_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to preserve explicit retried-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"build\":4}" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to enforce minimum retry-count map values for explicit retried IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 1" "$explicit_retried_zero_count_retry_map_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to keep retry aggregates aligned with explicit retried IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to include explicit retried IDs in attention fallback." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Did not expect schema warning for explicit-retried-zero-count-retry-map summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then

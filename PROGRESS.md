@@ -2655,6 +2655,7 @@
   - `scripts/test-verify-gates-summary.sh` now reinforces `selected_attention_retried_scope` with retry aggregate assertions (`Total retries`, `Total retry backoff`) scoped to selected retried IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_attention_retried_without_map_scope` scenario and verifies selected retried list scoping still drives synthesized retry-count maps and retry aggregate totals when `gateRetryCountById` is omitted.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` scenario and verifies explicit retried-gate IDs force minimum retry-count map values (`1`) when selected retry-count maps provide `0`/missing values, keeping retry aggregates/attention consistent.
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_zero_count_retry_map` scenario and verifies the same minimum retry-count normalization in unscoped summaries (no `selectedGateIds`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_non_success_with_retries_scope` scenario and verifies explicit empty non-success lists still allow selected retried-gate attention fallback.
@@ -2809,7 +2810,7 @@
 - **Explicit retried-gate minimum retry-count normalization (2026-02-16 AM)** Hardened sparse retry-map consistency:
   - `scripts/publish-verify-gates-summary.sh` now promotes retry-count map values to a minimum of `1` for gates explicitly listed in `retriedGateIds` when summary-provided counts are `0` or missing.
   - This preserves aggregate consistency (`Retried gates` vs `Total retries` / `Total retry backoff`) under sparse or contradictory producer payloads.
-  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` and verifies:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` and `explicit_retried_zero_count_retry_map` and verifies (selected + unscoped):
     - normalized retry-count map (`"lint":1`)
     - aggregate retries/backoff (`1` / `1s`)
     - attention list remains constrained to explicit retried gates.
