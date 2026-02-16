@@ -2661,6 +2661,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` scenario and verifies explicit retried subset lists constrain retry aggregates/attention in unscoped summaries even when retry-count maps include additional gates.
   - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_missing_retry_map_key` scenario and verifies explicit retried IDs missing from retry-count maps are synthesized to minimum retry count (`1`) for aggregate/map consistency.
   - `scripts/test-verify-gates-summary.sh` now adds `scalar_failed_gate_selected_fallback` scenario and verifies scalar failed-gate metadata contributes fallback unscoped `Selected gates` / `Gate count` derivation when rows and map/list evidence are absent.
+  - `scripts/test-verify-gates-summary.sh` now adds `scalar_blocked_gate_selected_fallback` scenario and verifies scalar blocked-by metadata contributes fallback unscoped `Selected gates` / `Gate count` derivation while preserving explicit success run-state metadata when no conflicting unscoped outcome evidence exists.
   - `scripts/publish-verify-gates-summary.sh` now expands unscoped fallback `selectedGateIds` derivation to include explicit partition/retried/non-success/attention lists when row/status-map evidence is absent.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
@@ -2828,6 +2829,6 @@
 - **Unscoped selected-gate fallback expansion for sparse explicit lists (2026-02-16 AM)** Improved sparse metadata coherence:
   - `scripts/publish-verify-gates-summary.sh` now derives fallback unscoped `selectedGateIds` from explicit gate-id list metadata (`passed/failed/skipped/not-run/executed/retried/nonSuccess/attention`) and scalar failed/blocked gate identifiers when row and status-map evidence are absent.
   - This keeps `Selected gates`/`Gate count` aligned with explicit sparse list payloads instead of collapsing to empty metadata.
-  - `scripts/test-verify-gates-summary.sh` now updates explicit retried missing-key assertions to validate `Selected gates: lint` under list-only sparse payloads and adds scalar-failed fallback coverage (`scalar_failed_gate_selected_fallback`).
+  - `scripts/test-verify-gates-summary.sh` now updates explicit retried missing-key assertions to validate `Selected gates: lint` under list-only sparse payloads and adds scalar-failed/scalar-blocked fallback coverage (`scalar_failed_gate_selected_fallback`, `scalar_blocked_gate_selected_fallback`).
   - `scripts/README.md` updated to document unscoped selected-gate fallback expansion behavior.
   **Why:** improves summary interpretability under sparse producer payloads that communicate gate identity via explicit partition lists only.
