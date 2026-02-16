@@ -2656,6 +2656,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_non_success_with_retries_scope` scenario and verifies explicit empty non-success lists still allow selected retried-gate attention fallback.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_retried_with_retry_map_scope` scenario and verifies explicit empty retried-gate lists keep retry aggregates (`Total retries`, `Total retry backoff`) at zero even when selected retry-count maps contain stale values.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_subset_retry_map_scope` scenario and verifies explicit retried-gate subset lists constrain retry aggregates/attention to listed gates even when selected retry-count maps include additional IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
@@ -2793,3 +2794,12 @@
     - `Total retry backoff: 0s`.
   - `scripts/README.md` updated to document explicit empty retried-list aggregate precedence.
   **Why:** prevents stale retry-count map noise from inflating retry aggregate metadata after explicit retried-gate overrides.
+- **Explicit retried-subset aggregate scoping coverage (2026-02-15 PM)** Extended retry aggregate contract precision:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_subset_retry_map_scope`.
+  - Scenario verifies explicit selected retried subset lists (for example, `retriedGateIds: ['lint']`) remain authoritative for:
+    - `Retried gates` / `Retried gate count`
+    - `Total retries` / `Total retry backoff`
+    - derived `Attention gates list`
+    even when selected `gateRetryCountById` maps include additional IDs.
+  - `scripts/README.md` updated to document explicit retried-subset aggregate scoping coverage.
+  **Why:** protects retry aggregate and attention-list derivation from stale or over-inclusive retry-count maps when explicit retried subsets are supplied.
