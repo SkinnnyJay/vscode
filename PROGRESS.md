@@ -3178,3 +3178,9 @@
   - Assertions confirm explicit `0%` values remain authoritative (not replaced by derived `50%`/`10%` values), with no schema warnings.
   - `scripts/README.md` unscoped aggregate note updated to explicitly include inclusive `0%` boundary precedence.
   **Why:** verifies the lower bound of the `0..100` rate normalization contract is preserved with the same precedence behavior as other valid explicit scalars.
+- **Selected overflow rate-scalar scope coverage (2026-02-16 AM)** Extended selected aggregate-metric matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_rate_scalar_overflow_scope`.
+  - Scenario injects overflow selected rate scalars (`retryRatePercent=150`, `retryBackoffSharePercent=140`, `passRatePercent=120`) with valid selected execution/retry/duration evidence.
+  - Assertions confirm selected scope still ignores explicit rate scalars (including overflow values), re-derives selected rates from selected evidence, and suppresses overflow literals.
+  - `scripts/README.md` selected aggregate note updated to explicitly mention overflow-percentage scalar rejection under selected scope.
+  **Why:** ensures selected-scope precedence remains deterministic regardless of malformed explicit rate scalar ranges and prevents overflow rate metadata leakage in selected summaries.
