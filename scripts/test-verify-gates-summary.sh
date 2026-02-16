@@ -335,6 +335,10 @@ unscoped_aggregate_metrics_malformed_fallback_summary="$tmpdir/unscoped-aggregat
 unscoped_aggregate_metrics_malformed_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback-step.md"
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback.json"
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback-step.md"
+unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-fallback.json"
+unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-fallback-step.md"
+unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback.json"
+unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
@@ -3733,6 +3737,55 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_malformed_no_evidence_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Malformed No Evidence Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-rate-scalar-overflow-fallback-contract',
+	executedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gateDurationSecondsById: { lint: 4, typecheck: 6 },
+	retryRatePercent: 150,
+	retryBackoffSharePercent: 140,
+	passRatePercent: 120,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Overflow Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-rate-derived-clamp-fallback-contract',
+	executedGateIds: ['lint'],
+	retriedGateIds: ['lint'],
+	passedGateCount: 5,
+	gateStatusById: { lint: 'pass' },
+	gateRetryCountById: { lint: 3 },
+	gateDurationSecondsById: { lint: 1 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Rate Derived Clamp Fallback Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7278,6 +7331,34 @@ if ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_aggregate_metric
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_malformed_no_evidence_fallback_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-malformed-no-evidence-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 50%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 10%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-overflow-fallback summary to ignore overflow explicit rate scalars (>100) and derive bounded rates from normalized metrics." >&2
+	exit 1
+fi
+if grep -Fq "150%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" || grep -Fq "140%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary" || grep -Fq "120%" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-overflow-fallback summary to suppress overflow explicit rate scalar literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-overflow-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 5" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || ! grep -Fq "**Executed gates:** 1" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-derived-clamp-fallback summary to preserve conflicting sparse count inputs for diagnostic visibility." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 100%" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 100%" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-derived-clamp-fallback summary to clamp derived rates at 100% when sparse ratios exceed 100%." >&2
+	exit 1
+fi
+if grep -Fq "500%" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || grep -Fq "700%" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-derived-clamp-fallback summary to suppress unclamped sparse derived rate values above 100%." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-derived-clamp-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

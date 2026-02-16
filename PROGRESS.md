@@ -3146,3 +3146,12 @@
   - Assertions confirm plus-prefixed scalar strings are rejected as malformed in unscoped mode and no-evidence fallback metrics (`0`/`n/a`) are rendered.
   - `scripts/README.md` selected/unscoped aggregate notes updated to explicitly include plus-prefixed scalar rejection behavior.
   **Why:** ensures integer normalization stays strictly unsigned-digit only (`^\d+$`) so signed-string payloads from loose serializers cannot bypass aggregate fallback guards.
+- **Rate percentage bounds hardening (2026-02-16 AM)** Tightened aggregate percentage validation/derivation:
+  - `scripts/publish-verify-gates-summary.sh` now validates explicit rate scalars (`retryRatePercent`, `retryBackoffSharePercent`, `passRatePercent`) with a `0..100` bound (out-of-range values are treated as invalid and ignored).
+  - Derived percentage helper now clamps computed ratios to `100%` to avoid impossible values when sparse payload counters conflict.
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_aggregate_metrics_rate_scalar_overflow_fallback` (explicit >100 rate scalars are ignored and fallback derived rates are used),
+    - `unscoped_aggregate_metrics_rate_derived_clamp_fallback` (conflicting sparse counts that would produce >100% are clamped to `100%`).
+  - Assertions verify overflow literal suppression plus bounded derived-rate rendering.
+  - `scripts/README.md` unscoped aggregate note updated to include >100 scalar rejection and derived-rate clamp behavior.
+  **Why:** prevents malformed/ambiguous sparse payloads from rendering impossible percentage metrics (e.g. `500%`/`700%`) while preserving deterministic fallback behavior.

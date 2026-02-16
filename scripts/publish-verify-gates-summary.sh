@@ -188,6 +188,26 @@ const normalizeNonNegativeInteger = (value) => {
 	}
 	return null;
 };
+const normalizePercentInteger = (value) => {
+	const normalizedValue = normalizeNonNegativeInteger(value);
+	if (normalizedValue === null || normalizedValue > 100) {
+		return null;
+	}
+	return normalizedValue;
+};
+const derivePercent = (numerator, denominator) => {
+	if (denominator <= 0) {
+		return null;
+	}
+	const derivedValue = Math.floor((numerator * 100) / denominator);
+	if (!Number.isFinite(derivedValue)) {
+		return null;
+	}
+	if (derivedValue < 0) {
+		return 0;
+	}
+	return derivedValue > 100 ? 100 : derivedValue;
+};
 const normalizeInteger = (value) => {
 	if (typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value)) {
 		return value;
@@ -325,6 +345,7 @@ const scopeGateIdToSelection = (gateId) => {
 	return selectedGateIdSetFromSummary.has(gateId) ? gateId : null;
 };
 const normalizeSelectedScopedNonNegativeInteger = (value) => selectedGateIdsFromSummary === null ? normalizeNonNegativeInteger(value) : null;
+const normalizeSelectedScopedPercentInteger = (value) => selectedGateIdsFromSummary === null ? normalizePercentInteger(value) : null;
 const scopedSummaryFailedGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.failedGateId));
 const scopedSummaryBlockedByGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.blockedByGateId));
 const scopedSummaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
@@ -851,9 +872,9 @@ const executedDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summar
 	return total + durationSeconds;
 }, 0);
 const averageExecutedDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.averageExecutedDurationSeconds) ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
-const retryRatePercent = normalizeSelectedScopedNonNegativeInteger(summary.retryRatePercent) ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
-const passRatePercent = normalizeSelectedScopedNonNegativeInteger(summary.passRatePercent) ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
-const retryBackoffSharePercent = normalizeSelectedScopedNonNegativeInteger(summary.retryBackoffSharePercent) ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
+const retryRatePercent = normalizeSelectedScopedPercentInteger(summary.retryRatePercent) ?? derivePercent(retriedGateCount, executedGateCount);
+const passRatePercent = normalizeSelectedScopedPercentInteger(summary.passRatePercent) ?? derivePercent(passedGateCount, executedGateCount);
+const retryBackoffSharePercent = normalizeSelectedScopedPercentInteger(summary.retryBackoffSharePercent) ?? derivePercent(totalRetryBackoffSeconds, executedDurationSeconds);
 const executedGateDurations = executedGateIds.map((gateId) => ({ gateId, durationSeconds: toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0 }));
 const slowestExecutedGate = executedGateDurations.reduce((slowestGate, gateDuration) => {
 	if (!slowestGate) {
