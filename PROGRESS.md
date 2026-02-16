@@ -3120,6 +3120,15 @@
   - Assertions verify normalized partition counts, status counts, executed/non-success/attention lists, and lower-priority overlap suppression.
   - `scripts/README.md` updated to document overlap normalization behavior for selected and unscoped sparse payloads.
   **Why:** removes ambiguity in sparse malformed payloads where the same gate appeared in multiple partition lists, ensuring deterministic and internally consistent summary metadata.
+- **Empty status-map executed fallback hardening (2026-02-16 AM)** Fixed sparse execution derivation when explicit status maps are present but empty:
+  - `scripts/publish-verify-gates-summary.sh` now merges normalized sparse partition-status fallback with explicit status-map entries when deriving fallback `executedGateIds` (explicit status-map entries still take precedence per gate).
+  - This preserves explicit empty status-map metadata while allowing pass/fail partition evidence to contribute executed-count/list/rate derivation when status-map entries are absent.
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_fallback_empty_status_map_scope`,
+    - `unscoped_executed_fallback_empty_status_map`.
+  - Assertions verify executed gate count/list/pass-rate fallback from sparse partition data, plus preservation of explicit empty status-map rendering (`{}`).
+  - `scripts/README.md` overlap-normalization note updated to mention sparse executed-gate fallback derivation under explicit empty status-map payloads.
+  **Why:** prevents contradictory sparse summaries where pass/fail partition counts were non-zero but executed gate metadata incorrectly stayed zero because an explicit empty status-map object blocked partition fallback.
 - **Plus-prefixed aggregate scalar rejection coverage (2026-02-16 AM)** Extended sparse aggregate sanitization matrix for signed-string edge cases:
   - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_plus_string_scope`.
   - Selected sparse scenario injects plus-prefixed scalar strings across retry/duration/rate aggregate fields under explicit `selectedGateIds` with no selected execution evidence.

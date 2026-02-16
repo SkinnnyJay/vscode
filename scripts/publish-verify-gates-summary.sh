@@ -593,12 +593,17 @@ const buildStatusMapFromGateIdLists = () => {
 	assignStatus(failedGateIds, 'fail');
 	return statusByGateId;
 };
+const sparseStatusMapFromGateIdLists = buildStatusMapFromGateIdLists();
 const executedGateIds = executedGateIdsFromSummary
 	!== null
 	? executedGateIdsFromSummary
 	: (gates.length > 0
 		? canonicalRowStatusEntriesForSelection.filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId)
-		: Object.entries(gateStatusByIdFromSummary ?? buildStatusMapFromGateIdLists()).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
+		: Object.entries(
+			gateStatusByIdFromSummary
+				? { ...sparseStatusMapFromGateIdLists, ...gateStatusByIdFromSummary }
+				: sparseStatusMapFromGateIdLists,
+		).filter(([, status]) => status === 'pass' || status === 'fail').map(([gateId]) => gateId));
 const executedGateIdsLabel = executedGateIds.length > 0 ? executedGateIds.join(', ') : 'none';
 const executedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.executedGateCount) ?? executedGateIdsFromSummary?.length ?? executedGateIds.length;
 const gateCount = selectedGateIdsFromSummary?.length ?? normalizeNonNegativeInteger(summary.gateCount) ?? selectedGateIds.length ?? gates.length;
@@ -626,7 +631,7 @@ const gateStatusById = gateStatusByIdFromSummary
 		? Object.fromEntries(
 			selectedGateIds.map((gateId) => [gateId, rowStatusByGateIdForSelection[gateId] ?? 'unknown']),
 		)
-		: buildStatusMapFromGateIdLists());
+		: sparseStatusMapFromGateIdLists);
 const buildGateExitCodeMapFromSparseData = () => {
 	const gateExitCodeMap = {};
 	const allGateIds = [];
