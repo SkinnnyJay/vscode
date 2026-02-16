@@ -373,6 +373,8 @@ derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
 unscoped_partition_list_overlap_step_summary="$tmpdir/unscoped-partition-list-overlap-step.md"
+unscoped_partition_list_malformed_counts_summary="$tmpdir/unscoped-partition-list-malformed-counts.json"
+unscoped_partition_list_malformed_counts_step_summary="$tmpdir/unscoped-partition-list-malformed-counts-step.md"
 unscoped_explicit_empty_partition_lists_status_map_summary="$tmpdir/unscoped-explicit-empty-partition-lists-status-map.json"
 unscoped_explicit_empty_partition_lists_status_map_step_summary="$tmpdir/unscoped-explicit-empty-partition-lists-status-map-step.md"
 unscoped_executed_fallback_empty_status_map_summary="$tmpdir/unscoped-executed-fallback-empty-status-map.json"
@@ -4238,6 +4240,38 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_partition_list_overlap_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_list_overlap_summary" "Verify Gates Unscoped Partition List Overlap Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_list_malformed_counts_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-list-malformed-counts-contract',
+	gateCount: '+9',
+	passedGateCount: 'x',
+	failedGateCount: '-1',
+	skippedGateCount: 1.2,
+	notRunGateCount: '4e0',
+	executedGateCount: '+7',
+	statusCounts: { pass: '+1', fail: '-2', skip: '1.0', 'not-run': 'x' },
+	passedGateIds: [' lint ', 'typecheck', '', 'lint', 4],
+	failedGateIds: [' lint ', ' build ', null],
+	skippedGateIds: ['build', ' typecheck ', 'build'],
+	notRunGateIds: ['deploy', ' typecheck ', '', 'lint'],
+	retriedGateIds: [' typecheck ', 'build', 'build', 5],
+	nonSuccessGateIds: [' lint ', ' deploy ', ' build ', ''],
+	attentionGateIds: [' typecheck ', ' deploy ', ' build ', ' build '],
+	gateRetryCountById: { ' typecheck ': '2', build: '1', lint: 'x', deploy: -1 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_list_malformed_counts_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_list_malformed_counts_summary" "Verify Gates Unscoped Partition List Malformed Counts Contract Test"
 
 node - "$expected_schema_version" "$unscoped_explicit_empty_partition_lists_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8234,6 +8268,42 @@ if grep -Fq "**Not-run gates list:** lint" "$unscoped_partition_list_overlap_ste
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_list_overlap_step_summary"; then
 	echo "Did not expect schema warning for unscoped-partition-list-overlap summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 4" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to derive gate count from normalized sparse gate IDs when scalar gateCount is malformed." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Failed gates:** 2" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to ignore malformed scalar partition counts and derive counts from normalized sparse partition lists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":2,"skip":0,"not-run":1}' "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to align status counts with normalized sparse partition outcomes when raw statusCounts values are malformed." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** typecheck" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Failed gates list:** lint, build" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Skipped gates list:** none" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Not-run gates list:** deploy" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to trim/dedupe malformed sparse partition lists and retain highest-priority memberships." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 3" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint, build" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to derive executed metadata from normalized sparse pass/fail memberships when executedGateCount scalar is malformed." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** typecheck, build" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Retried gate count:** 2" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Total retries:** 3" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Total retry backoff:** 4s" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to trim/dedupe explicit retried lists and derive retry aggregates from normalized retry-count map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate retry-count map:** {"typecheck":2,"build":1,"lint":0,"deploy":0}' "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to normalize sparse retry-count maps and apply known-gate defaults for malformed entries." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint, deploy, build" "$unscoped_partition_list_malformed_counts_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, deploy, build" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Expected unscoped-partition-list-malformed-counts summary to trim/dedupe malformed explicit non-success and attention lists while preserving explicit ordering." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_list_malformed_counts_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-list-malformed-counts summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then

@@ -3253,3 +3253,9 @@
   - Assertions confirm explicit empty unscoped partition lists remain authoritative for partition counts/list labels/status-counts, while unscoped status-map evidence still drives unscoped executed fallback and non-success/attention derivation.
   - `scripts/README.md` overlapping partition-list note updated to explicitly document explicit empty unscoped partition-list override behavior with status-map coexistence.
   **Why:** closes unscoped parity for sparse payloads where explicit empty partition overrides and status-map evidence coexist, preventing silent drift between list/count and status-map derived metadata.
+- **Unscoped malformed partition/list-count normalization coverage (2026-02-16 PM)** Extended unscoped sparse list/count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_list_malformed_counts`.
+  - Scenario injects malformed unscoped list bundles (whitespace, duplicates, non-string entries) across partition/retried/non-success/attention lists, alongside malformed scalar counters (`gateCount`, partition counts, `executedGateCount`) and malformed raw `statusCounts`.
+  - Assertions confirm malformed scalar counters/raw status counts are ignored, normalized sparse partition memberships stay priority-consistent, executed/retried/non-success/attention lists are trimmed+deduped deterministically, and retry aggregates derive from normalized retry-count map evidence.
+  - `scripts/README.md` overlapping partition-list note updated to explicitly mention malformed unscoped list/count bundles with invalid scalar counter fallback behavior.
+  **Why:** closes unscoped normalization parity so malformed sparse list/count payloads cannot desynchronize partition, execution, retry, or attention metadata when explicit scalar counters are invalid.
