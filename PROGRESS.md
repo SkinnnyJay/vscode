@@ -3308,3 +3308,9 @@
   - Assertions confirm valid unscoped partition-count scalars remain authoritative when present, while malformed partition-count scalars are ignored per-field and fall back to valid raw `statusCounts` values, with executed/list metadata remaining deterministic.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention partition-count scalar authority and malformed partition-count fallback to raw status-count fields.
   **Why:** closes partition-counter parity for unscoped sparse payloads so count precedence is deterministic across valid-scalar and malformed-scalar branches.
+- **Unscoped partition-count scalar vs raw statusCounts conflict coverage (2026-02-16 PM)** Extended unscoped count-source precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_vs_status_counts_conflict`.
+  - Scenario injects valid conflicting unscoped partition-count scalars and valid raw `statusCounts` in the same sparse payload.
+  - Assertions confirm count lines continue honoring valid partition-count scalars while rendered `statusCounts` metadata still preserves explicit raw status-count fields; executed/pass-rate metadata stays deterministic under this conflict branch.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention scalar-count authority over conflicting valid raw `statusCounts` for count lines.
+  **Why:** locks the remaining unscoped precedence branch so valid scalar counters and valid raw status-count metadata cannot regress into ambiguous count-source selection.
