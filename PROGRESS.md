@@ -2565,6 +2565,7 @@
   - Publisher now scopes scalar slow/fast metadata (`slowestExecutedGateId`/`fastestExecutedGateId` + durations) to selected gate IDs, ignoring non-selected explicit values in favor of selected-scope derived timings.
   - Publisher now scopes explicit `startedAt` / `completedAt` to selected-gate mode by ignoring explicit timestamps under `selectedGateIds` and deriving from selected-scope rows instead.
   - Timestamp scoping now preserves explicit `startedAt` / `completedAt` when selected scope has no rows (`gates[]` empty), so sparse map-only selected payloads can still render deterministic run timing.
+  - Timestamp/total-duration scoping now also preserves explicit top-level timing when selected scope has no matched rows (even if non-selected rows exist for table fallback visibility).
   - Publisher now ignores conflicting selected-unsafe aggregate scalar metrics when explicit `selectedGateIds` is present:
     - retry aggregates (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`)
     - duration aggregates (`executedDurationSeconds`, `averageExecutedDurationSeconds`, `totalDurationSeconds`)
@@ -2591,6 +2592,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_unmatched_rows_scope` scenario and verifies non-selected fallback table rows do not count as selected-scope outcome evidence; explicit run-state metadata remains preserved.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
   - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.
   **Why:** preserves deterministic selected-scope semantics even when sparse producers include stale/extra gate IDs in explicit summary maps.
 - **Root summary object normalization (2026-02-15 PM)** Hardened publisher root-shape handling:

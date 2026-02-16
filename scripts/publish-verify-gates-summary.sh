@@ -767,7 +767,7 @@ const blockedByGateId = summaryBlockedByGateId ?? (() => {
 	}
 	return null;
 })() ?? 'none';
-const allowExplicitTimestampFromSummary = selectedGateIdsFromSummary === null || gates.length === 0;
+const allowExplicitTimestampFromSummary = selectedGateIdsFromSummary === null || resolvedRowsForSelectionScope.length === 0;
 const startedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimestamp(summary.startedAt) : null) ?? (() => {
 	let earliestTimestamp = null;
 	for (const gate of resolvedRowsForSelectionScope) {
@@ -797,7 +797,7 @@ const completedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimesta
 const totalDurationSeconds = (() => {
 	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
 	let explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
-	if (explicitTotalDurationSeconds === null && selectedGateIdsFromSummary !== null && gates.length === 0 && derivedDurationFromGateMap === 0) {
+	if (explicitTotalDurationSeconds === null && selectedGateIdsFromSummary !== null && resolvedRowsForSelectionScope.length === 0 && derivedDurationFromGateMap === 0) {
 		explicitTotalDurationSeconds = normalizeNonNegativeInteger(summary.totalDurationSeconds);
 	}
 	if (explicitTotalDurationSeconds !== null) {
