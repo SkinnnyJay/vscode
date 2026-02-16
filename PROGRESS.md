@@ -3105,3 +3105,9 @@
   - Assertions confirm unscoped sparse no-evidence behavior remains deterministic (`0`/`n/a`) and mixed invalid scalar literals are suppressed.
   - `scripts/README.md` unscoped aggregate notes updated to explicitly include mixed-invalid sparse fallback behavior.
   **Why:** ensures unscoped sparse summaries remain robust when upstream payloads include heterogeneous malformed scalar formats in one aggregate object.
+- **Unscoped no-evidence trimmed numeric-string aggregate precedence coverage (2026-02-16 AM)** Completed sparse string-normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace`.
+  - Scenario verifies whitespace-padded numeric-string aggregate scalars in sparse unscoped payloads are trimmed/normalized and remain authoritative.
+  - Assertions confirm no-evidence fallback values are not substituted when padded numeric-string aggregate scalars are valid after trimming.
+  - `scripts/README.md` unscoped aggregate notes updated to explicitly mention sparse no-evidence trimmed numeric-string precedence.
+  **Why:** ensures unscoped sparse payloads preserve valid explicit aggregate metadata even when scalar values are whitespace-padded strings from shell/env serialization paths.

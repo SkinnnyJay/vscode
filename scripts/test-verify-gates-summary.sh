@@ -305,6 +305,8 @@ unscoped_aggregate_metrics_explicit_no_evidence_summary="$tmpdir/unscoped-aggreg
 unscoped_aggregate_metrics_explicit_no_evidence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-step.md"
 unscoped_aggregate_metrics_explicit_no_evidence_string_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string.json"
 unscoped_aggregate_metrics_explicit_no_evidence_string_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-step.md"
+unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace.json"
+unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace-step.md"
 unscoped_aggregate_metrics_no_evidence_mixed_invalid_summary="$tmpdir/unscoped-aggregate-metrics-no-evidence-mixed-invalid.json"
 unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary="$tmpdir/unscoped-aggregate-metrics-no-evidence-mixed-invalid-step.md"
 unscoped_aggregate_metrics_decimal_string_fallback_summary="$tmpdir/unscoped-aggregate-metrics-decimal-string-fallback.json"
@@ -3310,6 +3312,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_string_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_string_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence String Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace-contract',
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 11 ',
+	executedDurationSeconds: ' 13 ',
+	averageExecutedDurationSeconds: ' 13 ',
+	retryRatePercent: ' 90 ',
+	retryBackoffSharePercent: ' 84 ',
+	passRatePercent: ' 10 ',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence String Whitespace Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6754,6 +6781,26 @@ if grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_string_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence-string summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 5" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || ! grep -Fq "**Total retries:** 7" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || ! grep -Fq "**Total retry backoff:** 11s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary to preserve trimmed numeric-string retry aggregates when evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 13s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || ! grep -Fq "**Executed duration average:** 13s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary to preserve trimmed numeric-string duration aggregates when evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 90%" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 84%" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 10%" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary to preserve trimmed numeric-string retry/pass/share rates when evidence is absent." >&2
+	exit 1
+fi
+if grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || grep -Fq "**Total retries:** 0" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || grep -Fq "**Total retry backoff:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary" || grep -Fq "**Executed duration total:** 0s" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary to avoid replacing trimmed numeric-string aggregates with no-evidence fallback values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_string_whitespace_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence-string-whitespace summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary" || ! grep -Fq "**Total retries:** 0" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$unscoped_aggregate_metrics_no_evidence_mixed_invalid_step_summary"; then
