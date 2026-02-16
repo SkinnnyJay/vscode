@@ -767,7 +767,8 @@ const blockedByGateId = summaryBlockedByGateId ?? (() => {
 	}
 	return null;
 })() ?? 'none';
-const startedAt = (selectedGateIdsFromSummary === null ? normalizeSummaryTimestamp(summary.startedAt) : null) ?? (() => {
+const allowExplicitTimestampFromSummary = selectedGateIdsFromSummary === null || gates.length === 0;
+const startedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimestamp(summary.startedAt) : null) ?? (() => {
 	let earliestTimestamp = null;
 	for (const gate of resolvedRowsForSelectionScope) {
 		const gateStartedAt = normalizeSummaryTimestamp(gate.startedAt);
@@ -780,7 +781,7 @@ const startedAt = (selectedGateIdsFromSummary === null ? normalizeSummaryTimesta
 	}
 	return earliestTimestamp;
 })();
-const completedAt = (selectedGateIdsFromSummary === null ? normalizeSummaryTimestamp(summary.completedAt) : null) ?? (() => {
+const completedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimestamp(summary.completedAt) : null) ?? (() => {
 	let latestTimestamp = null;
 	for (const gate of resolvedRowsForSelectionScope) {
 		const gateCompletedAt = normalizeSummaryTimestamp(gate.completedAt);
