@@ -644,7 +644,7 @@ const buildRetryCountMapFromSparseData = () => {
 	}
 	return retryCountByGateId;
 };
-const gateRetryCountById = gateRetryCountByIdFromSummary
+const gateRetryCountByIdBase = gateRetryCountByIdFromSummary
 	? applyKnownGateDefaults(gateRetryCountByIdFromSummary, 0)
 	: applyKnownGateDefaults(
 		gates.length > 0
@@ -652,6 +652,15 @@ const gateRetryCountById = gateRetryCountByIdFromSummary
 			: buildRetryCountMapFromSparseData(),
 		0,
 	);
+const gateRetryCountById = retriedGateIdsFromSummary === null
+	? gateRetryCountByIdBase
+	: retriedGateIdsFromSummary.reduce((retryCountByGateId, gateId) => {
+		const retryCount = normalizeInteger(retryCountByGateId[gateId]) ?? 0;
+		if (retryCount <= 0) {
+			retryCountByGateId[gateId] = 1;
+		}
+		return retryCountByGateId;
+	}, { ...gateRetryCountByIdBase });
 const gateDurationSecondsByIdFromSummary = scopeGateMapToSelection(
 	normalizeGateIntegerMap(summary.gateDurationSecondsById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger }),
 );
