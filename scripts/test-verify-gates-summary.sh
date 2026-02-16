@@ -303,6 +303,8 @@ selected_non_success_status_precedence_fail_scope_summary="$tmpdir/selected-non-
 selected_non_success_status_precedence_fail_scope_step_summary="$tmpdir/selected-non-success-status-precedence-fail-scope-step.md"
 selected_non_success_status_precedence_skip_scope_summary="$tmpdir/selected-non-success-status-precedence-skip-scope.json"
 selected_non_success_status_precedence_skip_scope_step_summary="$tmpdir/selected-non-success-status-precedence-skip-scope-step.md"
+selected_non_success_status_precedence_not_run_scope_summary="$tmpdir/selected-non-success-status-precedence-not-run-scope.json"
+selected_non_success_status_precedence_not_run_scope_step_summary="$tmpdir/selected-non-success-status-precedence-not-run-scope-step.md"
 selected_explicit_empty_partition_lists_status_map_scope_summary="$tmpdir/selected-explicit-empty-partition-lists-status-map-scope.json"
 selected_explicit_empty_partition_lists_status_map_scope_step_summary="$tmpdir/selected-explicit-empty-partition-lists-status-map-scope-step.md"
 selected_executed_fallback_empty_status_map_scope_summary="$tmpdir/selected-executed-fallback-empty-status-map-scope.json"
@@ -3458,6 +3460,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_non_success_status_precedence_skip_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_status_precedence_skip_scope_summary" "Verify Gates Selected Non-Success Status Precedence Skip Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_non_success_status_precedence_not_run_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-non-success-status-precedence-not-run-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'not-run' },
+	passedGateIds: ['lint'],
+	executedGateCount: 4,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_non_success_status_precedence_not_run_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_status_precedence_not_run_scope_summary" "Verify Gates Selected Non-Success Status Precedence Not-Run Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_empty_partition_lists_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8283,6 +8306,30 @@ if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_status_p
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_skip_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-status-precedence-skip-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to surface conflicting pass/not-run aggregate metadata for diagnostic visibility." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to derive non-executed metadata from selected status-map not-run evidence despite conflicting selected pass partition and executedGateCount scalar inputs." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 1" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 100%" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to suppress conflicting selected executed/count partition evidence when selected status-map not-run evidence is authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to prioritize selected status-map not-run evidence for non-success/attention derivation." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-non-success-status-precedence-not-run-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
