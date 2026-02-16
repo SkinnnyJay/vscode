@@ -3265,3 +3265,9 @@
   - Assertions confirm explicit empty unscoped retried list remains authoritative (`Retried gates: none`, `Retried gate count: 0`), retry-count map entries are zeroed, retry aggregates stay zero, and attention list remains empty when statuses are pass-only.
   - `scripts/README.md` selected/unscoped summary notes updated to explicitly mention explicit empty unscoped retried-list override behavior.
   **Why:** closes unscoped retried-list precedence parity so explicit empty retried overrides cannot be silently replaced by retry-count map positivity.
+- **Unscoped executed-count scalar vs empty executed-list precedence coverage (2026-02-16 PM)** Extended unscoped count/list conflict matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_scalar_count_overrides_empty_list`.
+  - Scenario injects explicit empty unscoped executed list (`executedGateIds: []`) together with explicit unscoped scalar `executedGateCount: 5` and sparse status-map pass/fail evidence.
+  - Assertions confirm explicit scalar count remains authoritative over empty executed list metadata (`Executed gates: 5`, `Executed gates list: none`) and rate derivation follows scalar denominator semantics (`Pass rate: 20%`).
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly include executed-count scalar precedence over empty executed lists.
+  **Why:** closes unscoped list/count conflict parity by locking intentional scalar-over-list precedence for executed-count metadata in sparse payloads.
