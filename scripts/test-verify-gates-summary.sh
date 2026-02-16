@@ -125,12 +125,16 @@ selected_aggregate_metrics_rate_scalar_overflow_scope_summary="$tmpdir/selected-
 selected_aggregate_metrics_rate_scalar_overflow_scope_step_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-overflow-scope-step.md"
 selected_aggregate_metrics_rate_scalar_boundary_scope_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-boundary-scope.json"
 selected_aggregate_metrics_rate_scalar_boundary_scope_step_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-boundary-scope-step.md"
+selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-mixed-boundary-scope.json"
+selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-mixed-boundary-scope-step.md"
 selected_aggregate_metrics_malformed_scope_summary="$tmpdir/selected-aggregate-metrics-malformed-scope.json"
 selected_aggregate_metrics_malformed_scope_step_summary="$tmpdir/selected-aggregate-metrics-malformed-scope-step.md"
 selected_aggregate_metrics_no_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-scope.json"
 selected_aggregate_metrics_no_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-no-evidence-scope-step.md"
 selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-overflow-no-evidence-scope.json"
 selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-overflow-no-evidence-scope-step.md"
+selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope.json"
+selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope-step.md"
 selected_aggregate_metrics_nonselected_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-nonselected-evidence-scope.json"
 selected_aggregate_metrics_nonselected_evidence_scope_step_summary="$tmpdir/selected-aggregate-metrics-nonselected-evidence-scope-step.md"
 selected_aggregate_metrics_no_evidence_string_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-string-scope.json"
@@ -1316,6 +1320,31 @@ NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_rate_scalar_boundary_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_rate_scalar_boundary_scope_summary" "Verify Gates Selected Aggregate Metrics Rate Scalar Boundary Scope Contract Test"
 
+node - "$expected_schema_version" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-rate-scalar-mixed-boundary-scope-contract',
+	selectedGateIds: ['lint'],
+	executedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateRetryCountById: { lint: 1 },
+	gateDurationSecondsById: { lint: 4 },
+	retryRatePercent: 0,
+	retryBackoffSharePercent: 101,
+	passRatePercent: 100,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_summary" "Verify Gates Selected Aggregate Metrics Rate Scalar Mixed Boundary Scope Contract Test"
+
 node - "$expected_schema_version" "$selected_aggregate_metrics_malformed_scope_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -1392,6 +1421,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope_summary" "Verify Gates Selected Aggregate Metrics Rate Scalar Overflow No Evidence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope-contract',
+	selectedGateIds: ['lint'],
+	retryRatePercent: 100,
+	retryBackoffSharePercent: 101,
+	passRatePercent: 0,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_summary" "Verify Gates Selected Aggregate Metrics Rate Scalar Mixed Boundary No Evidence Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_aggregate_metrics_nonselected_evidence_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -5508,6 +5558,22 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_rate_scalar_bo
 	echo "Did not expect schema warning for selected-aggregate-metrics-rate-scalar-boundary-scope summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 100%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 25%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-scope summary to keep selected evidence-derived rates authoritative when selected boundary and overflow rate scalars are mixed." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 0%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary" || grep -Fq "101%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-scope summary to suppress mixed boundary/overflow selected rate scalar literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-rate-scalar-mixed-boundary-scope summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_malformed_scope_step_summary"; then
 	echo "Expected selected-aggregate-metrics-malformed-scope summary to preserve selected-gate metadata." >&2
 	exit 1
@@ -5566,6 +5632,22 @@ if grep -Fq "150%" "$selected_aggregate_metrics_rate_scalar_overflow_no_evidence
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-aggregate-metrics-rate-scalar-overflow-no-evidence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope summary to keep selected no-evidence rate fallbacks at n/a despite mixed boundary/overflow selected rate scalars." >&2
+	exit 1
+fi
+if grep -Fq "101%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 100%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 0%" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope summary to suppress boundary and overflow selected rate scalar literals without selected execution evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-rate-scalar-mixed-boundary-no-evidence-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_nonselected_evidence_scope_step_summary"; then

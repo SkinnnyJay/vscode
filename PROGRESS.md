@@ -3202,3 +3202,12 @@
   - Assertions confirm per-field sparse behavior: valid boundary scalars are preserved, overflow scalar fields normalize to `n/a`, and overflow literals are suppressed.
   - `scripts/README.md` unscoped aggregate note updated to explicitly include mixed boundary/overflow per-field behavior in sparse no-evidence payloads.
   **Why:** locks per-field precedence semantics in sparse payloads so valid explicit rate metadata survives while overflow fields still respect no-evidence fallback guards.
+- **Selected mixed boundary/overflow rate suppression coverage (2026-02-16 AM)** Extended selected sparse/evidence matrices:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_aggregate_metrics_rate_scalar_mixed_boundary_scope`,
+    - `selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_scope`.
+  - Scope scenario mixes boundary + overflow selected rate scalars with selected execution evidence.
+  - No-evidence scenario mixes boundary + overflow selected rate scalars without selected execution evidence.
+  - Assertions confirm selected precedence remains evidence-first: selected rate scalars (including valid boundaries) are suppressed under selected scope, selected evidence-derived rates stay authoritative when present, and selected no-evidence rates remain `n/a` when execution evidence is absent.
+  - `scripts/README.md` selected aggregate note updated to include mixed boundary+overflow selected no-evidence suppression behavior.
+  **Why:** closes a selected-scope parity gap by proving mixed valid/invalid selected rate scalar bundles cannot override selected derivation rules in either evidence-backed or sparse no-evidence payloads.
