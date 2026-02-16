@@ -3555,3 +3555,10 @@
   - Assertions also reject integer-scalar-driven fallback (`Executed gates: 5`, pass rate `20%`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
   - `scripts/README.md` selected executed fallback note updated to explicitly mention integer non-zero scalar suppression alongside numeric-string scalar suppression for selected sparse fallback paths.
   **Why:** closes the selected integer non-zero executed-count scalar + partial selected status-map/partition fallback branch so integer non-zero scalars cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
+- **Selected raw statusCounts executed-branch suppression under partial selected status-map fallback coverage (2026-02-16 PM)** Extended selected sparse executed fallback precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_raw_status_counts_ignored_partial_status_map_scope`.
+  - Scenario omits explicit `executedGateIds`, keeps selected sparse `gateStatusById` + selected partition fallback evidence, and injects conflicting raw `statusCounts` (`pass: 0`, `fail: 0`, `skip: 5`, `not-run: 0`).
+  - Assertions confirm selected sparse status-map/partition fallback remains authoritative (`Executed gates: 2`, pass rate `50%`, executed list `lint, typecheck`) while conflicting raw `statusCounts` executed branch evidence is ignored.
+  - Assertions also reject raw-count-driven fallback (`Executed gates: 0`, pass rate `n/a`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
+  - `scripts/README.md` selected executed fallback note updated to explicitly mention raw `statusCounts` executed-branch suppression alongside selected scalar suppression.
+  **Why:** closes the selected raw `statusCounts` executed-branch + partial selected status-map/partition fallback branch so raw count objects cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
