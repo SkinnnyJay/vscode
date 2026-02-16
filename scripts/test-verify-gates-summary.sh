@@ -3969,6 +3969,10 @@ if ! grep -Fq "**Retried gates:** lint" "$selected_attention_retried_scope_step_
 	echo "Expected selected-attention-retried-scope summary to scope retried metadata to selected IDs." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 2" "$selected_attention_retried_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 3s" "$selected_attention_retried_scope_step_summary"; then
+	echo "Expected selected-attention-retried-scope summary to scope retry aggregates to selected retried IDs." >&2
+	exit 1
+fi
 if ! grep -Fq "**Attention gates list:** lint" "$selected_attention_retried_scope_step_summary"; then
 	echo "Expected selected-attention-retried-scope summary to include selected retried pass gates in attention list." >&2
 	exit 1

@@ -2652,6 +2652,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_partition_fallback_scope` scenario and verifies selected non-success/attention lists still include selected not-run gates when status-map entries are sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_status_precedence_scope` scenario and verifies explicit selected status-map `pass` keeps non-success/attention lists empty even when fallback `notRunGateIds` also includes the gate.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_attention_retried_scope` scenario and verifies selected retried pass gates remain in attention list while non-selected retried/status IDs are scoped out.
+  - `scripts/test-verify-gates-summary.sh` now reinforces `selected_attention_retried_scope` with retry aggregate assertions (`Total retries`, `Total retry backoff`) scoped to selected retried IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_non_success_with_retries_scope` scenario and verifies explicit empty non-success lists still allow selected retried-gate attention fallback.
