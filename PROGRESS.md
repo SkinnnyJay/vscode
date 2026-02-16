@@ -3492,3 +3492,10 @@
   - Assertions also confirm executed-rate metrics use the normalized scalar denominator (`Pass rate: 20%`, `Retry rate: 20%`) and reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate/Retry rate: 50%`).
   - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention non-zero integer and numeric-string executed-count scalar overrides over sparse status-map/partition executed fallback.
   **Why:** closes the unscoped numeric-string executed-count + implicit executed-fallback branch so normalized numeric-string scalars remain authoritative over sparse fallback counts/rates when explicit executed lists are omitted.
+- **Unscoped numeric-string zero executed-count scalar override over sparse status-map/partition executed fallback coverage (2026-02-16 PM)** Extended unscoped executed scalar normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_string_zero_scalar_count_overrides_partial_status_map`.
+  - Scenario keeps sparse unscoped executed fallback evidence from partial status-map + partition lists while executed lists remain implicit and explicit numeric-string zero `executedGateCount: ' 0 '` is provided.
+  - Assertions confirm normalized numeric-string zero scalar executed-count remains authoritative (`Executed gates: 0`) while sparse derived executed-list labels stay visible (`Executed gates list: typecheck, lint`).
+  - Assertions also confirm executed-rate metrics render `n/a` from zero scalar denominator (`Pass rate: n/a`, `Retry rate: n/a`) and reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate/Retry rate: 50%`).
+  - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention zero integer/numeric-string executed-count scalar overrides over sparse status-map/partition executed fallback with visible executed-list labels and `n/a` rates.
+  **Why:** closes the unscoped numeric-string zero executed-count + implicit executed-fallback branch so normalized zero scalars remain authoritative over sparse fallback counts/rates when explicit executed lists are omitted.
