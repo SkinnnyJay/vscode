@@ -3241,3 +3241,9 @@
   - Assertions confirm explicit empty unscoped executed list remains authoritative (`Executed gates: 0`, `Executed gates list: none`) and executed-rate metrics render `n/a` while partition + retry metadata remain visible.
   - `scripts/README.md` overlapping partition-list note updated to explicitly mention unscoped explicit empty executed-list override behavior.
   **Why:** closes unscoped parity so explicit empty executed-list overrides are preserved instead of silently drifting back to partition-derived execution metadata.
+- **Selected explicit empty partition-list + status-map coexistence coverage (2026-02-16 PM)** Extended selected partition precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_partition_lists_status_map_scope`.
+  - Scenario injects explicit empty selected partition lists (`passed/failed/skipped/notRun` all `[]`) alongside selected status-map evidence (`lint=pass`, `typecheck=fail`).
+  - Assertions confirm explicit empty selected partition lists remain authoritative for partition counts/list labels/status-counts, while selected status-map evidence still drives selected executed fallback and selected non-success/attention derivation.
+  - `scripts/README.md` overlapping partition-list note updated to explicitly document explicit empty selected partition-list override behavior with selected status-map coexistence.
+  **Why:** closes selected precedence parity for sparse payloads where explicit empty partition overrides and status-map evidence coexist, preventing ambiguity around which metadata dimensions should stay empty versus derive from status maps.

@@ -273,6 +273,8 @@ selected_non_success_partition_fallback_scope_summary="$tmpdir/selected-non-succ
 selected_non_success_partition_fallback_scope_step_summary="$tmpdir/selected-non-success-partition-fallback-scope-step.md"
 selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-success-status-precedence-scope.json"
 selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
+selected_explicit_empty_partition_lists_status_map_scope_summary="$tmpdir/selected-explicit-empty-partition-lists-status-map-scope.json"
+selected_explicit_empty_partition_lists_status_map_scope_step_summary="$tmpdir/selected-explicit-empty-partition-lists-status-map-scope-step.md"
 selected_executed_fallback_empty_status_map_scope_summary="$tmpdir/selected-executed-fallback-empty-status-map-scope.json"
 selected_executed_fallback_empty_status_map_scope_step_summary="$tmpdir/selected-executed-fallback-empty-status-map-scope-step.md"
 selected_executed_explicit_empty_list_scope_summary="$tmpdir/selected-executed-explicit-empty-list-scope.json"
@@ -3024,6 +3026,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_non_success_status_precedence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_status_precedence_scope_summary" "Verify Gates Selected Non-Success Status Precedence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_explicit_empty_partition_lists_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-explicit-empty-partition-lists-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass', typecheck: 'fail' },
+	passedGateIds: [],
+	failedGateIds: [],
+	skippedGateIds: [],
+	notRunGateIds: [],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_explicit_empty_partition_lists_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_empty_partition_lists_status_map_scope_summary" "Verify Gates Selected Explicit Empty Partition Lists Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_executed_fallback_empty_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7017,6 +7042,42 @@ if ! grep -Fq "**Non-success gates list:** none" "$selected_non_success_status_p
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-status-precedence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to keep explicit empty selected partition lists authoritative for partition counts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to keep status counts aligned with explicit empty selected partition lists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass","typecheck":"fail"}' "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to preserve selected status-map metadata when partition lists are explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to derive selected executed metadata from selected status-map evidence even when partition lists are explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** none" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Failed gates list:** none" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to preserve explicit empty selected partition list labels." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 0%" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to derive selected executed-rate metrics from explicit empty partition counts plus selected executed fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-partition-lists-status-map-scope summary to derive non-success/attention lists from selected status-map evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_empty_partition_lists_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-explicit-empty-partition-lists-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_executed_fallback_empty_status_map_scope_step_summary"; then
