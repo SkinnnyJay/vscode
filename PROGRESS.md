@@ -3172,3 +3172,9 @@
   - Assertions confirm per-field resolution: valid boundary values are preserved, overflow values are ignored/re-derived, and overflow literals are suppressed.
   - `scripts/README.md` unscoped aggregate note updated to call out mixed boundary + overflow per-field precedence behavior.
   **Why:** locks deterministic per-field behavior when upstream payloads mix valid and invalid percentage scalars in the same summary object.
+- **Rate lower-bound precedence coverage (2026-02-16 AM)** Added explicit 0% boundary retention test:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_rate_scalar_lower_bound_precedence`.
+  - Scenario injects explicit `0%` rate scalars with valid execution/retry/duration evidence whose derived rates would otherwise be non-zero.
+  - Assertions confirm explicit `0%` values remain authoritative (not replaced by derived `50%`/`10%` values), with no schema warnings.
+  - `scripts/README.md` unscoped aggregate note updated to explicitly include inclusive `0%` boundary precedence.
+  **Why:** verifies the lower bound of the `0..100` rate normalization contract is preserved with the same precedence behavior as other valid explicit scalars.
