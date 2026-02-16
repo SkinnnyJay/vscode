@@ -3047,3 +3047,9 @@
   - Assertions confirm selected-scope aggregate derivation remains authoritative and numeric-string aggregate scalars are ignored the same as numeric scalars under explicit selected scope.
   - `scripts/README.md` selected aggregate notes updated to include selected numeric-string scalar suppression behavior.
   **Why:** closes a normalization edge where numeric-string aggregate values could otherwise be misinterpreted as selected-scope overrides despite explicit selected scoping rules.
+- **Unscoped decimal-string aggregate scalar fallback coverage (2026-02-16 AM)** Expanded scalar sanitization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_decimal_string_fallback`.
+  - Scenario injects decimal numeric-string aggregate retry/duration/rate scalars in unscoped mode while map/list evidence remains valid.
+  - Assertions confirm decimal-string scalars are treated as invalid and fallback derivation uses normalized retry/duration evidence.
+  - `scripts/README.md` unscoped scalar notes updated to explicitly include decimal numeric-string rejection behavior.
+  **Why:** ensures aggregate scalar parsing remains strict integer-only and avoids silently truncating decimal string inputs.
