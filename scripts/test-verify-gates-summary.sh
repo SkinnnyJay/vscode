@@ -157,6 +157,8 @@ selected_run_state_scalar_blocked_continued_conflict_scope_summary="$tmpdir/sele
 selected_run_state_scalar_blocked_continued_conflict_scope_step_summary="$tmpdir/selected-run-state-scalar-blocked-continued-conflict-scope-step.md"
 selected_run_state_nonselected_blocked_scope_summary="$tmpdir/selected-run-state-nonselected-blocked-scope.json"
 selected_run_state_nonselected_blocked_scope_step_summary="$tmpdir/selected-run-state-nonselected-blocked-scope-step.md"
+selected_run_state_blocked_reason_pass_status_scope_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope.json"
+selected_run_state_blocked_reason_pass_status_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1467,6 +1469,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_nonselected_blocked_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_nonselected_blocked_scope_summary" "Verify Gates Selected Run-State Nonselected Blocked Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_blocked_reason_pass_status_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-blocked-reason-pass-status-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateNotRunReasonById: { lint: 'blocked-by-fail-fast:lint' },
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_blocked_reason_pass_status_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_reason_pass_status_scope_summary" "Verify Gates Selected Run-State Blocked-Reason Pass-Status Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3217,6 +3244,22 @@ if grep -Fq "build" "$selected_run_state_nonselected_blocked_scope_step_summary"
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-nonselected-blocked-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-pass-status-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** true" "$selected_run_state_blocked_reason_pass_status_scope_step_summary" || ! grep -Fq "**Exit reason:** success" "$selected_run_state_blocked_reason_pass_status_scope_step_summary" || ! grep -Fq "**Run classification:** success-no-retries" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-pass-status-scope summary to ignore blocked-by-fail-fast not-run reason values when selected gate status is pass." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-pass-status-scope summary to suppress blocked-by metadata when reason-bearing gate status is not-run-ineligible." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-blocked-reason-pass-status-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then

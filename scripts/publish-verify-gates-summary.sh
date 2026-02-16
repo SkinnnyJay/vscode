@@ -766,9 +766,16 @@ const failedGateExitCode = (scopedSummaryFailedGateExitCode !== null && scopedSu
 	? scopedSummaryFailedGateExitCode
 	: failedGateExitCodes[0] ?? 'none';
 const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
-	for (const reason of Object.values(gateNotRunReasonById)) {
-		if (typeof reason === 'string' && reason.startsWith('blocked-by-fail-fast:')) {
-			return scopeGateIdToSelection(reason.slice('blocked-by-fail-fast:'.length)) ?? null;
+	for (const [gateId, reason] of Object.entries(gateNotRunReasonById)) {
+		if (typeof reason !== 'string' || !reason.startsWith('blocked-by-fail-fast:')) {
+			continue;
+		}
+		if (gateStatusById[gateId] !== 'not-run') {
+			continue;
+		}
+		const scopedBlockedByGateId = scopeGateIdToSelection(reason.slice('blocked-by-fail-fast:'.length));
+		if (scopedBlockedByGateId !== null) {
+			return scopedBlockedByGateId;
 		}
 	}
 	return null;
