@@ -171,6 +171,8 @@ selected_run_state_nonselected_blocked_scope_summary="$tmpdir/selected-run-state
 selected_run_state_nonselected_blocked_scope_step_summary="$tmpdir/selected-run-state-nonselected-blocked-scope-step.md"
 selected_run_state_blocked_reason_pass_status_scope_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope.json"
 selected_run_state_blocked_reason_pass_status_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope-step.md"
+selected_run_state_blocked_scalar_precedence_scope_summary="$tmpdir/selected-run-state-blocked-scalar-precedence-scope.json"
+selected_run_state_blocked_scalar_precedence_scope_step_summary="$tmpdir/selected-run-state-blocked-scalar-precedence-scope-step.md"
 selected_run_state_blocked_reason_not_run_list_scope_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope.json"
 selected_run_state_blocked_reason_not_run_list_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope-step.md"
 selected_run_state_blocked_reason_unknown_status_not_run_list_scope_summary="$tmpdir/selected-run-state-blocked-reason-unknown-status-not-run-list-scope.json"
@@ -1674,6 +1676,36 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_blocked_reason_pass_status_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_reason_pass_status_scope_summary" "Verify Gates Selected Run-State Blocked-Reason Pass-Status Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_blocked_scalar_precedence_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-blocked-scalar-precedence-scope-contract',
+	selectedGateIds: ['typecheck', 'lint'],
+	blockedByGateId: 'lint',
+	gateStatusById: { lint: 'not-run', typecheck: 'not-run' },
+	notRunGateIds: ['lint', 'typecheck'],
+	gateNotRunReasonById: {
+		lint: 'blocked-by-fail-fast:lint',
+		typecheck: 'blocked-by-fail-fast:typecheck',
+	},
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_blocked_scalar_precedence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_scalar_precedence_scope_summary" "Verify Gates Selected Run-State Blocked Scalar Precedence Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_blocked_reason_not_run_list_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3743,6 +3775,22 @@ if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_blocked_reason_pa
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-blocked-reason-pass-status-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** typecheck, lint" "$selected_run_state_blocked_scalar_precedence_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-scalar-precedence-scope summary to preserve selected gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_blocked_scalar_precedence_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-scalar-precedence-scope summary to prioritize explicit blockedByGateId over row-derived blocked reason precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_blocked_scalar_precedence_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_blocked_scalar_precedence_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-scalar-precedence-scope summary to retain fail-fast semantics under blocked scalar precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_scalar_precedence_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-blocked-scalar-precedence-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_blocked_reason_not_run_list_scope_step_summary"; then

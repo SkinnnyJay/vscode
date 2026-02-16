@@ -2589,6 +2589,7 @@
   - When both selected status-map and partition-list evidence disagree, status-map status now takes precedence for blocked-reason eligibility (prevents conflicting fallback not-run lists from overriding canonical `pass` status).
   - Unknown selected status placeholders now defer to selected not-run partition-list evidence for blocked-reason eligibility (instead of suppressing blocked derivation).
   - When multiple selected blocked-reason candidates exist, blocked-by derivation now follows selected gate ordering for deterministic precedence.
+  - Explicit scalar `blockedByGateId` precedence over row-derived blocked-reason ordering is now explicitly contract-validated.
   - Blocked-reason extracted gate IDs are now whitespace-normalized before selected-scope matching (e.g. `blocked-by-fail-fast: lint ` now resolves to `lint`).
   - Blank blocked-reason IDs (`blocked-by-fail-fast:` with empty/whitespace tail) are now explicitly ignored.
   - Scalar `blockedByGateId` whitespace normalization is now contract-validated for selected-scope fail-fast derivation.
@@ -2640,6 +2641,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_not_run_list_scope` scenario and verifies blocked-by fail-fast derivation still triggers when selected `notRunGateIds` includes the gate but status-map coverage is sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_unknown_status_not_run_list_scope` scenario and verifies unknown selected status placeholders still allow blocked-reason fail-fast derivation via selected not-run partition fallback.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_selected_order_scope` scenario and verifies selected gate ordering determines blocked-by precedence when multiple blocked reasons are present.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_scalar_precedence_scope` scenario and verifies explicit scalar `blockedByGateId` remains authoritative over row-derived selected-order blocked reasoning.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_whitespace_scope` scenario and verifies blocked-by reason IDs with surrounding whitespace still resolve under selected-scope fail-fast derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_uppercase_scope` scenario and verifies case-insensitive blocked-reason prefixes still resolve under selected-scope fail-fast derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_spaced_colon_scope` scenario and verifies blocked-reason prefixes with optional pre-colon whitespace still resolve under selected-scope fail-fast derivation.
