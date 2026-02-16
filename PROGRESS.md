@@ -3217,3 +3217,9 @@
   - Assertions confirm retry-rate derivation clamps to `100%` and suppresses unclamped `500%` output while preserving conflicting scalar count metadata for diagnostics.
   - `scripts/README.md` unscoped aggregate note updated to explicitly include scalar-count conflict clamping semantics.
   **Why:** guarantees bounded percentage output even when explicit scalar count metadata is internally inconsistent, closing the remaining >100% retry-rate edge case.
+- **Selected mixed boundary no-evidence numeric-string suppression coverage (2026-02-16 AM)** Extended selected sparse rate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_rate_scalar_mixed_boundary_no_evidence_string_scope`.
+  - Scenario injects mixed boundary/overflow selected rate scalars in numeric-string form (`" 100 "`, `"101"`, `" 0 "`) without selected execution evidence.
+  - Assertions confirm selected sparse rate metadata remains `n/a` and both boundary + overflow numeric-string literals are suppressed.
+  - `scripts/README.md` selected aggregate note updated to explicitly mention numeric-string mixed boundary/overflow no-evidence suppression behavior.
+  **Why:** closes encoding-parity coverage so selected sparse fallback behavior is robust against mixed numeric-string rate scalar bundles as well as numeric inputs.
