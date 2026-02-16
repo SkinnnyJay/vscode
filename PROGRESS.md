@@ -2586,6 +2586,7 @@
   - Non-selected `blocked-by-fail-fast:<id>` not-run reason metadata is explicitly ignored for blocked-by run-state derivation under selected scope.
   - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - Conflicting `dryRun: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + dry-run inconsistency.
+  - Conflicting explicit `exitReason: dry-run` / `runClassification: dry-run` is now explicitly ignored when selected fail-fast evidence exists.
   - Conflicting explicit `completed-with-failures` / `failed-continued` run-state is now explicitly ignored when selected fail-fast evidence exists.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
@@ -2612,6 +2613,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_continue_scope` scenario and verifies conflicting `continueOnFailure: true` is ignored under selected scalar fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_continue_scope` scenario and verifies conflicting `continueOnFailure: true` is ignored under selected row-derived blocked-reason fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_dry_run_scope` scenario and verifies conflicting `dryRun: true` is ignored under selected scalar fail-fast evidence.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_dry_reason_scope` scenario and verifies conflicting explicit dry-run reason/classification metadata is ignored under selected fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_continued_conflict_scope` scenario and verifies conflicting explicit `completed-with-failures` / `failed-continued` metadata is ignored under selected fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_nonselected_blocked_scope` scenario and verifies non-selected scalar blocked-by metadata is excluded from selected-scope run-state derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_scope` scenario and verifies selected not-run blocked-by reason metadata overrides conflicting explicit success run-state to fail-fast.
