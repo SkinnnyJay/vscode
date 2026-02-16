@@ -299,6 +299,8 @@ selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-s
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_partition_list_overlap_scope_summary="$tmpdir/selected-partition-list-overlap-scope.json"
 selected_partition_list_overlap_scope_step_summary="$tmpdir/selected-partition-list-overlap-scope-step.md"
+selected_partition_list_malformed_counts_scope_summary="$tmpdir/selected-partition-list-malformed-counts-scope.json"
+selected_partition_list_malformed_counts_scope_step_summary="$tmpdir/selected-partition-list-malformed-counts-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
 selected_explicit_empty_attention_with_retries_scope_step_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope-step.md"
 selected_explicit_empty_non_success_with_retries_scope_summary="$tmpdir/selected-explicit-empty-non-success-with-retries-scope.json"
@@ -3287,6 +3289,39 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_partition_list_overlap_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_partition_list_overlap_scope_summary" "Verify Gates Selected Partition List Overlap Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_partition_list_malformed_counts_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-partition-list-malformed-counts-scope-contract',
+	selectedGateIds: [' lint ', ' typecheck ', 'lint', '', 1],
+	gateCount: 99,
+	passedGateCount: 77,
+	failedGateCount: 66,
+	skippedGateCount: 55,
+	notRunGateCount: 44,
+	executedGateCount: 33,
+	statusCounts: { pass: 77, fail: 66, skip: 55, 'not-run': 44 },
+	passedGateIds: [' lint ', ' typecheck ', 'lint', '', 7, 'build'],
+	failedGateIds: ['lint', ' build ', ' typecheck ', null],
+	skippedGateIds: [' typecheck ', 'lint', ''],
+	notRunGateIds: [' lint ', 'typecheck'],
+	executedGateIds: [' typecheck ', ' lint ', 'build', 'lint', 2],
+	retriedGateIds: [' lint ', ' lint ', ' build '],
+	nonSuccessGateIds: [' lint ', ' build ', ' typecheck ', ''],
+	attentionGateIds: [' typecheck ', ' build ', ' lint ', null],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_partition_list_malformed_counts_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_partition_list_malformed_counts_scope_summary" "Verify Gates Selected Partition List Malformed Counts Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_empty_attention_with_retries_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7233,6 +7268,46 @@ if grep -Fq "build" "$selected_partition_list_overlap_scope_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_partition_list_overlap_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-partition-list-overlap-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to normalize selected gate IDs via trimming and dedupe." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Passed gates:** 0" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Failed gates:** 2" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to ignore conflicting scalar counts and derive selected partition counts from normalized selected lists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":2,"skip":0,"not-run":0}' "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to align status-count metadata with normalized selected partition precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to scope/dedupe explicit executed-gate lists while ignoring conflicting scalar executed count." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** none" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Failed gates list:** lint, typecheck" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Skipped gates list:** none" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to preserve only highest-priority selected partition membership after malformed-list normalization." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"fail","typecheck":"fail"}' "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to derive selected sparse status map from normalized partition lists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to scope and dedupe explicit retried-gate lists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint, typecheck" "$selected_partition_list_malformed_counts_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, lint" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to scope and preserve ordering for explicit non-success/attention gate lists." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Expected selected-partition-list-malformed-counts-scope summary to exclude non-selected malformed list entries from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_partition_list_malformed_counts_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-partition-list-malformed-counts-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_empty_attention_with_retries_scope_step_summary"; then

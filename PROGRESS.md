@@ -3223,3 +3223,9 @@
   - Assertions confirm selected sparse rate metadata remains `n/a` and both boundary + overflow numeric-string literals are suppressed.
   - `scripts/README.md` selected aggregate note updated to explicitly mention numeric-string mixed boundary/overflow no-evidence suppression behavior.
   **Why:** closes encoding-parity coverage so selected sparse fallback behavior is robust against mixed numeric-string rate scalar bundles as well as numeric inputs.
+- **Selected malformed partition/list-count normalization coverage (2026-02-16 PM)** Extended selected sparse list/count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_partition_list_malformed_counts_scope`.
+  - Scenario injects malformed selected list bundles (whitespace, duplicates, non-string entries, non-selected IDs) across `passed/failed/skipped/notRun`, `executed`, `retried`, `nonSuccess`, and `attention` lists, while also providing conflicting selected scalar counters/status-count scalars.
+  - Assertions confirm selected list normalization remains deterministic: selected IDs are trimmed/deduped/scoped, overlapping partition memberships collapse by status priority, sparse status maps/counters stay aligned with normalized selected partitions, explicit executed/retried/non-success/attention lists remain scoped/deduped, and conflicting selected scalar counters are ignored.
+  - `scripts/README.md` overlapping partition-list note updated to explicitly mention malformed selected list + conflicting selected scalar counter behavior.
+  **Why:** closes list/count alignment parity for selected sparse payloads so malformed gate-ID lists cannot desynchronize selected partition metadata, executed/retried/non-success projections, or selected counter derivation.
