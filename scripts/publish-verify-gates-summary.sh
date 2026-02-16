@@ -774,10 +774,10 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 			return null;
 		}
 		const normalizedReason = reason.trim();
-		if (!/^blocked-by-fail-fast:/i.test(normalizedReason)) {
+		if (!/^blocked-by-fail-fast\s*:/i.test(normalizedReason)) {
 			return null;
 		}
-		return normalizeNonEmptyString(normalizedReason.slice('blocked-by-fail-fast:'.length));
+		return normalizeNonEmptyString(normalizedReason.replace(/^blocked-by-fail-fast\s*:/i, ''));
 	};
 	for (const [gateId, reason] of Object.entries(gateNotRunReasonById)) {
 		const blockedByReasonGateId = parseBlockedByReasonGateId(reason);
