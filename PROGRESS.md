@@ -3350,3 +3350,9 @@
   - Assertions confirm selected partition evidence remains authoritative for counters/status counts and executed/pass-rate metadata, with partially malformed raw status-count inputs still ignored under selected scope.
   - `scripts/README.md` selected scope note updated to explicitly mention partially malformed raw status-count suppression under selected partition evidence.
   **Why:** closes the last selected status-count suppression edge so partially malformed raw status-count payloads cannot leak into selected partition-derived metadata.
+- **Unscoped scalar/raw/list/status-map fallback layering coverage (2026-02-16 PM)** Extended unscoped count-source layering matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_raw_list_status_map_hybrid`.
+  - Scenario injects mixed scalar + partially valid raw `statusCounts` values, sparse partition lists, and status-map-only not-run evidence (no `notRunGateIds` list).
+  - Assertions confirm per-field precedence remains deterministic across scalar → raw status-count → list/status-map fallback layers, including not-run list fallback from status-map evidence and clamped pass-rate behavior under mixed-source counts.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw/list/status-map precedence branches.
+  **Why:** closes the final fallback-layering gap so unscoped not-run/status-map fallback remains stable when scalar/raw/list evidence is only partially populated.
