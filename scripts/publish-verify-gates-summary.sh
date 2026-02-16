@@ -814,11 +814,11 @@ const totalDurationSeconds = (() => {
 	return 'unknown';
 })();
 const hasOutcomeEvidence = resolvedRowsForSelectionScope.length > 0
-	|| gateStatusByIdFromSummary !== null
-	|| passedGateIdsFromSummary !== null
-	|| failedGateIdsFromSummary !== null
-	|| skippedGateIdsFromSummary !== null
-	|| notRunGateIdsFromSummary !== null
+	|| Object.keys(gateStatusByIdFromSummary ?? {}).length > 0
+	|| (passedGateIdsFromSummary?.length ?? 0) > 0
+	|| (failedGateIdsFromSummary?.length ?? 0) > 0
+	|| (skippedGateIdsFromSummary?.length ?? 0) > 0
+	|| (notRunGateIdsFromSummary?.length ?? 0) > 0
 	|| passedGateCountFromSummary !== null
 	|| failedGateCountFromSummary !== null
 	|| skippedGateCountFromSummary !== null

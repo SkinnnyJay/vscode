@@ -2575,6 +2575,7 @@
     - conflicting `exitReason` / `runClassification` values are ignored when selected-scope failure/execution evidence contradicts them.
     - explicit run-state values remain preserved when selected scope has no outcome evidence.
   - Selected-scope outcome evidence detection now uses selected-scope resolved rows (not all `gates[]` rows), so unmatched non-selected rows no longer force run-state conflict filtering.
+  - Selected-scope outcome evidence now requires non-empty scoped maps/lists; scoped-out non-selected summary maps/lists (`{}` / `[]`) no longer trigger run-state conflict filtering.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
@@ -2590,6 +2591,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scope` scenario and verifies conflicting explicit run-state values are ignored when selected-scope pass evidence exists (`Success: true`, `Exit reason: success`, `Run classification: success-no-retries`, `Dry run: false`, `Continue on failure: false`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_no_evidence_scope` scenario and verifies explicit run-state values are preserved when selected scope has no outcome evidence (`Success: false`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`, `Continue on failure: true`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_unmatched_rows_scope` scenario and verifies non-selected fallback table rows do not count as selected-scope outcome evidence; explicit run-state metadata remains preserved.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_nonselected_evidence_scope` scenario and verifies scoped-out non-selected summary map evidence does not count as selected-scope outcome evidence; explicit run-state metadata remains preserved.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
