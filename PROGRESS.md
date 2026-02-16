@@ -2585,6 +2585,7 @@
   - Selected `blocked-by-fail-fast:<id>` not-run reason metadata now contributes fail-fast conflict evidence, overriding conflicting explicit success run-state scalars.
   - Non-selected `blocked-by-fail-fast:<id>` not-run reason metadata is explicitly ignored for blocked-by run-state derivation under selected scope.
   - `blocked-by-fail-fast:<id>` reason metadata is now only considered when the reason-bearing selected gate has canonical `not-run` status (malformed pass/fail reason entries no longer trigger fail-fast evidence).
+  - Blocked-reason fail-fast derivation now also honors selected not-run partition lists when status-map entries are sparse/missing (avoids losing fail-fast evidence under incomplete status maps).
   - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - Conflicting `dryRun: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + dry-run inconsistency.
   - Conflicting explicit `exitReason: dry-run` / `runClassification: dry-run` is now explicitly ignored when selected fail-fast evidence exists.
@@ -2622,6 +2623,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_scope` scenario and verifies selected not-run blocked-by reason metadata overrides conflicting explicit success run-state to fail-fast.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_nonselected_scope` scenario and verifies non-selected blocked-by not-run reason metadata is suppressed in selected-scope blocked-by/run-state derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_pass_status_scope` scenario and verifies blocked-by not-run reason metadata is ignored when selected gate status is `pass`.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_not_run_list_scope` scenario and verifies blocked-by fail-fast derivation still triggers when selected `notRunGateIds` includes the gate but status-map coverage is sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
