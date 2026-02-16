@@ -167,6 +167,8 @@ selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-n
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_total_duration_conflict_duration_map_no_rows_scope_summary="$tmpdir/selected-total-duration-conflict-duration-map-no-rows-scope.json"
 selected_total_duration_conflict_duration_map_no_rows_scope_step_summary="$tmpdir/selected-total-duration-conflict-duration-map-no-rows-scope-step.md"
+selected_total_duration_conflict_zero_duration_map_no_rows_scope_summary="$tmpdir/selected-total-duration-conflict-zero-duration-map-no-rows-scope.json"
+selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary="$tmpdir/selected-total-duration-conflict-zero-duration-map-no-rows-scope-step.md"
 selected_total_duration_conflicting_timestamps_no_rows_scope_summary="$tmpdir/selected-total-duration-conflicting-timestamps-no-rows-scope.json"
 selected_total_duration_conflicting_timestamps_no_rows_scope_step_summary="$tmpdir/selected-total-duration-conflicting-timestamps-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
@@ -1605,6 +1607,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_total_duration_conflict_duration_map_no_rows_scope_summary" "Verify Gates Selected Total Duration Conflict Duration Map No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-total-duration-conflict-zero-duration-map-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	totalDurationSeconds: 7,
+	gateDurationSecondsById: { lint: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_summary" "Verify Gates Selected Total Duration Conflict Zero Duration Map No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_conflicting_timestamps_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4699,6 +4721,22 @@ if ! grep -Fq "**Total duration:** 3s" "$selected_total_duration_conflict_durati
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_total_duration_conflict_duration_map_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-total-duration-conflict-duration-map-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-zero-duration-map-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate duration map (s):** {"lint":0}' "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-zero-duration-map-no-rows-scope summary to preserve selected zero-duration-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 0s" "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-conflict-zero-duration-map-no-rows-scope summary to prioritize selected zero-duration-map evidence over conflicting explicit totalDurationSeconds." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_total_duration_conflict_zero_duration_map_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-total-duration-conflict-zero-duration-map-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_conflicting_timestamps_no_rows_scope_step_summary"; then

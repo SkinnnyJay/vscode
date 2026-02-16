@@ -2952,3 +2952,10 @@
     - `total_duration_conflict_duration_map_no_rows_unscoped` validating explicit unscoped `totalDurationSeconds` remains authoritative over duration-map fallback (`gateDurationSecondsById`) when no rows/timestamps are available.
   - `scripts/README.md` timestamp-canonicalization notes updated to clarify conflicting timestamp paths produce unknown only when no explicit total-duration scalar is provided.
   **Why:** finalizes unscoped precedence behavior so explicit run-level duration metadata is preserved intentionally, while derived duration fallback remains safe and non-negative when explicit duration is absent.
+- **Selected zero-valued duration-map precedence fix for explicit total-duration fallback (2026-02-16 AM)** Corrected selected sparse duration precedence implementation:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_conflict_zero_duration_map_no_rows_scope` and verifies selected no-row explicit zero duration-map evidence (`gateDurationSecondsById: {lint: 0}`) overrides conflicting explicit `totalDurationSeconds`.
+  - `scripts/publish-verify-gates-summary.sh` updated selected explicit total-duration fallback guard:
+    - explicit selected fallback now applies only when selected scope has no duration evidence at all (`!hasDurationEvidence`), rather than when derived duration sum equals zero.
+    - this prevents explicit selected total-duration scalars from incorrectly overriding explicit selected zero-valued duration-map evidence.
+  - `scripts/README.md` selected aggregate-conflict notes updated to explicitly include zero-valued selected duration-map precedence behavior.
+  **Why:** fixes an inconsistency where selected duration-map precedence was enforced for positive durations but accidentally bypassed for explicit zero-valued selected duration-map evidence.

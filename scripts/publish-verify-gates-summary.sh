@@ -893,7 +893,7 @@ const hasDurationEvidence = (
 const totalDurationSeconds = (() => {
 	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
 	let explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
-	if (explicitTotalDurationSeconds === null && selectedGateIdsFromSummary !== null && resolvedRowsForSelectionScope.length === 0 && derivedDurationFromGateMap === 0) {
+	if (explicitTotalDurationSeconds === null && selectedGateIdsFromSummary !== null && resolvedRowsForSelectionScope.length === 0 && !hasDurationEvidence) {
 		explicitTotalDurationSeconds = normalizeNonNegativeInteger(summary.totalDurationSeconds);
 	}
 	if (explicitTotalDurationSeconds !== null) {
