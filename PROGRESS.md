@@ -3421,3 +3421,9 @@
   - Assertions confirm merged selected status-map/partition counters remain authoritative while explicit zero raw/scalar count bundles stay ignored, with executed/pass-rate metadata remaining deterministic.
   - `scripts/README.md` selected status-map scope note updated to explicitly mention partial status-map + partition blends that still suppress explicit-zero raw status-count bundles.
   **Why:** closes the selected mixed-evidence explicit-zero branch so falsy raw status-count bundles cannot override selected partial status-map + partition-derived counters.
+- **Selected partial status-map+partition suppression of explicit-zero scalar+raw status-count bundles (2026-02-16 PM)** Extended selected mixed-evidence falsy suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_zero_scalar_raw_status_map_partition_scope`.
+  - Scenario injects selected partial status-map evidence with partition fallback plus explicit zero scalar counters and explicit zero raw `statusCounts` values.
+  - Assertions confirm merged selected status-map/partition counters remain authoritative while explicit zero scalar/raw bundles stay ignored, with executed/pass-rate metadata remaining deterministic.
+  - `scripts/README.md` selected status-map scope note updated to explicitly mention partial status-map + partition blends suppressing explicit-zero scalar/raw bundles.
+  **Why:** closes the selected mixed-evidence explicit-zero scalar+raw branch so falsy selected scalar/raw bundles cannot override selected partial status-map + partition-derived counters.
