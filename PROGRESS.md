@@ -3320,3 +3320,9 @@
   - Assertions confirm selected scope still ignores all conflicting selected counter/status scalars under no-evidence conditions, preserving zero partition/executed counters, `n/a` executed-rate fields, and selected gate-count scope metadata.
   - `scripts/README.md` selected scope note updated to explicitly mention selected no-evidence counter suppression behavior.
   **Why:** closes selected sparse parity so no-evidence selected payloads cannot leak unscoped scalar/status counter values into selected summary outputs.
+- **Selected partition-evidence raw statusCounts suppression coverage (2026-02-16 PM)** Extended selected status-count precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_conflict_partition_scope`.
+  - Scenario injects explicit selected partition lists with conflicting valid raw `statusCounts` fields.
+  - Assertions confirm selected partition counters/status-count rendering derive from selected partition evidence, not conflicting raw status-count fields, while executed/pass-rate metadata stays selection-scoped and deterministic.
+  - `scripts/README.md` selected scope note updated to explicitly mention this selected partition-evidence status-count suppression branch.
+  **Why:** closes the remaining selected status-count precedence branch so valid raw `statusCounts` cannot override selected partition evidence when explicit selection is active.
