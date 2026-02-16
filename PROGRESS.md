@@ -3433,3 +3433,9 @@
   - Assertions confirm zero scalar executed-count remains authoritative (`Executed gates: 0`, executed-rate metrics `n/a`) while explicit executed list labels and sparse partition/attention metadata remain preserved.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention explicit-zero executed-count scalar overrides over non-empty executed lists.
   **Why:** closes the executed zero-scalar/list-decoupling branch so explicit executed-count zero cannot be overridden by explicit executed list length in unscoped sparse payloads.
+- **Selected non-empty executed-list suppression of conflicting zero executed-count scalar coverage (2026-02-16 PM)** Extended selected executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_scalar_count_ignored_nonempty_list_scope`.
+  - Scenario injects explicit non-empty selected `executedGateIds` with conflicting `executedGateCount: 0` plus selected pass/fail/retried evidence.
+  - Assertions confirm selected scope ignores conflicting scalar executed-count zero, preserving explicit selected executed-count/list/rate derivation from list evidence.
+  - `scripts/README.md` selected executed-list scope note updated to explicitly mention non-empty selected executed-list precedence over conflicting scalar zero executed-count inputs.
+  **Why:** closes the selected executed list + scalar-zero conflict branch so explicit selected executed list evidence cannot be nullified by conflicting scalar executed-count zero inputs.
