@@ -3471,3 +3471,10 @@
   - Assertions also confirm non-success/attention derivation remains status-map-not-run-driven (`lint`), and diagnostic conflicting pass/not-run aggregate metadata remains visible.
   - `scripts/README.md` selected executed precedence note updated to explicitly mention pass/fail/skip/not-run-vs-other-status selected partition conflict suppression under status-map precedence.
   **Why:** closes the selected status-map-not-run + conflicting partition/scalar branch so conflicting selected executed-count/list evidence cannot override selected status-map non-executed outcomes.
+- **Unscoped scalar-zero executed-count override over sparse status-map/partition executed fallback coverage (2026-02-16 PM)** Tightened unscoped executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` updates `unscoped_executed_fallback_partial_status_map` to include explicit `executedGateCount: 0`.
+  - Scenario keeps sparse unscoped executed fallback evidence from partial status-map + partition lists while executed lists remain implicit.
+  - Assertions confirm explicit unscoped scalar executed-count zero remains authoritative (`Executed gates: 0`, pass rate `n/a`) while sparse derived executed-list labels stay visible (`Executed gates list: typecheck, lint`).
+  - Assertions also reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate: 50%`) under explicit scalar-zero override.
+  - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention scalar-zero executed-count overrides over sparse status-map/partition executed fallback with list-label preservation.
+  **Why:** closes the unscoped scalar-zero + implicit executed-fallback branch so explicit executed-count zero cannot be overridden by sparse derived executed fallback when explicit executed lists are omitted.

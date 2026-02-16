@@ -5195,6 +5195,7 @@ const payload = {
 	runId: 'unscoped-executed-fallback-partial-status-map-contract',
 	gateStatusById: { typecheck: 'pass' },
 	failedGateIds: ['lint'],
+	executedGateCount: 0,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -10032,12 +10033,16 @@ if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_fallback_partial_status_ma
 	echo "Expected unscoped-executed-fallback-partial-status-map summary to derive gate count from merged sparse status/partition IDs." >&2
 	exit 1
 fi
-if ! grep -Fq "**Passed gates:** 1" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Executed gates:** 2" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
-	echo "Expected unscoped-executed-fallback-partial-status-map summary to derive executed count from merged sparse status-map and partition fallback data." >&2
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Executed gates:** 0" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-fallback-partial-status-map summary to preserve explicit unscoped scalar executedGateCount zero over merged sparse status-map and partition fallback executed-count derivation." >&2
 	exit 1
 fi
-if ! grep -Fq "**Executed gates list:** typecheck, lint" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
-	echo "Expected unscoped-executed-fallback-partial-status-map summary to derive executed list/pass-rate from merged sparse status-map and partition fallback data." >&2
+if ! grep -Fq "**Executed gates list:** typecheck, lint" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-fallback-partial-status-map summary to preserve sparse executed-list labels while explicit unscoped scalar executed-count zero forces executed-rate metrics to n/a." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 2" "$unscoped_executed_fallback_partial_status_map_step_summary" || grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-fallback-partial-status-map summary to suppress merged sparse status-map/partition executed-count and rate derivation when explicit unscoped scalar executed-count zero is provided." >&2
 	exit 1
 fi
 if ! grep -Fq "**Non-success gates list:** lint" "$unscoped_executed_fallback_partial_status_map_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
