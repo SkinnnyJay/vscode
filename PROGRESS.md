@@ -3129,6 +3129,14 @@
   - Assertions verify executed gate count/list/pass-rate fallback from sparse partition data, plus preservation of explicit empty status-map rendering (`{}`).
   - `scripts/README.md` overlap-normalization note updated to mention sparse executed-gate fallback derivation under explicit empty status-map payloads.
   **Why:** prevents contradictory sparse summaries where pass/fail partition counts were non-zero but executed gate metadata incorrectly stayed zero because an explicit empty status-map object blocked partition fallback.
+- **Partial status-map executed fallback coverage (2026-02-16 AM)** Extended sparse executed-derivation matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_fallback_partial_status_map_scope`,
+    - `unscoped_executed_fallback_partial_status_map`.
+  - Scenarios provide partial status maps plus sparse partition evidence for missing gate IDs.
+  - Assertions verify executed count/list/pass-rate derivation merges explicit status-map entries with partition fallback for missing keys, while rendered `Gate status map` metadata remains the explicit partial map (diagnostic fidelity preserved).
+  - `scripts/README.md` overlap-normalization note updated to explicitly call out partial status-map + partition merge behavior.
+  **Why:** locks regression coverage for mixed sparse payloads where status maps are present but incomplete, ensuring executed fallback remains complete without overriding explicit status-map diagnostics.
 - **Plus-prefixed aggregate scalar rejection coverage (2026-02-16 AM)** Extended sparse aggregate sanitization matrix for signed-string edge cases:
   - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_plus_string_scope`.
   - Selected sparse scenario injects plus-prefixed scalar strings across retry/duration/rate aggregate fields under explicit `selectedGateIds` with no selected execution evidence.
