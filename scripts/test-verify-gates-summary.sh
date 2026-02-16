@@ -209,6 +209,8 @@ selected_explicit_retried_zero_count_retry_map_scope_summary="$tmpdir/selected-e
 selected_explicit_retried_zero_count_retry_map_scope_step_summary="$tmpdir/selected-explicit-retried-zero-count-retry-map-scope-step.md"
 selected_explicit_retried_missing_retry_map_key_scope_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-scope.json"
 selected_explicit_retried_missing_retry_map_key_scope_step_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-scope-step.md"
+selected_explicit_retried_nonselected_scope_summary="$tmpdir/selected-explicit-retried-nonselected-scope.json"
+selected_explicit_retried_nonselected_scope_step_summary="$tmpdir/selected-explicit-retried-nonselected-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -2115,6 +2117,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_explicit_retried_missing_retry_map_key_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_retried_missing_retry_map_key_scope_summary" "Verify Gates Selected Explicit Retried Missing Retry Map Key Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_explicit_retried_nonselected_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-explicit-retried-nonselected-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass', build: 'pass' },
+	retriedGateIds: ['build'],
+	gateRetryCountById: { lint: 2, build: 5 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_explicit_retried_nonselected_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_retried_nonselected_scope_summary" "Verify Gates Selected Explicit Retried Nonselected Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4361,6 +4384,34 @@ if ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_retried_missi
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_retried_missing_retry_map_key_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-explicit-retried-missing-retry-map-key-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** none" "$selected_explicit_retried_nonselected_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to scope explicit retried IDs to selected gates only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":0}" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to zero retry-count map when explicit retried IDs scope out entirely." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_explicit_retried_nonselected_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to keep retry aggregates zero when explicit retried IDs are all non-selected." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** none" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to keep attention list clear when explicit retried IDs are all non-selected." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-nonselected-scope summary to exclude non-selected retried IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_retried_nonselected_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-explicit-retried-nonselected-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
