@@ -3646,3 +3646,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T231058Z`, classification `success-with-retries`)
   **Why:** closes explicit-empty executed-list mixed-source precedence gaps so unscoped payloads with concurrent scalar executed counts and raw status-count maps remain deterministic even when executed-list evidence is explicitly empty.
+- **Unscoped explicit-empty executed-list numeric-string scalar+raw statusCounts precedence parity coverage (2026-02-16 PM)** Extended unscoped executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_executed_string_scalar_and_raw_status_counts_overrides_empty_list`
+    - `unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_empty_list`
+  - Both scenarios keep `executedGateIds: []` explicit-empty-list evidence, retain sparse status-map fallback context, and inject raw `statusCounts` (`pass: 2`, `fail: 3`, `skip: 0`, `not-run: 0`) with numeric-string `executedGateCount` scalars (`' 5 '`, `' 0 '`).
+  - Assertions confirm deterministic split precedence:
+    - raw `statusCounts` remains authoritative for pass/fail count lines and rendered status-count metadata
+    - normalized numeric-string executed-count scalar remains authoritative for denominator/rate semantics (`Executed gates: 5` + pass/retry `40%`/`0%`; or `Executed gates: 0` + executed rates `n/a`)
+    - explicit empty executed-list label (`Executed gates list: none`) remains intact while scalar denominator drives rate behavior
+    - sparse fallback branches are suppressed (`Executed gates: 0`/`Pass rate: n/a` in non-zero scalar path and non-zero executed/rate leakage in normalized zero-scalar path).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly include numeric-string scalar+raw precedence under explicit empty executed-list overrides (including normalized zero scalar).
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T232400Z`, classification `success-with-retries`)
+  **Why:** closes numeric-string-form parity for explicit-empty executed-list mixed-source precedence so unscoped scalar+raw aggregate bundles stay deterministic across integer and normalized numeric-string encodings.
