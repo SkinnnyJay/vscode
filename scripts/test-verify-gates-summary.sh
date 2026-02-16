@@ -133,6 +133,8 @@ selected_timestamps_malformed_rows_explicit_scope_summary="$tmpdir/selected-time
 selected_timestamps_malformed_rows_explicit_scope_step_summary="$tmpdir/selected-timestamps-malformed-rows-explicit-scope-step.md"
 selected_duration_zero_map_no_rows_scope_summary="$tmpdir/selected-duration-zero-map-no-rows-scope.json"
 selected_duration_zero_map_no_rows_scope_step_summary="$tmpdir/selected-duration-zero-map-no-rows-scope-step.md"
+timestamps_malformed_explicit_unscoped_summary="$tmpdir/timestamps-malformed-explicit-unscoped.json"
+timestamps_malformed_explicit_unscoped_step_summary="$tmpdir/timestamps-malformed-explicit-unscoped-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
@@ -1233,6 +1235,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_duration_zero_map_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_duration_zero_map_no_rows_scope_summary" "Verify Gates Selected Duration Zero Map No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$timestamps_malformed_explicit_unscoped_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'timestamps-malformed-explicit-unscoped-contract',
+	startedAt: '20260230T170000Z',
+	completedAt: '20260230T170005Z',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 0, startedAt: '20260215T170000Z', completedAt: '20260215T170002Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$timestamps_malformed_explicit_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$timestamps_malformed_explicit_unscoped_summary" "Verify Gates Timestamps Malformed Explicit Unscoped Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4017,6 +4040,26 @@ if ! grep -Fq "**Started:** unknown" "$selected_duration_zero_map_no_rows_scope_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_duration_zero_map_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-duration-zero-map-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$timestamps_malformed_explicit_unscoped_step_summary"; then
+	echo "Expected timestamps-malformed-explicit-unscoped summary to derive selected-gate metadata from normalized rows." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T170000Z" "$timestamps_malformed_explicit_unscoped_step_summary" || ! grep -Fq "**Completed:** 20260215T170002Z" "$timestamps_malformed_explicit_unscoped_step_summary"; then
+	echo "Expected timestamps-malformed-explicit-unscoped summary to ignore malformed explicit timestamps and derive from canonical row timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 2s" "$timestamps_malformed_explicit_unscoped_step_summary"; then
+	echo "Expected timestamps-malformed-explicit-unscoped summary to derive total duration from canonical row timestamps." >&2
+	exit 1
+fi
+if grep -Fq "20260230T170000Z" "$timestamps_malformed_explicit_unscoped_step_summary" || grep -Fq "20260230T170005Z" "$timestamps_malformed_explicit_unscoped_step_summary"; then
+	echo "Expected timestamps-malformed-explicit-unscoped summary to suppress malformed explicit timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$timestamps_malformed_explicit_unscoped_step_summary"; then
+	echo "Did not expect schema warning for timestamps-malformed-explicit-unscoped summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then

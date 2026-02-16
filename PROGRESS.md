@@ -2886,3 +2886,10 @@
     - `Total duration` still derives from selected row duration evidence (`durationSeconds` map fallback).
   - `scripts/README.md` selected-scope timestamp behavior notes updated to include malformed selected-row explicit-fallback suppression coverage.
   **Why:** prevents selected-scope timestamp precedence regressions where explicit summary timestamps might incorrectly leak back in when selected row timestamps are malformed.
+- **Unscoped malformed explicit timestamp fallback coverage (2026-02-16 AM)** Expanded canonical timestamp fallback contracts outside selected-scope gating:
+  - `scripts/test-verify-gates-summary.sh` now adds `timestamps_malformed_explicit_unscoped`.
+  - Scenario verifies malformed explicit unscoped `startedAt/completedAt` literals are ignored while canonical row timestamps drive:
+    - rendered `Started/Completed`
+    - `Total duration`.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include malformed explicit unscoped fallback coverage.
+  **Why:** ensures strict timestamp validation remains resilient for sparse unscoped summaries by falling back to trustworthy row timing evidence.
