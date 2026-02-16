@@ -710,6 +710,7 @@ const retriedGateIds = retriedGateIdsFromSummary
 	: Object.entries(gateRetryCountById)
 		.filter(([gateId, retryCount]) => gateId.length > 0 && (toIntegerOrNull(retryCount) ?? 0) > 0)
 		.map(([gateId]) => gateId);
+const retryCountsForRetriedGateIds = retriedGateIds.map((gateId) => gateRetryCountById[gateId]);
 const nonSuccessGateIds = nonSuccessGateIdsFromSummary
 	!== null
 	? nonSuccessGateIdsFromSummary
@@ -741,8 +742,8 @@ const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', '
 const nonSuccessGateIdsLabel = nonSuccessGateIds.length > 0 ? nonSuccessGateIds.join(', ') : 'none';
 const attentionGateIdsLabel = attentionGateIds.length > 0 ? attentionGateIds.join(', ') : 'none';
 const retriedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.retriedGateCount) ?? retriedGateIds.length;
-const totalRetryCount = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryCount) ?? sumIntegerValues(Object.values(gateRetryCountById));
-const totalRetryBackoffSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryBackoffSeconds) ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
+const totalRetryCount = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryCount) ?? sumIntegerValues(retryCountsForRetriedGateIds);
+const totalRetryBackoffSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryBackoffSeconds) ?? retryCountsForRetriedGateIds.reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
 const executedDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.executedDurationSeconds) ?? executedGateIds.reduce((total, gateId) => {
 	const durationSeconds = toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0;
 	return total + durationSeconds;
