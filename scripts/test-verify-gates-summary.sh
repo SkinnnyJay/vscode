@@ -143,6 +143,8 @@ selected_run_state_scalar_failure_only_scope_summary="$tmpdir/selected-run-state
 selected_run_state_scalar_failure_only_scope_step_summary="$tmpdir/selected-run-state-scalar-failure-only-scope-step.md"
 selected_run_state_scalar_blocked_only_scope_summary="$tmpdir/selected-run-state-scalar-blocked-only-scope.json"
 selected_run_state_scalar_blocked_only_scope_step_summary="$tmpdir/selected-run-state-scalar-blocked-only-scope-step.md"
+selected_run_state_scalar_blocked_continue_scope_summary="$tmpdir/selected-run-state-scalar-blocked-continue-scope.json"
+selected_run_state_scalar_blocked_continue_scope_step_summary="$tmpdir/selected-run-state-scalar-blocked-continue-scope-step.md"
 selected_run_state_nonselected_blocked_scope_summary="$tmpdir/selected-run-state-nonselected-blocked-scope.json"
 selected_run_state_nonselected_blocked_scope_step_summary="$tmpdir/selected-run-state-nonselected-blocked-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
@@ -1285,6 +1287,30 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_scalar_blocked_only_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_scalar_blocked_only_scope_summary" "Verify Gates Selected Run-State Scalar Blocked Only Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_scalar_blocked_continue_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-scalar-blocked-continue-scope-contract',
+	selectedGateIds: ['lint'],
+	blockedByGateId: 'lint',
+	success: true,
+	dryRun: false,
+	continueOnFailure: true,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_scalar_blocked_continue_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_scalar_blocked_continue_scope_summary" "Verify Gates Selected Run-State Scalar Blocked Continue Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_nonselected_blocked_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2943,6 +2969,22 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_scalar_blocked_on
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_only_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-scalar-blocked-only-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to preserve fail-fast override under selected blocked-by scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to ignore conflicting continue-on-failure=true when selected fail-fast evidence exists." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-scalar-blocked-continue-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_nonselected_blocked_scope_step_summary"; then

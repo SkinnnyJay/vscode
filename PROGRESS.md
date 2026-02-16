@@ -2584,6 +2584,7 @@
   - Non-selected scalar blocked-by IDs are now explicitly verified to scope out (no selected-scope run-state impact).
   - Selected `blocked-by-fail-fast:<id>` not-run reason metadata now contributes fail-fast conflict evidence, overriding conflicting explicit success run-state scalars.
   - Non-selected `blocked-by-fail-fast:<id>` not-run reason metadata is explicitly ignored for blocked-by run-state derivation under selected scope.
+  - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
@@ -2606,6 +2607,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_scope` scenario and verifies explicit failure run-state metadata is preserved when selected-scope evidence is non-executed-only (`not-run`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_failure_only_scope` scenario and verifies selected scalar failed-gate metadata alone (`failedGateId/failedGateExitCode`) drives failure run-state overrides.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_only_scope` scenario and verifies selected scalar blocked-by metadata alone (`blockedByGateId`) drives fail-fast run-state overrides.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_continue_scope` scenario and verifies conflicting `continueOnFailure: true` is ignored under selected scalar fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_nonselected_blocked_scope` scenario and verifies non-selected scalar blocked-by metadata is excluded from selected-scope run-state derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_scope` scenario and verifies selected not-run blocked-by reason metadata overrides conflicting explicit success run-state to fail-fast.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_nonselected_scope` scenario and verifies non-selected blocked-by not-run reason metadata is suppressed in selected-scope blocked-by/run-state derivation.

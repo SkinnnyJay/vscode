@@ -992,9 +992,10 @@ const continueOnFailureForRunClassification = (() => {
 const explicitContinueOnFailureFromSummaryRaw = normalizeBoolean(summary.continueOnFailure);
 const explicitContinueOnFailureFromSummary = selectedScopeHasOutcomeEvidence
 	&& explicitContinueOnFailureFromSummaryRaw === true
-	&& selectedScopeHasExecuted
-	&& !selectedScopeHasFailures
-	&& !selectedScopeHasUnresolvedStatuses
+	&& (
+		(selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
+		|| blockedByGateId !== 'none'
+	)
 	? null
 	: explicitContinueOnFailureFromSummaryRaw;
 const explicitContinueOnFailure = explicitContinueOnFailureFromSummary !== null
