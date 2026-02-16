@@ -2905,3 +2905,8 @@
     - `selected_timestamps_day_boundary_valid_no_rows_scope` validating valid cross-day timestamp ranges (`20260228T235959Z` -> `20260301T000004Z`) remain accepted and derive `Total duration: 5s`.
   - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-second rejection and day-boundary acceptance coverage.
   **Why:** closes remaining timestamp-shape edge cases so canonical parsing rejects malformed clock components while preserving valid day rollover durations.
+- **Selected no-row timestamp whitespace canonicalization coverage (2026-02-16 AM)** Extended whitespace normalization checks under selected scope:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_whitespace_no_rows_scope`.
+  - Scenario verifies padded selected no-row `startedAt/completedAt` values (spaces/tabs) are trimmed before rendering and duration derivation (`5s`), with raw padded literals suppressed.
+  - `scripts/README.md` timestamp-whitespace notes updated to explicitly include selected no-row scope behavior.
+  **Why:** ensures whitespace normalization remains consistent after canonical parser hardening, including selected sparse metadata paths.

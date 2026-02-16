@@ -131,6 +131,8 @@ selected_timestamps_invalid_second_no_rows_scope_summary="$tmpdir/selected-times
 selected_timestamps_invalid_second_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-second-no-rows-scope-step.md"
 selected_timestamps_day_boundary_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-day-boundary-valid-no-rows-scope.json"
 selected_timestamps_day_boundary_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-day-boundary-valid-no-rows-scope-step.md"
+selected_timestamps_whitespace_no_rows_scope_summary="$tmpdir/selected-timestamps-whitespace-no-rows-scope.json"
+selected_timestamps_whitespace_no_rows_scope_step_summary="$tmpdir/selected-timestamps-whitespace-no-rows-scope-step.md"
 selected_timestamps_conflicting_no_rows_scope_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope.json"
 selected_timestamps_conflicting_no_rows_scope_step_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope-step.md"
 selected_timestamps_unmatched_rows_scope_summary="$tmpdir/selected-timestamps-unmatched-rows-scope.json"
@@ -1219,6 +1221,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_day_boundary_valid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_day_boundary_valid_no_rows_scope_summary" "Verify Gates Selected Timestamps Day Boundary Valid No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_whitespace_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-whitespace-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: ' 20260215T111500Z ',
+	completedAt: '\t20260215T111505Z\t',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_whitespace_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_whitespace_no_rows_scope_summary" "Verify Gates Selected Timestamps Whitespace No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_timestamps_conflicting_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4096,6 +4118,26 @@ if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_day_boundary_valid_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_day_boundary_valid_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-day-boundary-valid-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_whitespace_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-whitespace-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T111500Z" "$selected_timestamps_whitespace_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** 20260215T111505Z" "$selected_timestamps_whitespace_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-whitespace-no-rows-scope summary to trim padded timestamp literals before rendering." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_whitespace_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-whitespace-no-rows-scope summary to derive duration from trimmed timestamp literals." >&2
+	exit 1
+fi
+if grep -Fq " 20260215T111500Z " "$selected_timestamps_whitespace_no_rows_scope_step_summary" || grep -Fq $'\t20260215T111505Z\t' "$selected_timestamps_whitespace_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-whitespace-no-rows-scope summary to suppress raw padded timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_whitespace_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-whitespace-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
