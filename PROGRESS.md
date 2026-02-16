@@ -2918,3 +2918,9 @@
     - non-selected fallback table rows still render for visibility but do not influence selected-scope timing metadata.
   - `scripts/README.md` updated to document unmatched-row malformed-explicit timestamp isolation coverage.
   **Why:** prevents false precision where fallback table rows could be mistaken as selected-scope timing evidence when selected timing metadata is malformed.
+- **Unscoped no-row explicit timestamp canonicalization coverage (2026-02-16 AM)** Extended sparse unscoped timestamp behavior checks:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `timestamps_invalid_explicit_no_rows_unscoped` validating malformed explicit unscoped timestamps resolve to `Started/Completed: unknown` with `Total duration: unknown` when no row timing evidence exists.
+    - `timestamps_whitespace_no_rows_unscoped` validating padded explicit unscoped timestamps are trimmed and still derive `Total duration: 5s` when structurally valid.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include unscoped no-row malformed/whitespace behavior.
+  **Why:** locks expected sparse unscoped timestamp handling so canonical parsing remains strict for malformed values while preserving trimmed valid explicit values.
