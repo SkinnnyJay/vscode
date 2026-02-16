@@ -1190,7 +1190,7 @@ const payload = {
 	notRunGateCount: 3,
 	executedGateCount: 2,
 	statusCounts: { pass: 9, fail: 'bad', skip: 8, 'not-run': 7 },
-	gateStatusById: { lint: 'pass' },
+	gateStatusById: { lint: 'pass', ' typecheck ': 'unknown', build: 'pending' },
 	failedGateIds: ['typecheck'],
 	notRunGateIds: ['build'],
 	gates: [],
