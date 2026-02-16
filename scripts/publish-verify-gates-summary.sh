@@ -1087,12 +1087,12 @@ const invocationValue = normalizeNonEmptyString(summary.invocation) ?? 'unknown'
 const runIdValue = normalizeNonEmptyString(summary.runId) ?? 'unknown';
 const resultSignatureAlgorithmValue = normalizeNonEmptyString(summary.resultSignatureAlgorithm) ?? 'unknown';
 const resultSignatureValue = normalizeNonEmptyString(summary.resultSignature) ?? 'unknown';
-const slowestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeNonEmptyString(summary.slowestExecutedGateId));
-const slowestExecutedGateDurationFromSummary = selectedGateIdsFromSummary !== null && slowestExecutedGateIdFromSummary === null
+const slowestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.slowestExecutedGateId));
+const slowestExecutedGateDurationFromSummary = slowestExecutedGateIdFromSummary === null
 	? null
 	: normalizeNonNegativeInteger(summary.slowestExecutedGateDurationSeconds);
-const fastestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeNonEmptyString(summary.fastestExecutedGateId));
-const fastestExecutedGateDurationFromSummary = selectedGateIdsFromSummary !== null && fastestExecutedGateIdFromSummary === null
+const fastestExecutedGateIdFromSummary = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.fastestExecutedGateId));
+const fastestExecutedGateDurationFromSummary = fastestExecutedGateIdFromSummary === null
 	? null
 	: normalizeNonNegativeInteger(summary.fastestExecutedGateDurationSeconds);
 const logFileValue = normalizeNonEmptyString(summary.logFile);

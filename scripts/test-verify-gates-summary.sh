@@ -97,6 +97,8 @@ metadata_nonstring_summary="$tmpdir/metadata-nonstring.json"
 metadata_nonstring_step_summary="$tmpdir/metadata-nonstring-step.md"
 slow_fast_string_metadata_summary="$tmpdir/slow-fast-string-metadata.json"
 slow_fast_string_metadata_step_summary="$tmpdir/slow-fast-string-metadata-step.md"
+slow_fast_none_sentinel_metadata_summary="$tmpdir/slow-fast-none-sentinel-metadata.json"
+slow_fast_none_sentinel_metadata_step_summary="$tmpdir/slow-fast-none-sentinel-metadata-step.md"
 explicit_empty_attention_lists_summary="$tmpdir/explicit-empty-attention-lists.json"
 explicit_empty_attention_lists_step_summary="$tmpdir/explicit-empty-attention-lists-step.md"
 selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
@@ -818,6 +820,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$slow_fast_string_metadata_step_summary" ./scripts/publish-verify-gates-summary.sh "$slow_fast_string_metadata_summary" "Verify Gates Slow/Fast String Metadata Contract Test"
+
+node - "$expected_schema_version" "$slow_fast_none_sentinel_metadata_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	slowestExecutedGateId: ' none ',
+	slowestExecutedGateDurationSeconds: '5',
+	fastestExecutedGateId: ' NoNe ',
+	fastestExecutedGateDurationSeconds: '1',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$slow_fast_none_sentinel_metadata_step_summary" ./scripts/publish-verify-gates-summary.sh "$slow_fast_none_sentinel_metadata_summary" "Verify Gates Slow/Fast None Sentinel Metadata Contract Test"
 
 node - "$expected_schema_version" "$explicit_empty_attention_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3509,6 +3531,18 @@ if ! grep -Fq "**Slowest executed gate duration:** 5s" "$slow_fast_string_metada
 fi
 if grep -q "\*\*Schema warning:\*\*" "$slow_fast_string_metadata_step_summary"; then
 	echo "Did not expect schema warning for slow-fast-string-metadata summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate:** n/a" "$slow_fast_none_sentinel_metadata_step_summary" || ! grep -Fq "**Fastest executed gate:** n/a" "$slow_fast_none_sentinel_metadata_step_summary"; then
+	echo "Expected slow-fast-none-sentinel-metadata summary to ignore scalar slow/fast 'none' sentinels." >&2
+	exit 1
+fi
+if ! grep -Fq "**Slowest executed gate duration:** n/a" "$slow_fast_none_sentinel_metadata_step_summary" || ! grep -Fq "**Fastest executed gate duration:** n/a" "$slow_fast_none_sentinel_metadata_step_summary"; then
+	echo "Expected slow-fast-none-sentinel-metadata summary to suppress scalar slow/fast durations when gate IDs resolve to 'none' sentinels." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$slow_fast_none_sentinel_metadata_step_summary"; then
+	echo "Did not expect schema warning for slow-fast-none-sentinel-metadata summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Non-success gates list:** none" "$explicit_empty_attention_lists_step_summary" || ! grep -Fq "**Attention gates list:** none" "$explicit_empty_attention_lists_step_summary"; then

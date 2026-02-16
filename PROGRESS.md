@@ -2837,6 +2837,7 @@
 - **Scalar `none` sentinel suppression for gate-id fallbacks (2026-02-16 AM)** Hardened sparse scalar normalization:
   - `scripts/publish-verify-gates-summary.sh` now treats scalar `failedGateId` / `blockedByGateId` values equal to `none` (case-insensitive) as absent metadata.
   - Blocked-by reason parsing now also suppresses `blocked-by-fail-fast:none` sentinel targets.
+  - Scalar slow/fast duration metadata is now suppressed whenever scalar slow/fast gate IDs resolve to null/sentinel values, preventing orphaned duration lines with `n/a` gate IDs.
   - This prevents synthetic `none` gate IDs from polluting fallback selected-gate derivation, gate maps, and count outputs.
   - `scripts/test-verify-gates-summary.sh` now adds `scalar_none_sentinel_gate_ids` and `scalar_none_sentinel_gate_ids_case_scope` scenarios and verifies:
     - `Selected gates: none`
@@ -2846,5 +2847,6 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_missing_retry_map_key_with_map_scope` and verifies selected explicit retried IDs missing from retry-count maps are synthesized (`1`) while selected non-retried map entries are zeroed.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_subset_over_rows_scope` and verifies explicit retried subset lists override row-derived retry counts for non-retried selected gates.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_none_sentinel_scope` and verifies selected blocked-by reason sentinel IDs (`blocked-by-fail-fast:none`) are ignored.
+  - `scripts/test-verify-gates-summary.sh` now adds `slow_fast_none_sentinel_metadata` and verifies scalar slow/fast sentinel IDs suppress both gate IDs and their durations (`n/a`).
   - `scripts/README.md` updated to document sentinel suppression behavior for scalar gate IDs.
   **Why:** avoids contradictory sparse summaries where sentinel strings were interpreted as literal gate IDs.
