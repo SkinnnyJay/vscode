@@ -183,6 +183,8 @@ selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-s
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
 selected_explicit_empty_attention_with_retries_scope_step_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope-step.md"
+selected_explicit_empty_non_success_with_retries_scope_summary="$tmpdir/selected-explicit-empty-non-success-with-retries-scope.json"
+selected_explicit_empty_non_success_with_retries_scope_step_summary="$tmpdir/selected-explicit-empty-non-success-with-retries-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1797,6 +1799,28 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_explicit_empty_attention_with_retries_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_empty_attention_with_retries_scope_summary" "Verify Gates Selected Explicit Empty Attention With Retries Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_explicit_empty_non_success_with_retries_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-explicit-empty-non-success-with-retries-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 2 },
+	nonSuccessGateIds: [],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_explicit_empty_non_success_with_retries_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_empty_non_success_with_retries_scope_summary" "Verify Gates Selected Explicit Empty Non-Success With Retries Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3763,6 +3787,22 @@ if ! grep -Fq "**Attention gates list:** none" "$selected_explicit_empty_attenti
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_empty_attention_with_retries_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-explicit-empty-attention-with-retries-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_empty_non_success_with_retries_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-non-success-with-retries-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$selected_explicit_empty_non_success_with_retries_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-non-success-with-retries-scope summary to preserve explicit empty non-success override." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_empty_non_success_with_retries_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-non-success-with-retries-scope summary to still include selected retried gates in attention fallback when only non-success list is explicitly empty." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_empty_non_success_with_retries_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-explicit-empty-non-success-with-retries-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
