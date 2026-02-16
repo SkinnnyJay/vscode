@@ -3184,3 +3184,9 @@
   - Assertions confirm selected scope still ignores explicit rate scalars (including overflow values), re-derives selected rates from selected evidence, and suppresses overflow literals.
   - `scripts/README.md` selected aggregate note updated to explicitly mention overflow-percentage scalar rejection under selected scope.
   **Why:** ensures selected-scope precedence remains deterministic regardless of malformed explicit rate scalar ranges and prevents overflow rate metadata leakage in selected summaries.
+- **Selected overflow rate no-evidence suppression coverage (2026-02-16 AM)** Extended sparse selected-rate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_rate_scalar_overflow_no_evidence_scope`.
+  - Scenario injects overflow selected rate scalars (`retryRatePercent=150`, `retryBackoffSharePercent=140`, `passRatePercent=120`) with explicit `selectedGateIds` and no selected execution evidence.
+  - Assertions confirm overflow selected rate scalars are suppressed and selected no-evidence rate metadata remains `n/a`.
+  - `scripts/README.md` selected aggregate note updated to explicitly mention overflow-rate suppression in selected no-evidence payloads.
+  **Why:** locks sparse selected fallback behavior so invalid explicit rate scalars cannot force non-`n/a` selected rates when execution evidence is absent.
