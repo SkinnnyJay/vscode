@@ -2946,3 +2946,9 @@
   - Scenario verifies selected no-row summaries with reversed explicit timestamps and explicit `totalDurationSeconds` preserve diagnostic timestamps and retain explicit total duration (`9s`) when selected duration-map evidence is absent.
   - `scripts/README.md` selected-scope aggregate-conflict notes updated to include explicit selected no-row total-duration preservation under conflicting timestamp diagnostics.
   **Why:** confirms negative-duration protection does not overreach by discarding explicit selected no-row total-duration metadata when no stronger selected duration-map evidence exists.
+- **Unscoped explicit total-duration precedence matrix coverage (2026-02-16 AM)** Extended sparse unscoped duration precedence checks:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `timestamps_conflicting_no_rows_with_explicit_total_unscoped` validating reversed unscoped no-row timestamps still preserve explicit `totalDurationSeconds` (`9s`) while keeping conflicting timestamps visible for diagnostics.
+    - `total_duration_conflict_duration_map_no_rows_unscoped` validating explicit unscoped `totalDurationSeconds` remains authoritative over duration-map fallback (`gateDurationSecondsById`) when no rows/timestamps are available.
+  - `scripts/README.md` timestamp-canonicalization notes updated to clarify conflicting timestamp paths produce unknown only when no explicit total-duration scalar is provided.
+  **Why:** finalizes unscoped precedence behavior so explicit run-level duration metadata is preserved intentionally, while derived duration fallback remains safe and non-negative when explicit duration is absent.

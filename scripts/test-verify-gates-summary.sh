@@ -159,6 +159,10 @@ timestamps_whitespace_no_rows_unscoped_summary="$tmpdir/timestamps-whitespace-no
 timestamps_whitespace_no_rows_unscoped_step_summary="$tmpdir/timestamps-whitespace-no-rows-unscoped-step.md"
 timestamps_conflicting_no_rows_unscoped_summary="$tmpdir/timestamps-conflicting-no-rows-unscoped.json"
 timestamps_conflicting_no_rows_unscoped_step_summary="$tmpdir/timestamps-conflicting-no-rows-unscoped-step.md"
+timestamps_conflicting_no_rows_with_explicit_total_unscoped_summary="$tmpdir/timestamps-conflicting-no-rows-with-explicit-total-unscoped.json"
+timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary="$tmpdir/timestamps-conflicting-no-rows-with-explicit-total-unscoped-step.md"
+total_duration_conflict_duration_map_no_rows_unscoped_summary="$tmpdir/total-duration-conflict-duration-map-no-rows-unscoped.json"
+total_duration_conflict_duration_map_no_rows_unscoped_step_summary="$tmpdir/total-duration-conflict-duration-map-no-rows-unscoped-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_total_duration_conflict_duration_map_no_rows_scope_summary="$tmpdir/selected-total-duration-conflict-duration-map-no-rows-scope.json"
@@ -1523,6 +1527,45 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$timestamps_conflicting_no_rows_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$timestamps_conflicting_no_rows_unscoped_summary" "Verify Gates Timestamps Conflicting No Rows Unscoped Contract Test"
+
+node - "$expected_schema_version" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'timestamps-conflicting-no-rows-with-explicit-total-unscoped-contract',
+	startedAt: '20260215T190010Z',
+	completedAt: '20260215T190000Z',
+	totalDurationSeconds: 9,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_summary" "Verify Gates Timestamps Conflicting No Rows With Explicit Total Unscoped Contract Test"
+
+node - "$expected_schema_version" "$total_duration_conflict_duration_map_no_rows_unscoped_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'total-duration-conflict-duration-map-no-rows-unscoped-contract',
+	totalDurationSeconds: 7,
+	gateDurationSecondsById: { lint: 3 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$total_duration_conflict_duration_map_no_rows_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$total_duration_conflict_duration_map_no_rows_unscoped_summary" "Verify Gates Total Duration Conflict Duration Map No Rows Unscoped Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4596,6 +4639,38 @@ if ! grep -Fq "**Total duration:** unknown" "$timestamps_conflicting_no_rows_uns
 fi
 if grep -q "\*\*Schema warning:\*\*" "$timestamps_conflicting_no_rows_unscoped_step_summary"; then
 	echo "Did not expect schema warning for timestamps-conflicting-no-rows-unscoped summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-with-explicit-total-unscoped summary to keep selected-gate metadata empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T190010Z" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary" || ! grep -Fq "**Completed:** 20260215T190000Z" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-with-explicit-total-unscoped summary to preserve conflicting explicit timestamps for diagnostics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 9s" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-with-explicit-total-unscoped summary to preserve explicit total duration despite reversed timestamps." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$timestamps_conflicting_no_rows_with_explicit_total_unscoped_step_summary"; then
+	echo "Did not expect schema warning for timestamps-conflicting-no-rows-with-explicit-total-unscoped summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$total_duration_conflict_duration_map_no_rows_unscoped_step_summary"; then
+	echo "Expected total-duration-conflict-duration-map-no-rows-unscoped summary to keep selected-gate metadata empty when only unscoped duration-map evidence is present." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate duration map (s):** {"lint":3}' "$total_duration_conflict_duration_map_no_rows_unscoped_step_summary"; then
+	echo "Expected total-duration-conflict-duration-map-no-rows-unscoped summary to preserve unscoped duration-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 7s" "$total_duration_conflict_duration_map_no_rows_unscoped_step_summary"; then
+	echo "Expected total-duration-conflict-duration-map-no-rows-unscoped summary to preserve explicit unscoped total duration over duration-map fallback." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$total_duration_conflict_duration_map_no_rows_unscoped_step_summary"; then
+	echo "Did not expect schema warning for total-duration-conflict-duration-map-no-rows-unscoped summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then
