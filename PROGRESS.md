@@ -2589,6 +2589,7 @@
   - When both selected status-map and partition-list evidence disagree, status-map status now takes precedence for blocked-reason eligibility (prevents conflicting fallback not-run lists from overriding canonical `pass` status).
   - Blocked-reason extracted gate IDs are now whitespace-normalized before selected-scope matching (e.g. `blocked-by-fail-fast: lint ` now resolves to `lint`).
   - Blank blocked-reason IDs (`blocked-by-fail-fast:` with empty/whitespace tail) are now explicitly ignored.
+  - Scalar `blockedByGateId` whitespace normalization is now contract-validated for selected-scope fail-fast derivation.
   - Selected non-success/attention derivation now falls back to selected failed/skipped/not-run partition lists when selected status-map entries are sparse/missing.
   - Selected status-map values now remain authoritative over fallback partition memberships during selected non-success/attention derivation (prevents fallback not-run membership from overriding explicit selected `pass` status).
   - Selected attention derivation now explicitly preserves selected retried-gate visibility even when selected non-success list is empty, while still scoping out non-selected retried IDs.
@@ -2633,6 +2634,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_not_run_list_scope` scenario and verifies blocked-by fail-fast derivation still triggers when selected `notRunGateIds` includes the gate but status-map coverage is sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_whitespace_scope` scenario and verifies blocked-by reason IDs with surrounding whitespace still resolve under selected-scope fail-fast derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_empty_scope` scenario and verifies blank blocked-by reason IDs are ignored under selected scope.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_whitespace_scope` scenario and verifies scalar `blockedByGateId` values with surrounding whitespace still resolve under selected-scope fail-fast derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_partition_fallback_scope` scenario and verifies selected non-success/attention lists still include selected not-run gates when status-map entries are sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_status_precedence_scope` scenario and verifies explicit selected status-map `pass` keeps non-success/attention lists empty even when fallback `notRunGateIds` also includes the gate.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_attention_retried_scope` scenario and verifies selected retried pass gates remain in attention list while non-selected retried/status IDs are scoped out.
