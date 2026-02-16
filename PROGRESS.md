@@ -3065,3 +3065,9 @@
   - Assertions confirm float scalar values are rejected and aggregate metrics re-derive from normalized retry/duration evidence.
   - `scripts/README.md` unscoped scalar notes updated to explicitly include non-integer numeric input rejection behavior.
   **Why:** ensures aggregate scalar parsing remains integer-only for numeric payloads as well as strings, preventing unintended acceptance of fractional metrics.
+- **Unscoped scientific-notation scalar fallback coverage (2026-02-16 AM)** Extended string-scalar sanitization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_scientific_string_fallback`.
+  - Scenario injects scientific-notation aggregate scalar strings (`*e*` form) for retry/duration/rate fields in unscoped mode with valid map/list evidence.
+  - Assertions confirm scientific-notation scalar values are treated as invalid and aggregate metrics re-derive from normalized retry/duration evidence.
+  - `scripts/README.md` unscoped scalar notes updated to explicitly include scientific-notation numeric-string rejection behavior.
+  **Why:** guarantees scalar parsing remains strict base-10 integer only and avoids accidental acceptance of exponent-form inputs from loosely typed JSON producers.

@@ -299,6 +299,8 @@ unscoped_aggregate_metrics_decimal_string_fallback_summary="$tmpdir/unscoped-agg
 unscoped_aggregate_metrics_decimal_string_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-decimal-string-fallback-step.md"
 unscoped_aggregate_metrics_float_scalar_fallback_summary="$tmpdir/unscoped-aggregate-metrics-float-scalar-fallback.json"
 unscoped_aggregate_metrics_float_scalar_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-float-scalar-fallback-step.md"
+unscoped_aggregate_metrics_scientific_string_fallback_summary="$tmpdir/unscoped-aggregate-metrics-scientific-string-fallback.json"
+unscoped_aggregate_metrics_scientific_string_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-scientific-string-fallback-step.md"
 unscoped_aggregate_metrics_string_scalar_precedence_summary="$tmpdir/unscoped-aggregate-metrics-string-scalar-precedence.json"
 unscoped_aggregate_metrics_string_scalar_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-string-scalar-precedence-step.md"
 unscoped_aggregate_metrics_partial_scalar_precedence_summary="$tmpdir/unscoped-aggregate-metrics-partial-scalar-precedence.json"
@@ -3221,6 +3223,37 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_float_scalar_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_float_scalar_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Float Scalar Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_scientific_string_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-scientific-string-fallback-contract',
+	executedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gateDurationSecondsById: { lint: 4, typecheck: 6 },
+	retriedGateCount: '9e1',
+	totalRetryCount: '13e1',
+	totalRetryBackoffSeconds: '21e1',
+	executedDurationSeconds: '30e1',
+	averageExecutedDurationSeconds: '15e1',
+	retryRatePercent: '77e1',
+	retryBackoffSharePercent: '70e1',
+	passRatePercent: '88e1',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_scientific_string_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Scientific String Fallback Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_string_scalar_precedence_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6471,6 +6504,26 @@ if grep -Fq "13.5" "$unscoped_aggregate_metrics_float_scalar_fallback_step_summa
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_float_scalar_fallback_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-float-scalar-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 1" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || ! grep -Fq "**Total retries:** 1" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-scientific-string-fallback summary to ignore scientific-notation retry scalars and derive retry metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 10s" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || ! grep -Fq "**Executed duration average:** 5s" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-scientific-string-fallback summary to ignore scientific-notation duration scalars and derive duration metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 50%" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 10%" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-scientific-string-fallback summary to ignore scientific-notation rate scalars and derive rate metrics." >&2
+	exit 1
+fi
+if grep -Fq "13e1" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || grep -Fq "30e1" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary" || grep -Fq "77e1" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-scientific-string-fallback summary to suppress scientific-notation scalar values in rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_scientific_string_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-scientific-string-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gate count:** 9" "$unscoped_aggregate_metrics_string_scalar_precedence_step_summary" || ! grep -Fq "**Total retries:** 13" "$unscoped_aggregate_metrics_string_scalar_precedence_step_summary" || ! grep -Fq "**Total retry backoff:** 21s" "$unscoped_aggregate_metrics_string_scalar_precedence_step_summary"; then
