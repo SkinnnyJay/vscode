@@ -3604,3 +3604,16 @@
   - Assertions also reject combined-conflict fallback (`Executed gates: 0`, pass rate `n/a`) and verify selected non-success/attention metadata plus partial selected status-map visibility remain aligned with sparse fallback evidence.
   - `scripts/README.md` selected executed fallback note updated to explicitly mention normalized numeric-string zero scalar handling inside combined selected scalar-plus-raw status-count conflict suppression.
   **Why:** closes the selected combined numeric-string zero scalar + raw `statusCounts` executed-branch conflict path so normalized zero scalar plus raw aggregate conflicts cannot suppress selected fallback-derived executed metadata/rates when explicit executed lists are absent.
+- **Unscoped numeric-string scalar+raw statusCounts combined executed precedence coverage (2026-02-16 PM)** Extended unscoped sparse executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map`
+    - `unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map`
+  - Both scenarios omit explicit `executedGateIds`, keep sparse unscoped `gateStatusById` + `failedGateIds` executed-list fallback evidence, and provide raw `statusCounts` (`pass: 2`, `fail: 3`, `skip: 0`, `not-run: 0`) plus conflicting numeric-string `executedGateCount` scalars (`' 5 '` and `' 0 '`).
+  - Assertions confirm unscoped raw `statusCounts` remains authoritative for pass/fail counters while executed count/rate metrics follow the normalized numeric-string scalar denominator (`Executed gates: 5`, pass/retry rates `40%`/`20%`; and `Executed gates: 0` with executed-rate `n/a` for zero-scalar form), with sparse executed-list labels still preserved (`typecheck, lint`).
+  - Assertions reject implicit sparse executed fallback branches (`Executed gates: 2`, `Pass rate: 50%`, `Retry rate: 50%`) and reject non-zero scalar leakage in the zero-scalar path.
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly document combined numeric-string scalar + raw `statusCounts` executed precedence, including normalized zero-scalar behavior.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T225111Z`, classification `success-with-retries`)
+  **Why:** closes unscoped combined scalar+raw executed precedence gaps so mixed aggregate bundles keep deterministic per-field ownership (raw `statusCounts` for partition counters, scalar `executedGateCount` for executed/rate denominators) when sparse status-map/partition fallback evidence is present.

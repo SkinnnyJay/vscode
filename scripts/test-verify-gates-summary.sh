@@ -481,8 +481,12 @@ unscoped_executed_scalar_count_overrides_partial_status_map_summary="$tmpdir/uns
 unscoped_executed_scalar_count_overrides_partial_status_map_step_summary="$tmpdir/unscoped-executed-scalar-count-overrides-partial-status-map-step.md"
 unscoped_executed_string_scalar_count_overrides_partial_status_map_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-partial-status-map.json"
 unscoped_executed_string_scalar_count_overrides_partial_status_map_step_summary="$tmpdir/unscoped-executed-string-scalar-count-overrides-partial-status-map-step.md"
+unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_summary="$tmpdir/unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map.json"
+unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary="$tmpdir/unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map-step.md"
 unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_summary="$tmpdir/unscoped-executed-string-zero-scalar-count-overrides-partial-status-map.json"
 unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_step_summary="$tmpdir/unscoped-executed-string-zero-scalar-count-overrides-partial-status-map-step.md"
+unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_summary="$tmpdir/unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map.json"
+unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary="$tmpdir/unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map-step.md"
 unscoped_executed_fallback_partial_status_map_summary="$tmpdir/unscoped-executed-fallback-partial-status-map.json"
 unscoped_executed_fallback_partial_status_map_step_summary="$tmpdir/unscoped-executed-fallback-partial-status-map-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -5586,6 +5590,28 @@ NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_string_scalar_count_overrides_partial_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_scalar_count_overrides_partial_status_map_summary" "Verify Gates Unscoped Executed String Scalar Count Overrides Partial Status-Map Contract Test"
 
+node - "$expected_schema_version" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map-contract',
+	gateStatusById: { typecheck: 'pass' },
+	failedGateIds: ['lint'],
+	executedGateCount: ' 5 ',
+	statusCounts: { pass: 2, fail: 3, skip: 0, 'not-run': 0 },
+	retriedGateIds: ['lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_summary" "Verify Gates Unscoped Executed String Scalar And Raw Status Counts Override Partial Status-Map Contract Test"
+
 node - "$expected_schema_version" "$unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -5606,6 +5632,28 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_summary" "Verify Gates Unscoped Executed String Zero Scalar Count Overrides Partial Status-Map Contract Test"
+
+node - "$expected_schema_version" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map-contract',
+	gateStatusById: { typecheck: 'pass' },
+	failedGateIds: ['lint'],
+	executedGateCount: ' 0 ',
+	statusCounts: { pass: 2, fail: 3, skip: 0, 'not-run': 0 },
+	retriedGateIds: ['lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_summary" "Verify Gates Unscoped Executed String Zero Scalar And Raw Status Counts Override Partial Status-Map Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_fallback_partial_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -10897,6 +10945,38 @@ if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_scalar_count_ove
 	echo "Did not expect schema warning for unscoped-executed-string-scalar-count-overrides-partial-status-map summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve sparse gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 2" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Failed gates:** 3" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve raw statusCounts pass/fail precedence over sparse partition fallback counts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":2,"fail":3,"skip":0,"not-run":0}' "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve raw statusCounts metadata while numeric-string executedGateCount scalar remains authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 5" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve normalized numeric-string executedGateCount scalar over implicit sparse executed fallback while retaining executed list labels." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 40%" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Retry rate (executed gates):** 20%" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to derive executed-rate metrics from normalized numeric-string executedGateCount scalar plus raw statusCounts/retried evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve sparse non-success and retried attention metadata under combined numeric-string scalar and raw status-count precedence." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 2" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary to suppress implicit sparse executed-count/rate derivation under combined numeric-string scalar and raw status-count precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-string-scalar-and-raw-status-counts-overrides-partial-status-map summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_step_summary"; then
 	echo "Expected unscoped-executed-string-zero-scalar-count-overrides-partial-status-map summary to preserve sparse gate metadata." >&2
 	exit 1
@@ -10919,6 +10999,42 @@ if grep -Fq "**Executed gates:** 2" "$unscoped_executed_string_zero_scalar_count
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_zero_scalar_count_overrides_partial_status_map_step_summary"; then
 	echo "Did not expect schema warning for unscoped-executed-string-zero-scalar-count-overrides-partial-status-map summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve sparse gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 2" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Failed gates:** 3" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve raw statusCounts pass/fail precedence over sparse partition fallback counts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":2,"fail":3,"skip":0,"not-run":0}' "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve raw statusCounts metadata while numeric-string zero executedGateCount scalar remains authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Executed gates list:** typecheck, lint" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve normalized numeric-string zero executedGateCount scalar over implicit sparse executed fallback while retaining executed list labels." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to render executed-rate metrics as n/a from normalized numeric-string zero executedGateCount scalar despite raw statusCounts/retried evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to preserve sparse non-success and retried attention metadata under combined numeric-string zero scalar and raw status-count precedence." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 5" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || grep -Fq "**Pass rate (executed gates):** 40%" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to suppress non-zero executed-count/rate derivation under normalized numeric-string zero scalar precedence." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 2" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary" || grep -Fq "**Retry rate (executed gates):** 50%" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Expected unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary to suppress implicit sparse executed-count/rate derivation under combined numeric-string zero scalar and raw status-count precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_string_zero_scalar_and_raw_status_counts_overrides_partial_status_map_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-string-zero-scalar-and-raw-status-counts-overrides-partial-status-map summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
