@@ -2609,6 +2609,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_failure_only_scope` scenario and verifies selected scalar failed-gate metadata alone (`failedGateId/failedGateExitCode`) drives failure run-state overrides.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_only_scope` scenario and verifies selected scalar blocked-by metadata alone (`blockedByGateId`) drives fail-fast run-state overrides.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_continue_scope` scenario and verifies conflicting `continueOnFailure: true` is ignored under selected scalar fail-fast evidence.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_continue_scope` scenario and verifies conflicting `continueOnFailure: true` is ignored under selected row-derived blocked-reason fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_dry_run_scope` scenario and verifies conflicting `dryRun: true` is ignored under selected scalar fail-fast evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_nonselected_blocked_scope` scenario and verifies non-selected scalar blocked-by metadata is excluded from selected-scope run-state derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_blocked_selected_scope` scenario and verifies selected not-run blocked-by reason metadata overrides conflicting explicit success run-state to fail-fast.
