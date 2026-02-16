@@ -103,6 +103,8 @@ explicit_empty_attention_lists_summary="$tmpdir/explicit-empty-attention-lists.j
 explicit_empty_attention_lists_step_summary="$tmpdir/explicit-empty-attention-lists-step.md"
 explicit_empty_non_success_with_retries_summary="$tmpdir/explicit-empty-non-success-with-retries.json"
 explicit_empty_non_success_with_retries_step_summary="$tmpdir/explicit-empty-non-success-with-retries-step.md"
+explicit_empty_attention_with_retries_summary="$tmpdir/explicit-empty-attention-with-retries.json"
+explicit_empty_attention_with_retries_step_summary="$tmpdir/explicit-empty-attention-with-retries-step.md"
 selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
 selected_status_map_scope_step_summary="$tmpdir/selected-status-map-scope-step.md"
 selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
@@ -1040,6 +1042,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_empty_non_success_with_retries_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_non_success_with_retries_summary" "Verify Gates Explicit Empty Non-Success With Retries Contract Test"
+
+node - "$expected_schema_version" "$explicit_empty_attention_with_retries_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-empty-attention-with-retries-contract',
+	gateStatusById: { lint: 'pass', build: 'pass' },
+	attentionGateIds: [],
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 2, build: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_empty_attention_with_retries_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_attention_with_retries_summary" "Verify Gates Explicit Empty Attention With Retries Contract Test"
 
 node - "$expected_schema_version" "$selected_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -5603,6 +5626,30 @@ if ! grep -Fq "**Attention gates list:** lint" "$explicit_empty_non_success_with
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_non_success_with_retries_step_summary"; then
 	echo "Did not expect schema warning for explicit-empty-non-success-with-retries summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, build" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Expected explicit-empty-attention-with-retries summary to preserve derived sparse gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** none" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Expected explicit-empty-attention-with-retries summary to preserve explicit empty unscoped attention override." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$explicit_empty_attention_with_retries_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Expected explicit-empty-attention-with-retries summary to preserve explicit retried metadata while attention override is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 2" "$explicit_empty_attention_with_retries_step_summary" || ! grep -Fq "**Total retry backoff:** 3s" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Expected explicit-empty-attention-with-retries summary to derive retry aggregates from explicit retried evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Expected explicit-empty-attention-with-retries summary to keep non-success list clear for pass-only statuses." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_attention_with_retries_step_summary"; then
+	echo "Did not expect schema warning for explicit-empty-attention-with-retries summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_status_map_scope_step_summary" || ! grep -Fq "**Gate count:** 1" "$selected_status_map_scope_step_summary"; then

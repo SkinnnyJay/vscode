@@ -3277,3 +3277,9 @@
   - Assertions confirm explicit empty non-success override remains authoritative while attention fallback still includes retried gates (`Attention gates list: lint`) and retry aggregates stay derived from retried evidence.
   - `scripts/README.md` explicit empty non-success/attention note updated to explicitly mention unscoped empty non-success coexistence with retried attention fallback.
   **Why:** closes unscoped parity with selected behavior so explicit empty non-success overrides do not suppress intended retried-driven attention fallback.
+- **Unscoped explicit empty attention override with retried evidence coverage (2026-02-16 PM)** Extended unscoped attention precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_empty_attention_with_retries`.
+  - Scenario injects explicit empty unscoped `attentionGateIds: []` with explicit unscoped retried evidence (`retriedGateIds: ['lint']`, retry-count map present) and pass-only statuses.
+  - Assertions confirm explicit empty attention override remains authoritative (`Attention gates list: none`) while retried metadata/aggregates still derive normally.
+  - `scripts/README.md` explicit empty non-success/attention note updated to explicitly mention unscoped empty attention coexistence with retried evidence.
+  **Why:** closes unscoped parity with selected behavior so explicit empty attention overrides are preserved even under explicit retried-gate evidence.
