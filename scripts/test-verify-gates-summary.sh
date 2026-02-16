@@ -115,6 +115,8 @@ selected_status_counts_no_evidence_scope_summary="$tmpdir/selected-status-counts
 selected_status_counts_no_evidence_scope_step_summary="$tmpdir/selected-status-counts-no-evidence-scope-step.md"
 selected_status_counts_conflict_partition_scope_summary="$tmpdir/selected-status-counts-conflict-partition-scope.json"
 selected_status_counts_conflict_partition_scope_step_summary="$tmpdir/selected-status-counts-conflict-partition-scope-step.md"
+selected_scalar_raw_count_mix_partition_scope_summary="$tmpdir/selected-scalar-raw-count-mix-partition-scope.json"
+selected_scalar_raw_count_mix_partition_scope_step_summary="$tmpdir/selected-scalar-raw-count-mix-partition-scope-step.md"
 selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-alignment.json"
 selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
 selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
@@ -1206,6 +1208,35 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_conflict_partition_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_conflict_partition_scope_summary" "Verify Gates Selected Status Counts Conflict Partition Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_scalar_raw_count_mix_partition_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-scalar-raw-count-mix-partition-scope-contract',
+	selectedGateIds: ['lint', 'typecheck', 'build', 'deploy'],
+	gateCount: 99,
+	passedGateCount: 12,
+	failedGateCount: 'bad',
+	skippedGateCount: 8,
+	notRunGateCount: -1,
+	executedGateCount: 55,
+	statusCounts: { pass: 10, fail: 9, skip: 'x', 'not-run': 7 },
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	skippedGateIds: ['build'],
+	notRunGateIds: ['deploy'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_scalar_raw_count_mix_partition_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_raw_count_mix_partition_scope_summary" "Verify Gates Selected Scalar Raw Count Mix Partition Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_failed_exit_code_alignment_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6026,6 +6057,26 @@ if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_conflict_partitio
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_conflict_partition_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-conflict-partition-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$selected_scalar_raw_count_mix_partition_scope_step_summary" || ! grep -Fq "**Gate count:** 4" "$selected_scalar_raw_count_mix_partition_scope_step_summary"; then
+	echo "Expected selected-scalar-raw-count-mix-partition-scope summary to preserve selected scope gate metadata over conflicting scalar gateCount." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_scalar_raw_count_mix_partition_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_scalar_raw_count_mix_partition_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_scalar_raw_count_mix_partition_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_scalar_raw_count_mix_partition_scope_step_summary"; then
+	echo "Expected selected-scalar-raw-count-mix-partition-scope summary to ignore mixed scalar/raw status counters and derive selected partition counts from scoped lists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":1,"not-run":1}' "$selected_scalar_raw_count_mix_partition_scope_step_summary"; then
+	echo "Expected selected-scalar-raw-count-mix-partition-scope summary to keep selected status counts aligned with scoped partition evidence despite mixed scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_scalar_raw_count_mix_partition_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_scalar_raw_count_mix_partition_scope_step_summary"; then
+	echo "Expected selected-scalar-raw-count-mix-partition-scope summary to derive executed/pass-rate metadata from scoped selected partition evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_raw_count_mix_partition_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-scalar-raw-count-mix-partition-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_code_alignment_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_code_alignment_step_summary"; then

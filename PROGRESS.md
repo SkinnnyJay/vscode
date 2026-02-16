@@ -3338,3 +3338,9 @@
   - Assertions confirm per-field layering remains deterministic across all sources (scalar → raw status-count → list fallback), with merged rendered `statusCounts` and clamped pass-rate behavior under mixed-source counts.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw/list precedence branches.
   **Why:** closes the final unscoped count-source layering gap so list-length fallback remains stable when scalar and raw status-count inputs are only partially usable.
+- **Selected mixed scalar/raw counter suppression with partition evidence coverage (2026-02-16 PM)** Extended selected count-suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_raw_count_mix_partition_scope`.
+  - Scenario injects explicit selected partition lists with conflicting mixed scalar counter values and raw `statusCounts` values.
+  - Assertions confirm selected partition evidence remains authoritative across counters/status counts, while conflicting mixed scalar/raw count inputs are ignored and executed/pass-rate metadata stays selection-scoped.
+  - `scripts/README.md` selected scope note updated to explicitly mention mixed scalar+raw counter suppression when selected partition evidence exists.
+  **Why:** closes the selected mixed-source precedence branch so mixed scalar/raw counter bundles cannot override explicit selected partition evidence.
