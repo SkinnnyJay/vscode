@@ -163,6 +163,8 @@ selected_run_state_blocked_reason_pass_status_scope_summary="$tmpdir/selected-ru
 selected_run_state_blocked_reason_pass_status_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope-step.md"
 selected_run_state_blocked_reason_not_run_list_scope_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope.json"
 selected_run_state_blocked_reason_not_run_list_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope-step.md"
+selected_non_success_partition_fallback_scope_summary="$tmpdir/selected-non-success-partition-fallback-scope.json"
+selected_non_success_partition_fallback_scope_step_summary="$tmpdir/selected-non-success-partition-fallback-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1549,6 +1551,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_blocked_reason_not_run_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_reason_not_run_list_scope_summary" "Verify Gates Selected Run-State Blocked-Reason Not-Run-List Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_non_success_partition_fallback_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-non-success-partition-fallback-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: {},
+	notRunGateIds: ['lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_non_success_partition_fallback_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_partition_fallback_scope_summary" "Verify Gates Selected Non-Success Partition Fallback Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3347,6 +3369,22 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_blocked_reason_no
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_reason_not_run_list_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-blocked-reason-not-run-list-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Not-run gates list:** lint" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to preserve selected not-run partition metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to derive non-success/attention lists from selected partition evidence when status map entries are missing." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-non-success-partition-fallback-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then

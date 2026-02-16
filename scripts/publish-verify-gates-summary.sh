@@ -720,7 +720,10 @@ const nonSuccessGateIds = nonSuccessGateIdsFromSummary
 		if (selectedGateIds.length > 0) {
 			return selectedGateIds.filter((gateId) => {
 				const status = gateStatusById[gateId];
-				return status !== undefined && status !== 'pass';
+				if (status !== undefined) {
+					return status !== 'pass';
+				}
+				return failedGateIds.includes(gateId) || skippedGateIds.includes(gateId) || notRunGateIds.includes(gateId);
 			});
 		}
 		return uniqueGateIds([...failedGateIds, ...skippedGateIds, ...notRunGateIds]);
