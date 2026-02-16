@@ -3271,3 +3271,9 @@
   - Assertions confirm explicit scalar count remains authoritative over empty executed list metadata (`Executed gates: 5`, `Executed gates list: none`) and rate derivation follows scalar denominator semantics (`Pass rate: 20%`).
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly include executed-count scalar precedence over empty executed lists.
   **Why:** closes unscoped list/count conflict parity by locking intentional scalar-over-list precedence for executed-count metadata in sparse payloads.
+- **Unscoped explicit empty non-success override with retried fallback coverage (2026-02-16 PM)** Extended unscoped non-success/attention precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_empty_non_success_with_retries`.
+  - Scenario injects explicit empty unscoped `nonSuccessGateIds: []` with explicit unscoped retried evidence (`retriedGateIds: ['lint']`, retry-count map present).
+  - Assertions confirm explicit empty non-success override remains authoritative while attention fallback still includes retried gates (`Attention gates list: lint`) and retry aggregates stay derived from retried evidence.
+  - `scripts/README.md` explicit empty non-success/attention note updated to explicitly mention unscoped empty non-success coexistence with retried attention fallback.
+  **Why:** closes unscoped parity with selected behavior so explicit empty non-success overrides do not suppress intended retried-driven attention fallback.
