@@ -2941,3 +2941,8 @@
   - Scenario verifies selected no-row payloads with both `totalDurationSeconds` and selected `gateDurationSecondsById` use selected duration-map evidence (`Total duration: 3s`) instead of conflicting explicit total-duration scalar (`7`).
   - `scripts/README.md` selected-scope aggregate-conflict notes updated to include selected no-row duration-map precedence.
   **Why:** prevents stale scalar `totalDurationSeconds` values from overriding higher-fidelity selected duration-map evidence in sparse selected payloads.
+- **Selected no-row conflicting timestamp + explicit total-duration preservation coverage (2026-02-16 AM)** Completed selected sparse duration precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_conflicting_timestamps_no_rows_scope`.
+  - Scenario verifies selected no-row summaries with reversed explicit timestamps and explicit `totalDurationSeconds` preserve diagnostic timestamps and retain explicit total duration (`9s`) when selected duration-map evidence is absent.
+  - `scripts/README.md` selected-scope aggregate-conflict notes updated to include explicit selected no-row total-duration preservation under conflicting timestamp diagnostics.
+  **Why:** confirms negative-duration protection does not overreach by discarding explicit selected no-row total-duration metadata when no stronger selected duration-map evidence exists.
