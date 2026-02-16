@@ -3301,3 +3301,10 @@
   - Assertions confirm explicit empty failed-count metadata remains zero while scalar fallback still projects failed gate list/pointer/exit-code map metadata.
   - `scripts/README.md` scalar-failure fallback note updated to explicitly mention this empty-list + scalar-fallback coexistence behavior.
   **Why:** locks sparse scalar-failure behavior in ambiguous payloads so explicit empty failed lists do not erase scalar failure identity metadata unexpectedly.
+- **Unscoped partition-count scalar precedence + malformed fallback coverage (2026-02-16 PM)** Extended unscoped partition count precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_counts_precedence` and `unscoped_partition_scalar_invalid_fallback_status_counts`.
+  - First scenario injects conflicting valid unscoped partition-count scalars (`passed/failed/skipped/not-run`) against shorter sparse partition lists.
+  - Second scenario injects malformed unscoped partition-count scalars together with valid raw `statusCounts` plus sparse partition lists.
+  - Assertions confirm valid unscoped partition-count scalars remain authoritative when present, while malformed partition-count scalars are ignored per-field and fall back to valid raw `statusCounts` values, with executed/list metadata remaining deterministic.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention partition-count scalar authority and malformed partition-count fallback to raw status-count fields.
+  **Why:** closes partition-counter parity for unscoped sparse payloads so count precedence is deterministic across valid-scalar and malformed-scalar branches.

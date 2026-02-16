@@ -381,6 +381,10 @@ unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary="$tmpdir/unscoped
 unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
+unscoped_partition_scalar_counts_precedence_summary="$tmpdir/unscoped-partition-scalar-counts-precedence.json"
+unscoped_partition_scalar_counts_precedence_step_summary="$tmpdir/unscoped-partition-scalar-counts-precedence-step.md"
+unscoped_partition_scalar_invalid_fallback_status_counts_summary="$tmpdir/unscoped-partition-scalar-invalid-fallback-status-counts.json"
+unscoped_partition_scalar_invalid_fallback_status_counts_step_summary="$tmpdir/unscoped-partition-scalar-invalid-fallback-status-counts-step.md"
 unscoped_status_counts_partial_fallback_summary="$tmpdir/unscoped-status-counts-partial-fallback.json"
 unscoped_status_counts_partial_fallback_step_summary="$tmpdir/unscoped-status-counts-partial-fallback-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
@@ -4337,6 +4341,57 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$derived_lists_step_summary" ./scripts/publish-verify-gates-summary.sh "$derived_lists_summary" "Verify Gates Derived List Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_scalar_counts_precedence_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-scalar-counts-precedence-contract',
+	passedGateCount: 5,
+	failedGateCount: 4,
+	skippedGateCount: 3,
+	notRunGateCount: 2,
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	skippedGateIds: ['build'],
+	notRunGateIds: ['deploy'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_counts_precedence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_counts_precedence_summary" "Verify Gates Unscoped Partition Scalar Counts Precedence Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_scalar_invalid_fallback_status_counts_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-scalar-invalid-fallback-status-counts-contract',
+	passedGateCount: 'bad',
+	failedGateCount: -1,
+	skippedGateCount: '1.0',
+	notRunGateCount: '+2',
+	statusCounts: { pass: 3, fail: 2, skip: 1, 'not-run': 0 },
+	passedGateIds: ['lint', 'typecheck', 'build'],
+	failedGateIds: ['test-unit', 'e2e'],
+	skippedGateIds: ['docs'],
+	notRunGateIds: [],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_invalid_fallback_status_counts_summary" "Verify Gates Unscoped Partition Scalar Invalid Fallback Status Counts Contract Test"
 
 node - "$expected_schema_version" "$unscoped_status_counts_partial_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8511,6 +8566,54 @@ if ! grep -Fq "**Run classification:** failed-fail-fast" "$derived_lists_step_su
 fi
 if grep -q "\*\*Schema warning:\*\*" "$derived_lists_step_summary"; then
 	echo "Did not expect schema warning for derived-list fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Gate count:** 4" "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Expected unscoped-partition-scalar-counts-precedence summary to preserve sparse partition gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 5" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Failed gates:** 4" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Skipped gates:** 3" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Not-run gates:** 2" "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Expected unscoped-partition-scalar-counts-precedence summary to keep explicit unscoped partition-count scalars authoritative over sparse partition list lengths." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":5,"fail":4,"skip":3,"not-run":2}' "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Expected unscoped-partition-scalar-counts-precedence summary to mirror explicit unscoped scalar partition counts in rendered status-count metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Failed gates list:** typecheck" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Skipped gates list:** build" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Not-run gates list:** deploy" "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Expected unscoped-partition-scalar-counts-precedence summary to preserve sparse partition list labels while count scalars remain authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_scalar_counts_precedence_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Expected unscoped-partition-scalar-counts-precedence summary to derive executed metadata from sparse pass/fail lists while pass-rate uses scalar pass-count precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_counts_precedence_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-scalar-counts-precedence summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build, test-unit, e2e, docs" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Gate count:** 6" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Expected unscoped-partition-scalar-invalid-fallback-status-counts summary to preserve sparse partition gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 3" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Failed gates:** 2" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Expected unscoped-partition-scalar-invalid-fallback-status-counts summary to ignore malformed unscoped partition-count scalars and fall back to valid raw statusCounts fields." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":3,"fail":2,"skip":1,"not-run":0}' "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Expected unscoped-partition-scalar-invalid-fallback-status-counts summary to preserve valid raw statusCounts metadata when partition-count scalars are malformed." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint, typecheck, build" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Failed gates list:** test-unit, e2e" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Skipped gates list:** docs" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Expected unscoped-partition-scalar-invalid-fallback-status-counts summary to keep sparse partition list labels aligned with valid raw status-count fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 5" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 60%" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Expected unscoped-partition-scalar-invalid-fallback-status-counts summary to derive executed metadata from sparse pass/fail evidence with fallback pass-count denominator semantics." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-scalar-invalid-fallback-status-counts summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 3" "$unscoped_status_counts_partial_fallback_step_summary"; then
