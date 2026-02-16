@@ -3536,6 +3536,7 @@ const payload = {
 	selectedGateIds: ['lint', 'typecheck'],
 	gateStatusById: { lint: 'pass' },
 	failedGateIds: ['typecheck'],
+	executedGateCount: 0,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -8315,6 +8316,10 @@ if ! grep -Fq "**Passed gates:** 1" "$selected_executed_fallback_partial_status_
 fi
 if ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_executed_fallback_partial_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_executed_fallback_partial_status_map_scope_step_summary"; then
 	echo "Expected selected-executed-fallback-partial-status-map-scope summary to derive executed list/pass-rate from merged selected status-map and sparse partition fallback data." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 0" "$selected_executed_fallback_partial_status_map_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$selected_executed_fallback_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-fallback-partial-status-map-scope summary to ignore conflicting selected executedGateCount scalar while sparse selected status-map/partition fallback establishes executed metadata." >&2
 	exit 1
 fi
 if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_executed_fallback_partial_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_executed_fallback_partial_status_map_scope_step_summary"; then

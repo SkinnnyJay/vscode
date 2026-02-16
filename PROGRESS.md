@@ -3439,3 +3439,9 @@
   - Assertions confirm selected scope ignores conflicting scalar executed-count zero, preserving explicit selected executed-count/list/rate derivation from list evidence.
   - `scripts/README.md` selected executed-list scope note updated to explicitly mention non-empty selected executed-list precedence over conflicting scalar zero executed-count inputs.
   **Why:** closes the selected executed list + scalar-zero conflict branch so explicit selected executed list evidence cannot be nullified by conflicting scalar executed-count zero inputs.
+- **Selected partial status-map+partition executed fallback suppression of conflicting scalar executed-count coverage (2026-02-16 PM)** Refined selected executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` updates `selected_executed_fallback_partial_status_map_scope` to include conflicting `executedGateCount: 0` while executed lists are omitted.
+  - Scenario keeps selected partial status-map (`gateStatusById`) plus selected failed-partition fallback evidence to establish executed gates.
+  - Assertions confirm selected executed metadata still derives from merged selected status-map/partition fallback (`Executed gates: 2`, `Pass rate: 50%`) while conflicting scalar executed-count zero stays ignored.
+  - `scripts/README.md` selected executed-list scope note updated to explicitly mention selected partial status-map+partition executed fallback suppressing conflicting scalar executed-count inputs.
+  **Why:** closes the selected fallback-executed branch so conflicting scalar executed-count values cannot override selected executed metadata when executed lists are omitted and fallback evidence is present.
