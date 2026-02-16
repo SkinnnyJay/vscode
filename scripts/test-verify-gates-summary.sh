@@ -111,6 +111,8 @@ selected_status_counts_conflict_status_map_scope_summary="$tmpdir/selected-statu
 selected_status_counts_conflict_status_map_scope_step_summary="$tmpdir/selected-status-counts-conflict-status-map-scope-step.md"
 selected_status_counts_partial_malformed_status_map_scope_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope.json"
 selected_status_counts_partial_malformed_status_map_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope-step.md"
+selected_status_counts_partial_status_map_partition_scope_summary="$tmpdir/selected-status-counts-partial-status-map-partition-scope.json"
+selected_status_counts_partial_status_map_partition_scope_step_summary="$tmpdir/selected-status-counts-partial-status-map-partition-scope-step.md"
 selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
 selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
 selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
@@ -1170,6 +1172,33 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_status_map_scope_summary" "Verify Gates Selected Status Counts Partial Malformed Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_partial_status_map_partition_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-partial-status-map-partition-scope-contract',
+	selectedGateIds: ['lint', 'typecheck', 'build'],
+	passedGateCount: 6,
+	failedGateCount: 5,
+	skippedGateCount: 4,
+	notRunGateCount: 3,
+	executedGateCount: 2,
+	statusCounts: { pass: 9, fail: 'bad', skip: 8, 'not-run': 7 },
+	gateStatusById: { lint: 'pass' },
+	failedGateIds: ['typecheck'],
+	notRunGateIds: ['build'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_partial_status_map_partition_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_status_map_partition_scope_summary" "Verify Gates Selected Status Counts Partial Status-Map Partition Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_scalar_failure_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6162,6 +6191,38 @@ if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-partial-malformed-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Gate count:** 3" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to preserve selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to merge partial selected status-map and partition evidence while ignoring conflicting selected scalar/raw count inputs." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":0,"not-run":1}' "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to align status counts with merged selected status-map and partition evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to keep explicitly provided selected status-map metadata sparse while partition fallback fills missing counters." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** lint" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Failed gates list:** typecheck" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Not-run gates list:** build" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to preserve selected partition labels derived from mixed status-map/list evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to merge partial selected status-map/partition evidence for executed and pass-rate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck, build" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck, build" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-status-map-partition-scope summary to keep non-success and attention derivation aligned with selected mixed status-map/partition evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-partial-status-map-partition-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Passed gates:** 1" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_scalar_failure_scope_step_summary"; then

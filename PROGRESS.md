@@ -3380,3 +3380,9 @@
   - Assertions confirm explicit zero raw status-count fields remain authoritative for rendered partition counters/status-count totals, while sparse status-map evidence still drives list labels plus executed/non-success metadata.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention zero raw `statusCounts` authority under sparse status-map evidence.
   **Why:** closes the explicit-zero branch so falsy raw status-count values cannot accidentally fall through to status-map/list-derived non-zero counters.
+- **Selected partial status-map + partition fallback counter suppression coverage (2026-02-16 PM)** Extended selected precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_status_map_partition_scope`.
+  - Scenario injects selected partial status-map evidence (`gateStatusById` covers only a subset of selected IDs) plus selected partition list evidence for missing IDs, while conflicting scalar/raw count inputs are present.
+  - Assertions confirm selected count/status fields merge partial status-map + partition evidence deterministically (`pass/fail/not-run`) while conflicting selected scalar/raw count inputs remain ignored; executed/non-success/attention lists stay aligned to merged evidence.
+  - `scripts/README.md` selected status-map scope note updated to explicitly mention partial status-map + partition fallback suppression behavior.
+  **Why:** closes the mixed selected fallback branch so partial selected status-map payloads cannot leak conflicting scalar/raw counters and still preserve deterministic partition fallback for uncovered selected IDs.
