@@ -127,6 +127,8 @@ selected_scalar_raw_count_mix_partition_scope_summary="$tmpdir/selected-scalar-r
 selected_scalar_raw_count_mix_partition_scope_step_summary="$tmpdir/selected-scalar-raw-count-mix-partition-scope-step.md"
 selected_status_counts_partial_malformed_partition_scope_summary="$tmpdir/selected-status-counts-partial-malformed-partition-scope.json"
 selected_status_counts_partial_malformed_partition_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-partition-scope-step.md"
+selected_status_counts_zero_raw_partition_scope_summary="$tmpdir/selected-status-counts-zero-raw-partition-scope.json"
+selected_status_counts_zero_raw_partition_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-partition-scope-step.md"
 selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-alignment.json"
 selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
 selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
@@ -1382,6 +1384,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_partition_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_partition_scope_summary" "Verify Gates Selected Status Counts Partial Malformed Partition Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_partition_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-partition-scope-contract',
+	selectedGateIds: ['lint', 'typecheck', 'build', 'deploy'],
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	skippedGateIds: ['build'],
+	notRunGateIds: ['deploy'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_partition_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_partition_scope_summary" "Verify Gates Selected Status Counts Zero Raw Partition Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_failed_exit_code_alignment_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6449,6 +6474,30 @@ if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_partition_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-partial-malformed-partition-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$selected_status_counts_zero_raw_partition_scope_step_summary" || ! grep -Fq "**Gate count:** 4" "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-partition-scope summary to preserve selected scope gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_partition_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_partition_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_status_counts_zero_raw_partition_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-partition-scope summary to ignore explicit zero raw statusCounts and derive selected counters from scoped partition evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":1,"not-run":1}' "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-partition-scope summary to align selected status counts with scoped partition evidence despite explicit zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_partition_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-partition-scope summary to derive selected executed/pass-rate metadata from scoped partition evidence under explicit zero raw statusCounts conflict." >&2
+	exit 1
+fi
+if grep -Fq '**Status counts:** {"pass":0,' "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-partition-scope summary to prevent explicit zero raw statusCounts from overriding selected partition-scoped status-count metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_partition_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-partition-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_code_alignment_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_code_alignment_step_summary"; then

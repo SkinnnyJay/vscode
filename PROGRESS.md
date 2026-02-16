@@ -3409,3 +3409,9 @@
   - Assertions confirm count lines still resolve per-field scalar/list precedence while explicit zero raw `statusCounts` keys remain authoritative in the rendered status-count map and unresolved keys fall back per status key.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed scalar + partial zero-raw map fallback behavior.
   **Why:** closes the partial-zero raw branch so mixed scalar/raw payloads preserve explicit zero map keys without losing deterministic per-field fallback for malformed or missing raw status-count keys.
+- **Selected partition-evidence suppression of explicit-zero raw status-count bundles (2026-02-16 PM)** Extended selected partition suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_zero_raw_partition_scope`.
+  - Scenario injects selected partition evidence with explicit zero raw `statusCounts` values (and no selected status-map rows), ensuring selected partition branch handles falsy raw map conflicts.
+  - Assertions confirm selected partition counters/status map/executed-rate metadata remain partition-derived while explicit zero raw status-count bundles stay ignored under selected scope.
+  - `scripts/README.md` selected scope note updated to explicitly mention explicit-zero raw `statusCounts` suppression for selected partition-evidence payloads.
+  **Why:** closes the selected partition + explicit-zero raw branch so falsy selected raw status-count bundles cannot override selected partition-scoped counters.
