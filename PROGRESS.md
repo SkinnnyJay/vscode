@@ -2850,3 +2850,15 @@
   - `scripts/test-verify-gates-summary.sh` now adds `slow_fast_none_sentinel_metadata` and verifies scalar slow/fast sentinel IDs suppress both gate IDs and their durations (`n/a`).
   - `scripts/README.md` updated to document sentinel suppression behavior for scalar gate IDs.
   **Why:** avoids contradictory sparse summaries where sentinel strings were interpreted as literal gate IDs.
+- **Timestamp canonicalization + conflicting selected no-row duration fallback (2026-02-16 AM)** Hardened timestamp parsing/derivation:
+  - `scripts/publish-verify-gates-summary.sh` now canonicalizes summary timestamps by parsing UTC calendar components and rejecting rollover-invalid timestamps (for example month/day overflow values that only match the regex shape).
+  - Added shared timestamp parser reuse so both rendered `Started`/`Completed` metadata and epoch duration derivation enforce the same canonical validation.
+  - Total duration fallback now distinguishes synthetic selected-gate defaults from real duration evidence:
+    - when selected scope has no rows, no explicit/derived valid timestamps, and no explicit duration-map evidence, `Total duration` now renders `unknown` instead of `0s`.
+    - explicit duration-map evidence (including explicit zero-valued durations) still preserves deterministic `0s` fallback.
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_timestamps_invalid_no_rows_scope` (malformed explicit timestamps -> `Started/Completed: unknown`, `Total duration: unknown`)
+    - `selected_timestamps_conflicting_no_rows_scope` (valid but reversed explicit timestamps -> preserve timestamp diagnostics, `Total duration: unknown`)
+    - `selected_timestamps_malformed_rows_scope` (selected row timestamp derivation ignores malformed row literals and uses canonical row timestamps only).
+  - `scripts/README.md` updated to document timestamp canonicalization and conflicting selected no-row fallback coverage.
+  **Why:** prevents invalid calendar literals from leaking into summary metadata and avoids misleading zero-duration output when timestamp evidence is malformed or contradictory.

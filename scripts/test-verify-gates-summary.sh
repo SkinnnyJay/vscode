@@ -119,8 +119,14 @@ selected_timestamps_scope_summary="$tmpdir/selected-timestamps-scope.json"
 selected_timestamps_scope_step_summary="$tmpdir/selected-timestamps-scope-step.md"
 selected_timestamps_no_rows_scope_summary="$tmpdir/selected-timestamps-no-rows-scope.json"
 selected_timestamps_no_rows_scope_step_summary="$tmpdir/selected-timestamps-no-rows-scope-step.md"
+selected_timestamps_invalid_no_rows_scope_summary="$tmpdir/selected-timestamps-invalid-no-rows-scope.json"
+selected_timestamps_invalid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-no-rows-scope-step.md"
+selected_timestamps_conflicting_no_rows_scope_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope.json"
+selected_timestamps_conflicting_no_rows_scope_step_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope-step.md"
 selected_timestamps_unmatched_rows_scope_summary="$tmpdir/selected-timestamps-unmatched-rows-scope.json"
 selected_timestamps_unmatched_rows_scope_step_summary="$tmpdir/selected-timestamps-unmatched-rows-scope-step.md"
+selected_timestamps_malformed_rows_scope_summary="$tmpdir/selected-timestamps-malformed-rows-scope.json"
+selected_timestamps_malformed_rows_scope_step_summary="$tmpdir/selected-timestamps-malformed-rows-scope-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
@@ -1078,6 +1084,46 @@ NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_no_rows_scope_summary" "Verify Gates Selected Timestamps No Rows Scope Contract Test"
 
+node - "$expected_schema_version" "$selected_timestamps_invalid_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-invalid-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20260230T110000Z',
+	completedAt: '20260230T110005Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_invalid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_invalid_no_rows_scope_summary" "Verify Gates Selected Timestamps Invalid No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_conflicting_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-conflicting-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20260215T130010Z',
+	completedAt: '20260215T130000Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_conflicting_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_conflicting_no_rows_scope_summary" "Verify Gates Selected Timestamps Conflicting No Rows Scope Contract Test"
+
 node - "$expected_schema_version" "$selected_timestamps_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -1099,6 +1145,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_unmatched_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_unmatched_rows_scope_summary" "Verify Gates Selected Timestamps Unmatched Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_malformed_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-malformed-rows-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 3, exitCode: 0, startedAt: '20260001T000000Z', completedAt: '20260001T000003Z', notRunReason: null },
+		{ id: 'typecheck', command: 'make typecheck', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 4, exitCode: 0, startedAt: '20260215T100000Z', completedAt: '20260215T100004Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_malformed_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_malformed_rows_scope_summary" "Verify Gates Selected Timestamps Malformed Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3745,6 +3812,42 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_no_rows_scope_step_su
 	echo "Did not expect schema warning for selected-timestamps-no-rows-scope summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$selected_timestamps_invalid_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** unknown" "$selected_timestamps_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-no-rows-scope summary to suppress malformed explicit timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$selected_timestamps_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-no-rows-scope summary to render unknown total duration when malformed timestamps are unresolvable." >&2
+	exit 1
+fi
+if grep -Fq "20260230T110000Z" "$selected_timestamps_invalid_no_rows_scope_step_summary" || grep -Fq "20260230T110005Z" "$selected_timestamps_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-no-rows-scope summary to ignore malformed explicit timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_invalid_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-invalid-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-conflicting-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T130010Z" "$selected_timestamps_conflicting_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** 20260215T130000Z" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-conflicting-no-rows-scope summary to preserve conflicting explicit timestamps for diagnostics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-conflicting-no-rows-scope summary to avoid negative durations and render unknown." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-conflicting-no-rows-scope summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_timestamps_unmatched_rows_scope_step_summary"; then
 	echo "Expected selected-timestamps-unmatched-rows-scope summary to preserve selected-gate metadata." >&2
 	exit 1
@@ -3767,6 +3870,26 @@ if grep -Fq "20260215T140000Z" "$selected_timestamps_unmatched_rows_scope_step_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_unmatched_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-unmatched-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_timestamps_malformed_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-malformed-rows-scope summary to preserve selected-gate ordering." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T100000Z" "$selected_timestamps_malformed_rows_scope_step_summary" || ! grep -Fq "**Completed:** 20260215T100004Z" "$selected_timestamps_malformed_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-malformed-rows-scope summary to derive timestamps from canonical selected row timestamps only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 4s" "$selected_timestamps_malformed_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-malformed-rows-scope summary to derive duration from canonical selected row timestamps." >&2
+	exit 1
+fi
+if grep -Fq "20260001T000000Z" "$selected_timestamps_malformed_rows_scope_step_summary" || grep -Fq "20260001T000003Z" "$selected_timestamps_malformed_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-malformed-rows-scope summary to suppress malformed row timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_malformed_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-malformed-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then

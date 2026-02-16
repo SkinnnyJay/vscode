@@ -707,26 +707,47 @@ const gateAttemptCountById = gateAttemptCountByIdFromSummary
 	? applyKnownGateDefaults(gateAttemptCountByIdFromSummary, 0)
 	: applyKnownGateDefaults(gateMapFromRows((gate) => normalizeNonNegativeInteger(gate.attempts) ?? 0), 0);
 const toIntegerOrNull = normalizeInteger;
-const normalizeSummaryTimestamp = (value) => {
+const padTimestampSegment = (value, width = 2) => String(value).padStart(width, '0');
+const formatTimestampFromUtcDate = (date) => `${padTimestampSegment(date.getUTCFullYear(), 4)}${padTimestampSegment(date.getUTCMonth() + 1)}${padTimestampSegment(date.getUTCDate())}T${padTimestampSegment(date.getUTCHours())}${padTimestampSegment(date.getUTCMinutes())}${padTimestampSegment(date.getUTCSeconds())}Z`;
+const parseSummaryTimestamp = (value) => {
 	const normalizedTimestamp = normalizeNonEmptyString(value);
 	if (normalizedTimestamp === null) {
 		return null;
 	}
-	return /^\d{8}T\d{6}Z$/.test(normalizedTimestamp) ? normalizedTimestamp : null;
-};
-const timestampToEpochSeconds = (timestamp) => {
-	const normalizedTimestamp = normalizeSummaryTimestamp(timestamp);
-	if (!normalizedTimestamp) {
+	const timestampMatch = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(normalizedTimestamp);
+	if (timestampMatch === null) {
 		return null;
 	}
-	const year = Number.parseInt(normalizedTimestamp.slice(0, 4), 10);
-	const month = Number.parseInt(normalizedTimestamp.slice(4, 6), 10);
-	const day = Number.parseInt(normalizedTimestamp.slice(6, 8), 10);
-	const hour = Number.parseInt(normalizedTimestamp.slice(9, 11), 10);
-	const minute = Number.parseInt(normalizedTimestamp.slice(11, 13), 10);
-	const second = Number.parseInt(normalizedTimestamp.slice(13, 15), 10);
-	const millisecondsSinceEpoch = Date.UTC(year, month - 1, day, hour, minute, second);
-	return Number.isFinite(millisecondsSinceEpoch) ? Math.floor(millisecondsSinceEpoch / 1000) : null;
+	const year = Number.parseInt(timestampMatch[1], 10);
+	const month = Number.parseInt(timestampMatch[2], 10);
+	const day = Number.parseInt(timestampMatch[3], 10);
+	const hour = Number.parseInt(timestampMatch[4], 10);
+	const minute = Number.parseInt(timestampMatch[5], 10);
+	const second = Number.parseInt(timestampMatch[6], 10);
+	if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+		return null;
+	}
+	const parsedDate = new Date(Date.UTC(2000, 0, 1, 0, 0, 0));
+	parsedDate.setUTCFullYear(year, month - 1, day);
+	parsedDate.setUTCHours(hour, minute, second, 0);
+	const canonicalTimestamp = formatTimestampFromUtcDate(parsedDate);
+	if (canonicalTimestamp !== normalizedTimestamp) {
+		return null;
+	}
+	const millisecondsSinceEpoch = parsedDate.getTime();
+	if (!Number.isFinite(millisecondsSinceEpoch)) {
+		return null;
+	}
+	return {
+		normalizedTimestamp,
+		epochSeconds: Math.floor(millisecondsSinceEpoch / 1000),
+	};
+};
+const normalizeSummaryTimestamp = (value) => {
+	return parseSummaryTimestamp(value)?.normalizedTimestamp ?? null;
+};
+const timestampToEpochSeconds = (timestamp) => {
+	return parseSummaryTimestamp(timestamp)?.epochSeconds ?? null;
 };
 const computeRetryBackoffSeconds = (retryCount) => {
 	const normalizedRetryCount = toIntegerOrNull(retryCount);
@@ -865,6 +886,10 @@ const completedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimesta
 	}
 	return latestTimestamp;
 })();
+const hasDurationEvidence = (
+	gateDurationSecondsByIdFromSummary !== null
+	&& Object.keys(gateDurationSecondsByIdFromSummary).length > 0
+) || resolvedRowsForSelectionScope.some((gate) => normalizeNonNegativeInteger(gate.durationSeconds) !== null);
 const totalDurationSeconds = (() => {
 	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
 	let explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
@@ -879,7 +904,7 @@ const totalDurationSeconds = (() => {
 	if (startedAtEpochSeconds !== null && completedAtEpochSeconds !== null && completedAtEpochSeconds >= startedAtEpochSeconds) {
 		return completedAtEpochSeconds - startedAtEpochSeconds;
 	}
-	if (derivedDurationFromGateMap > 0 || gateCount > 0) {
+	if (derivedDurationFromGateMap > 0 || hasDurationEvidence) {
 		return derivedDurationFromGateMap;
 	}
 	return 'unknown';
