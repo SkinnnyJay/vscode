@@ -289,6 +289,8 @@ unscoped_aggregate_metrics_explicit_precedence_summary="$tmpdir/unscoped-aggrega
 unscoped_aggregate_metrics_explicit_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-precedence-step.md"
 unscoped_aggregate_metrics_explicit_no_evidence_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence.json"
 unscoped_aggregate_metrics_explicit_no_evidence_step_summary="$tmpdir/unscoped-aggregate-metrics-explicit-no-evidence-step.md"
+unscoped_aggregate_metrics_negative_fallback_summary="$tmpdir/unscoped-aggregate-metrics-negative-fallback.json"
+unscoped_aggregate_metrics_negative_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-negative-fallback-step.md"
 unscoped_aggregate_metrics_malformed_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback.json"
 unscoped_aggregate_metrics_malformed_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-malformed-fallback-step.md"
 unscoped_aggregate_metrics_malformed_no_evidence_fallback_summary="$tmpdir/unscoped-aggregate-metrics-malformed-no-evidence-fallback.json"
@@ -3051,6 +3053,37 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_explicit_no_evidence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_explicit_no_evidence_summary" "Verify Gates Unscoped Aggregate Metrics Explicit No Evidence Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_negative_fallback_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-negative-fallback-contract',
+	executedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	passedGateIds: ['typecheck'],
+	gateStatusById: { lint: 'fail', typecheck: 'pass' },
+	gateRetryCountById: { lint: 1, typecheck: 0 },
+	gateDurationSecondsById: { lint: 4, typecheck: 6 },
+	retriedGateCount: -9,
+	totalRetryCount: -13,
+	totalRetryBackoffSeconds: -21,
+	executedDurationSeconds: -30,
+	averageExecutedDurationSeconds: -15,
+	retryRatePercent: -77,
+	retryBackoffSharePercent: -70,
+	passRatePercent: -88,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_negative_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_negative_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Negative Fallback Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_malformed_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6092,6 +6125,26 @@ if grep -Fq "**Retried gate count:** 0" "$unscoped_aggregate_metrics_explicit_no
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_explicit_no_evidence_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-explicit-no-evidence summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 1" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || ! grep -Fq "**Total retries:** 1" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$unscoped_aggregate_metrics_negative_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-negative-fallback summary to ignore negative aggregate retry scalars and derive retry metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 10s" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || ! grep -Fq "**Executed duration average:** 5s" "$unscoped_aggregate_metrics_negative_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-negative-fallback summary to ignore negative aggregate duration scalars and derive duration metrics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 50%" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 10%" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_aggregate_metrics_negative_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-negative-fallback summary to ignore negative aggregate rate scalars and derive rate metrics." >&2
+	exit 1
+fi
+if grep -Fq -- "-13" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || grep -Fq -- "-30s" "$unscoped_aggregate_metrics_negative_fallback_step_summary" || grep -Fq -- "-77%" "$unscoped_aggregate_metrics_negative_fallback_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-negative-fallback summary to suppress negative aggregate scalar values from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_negative_fallback_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-negative-fallback summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Retried gate count:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retries:** 1" "$unscoped_aggregate_metrics_malformed_fallback_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$unscoped_aggregate_metrics_malformed_fallback_step_summary"; then

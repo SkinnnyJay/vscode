@@ -3011,3 +3011,10 @@
   - Assertions confirm explicit scalar values are preserved and no-evidence fallback values (`0`/`n/a`) are not substituted.
   - `scripts/README.md` unscoped aggregate scalar precedence notes updated to explicitly include sparse no-evidence precedence behavior.
   **Why:** locks unscoped precedence semantics for sparse payloads so explicit operator-provided aggregate metrics are retained when no derivation evidence exists.
+- **Unscoped negative aggregate scalar fallback coverage (2026-02-16 AM)** Extended unscoped scalar sanitization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_negative_fallback`.
+  - Scenario injects negative unscoped retry/duration/rate scalar metrics while retry/duration map evidence remains valid.
+  - Assertions verify negative scalar values are ignored and renderer re-derives deterministic retry/duration/rate aggregates from map/list evidence.
+  - Contract assertions updated to use `grep --` for dash-prefixed sentinel checks, avoiding false option parsing for negative-value literals.
+  - `scripts/README.md` unscoped scalar notes updated to explicitly include negative-number sanitization behavior.
+  **Why:** hardens aggregate scalar normalization against negative values and prevents contract-harness hangs when asserting dash-prefixed literals.
