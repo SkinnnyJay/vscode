@@ -3506,3 +3506,10 @@
   - Assertions also reject scalar-driven executed/rate derivation (`Executed gates: 5`, pass rate `20%`) under explicit selected scope.
   - `scripts/README.md` selected executed-list precedence note updated to explicitly mention conflicting selected integer or numeric-string `executedGateCount` scalar suppression.
   **Why:** closes the selected numeric-string executed-count scalar + explicit non-empty executed-list branch so normalized numeric-string scalars cannot override explicit selected executed list evidence.
+- **Selected numeric-string executed-count scalar suppression under explicit empty executed-list scope coverage (2026-02-16 PM)** Extended selected executed-list precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_string_scalar_count_ignored_empty_list_scope`.
+  - Scenario keeps explicit empty selected executed-list evidence while injecting conflicting numeric-string `executedGateCount: ' 5 '`.
+  - Assertions confirm selected scope preserves explicit empty selected executed-list derivation (`Executed gates: 0`, list `none`, pass/retry rates `n/a`) despite conflicting numeric-string scalar executed-count input.
+  - Assertions also reject scalar-driven executed/rate derivation (`Executed gates: 5`, pass rate `20%`) under explicit selected scope.
+  - `scripts/README.md` selected executed-list precedence note updated to explicitly mention conflicting selected integer/numeric-string scalar suppression for explicit selected executed-list overrides.
+  **Why:** closes the selected numeric-string executed-count scalar + explicit empty executed-list branch so normalized numeric-string scalars cannot override explicit selected empty executed-list evidence.

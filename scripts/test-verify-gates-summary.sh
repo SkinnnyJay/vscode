@@ -313,6 +313,8 @@ selected_executed_explicit_empty_list_scope_summary="$tmpdir/selected-executed-e
 selected_executed_explicit_empty_list_scope_step_summary="$tmpdir/selected-executed-explicit-empty-list-scope-step.md"
 selected_executed_scalar_count_ignored_empty_list_scope_summary="$tmpdir/selected-executed-scalar-count-ignored-empty-list-scope.json"
 selected_executed_scalar_count_ignored_empty_list_scope_step_summary="$tmpdir/selected-executed-scalar-count-ignored-empty-list-scope-step.md"
+selected_executed_string_scalar_count_ignored_empty_list_scope_summary="$tmpdir/selected-executed-string-scalar-count-ignored-empty-list-scope.json"
+selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary="$tmpdir/selected-executed-string-scalar-count-ignored-empty-list-scope-step.md"
 selected_executed_scalar_count_ignored_nonempty_list_scope_summary="$tmpdir/selected-executed-scalar-count-ignored-nonempty-list-scope.json"
 selected_executed_scalar_count_ignored_nonempty_list_scope_step_summary="$tmpdir/selected-executed-scalar-count-ignored-nonempty-list-scope-step.md"
 selected_executed_string_scalar_count_ignored_nonempty_list_scope_summary="$tmpdir/selected-executed-string-scalar-count-ignored-nonempty-list-scope.json"
@@ -3576,6 +3578,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_executed_scalar_count_ignored_empty_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_scalar_count_ignored_empty_list_scope_summary" "Verify Gates Selected Executed Scalar Count Ignored Empty List Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_string_scalar_count_ignored_empty_list_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-string-scalar-count-ignored-empty-list-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass', typecheck: 'fail' },
+	executedGateIds: [],
+	executedGateCount: ' 5 ',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_string_scalar_count_ignored_empty_list_scope_summary" "Verify Gates Selected Executed String Scalar Count Ignored Empty List Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_executed_scalar_count_ignored_nonempty_list_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8530,6 +8553,26 @@ if grep -Fq "**Executed gates:** 5" "$selected_executed_scalar_count_ignored_emp
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_executed_scalar_count_ignored_empty_list_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-executed-scalar-count-ignored-empty-list-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-count-ignored-empty-list-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-count-ignored-empty-list-scope summary to preserve explicit empty selected executed-list metadata despite conflicting numeric-string executedGateCount scalar." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-count-ignored-empty-list-scope summary to render executed-rate metrics as n/a under explicit empty selected executed-list evidence despite conflicting numeric-string scalar executed count." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 5" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 20%" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-count-ignored-empty-list-scope summary to suppress numeric-string scalar executed-count override under explicit selected empty executed-list evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_string_scalar_count_ignored_empty_list_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-string-scalar-count-ignored-empty-list-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_scalar_count_ignored_nonempty_list_scope_step_summary"; then
