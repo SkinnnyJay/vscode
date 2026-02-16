@@ -773,7 +773,8 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 		if (typeof reason !== 'string' || !reason.startsWith('blocked-by-fail-fast:')) {
 			continue;
 		}
-		const gateHasNotRunStatus = gateStatusById[gateId] === 'not-run' || notRunGateIds.includes(gateId);
+		const gateStatus = gateStatusById[gateId];
+		const gateHasNotRunStatus = gateStatus !== undefined ? gateStatus === 'not-run' : notRunGateIds.includes(gateId);
 		if (!gateHasNotRunStatus) {
 			continue;
 		}

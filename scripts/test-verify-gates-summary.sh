@@ -1513,6 +1513,7 @@ const payload = {
 	runId: 'selected-run-state-blocked-reason-pass-status-scope-contract',
 	selectedGateIds: ['lint'],
 	gateStatusById: { lint: 'pass' },
+	notRunGateIds: ['lint'],
 	gateNotRunReasonById: { lint: 'blocked-by-fail-fast:lint' },
 	success: true,
 	dryRun: false,
@@ -3344,7 +3345,7 @@ if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_blocked_reason_pas
 	exit 1
 fi
 if ! grep -Fq "**Success:** true" "$selected_run_state_blocked_reason_pass_status_scope_step_summary" || ! grep -Fq "**Exit reason:** success" "$selected_run_state_blocked_reason_pass_status_scope_step_summary" || ! grep -Fq "**Run classification:** success-no-retries" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then
-	echo "Expected selected-run-state-blocked-reason-pass-status-scope summary to ignore blocked-by-fail-fast not-run reason values when selected gate status is pass." >&2
+	echo "Expected selected-run-state-blocked-reason-pass-status-scope summary to prioritize selected pass status over conflicting not-run list/reason values." >&2
 	exit 1
 fi
 if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_blocked_reason_pass_status_scope_step_summary"; then

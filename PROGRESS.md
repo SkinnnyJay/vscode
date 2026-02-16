@@ -2586,6 +2586,7 @@
   - Non-selected `blocked-by-fail-fast:<id>` not-run reason metadata is explicitly ignored for blocked-by run-state derivation under selected scope.
   - `blocked-by-fail-fast:<id>` reason metadata is now only considered when the reason-bearing selected gate has canonical `not-run` status (malformed pass/fail reason entries no longer trigger fail-fast evidence).
   - Blocked-reason fail-fast derivation now also honors selected not-run partition lists when status-map entries are sparse/missing (avoids losing fail-fast evidence under incomplete status maps).
+  - When both selected status-map and partition-list evidence disagree, status-map status now takes precedence for blocked-reason eligibility (prevents conflicting fallback not-run lists from overriding canonical `pass` status).
   - Selected non-success/attention derivation now falls back to selected failed/skipped/not-run partition lists when selected status-map entries are sparse/missing.
   - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - Conflicting `dryRun: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + dry-run inconsistency.
