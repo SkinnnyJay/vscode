@@ -291,6 +291,8 @@ explicit_retried_subset_retry_map_summary="$tmpdir/explicit-retried-subset-retry
 explicit_retried_subset_retry_map_step_summary="$tmpdir/explicit-retried-subset-retry-map-step.md"
 explicit_retried_missing_retry_map_key_summary="$tmpdir/explicit-retried-missing-retry-map-key.json"
 explicit_retried_missing_retry_map_key_step_summary="$tmpdir/explicit-retried-missing-retry-map-key-step.md"
+explicit_empty_retried_with_retry_map_summary="$tmpdir/explicit-empty-retried-with-retry-map.json"
+explicit_empty_retried_with_retry_map_step_summary="$tmpdir/explicit-empty-retried-with-retry-map-step.md"
 scalar_failed_gate_selected_fallback_summary="$tmpdir/scalar-failed-gate-selected-fallback.json"
 scalar_failed_gate_selected_fallback_step_summary="$tmpdir/scalar-failed-gate-selected-fallback-step.md"
 scalar_blocked_gate_selected_fallback_summary="$tmpdir/scalar-blocked-gate-selected-fallback.json"
@@ -3215,6 +3217,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_retried_missing_retry_map_key_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_missing_retry_map_key_summary" "Verify Gates Explicit Retried Missing Retry Map Key Contract Test"
+
+node - "$expected_schema_version" "$explicit_empty_retried_with_retry_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-empty-retried-with-retry-map-contract',
+	gateStatusById: { lint: 'pass', build: 'pass' },
+	retriedGateIds: [],
+	gateRetryCountById: { lint: 3, build: 5 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_empty_retried_with_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_retried_with_retry_map_summary" "Verify Gates Explicit Empty Retried With Retry Map Contract Test"
 
 node - "$expected_schema_version" "$scalar_failed_gate_selected_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7336,6 +7358,30 @@ if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_missing_retry_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_missing_retry_map_key_step_summary"; then
 	echo "Did not expect schema warning for explicit-retried-missing-retry-map-key summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, build" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Expected explicit-empty-retried-with-retry-map summary to preserve derived gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** none" "$explicit_empty_retried_with_retry_map_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Expected explicit-empty-retried-with-retry-map summary to preserve explicit empty retried-gate override in unscoped payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":0,\"build\":0}" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Expected explicit-empty-retried-with-retry-map summary to zero retry-count map entries when explicit unscoped retried list is empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$explicit_empty_retried_with_retry_map_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Expected explicit-empty-retried-with-retry-map summary to derive zero retry aggregates from explicit empty unscoped retried override." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** none" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Expected explicit-empty-retried-with-retry-map summary to keep attention list clear when explicit unscoped retried list is empty and statuses are pass." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_retried_with_retry_map_step_summary"; then
+	echo "Did not expect schema warning for explicit-empty-retried-with-retry-map summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$scalar_failed_gate_selected_fallback_step_summary"; then

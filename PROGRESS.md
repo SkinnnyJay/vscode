@@ -3259,3 +3259,9 @@
   - Assertions confirm malformed scalar counters/raw status counts are ignored, normalized sparse partition memberships stay priority-consistent, executed/retried/non-success/attention lists are trimmed+deduped deterministically, and retry aggregates derive from normalized retry-count map evidence.
   - `scripts/README.md` overlapping partition-list note updated to explicitly mention malformed unscoped list/count bundles with invalid scalar counter fallback behavior.
   **Why:** closes unscoped normalization parity so malformed sparse list/count payloads cannot desynchronize partition, execution, retry, or attention metadata when explicit scalar counters are invalid.
+- **Unscoped explicit empty retried-list override coverage (2026-02-16 PM)** Extended unscoped retry-list precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_empty_retried_with_retry_map`.
+  - Scenario injects explicit empty unscoped retried list (`retriedGateIds: []`) alongside positive unscoped retry-count map values.
+  - Assertions confirm explicit empty unscoped retried list remains authoritative (`Retried gates: none`, `Retried gate count: 0`), retry-count map entries are zeroed, retry aggregates stay zero, and attention list remains empty when statuses are pass-only.
+  - `scripts/README.md` selected/unscoped summary notes updated to explicitly mention explicit empty unscoped retried-list override behavior.
+  **Why:** closes unscoped retried-list precedence parity so explicit empty retried overrides cannot be silently replaced by retry-count map positivity.
