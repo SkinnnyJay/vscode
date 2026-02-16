@@ -373,6 +373,8 @@ derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
 unscoped_partition_list_overlap_step_summary="$tmpdir/unscoped-partition-list-overlap-step.md"
+unscoped_explicit_empty_partition_lists_status_map_summary="$tmpdir/unscoped-explicit-empty-partition-lists-status-map.json"
+unscoped_explicit_empty_partition_lists_status_map_step_summary="$tmpdir/unscoped-explicit-empty-partition-lists-status-map-step.md"
 unscoped_executed_fallback_empty_status_map_summary="$tmpdir/unscoped-executed-fallback-empty-status-map.json"
 unscoped_executed_fallback_empty_status_map_step_summary="$tmpdir/unscoped-executed-fallback-empty-status-map-step.md"
 unscoped_executed_explicit_empty_list_summary="$tmpdir/unscoped-executed-explicit-empty-list.json"
@@ -4236,6 +4238,28 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_partition_list_overlap_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_list_overlap_summary" "Verify Gates Unscoped Partition List Overlap Contract Test"
+
+node - "$expected_schema_version" "$unscoped_explicit_empty_partition_lists_status_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-explicit-empty-partition-lists-status-map-contract',
+	gateStatusById: { lint: 'pass', typecheck: 'fail' },
+	passedGateIds: [],
+	failedGateIds: [],
+	skippedGateIds: [],
+	notRunGateIds: [],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_explicit_empty_partition_lists_status_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_explicit_empty_partition_lists_status_map_summary" "Verify Gates Unscoped Explicit Empty Partition Lists Status-Map Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_fallback_empty_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8210,6 +8234,42 @@ if grep -Fq "**Not-run gates list:** lint" "$unscoped_partition_list_overlap_ste
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_list_overlap_step_summary"; then
 	echo "Did not expect schema warning for unscoped-partition-list-overlap summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to preserve gate count from status-map IDs when partition lists are explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Failed gates:** 0" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to keep explicit empty unscoped partition lists authoritative for partition counts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to keep status counts aligned with explicit empty unscoped partition lists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass","typecheck":"fail"}' "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to preserve unscoped status-map metadata when partition lists are explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Executed gates list:** lint, typecheck" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to derive executed metadata from status-map evidence when partition lists are explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates list:** none" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Failed gates list:** none" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Not-run gates list:** none" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to preserve explicit empty unscoped partition list labels." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** 0%" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Retry rate (executed gates):** 0%" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to derive executed-rate metrics from explicit empty partition counts plus status-map executed fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$unscoped_explicit_empty_partition_lists_status_map_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Expected unscoped-explicit-empty-partition-lists-status-map summary to derive non-success/attention lists from unscoped status-map evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_explicit_empty_partition_lists_status_map_step_summary"; then
+	echo "Did not expect schema warning for unscoped-explicit-empty-partition-lists-status-map summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_fallback_empty_status_map_step_summary"; then
