@@ -131,6 +131,8 @@ selected_run_state_unknown_status_scope_summary="$tmpdir/selected-run-state-unkn
 selected_run_state_unknown_status_scope_step_summary="$tmpdir/selected-run-state-unknown-status-scope-step.md"
 selected_run_state_partial_status_scope_summary="$tmpdir/selected-run-state-partial-status-scope.json"
 selected_run_state_partial_status_scope_step_summary="$tmpdir/selected-run-state-partial-status-scope-step.md"
+selected_run_state_failure_scope_summary="$tmpdir/selected-run-state-failure-scope.json"
+selected_run_state_failure_scope_step_summary="$tmpdir/selected-run-state-failure-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1122,6 +1124,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_partial_status_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_partial_status_scope_summary" "Verify Gates Selected Run-State Partial-Status Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_failure_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-failure-scope-contract',
+	selectedGateIds: ['lint'],
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'FAIL', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 2, exitCode: 7, startedAt: '20260215T160000Z', completedAt: '20260215T160002Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_failure_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_failure_scope_summary" "Verify Gates Selected Run-State Failure Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2652,6 +2679,22 @@ if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_run_state_partia
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_partial_status_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-partial-status-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_failure_scope_step_summary"; then
+	echo "Expected selected-run-state-failure-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_failure_scope_step_summary" || ! grep -Fq "**Exit reason:** completed-with-failures" "$selected_run_state_failure_scope_step_summary" || ! grep -Fq "**Run classification:** failed-continued" "$selected_run_state_failure_scope_step_summary"; then
+	echo "Expected selected-run-state-failure-scope summary to ignore conflicting explicit success run-state when selected-scope failure evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_failure_scope_step_summary" || ! grep -Fq "**Failed gate:** lint" "$selected_run_state_failure_scope_step_summary" || ! grep -Fq "**Failed gate exit code:** 7" "$selected_run_state_failure_scope_step_summary"; then
+	echo "Expected selected-run-state-failure-scope summary to preserve selected failure metadata and derived fail-fast/continued semantics." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_failure_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-failure-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
