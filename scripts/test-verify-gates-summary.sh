@@ -165,6 +165,8 @@ selected_run_state_blocked_reason_not_run_list_scope_summary="$tmpdir/selected-r
 selected_run_state_blocked_reason_not_run_list_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope-step.md"
 selected_non_success_partition_fallback_scope_summary="$tmpdir/selected-non-success-partition-fallback-scope.json"
 selected_non_success_partition_fallback_scope_step_summary="$tmpdir/selected-non-success-partition-fallback-scope-step.md"
+selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-success-status-precedence-scope.json"
+selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1572,6 +1574,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_non_success_partition_fallback_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_partition_fallback_scope_summary" "Verify Gates Selected Non-Success Partition Fallback Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_non_success_status_precedence_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-non-success-status-precedence-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	notRunGateIds: ['lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_non_success_status_precedence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_non_success_status_precedence_scope_summary" "Verify Gates Selected Non-Success Status Precedence Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3386,6 +3408,22 @@ if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_partitio
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_partition_fallback_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-partition-fallback-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to surface conflicting pass/not-run aggregate metadata for diagnostic visibility." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** none" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Attention gates list:** none" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to prioritize selected status-map pass evidence over fallback not-run partition membership for non-success/attention derivation." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-non-success-status-precedence-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then

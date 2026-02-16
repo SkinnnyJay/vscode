@@ -2588,6 +2588,7 @@
   - Blocked-reason fail-fast derivation now also honors selected not-run partition lists when status-map entries are sparse/missing (avoids losing fail-fast evidence under incomplete status maps).
   - When both selected status-map and partition-list evidence disagree, status-map status now takes precedence for blocked-reason eligibility (prevents conflicting fallback not-run lists from overriding canonical `pass` status).
   - Selected non-success/attention derivation now falls back to selected failed/skipped/not-run partition lists when selected status-map entries are sparse/missing.
+  - Selected status-map values now remain authoritative over fallback partition memberships during selected non-success/attention derivation (prevents fallback not-run membership from overriding explicit selected `pass` status).
   - Conflicting `continueOnFailure: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + continue inconsistency.
   - Conflicting `dryRun: true` is now explicitly ignored when selected fail-fast evidence exists, preventing fail-fast + dry-run inconsistency.
   - Conflicting explicit `exitReason: dry-run` / `runClassification: dry-run` is now explicitly ignored when selected fail-fast evidence exists.
@@ -2627,6 +2628,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_pass_status_scope` scenario and verifies blocked-by not-run reason metadata is ignored when selected gate status is `pass`.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_blocked_reason_not_run_list_scope` scenario and verifies blocked-by fail-fast derivation still triggers when selected `notRunGateIds` includes the gate but status-map coverage is sparse.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_partition_fallback_scope` scenario and verifies selected non-success/attention lists still include selected not-run gates when status-map entries are sparse.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_non_success_status_precedence_scope` scenario and verifies explicit selected status-map `pass` keeps non-success/attention lists empty even when fallback `notRunGateIds` also includes the gate.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
