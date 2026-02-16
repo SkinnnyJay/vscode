@@ -139,6 +139,8 @@ selected_run_state_not_run_blocked_selected_scope_summary="$tmpdir/selected-run-
 selected_run_state_not_run_blocked_selected_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-scope-step.md"
 selected_run_state_not_run_blocked_selected_whitespace_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-whitespace-scope.json"
 selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-whitespace-scope-step.md"
+selected_run_state_not_run_blocked_selected_uppercase_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-uppercase-scope.json"
+selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-uppercase-scope-step.md"
 selected_run_state_not_run_blocked_empty_scope_summary="$tmpdir/selected-run-state-not-run-blocked-empty-scope.json"
 selected_run_state_not_run_blocked_empty_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-empty-scope-step.md"
 selected_run_state_not_run_blocked_selected_continue_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continue-scope.json"
@@ -1268,6 +1270,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_selected_whitespace_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Selected Whitespace Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_not_run_blocked_selected_uppercase_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-not-run-blocked-selected-uppercase-scope-contract',
+	selectedGateIds: ['lint'],
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'NOT-RUN', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: ' BLOCKED-BY-FAIL-FAST: lint ' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_selected_uppercase_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Selected Uppercase Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_not_run_blocked_empty_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3317,6 +3344,22 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-whitespace-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-uppercase-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-uppercase-scope summary to parse blocked-by-fail-fast reasons case-insensitively." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-uppercase-scope summary to normalize uppercase blocked-by-fail-fast reasons to selected gate IDs." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-uppercase-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_empty_scope_step_summary"; then

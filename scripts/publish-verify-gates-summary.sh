@@ -769,8 +769,19 @@ const failedGateExitCode = (scopedSummaryFailedGateExitCode !== null && scopedSu
 	? scopedSummaryFailedGateExitCode
 	: failedGateExitCodes[0] ?? 'none';
 const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
+	const parseBlockedByReasonGateId = (reason) => {
+		if (typeof reason !== 'string') {
+			return null;
+		}
+		const normalizedReason = reason.trim();
+		if (!/^blocked-by-fail-fast:/i.test(normalizedReason)) {
+			return null;
+		}
+		return normalizeNonEmptyString(normalizedReason.slice('blocked-by-fail-fast:'.length));
+	};
 	for (const [gateId, reason] of Object.entries(gateNotRunReasonById)) {
-		if (typeof reason !== 'string' || !reason.startsWith('blocked-by-fail-fast:')) {
+		const blockedByReasonGateId = parseBlockedByReasonGateId(reason);
+		if (blockedByReasonGateId === null) {
 			continue;
 		}
 		const gateStatus = gateStatusById[gateId];
@@ -778,7 +789,7 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 		if (!gateHasNotRunStatus) {
 			continue;
 		}
-		const scopedBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(reason.slice('blocked-by-fail-fast:'.length)));
+		const scopedBlockedByGateId = scopeGateIdToSelection(blockedByReasonGateId);
 		if (scopedBlockedByGateId !== null) {
 			return scopedBlockedByGateId;
 		}
