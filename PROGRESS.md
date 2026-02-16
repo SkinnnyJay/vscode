@@ -2893,3 +2893,9 @@
     - `Total duration`.
   - `scripts/README.md` timestamp-canonicalization notes updated to include malformed explicit unscoped fallback coverage.
   **Why:** ensures strict timestamp validation remains resilient for sparse unscoped summaries by falling back to trustworthy row timing evidence.
+- **Century leap-year timestamp canonicalization coverage (2026-02-16 AM)** Expanded calendar-edge regression checks:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_timestamps_nonleap_century_invalid_no_rows_scope` validating non-leap-century day overflow timestamps (`19000229`) are rejected (`Started/Completed: unknown`, `Total duration: unknown`)
+    - `selected_timestamps_century_leap_valid_no_rows_scope` validating century leap-day timestamps (`20000229`) remain accepted (`Started/Completed` preserved, `Total duration: 5s`).
+  - `scripts/README.md` timestamp-canonicalization notes updated to explicitly include century leap/non-leap handling coverage.
+  **Why:** protects canonical timestamp parsing against subtle Gregorian century leap-year regressions while keeping valid century leap dates supported.

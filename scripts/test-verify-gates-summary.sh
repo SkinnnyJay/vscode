@@ -123,6 +123,10 @@ selected_timestamps_invalid_no_rows_scope_summary="$tmpdir/selected-timestamps-i
 selected_timestamps_invalid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-no-rows-scope-step.md"
 selected_timestamps_leap_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-leap-valid-no-rows-scope.json"
 selected_timestamps_leap_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-leap-valid-no-rows-scope-step.md"
+selected_timestamps_nonleap_century_invalid_no_rows_scope_summary="$tmpdir/selected-timestamps-nonleap-century-invalid-no-rows-scope.json"
+selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-nonleap-century-invalid-no-rows-scope-step.md"
+selected_timestamps_century_leap_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-century-leap-valid-no-rows-scope.json"
+selected_timestamps_century_leap_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-century-leap-valid-no-rows-scope-step.md"
 selected_timestamps_conflicting_no_rows_scope_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope.json"
 selected_timestamps_conflicting_no_rows_scope_step_summary="$tmpdir/selected-timestamps-conflicting-no-rows-scope-step.md"
 selected_timestamps_unmatched_rows_scope_summary="$tmpdir/selected-timestamps-unmatched-rows-scope.json"
@@ -1131,6 +1135,46 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_leap_valid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_leap_valid_no_rows_scope_summary" "Verify Gates Selected Timestamps Leap Valid No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-nonleap-century-invalid-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '19000229T110000Z',
+	completedAt: '19000229T110005Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_nonleap_century_invalid_no_rows_scope_summary" "Verify Gates Selected Timestamps Nonleap Century Invalid No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_century_leap_valid_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-century-leap-valid-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20000229T110000Z',
+	completedAt: '20000229T110005Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_century_leap_valid_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_century_leap_valid_no_rows_scope_summary" "Verify Gates Selected Timestamps Century Leap Valid No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_timestamps_conflicting_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3936,6 +3980,42 @@ if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_leap_valid_no_rows_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_leap_valid_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-leap-valid-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-nonleap-century-invalid-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** unknown" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-nonleap-century-invalid-no-rows-scope summary to suppress invalid non-leap-century timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-nonleap-century-invalid-no-rows-scope summary to render unknown duration for invalid non-leap-century timestamps." >&2
+	exit 1
+fi
+if grep -Fq "19000229T110000Z" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary" || grep -Fq "19000229T110005Z" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-nonleap-century-invalid-no-rows-scope summary to ignore invalid non-leap-century timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_nonleap_century_invalid_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-nonleap-century-invalid-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_century_leap_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-century-leap-valid-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20000229T110000Z" "$selected_timestamps_century_leap_valid_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** 20000229T110005Z" "$selected_timestamps_century_leap_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-century-leap-valid-no-rows-scope summary to preserve valid century leap-day timestamps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_century_leap_valid_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-century-leap-valid-no-rows-scope summary to derive duration from valid century leap-day timestamps." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_century_leap_valid_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-century-leap-valid-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_conflicting_no_rows_scope_step_summary"; then
