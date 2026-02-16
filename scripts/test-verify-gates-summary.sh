@@ -123,6 +123,8 @@ selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
 selected_run_state_scope_step_summary="$tmpdir/selected-run-state-scope-step.md"
 selected_run_state_no_evidence_scope_summary="$tmpdir/selected-run-state-no-evidence-scope.json"
 selected_run_state_no_evidence_scope_step_summary="$tmpdir/selected-run-state-no-evidence-scope-step.md"
+selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
+selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -1017,6 +1019,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_no_evidence_scope_summary" "Verify Gates Selected Run-State No-Evidence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-unmatched-rows-scope-contract',
+	selectedGateIds: ['missing-only'],
+	success: false,
+	dryRun: false,
+	continueOnFailure: true,
+	exitReason: 'completed-with-failures',
+	runClassification: 'failed-continued',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T130000Z', completedAt: '20260215T130001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_unmatched_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_unmatched_rows_scope_summary" "Verify Gates Selected Run-State Unmatched Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2438,6 +2465,26 @@ if ! grep -Fq "**Dry run:** false" "$selected_run_state_no_evidence_scope_step_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_no_evidence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-no-evidence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Expected selected-run-state-unmatched-rows-scope summary to preserve explicit selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_unmatched_rows_scope_step_summary" || ! grep -Fq "**Exit reason:** completed-with-failures" "$selected_run_state_unmatched_rows_scope_step_summary" || ! grep -Fq "**Run classification:** failed-continued" "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Expected selected-run-state-unmatched-rows-scope summary to preserve explicit run-state when only non-selected rows exist." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Expected selected-run-state-unmatched-rows-scope summary to preserve explicit continue-on-failure when selected-scope row evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | pass |' "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Expected selected-run-state-unmatched-rows-scope summary to retain unmatched-selection table fallback rows." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-unmatched-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

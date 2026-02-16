@@ -813,7 +813,7 @@ const totalDurationSeconds = (() => {
 	}
 	return 'unknown';
 })();
-const hasOutcomeEvidence = gates.length > 0
+const hasOutcomeEvidence = resolvedRowsForSelectionScope.length > 0
 	|| gateStatusByIdFromSummary !== null
 	|| passedGateIdsFromSummary !== null
 	|| failedGateIdsFromSummary !== null
