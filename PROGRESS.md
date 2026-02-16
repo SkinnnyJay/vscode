@@ -2809,12 +2809,12 @@
   - `scripts/README.md` updated to document explicit retried-subset aggregate scoping coverage.
   **Why:** protects retry aggregate and attention-list derivation from stale or over-inclusive retry-count maps when explicit retried subsets are supplied.
 - **Explicit retried-gate minimum retry-count normalization (2026-02-16 AM)** Hardened sparse retry-map consistency:
-  - `scripts/publish-verify-gates-summary.sh` now promotes retry-count map values to a minimum of `1` for gates explicitly listed in `retriedGateIds` when summary-provided counts are `0` or missing.
+  - `scripts/publish-verify-gates-summary.sh` now promotes retry-count map values to a minimum of `1` for gates explicitly listed in `retriedGateIds` when summary-provided counts are `0` or missing, and normalizes non-retried map entries to `0` when explicit retried lists are provided.
   - This preserves aggregate consistency (`Retried gates` vs `Total retries` / `Total retry backoff`) under sparse or contradictory producer payloads.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` and `explicit_retried_zero_count_retry_map` and verifies (selected + unscoped):
     - normalized retry-count map (`"lint":1`)
     - aggregate retries/backoff (`1` / `1s`)
     - attention list remains constrained to explicit retried gates.
-  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` and verifies unscoped explicit retried subsets still constrain aggregate retries/backoff and attention lists when retry-count maps include additional gate IDs.
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` and verifies unscoped explicit retried subsets still constrain aggregate retries/backoff and attention lists (with non-retried map entries zeroed) when retry-count maps include additional gate IDs.
   - `scripts/README.md` updated to document explicit retried-gate minimum retry-count normalization.
   **Why:** prevents contradictory outputs where explicit retried lists are non-empty but aggregate retry totals collapse to zero due to sparse retry-count map fields.

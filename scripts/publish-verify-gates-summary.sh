@@ -654,13 +654,19 @@ const gateRetryCountByIdBase = gateRetryCountByIdFromSummary
 	);
 const gateRetryCountById = retriedGateIdsFromSummary === null
 	? gateRetryCountByIdBase
-	: retriedGateIdsFromSummary.reduce((retryCountByGateId, gateId) => {
-		const retryCount = normalizeInteger(retryCountByGateId[gateId]) ?? 0;
-		if (retryCount <= 0) {
-			retryCountByGateId[gateId] = 1;
+	: (() => {
+		const retriedGateIdSet = new Set(retriedGateIdsFromSummary);
+		const normalizedRetryCountByGateId = { ...gateRetryCountByIdBase };
+		for (const gateId of Object.keys(normalizedRetryCountByGateId)) {
+			if (!retriedGateIdSet.has(gateId)) {
+				normalizedRetryCountByGateId[gateId] = 0;
+				continue;
+			}
+			const retryCount = normalizeInteger(normalizedRetryCountByGateId[gateId]) ?? 0;
+			normalizedRetryCountByGateId[gateId] = retryCount <= 0 ? 1 : retryCount;
 		}
-		return retryCountByGateId;
-	}, { ...gateRetryCountByIdBase });
+		return normalizedRetryCountByGateId;
+	})();
 const gateDurationSecondsByIdFromSummary = scopeGateMapToSelection(
 	normalizeGateIntegerMap(summary.gateDurationSecondsById, { allowNullValues: false, normalizeValue: normalizeNonNegativeInteger }),
 );

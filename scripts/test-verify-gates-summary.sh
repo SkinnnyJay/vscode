@@ -4114,8 +4114,8 @@ if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_zero_count_retry_map_
 	echo "Expected explicit-retried-zero-count-retry-map summary to preserve explicit retried-gate metadata." >&2
 	exit 1
 fi
-if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"build\":4}" "$explicit_retried_zero_count_retry_map_step_summary"; then
-	echo "Expected explicit-retried-zero-count-retry-map summary to enforce minimum retry-count map values for explicit retried IDs." >&2
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"build\":0}" "$explicit_retried_zero_count_retry_map_step_summary"; then
+	echo "Expected explicit-retried-zero-count-retry-map summary to enforce minimum retry-count map values for explicit retried IDs while zeroing non-retried entries." >&2
 	exit 1
 fi
 if ! grep -Fq "**Total retries:** 1" "$explicit_retried_zero_count_retry_map_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$explicit_retried_zero_count_retry_map_step_summary"; then
@@ -4140,6 +4140,10 @@ if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_subset_retry_map_step
 fi
 if ! grep -Fq "**Total retries:** 3" "$explicit_retried_subset_retry_map_step_summary" || ! grep -Fq "**Total retry backoff:** 7s" "$explicit_retried_subset_retry_map_step_summary"; then
 	echo "Expected explicit-retried-subset-retry-map summary to constrain retry aggregates to explicit retried-gate subset." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":3,\"build\":0}" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Expected explicit-retried-subset-retry-map summary to zero retry-count map entries outside explicit retried subset." >&2
 	exit 1
 fi
 if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_subset_retry_map_step_summary"; then
@@ -4206,6 +4210,10 @@ if ! grep -Fq "**Retried gates:** none" "$selected_explicit_empty_retried_with_r
 	echo "Expected selected-explicit-empty-retried-with-retry-map-scope summary to preserve explicit empty retried-gate override." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":0}" "$selected_explicit_empty_retried_with_retry_map_scope_step_summary"; then
+	echo "Expected selected-explicit-empty-retried-with-retry-map-scope summary to zero retry-count map when explicit retried list is empty." >&2
+	exit 1
+fi
 if ! grep -Fq "**Total retries:** 0" "$selected_explicit_empty_retried_with_retry_map_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_explicit_empty_retried_with_retry_map_scope_step_summary"; then
 	echo "Expected selected-explicit-empty-retried-with-retry-map-scope summary to derive retry aggregates from scoped retried-gate evidence." >&2
 	exit 1
@@ -4230,6 +4238,10 @@ if ! grep -Fq "**Total retries:** 3" "$selected_explicit_retried_subset_retry_ma
 	echo "Expected selected-explicit-retried-subset-retry-map-scope summary to derive retry aggregates from explicit retried-gate subset only." >&2
 	exit 1
 fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":3,\"typecheck\":0}" "$selected_explicit_retried_subset_retry_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-subset-retry-map-scope summary to zero retry-count map entries outside selected explicit retried subset." >&2
+	exit 1
+fi
 if ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_retried_subset_retry_map_scope_step_summary"; then
 	echo "Expected selected-explicit-retried-subset-retry-map-scope summary to include only explicit retried subset in derived attention list." >&2
 	exit 1
@@ -4246,8 +4258,8 @@ if ! grep -Fq "**Retried gates:** lint" "$selected_explicit_retried_zero_count_r
 	echo "Expected selected-explicit-retried-zero-count-retry-map-scope summary to preserve explicit retried-gate metadata." >&2
 	exit 1
 fi
-if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"typecheck\":5}" "$selected_explicit_retried_zero_count_retry_map_scope_step_summary"; then
-	echo "Expected selected-explicit-retried-zero-count-retry-map-scope summary to enforce minimum retry counts for explicit retried gates." >&2
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1,\"typecheck\":0}" "$selected_explicit_retried_zero_count_retry_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-zero-count-retry-map-scope summary to enforce minimum retry counts for explicit retried gates while zeroing non-retried entries." >&2
 	exit 1
 fi
 if ! grep -Fq "**Total retries:** 1" "$selected_explicit_retried_zero_count_retry_map_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$selected_explicit_retried_zero_count_retry_map_scope_step_summary"; then
