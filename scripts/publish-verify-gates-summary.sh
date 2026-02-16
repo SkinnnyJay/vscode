@@ -795,7 +795,11 @@ const completedAt = (allowExplicitTimestampFromSummary ? normalizeSummaryTimesta
 	return latestTimestamp;
 })();
 const totalDurationSeconds = (() => {
-	const explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
+	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
+	let explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
+	if (explicitTotalDurationSeconds === null && selectedGateIdsFromSummary !== null && gates.length === 0 && derivedDurationFromGateMap === 0) {
+		explicitTotalDurationSeconds = normalizeNonNegativeInteger(summary.totalDurationSeconds);
+	}
 	if (explicitTotalDurationSeconds !== null) {
 		return explicitTotalDurationSeconds;
 	}
@@ -804,7 +808,6 @@ const totalDurationSeconds = (() => {
 	if (startedAtEpochSeconds !== null && completedAtEpochSeconds !== null && completedAtEpochSeconds >= startedAtEpochSeconds) {
 		return completedAtEpochSeconds - startedAtEpochSeconds;
 	}
-	const derivedDurationFromGateMap = sumIntegerValues(Object.values(gateDurationSecondsById));
 	if (derivedDurationFromGateMap > 0 || gateCount > 0) {
 		return derivedDurationFromGateMap;
 	}

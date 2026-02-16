@@ -117,6 +117,8 @@ selected_timestamps_scope_summary="$tmpdir/selected-timestamps-scope.json"
 selected_timestamps_scope_step_summary="$tmpdir/selected-timestamps-scope-step.md"
 selected_timestamps_no_rows_scope_summary="$tmpdir/selected-timestamps-no-rows-scope.json"
 selected_timestamps_no_rows_scope_step_summary="$tmpdir/selected-timestamps-no-rows-scope-step.md"
+selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
+selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -945,6 +947,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_no_rows_scope_summary" "Verify Gates Selected Timestamps No Rows Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-total-duration-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	totalDurationSeconds: 7,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_total_duration_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_total_duration_no_rows_scope_summary" "Verify Gates Selected Total Duration No Rows Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2322,6 +2343,18 @@ if ! grep -Fq "**Total duration:** 5s" "$selected_timestamps_no_rows_scope_step_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_no_rows_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-timestamps-no-rows-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 7s" "$selected_total_duration_no_rows_scope_step_summary"; then
+	echo "Expected selected-total-duration-no-rows-scope summary to preserve explicit total duration when selected scope has no rows/timestamps." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_total_duration_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-total-duration-no-rows-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
