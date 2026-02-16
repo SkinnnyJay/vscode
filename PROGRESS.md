@@ -2964,3 +2964,10 @@
   - Scenario verifies selected no-row payloads with only non-selected duration-map entries (`gateDurationSecondsById: {build: 3}`) keep selected scoped map defaults (`{"lint":0}`) and preserve explicit selected `totalDurationSeconds` when selected duration-map evidence is absent.
   - `scripts/README.md` updated to document selected no-row duration-map scoping behavior before duration precedence decisions.
   **Why:** ensures selected total-duration precedence uses only selected-scoped duration evidence and does not treat non-selected duration-map entries as selected timing evidence.
+- **Selected non-selected duration-map scoping without explicit total-duration coverage (2026-02-16 AM)** Completed selected scoping fallback matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_nonselected_duration_map_without_explicit_no_rows_scope`.
+  - Scenario verifies when selected scope has only non-selected duration-map entries and no explicit selected total-duration scalar:
+    - selected duration map remains scoped defaults (`{"lint":0}`)
+    - `Total duration` remains `unknown`.
+  - `scripts/README.md` selected duration-map scoping notes updated to include no-explicit-total fallback behavior.
+  **Why:** confirms scoped duration-map fallback does not accidentally synthesize deterministic zero totals when selected duration evidence is absent and no explicit total-duration scalar exists.
