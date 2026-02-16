@@ -2657,6 +2657,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` scenario and verifies explicit retried-gate IDs force minimum retry-count map values (`1`) when selected retry-count maps provide `0`/missing values, keeping retry aggregates/attention consistent.
   - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_zero_count_retry_map` scenario and verifies the same minimum retry-count normalization in unscoped summaries (no `selectedGateIds`).
   - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` scenario and verifies explicit retried subset lists constrain retry aggregates/attention in unscoped summaries even when retry-count maps include additional gates.
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_missing_retry_map_key` scenario and verifies explicit retried IDs missing from retry-count maps are synthesized to minimum retry count (`1`) for aggregate/map consistency.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_non_success_with_retries_scope` scenario and verifies explicit empty non-success lists still allow selected retried-gate attention fallback.
@@ -2810,11 +2811,12 @@
   **Why:** protects retry aggregate and attention-list derivation from stale or over-inclusive retry-count maps when explicit retried subsets are supplied.
 - **Explicit retried-gate minimum retry-count normalization (2026-02-16 AM)** Hardened sparse retry-map consistency:
   - `scripts/publish-verify-gates-summary.sh` now promotes retry-count map values to a minimum of `1` for gates explicitly listed in `retriedGateIds` when summary-provided counts are `0` or missing, and normalizes non-retried map entries to `0` when explicit retried lists are provided.
+  - Explicit retried gate IDs missing from retry-count maps are now synthesized into the normalized retry-count map before aggregate derivation.
   - This preserves aggregate consistency (`Retried gates` vs `Total retries` / `Total retry backoff`) under sparse or contradictory producer payloads.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_retried_zero_count_retry_map_scope` and `explicit_retried_zero_count_retry_map` and verifies (selected + unscoped):
     - normalized retry-count map (`"lint":1`)
     - aggregate retries/backoff (`1` / `1s`)
     - attention list remains constrained to explicit retried gates.
-  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` and verifies unscoped explicit retried subsets still constrain aggregate retries/backoff and attention lists (with non-retried map entries zeroed) when retry-count maps include additional gate IDs.
+  - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_subset_retry_map` and `explicit_retried_missing_retry_map_key` and verifies unscoped explicit retried subsets still constrain aggregate retries/backoff and attention lists (with non-retried map entries zeroed) when retry-count maps include additional gate IDs or omit explicit retried IDs.
   - `scripts/README.md` updated to document explicit retried-gate minimum retry-count normalization.
   **Why:** prevents contradictory outputs where explicit retried lists are non-empty but aggregate retry totals collapse to zero due to sparse retry-count map fields.

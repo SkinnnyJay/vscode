@@ -193,6 +193,8 @@ explicit_retried_zero_count_retry_map_summary="$tmpdir/explicit-retried-zero-cou
 explicit_retried_zero_count_retry_map_step_summary="$tmpdir/explicit-retried-zero-count-retry-map-step.md"
 explicit_retried_subset_retry_map_summary="$tmpdir/explicit-retried-subset-retry-map.json"
 explicit_retried_subset_retry_map_step_summary="$tmpdir/explicit-retried-subset-retry-map-step.md"
+explicit_retried_missing_retry_map_key_summary="$tmpdir/explicit-retried-missing-retry-map-key.json"
+explicit_retried_missing_retry_map_key_step_summary="$tmpdir/explicit-retried-missing-retry-map-key-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -1947,6 +1949,24 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_retried_subset_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_subset_retry_map_summary" "Verify Gates Explicit Retried Subset Retry Map Contract Test"
+
+node - "$expected_schema_version" "$explicit_retried_missing_retry_map_key_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-retried-missing-retry-map-key-contract',
+	retriedGateIds: ['lint'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_retried_missing_retry_map_key_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_missing_retry_map_key_summary" "Verify Gates Explicit Retried Missing Retry Map Key Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4152,6 +4172,30 @@ if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_subset_retry_m
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_subset_retry_map_step_summary"; then
 	echo "Did not expect schema warning for explicit-retried-subset-retry-map summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to keep selected-gate metadata empty when no gate IDs are otherwise known." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_missing_retry_map_key_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to preserve explicit retried-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1}" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to synthesize minimum retry-count map entries for explicit retried gates." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 1" "$explicit_retried_missing_retry_map_key_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to derive retry aggregates from synthesized explicit retried map entries." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Expected explicit-retried-missing-retry-map-key summary to include synthesized retried gate in attention fallback." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_missing_retry_map_key_step_summary"; then
+	echo "Did not expect schema warning for explicit-retried-missing-retry-map-key summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then

@@ -665,6 +665,10 @@ const gateRetryCountById = retriedGateIdsFromSummary === null
 			const retryCount = normalizeInteger(normalizedRetryCountByGateId[gateId]) ?? 0;
 			normalizedRetryCountByGateId[gateId] = retryCount <= 0 ? 1 : retryCount;
 		}
+		for (const gateId of retriedGateIdsFromSummary) {
+			const retryCount = normalizeInteger(normalizedRetryCountByGateId[gateId]) ?? 0;
+			normalizedRetryCountByGateId[gateId] = retryCount <= 0 ? 1 : retryCount;
+		}
 		return normalizedRetryCountByGateId;
 	})();
 const gateDurationSecondsByIdFromSummary = scopeGateMapToSelection(
