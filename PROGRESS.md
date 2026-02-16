@@ -3077,3 +3077,9 @@
   - Assertions confirm scientific-notation selected aggregate scalars are ignored and selected retry/duration evidence-derived aggregates remain authoritative.
   - `scripts/README.md` selected aggregate notes updated to explicitly include scientific-notation scalar suppression.
   **Why:** keeps selected-scope scalar handling aligned with strict integer-only parsing and prevents scientific-notation scalar overrides from bypassing selected evidence precedence.
+- **Selected float aggregate scalar scope coverage (2026-02-16 AM)** Extended selected aggregate normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_float_scalar_scope`.
+  - Scenario injects non-integer numeric aggregate retry/duration/rate scalar values under explicit selected scope with valid selected retry/duration evidence.
+  - Assertions confirm non-integer selected aggregate scalars are ignored and selected evidence-derived aggregate metrics remain authoritative.
+  - `scripts/README.md` selected aggregate notes updated to explicitly include non-integer numeric scalar suppression.
+  **Why:** ensures selected-scope scalar parsing stays integer-only for numeric inputs (not just strings), preventing fractional aggregate scalar overrides from leaking into selected summaries.
