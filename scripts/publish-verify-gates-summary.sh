@@ -825,6 +825,8 @@ const hasOutcomeEvidence = resolvedRowsForSelectionScope.length > 0
 	|| notRunGateCountFromSummary !== null
 	|| rawStatusCountsHasValues;
 const selectedScopeHasOutcomeEvidence = selectedGateIdsFromSummary !== null && hasOutcomeEvidence;
+const selectedScopeHasUnresolvedStatuses = selectedGateIdsFromSummary !== null
+	&& selectedGateIds.some((gateId) => gateStatusById[gateId] === 'unknown');
 const selectedScopeHasFailures = failedGateCount > 0;
 const selectedScopeHasExecuted = executedGateCount > 0;
 const explicitDryRunRaw = normalizeBoolean(summary.dryRun);
@@ -833,7 +835,7 @@ const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === 
 	: explicitDryRunRaw;
 const explicitExitReasonRaw = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
 const explicitExitReason = selectedScopeHasOutcomeEvidence && (
-	((explicitExitReasonRaw === 'fail-fast' || explicitExitReasonRaw === 'completed-with-failures') && !selectedScopeHasFailures)
+	((explicitExitReasonRaw === 'fail-fast' || explicitExitReasonRaw === 'completed-with-failures') && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| (explicitExitReasonRaw === 'success' && selectedScopeHasFailures)
 	|| (explicitExitReasonRaw === 'dry-run' && selectedScopeHasExecuted)
 )
@@ -841,7 +843,7 @@ const explicitExitReason = selectedScopeHasOutcomeEvidence && (
 	: explicitExitReasonRaw;
 const explicitRunClassificationRaw = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
 const explicitRunClassification = selectedScopeHasOutcomeEvidence && (
-	((explicitRunClassificationRaw === 'failed-fail-fast' || explicitRunClassificationRaw === 'failed-continued') && !selectedScopeHasFailures)
+	((explicitRunClassificationRaw === 'failed-fail-fast' || explicitRunClassificationRaw === 'failed-continued') && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| ((explicitRunClassificationRaw === 'success-no-retries' || explicitRunClassificationRaw === 'success-with-retries') && selectedScopeHasFailures)
 	|| (explicitRunClassificationRaw === 'dry-run' && selectedScopeHasExecuted)
 )
@@ -902,7 +904,7 @@ const successForRunClassification = (() => {
 })();
 const explicitSuccessFromSummaryRaw = normalizeBoolean(summary.success);
 const explicitSuccessFromSummary = selectedScopeHasOutcomeEvidence && (
-	(explicitSuccessFromSummaryRaw === false && !selectedScopeHasFailures)
+	(explicitSuccessFromSummaryRaw === false && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| (explicitSuccessFromSummaryRaw === true && selectedScopeHasFailures)
 )
 	? null
@@ -981,6 +983,7 @@ const explicitContinueOnFailureFromSummary = selectedScopeHasOutcomeEvidence
 	&& explicitContinueOnFailureFromSummaryRaw === true
 	&& selectedScopeHasExecuted
 	&& !selectedScopeHasFailures
+	&& !selectedScopeHasUnresolvedStatuses
 	? null
 	: explicitContinueOnFailureFromSummaryRaw;
 const explicitContinueOnFailure = explicitContinueOnFailureFromSummary !== null

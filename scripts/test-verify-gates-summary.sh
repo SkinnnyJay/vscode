@@ -127,6 +127,8 @@ selected_run_state_no_evidence_scope_summary="$tmpdir/selected-run-state-no-evid
 selected_run_state_no_evidence_scope_step_summary="$tmpdir/selected-run-state-no-evidence-scope-step.md"
 selected_run_state_nonselected_evidence_scope_summary="$tmpdir/selected-run-state-nonselected-evidence-scope.json"
 selected_run_state_nonselected_evidence_scope_step_summary="$tmpdir/selected-run-state-nonselected-evidence-scope-step.md"
+selected_run_state_unknown_status_scope_summary="$tmpdir/selected-run-state-unknown-status-scope.json"
+selected_run_state_unknown_status_scope_step_summary="$tmpdir/selected-run-state-unknown-status-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1069,6 +1071,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_nonselected_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_nonselected_evidence_scope_summary" "Verify Gates Selected Run-State Nonselected-Evidence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_unknown_status_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-unknown-status-scope-contract',
+	selectedGateIds: ['lint'],
+	success: false,
+	dryRun: false,
+	continueOnFailure: true,
+	exitReason: 'completed-with-failures',
+	runClassification: 'failed-continued',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'MYSTERY-STATUS', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: null, startedAt: '20260215T150000Z', completedAt: '20260215T150001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_unknown_status_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_unknown_status_scope_summary" "Verify Gates Selected Run-State Unknown-Status Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2559,6 +2586,26 @@ if grep -Fq "build" "$selected_run_state_nonselected_evidence_scope_step_summary
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_nonselected_evidence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-nonselected-evidence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Exit reason:** completed-with-failures" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Run classification:** failed-continued" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to preserve explicit failure run-state when selected-scope statuses are unresolved." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to preserve explicit continue-on-failure when selected-scope statuses are unresolved." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | unknown |' "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to render unresolved selected row status as unknown." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-unknown-status-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
