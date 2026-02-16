@@ -3026,3 +3026,9 @@
     - malformed fields re-derive from normalized evidence (`retriedGateCount`, `totalRetryBackoffSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `retryBackoffSharePercent`).
   - `scripts/README.md` unscoped aggregate precedence notes updated to include mixed explicit/malformed per-field resolution semantics.
   **Why:** prevents partial scalar payloads from either over-trusting malformed fields or incorrectly discarding valid explicit operator-provided aggregate metrics.
+- **Unscoped numeric-string aggregate scalar precedence coverage (2026-02-16 AM)** Extended scalar normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_string_scalar_precedence`.
+  - Scenario injects whitespace-padded numeric-string scalar metrics for unscoped retry/duration/rate aggregates.
+  - Assertions confirm trimmed numeric-string scalar values normalize to integers and remain authoritative over derived fallback metrics.
+  - `scripts/README.md` unscoped aggregate scalar notes updated to explicitly include trimmed numeric-string precedence behavior.
+  **Why:** ensures operator-provided scalar metrics remain stable when serialized as numeric strings (common in shell/env-propagated JSON payloads).
