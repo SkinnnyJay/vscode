@@ -725,17 +725,17 @@ const attentionGateIds = attentionGateIdsFromSummary
 const retriedGateIdsLabel = retriedGateIds.length > 0 ? retriedGateIds.join(', ') : 'none';
 const nonSuccessGateIdsLabel = nonSuccessGateIds.length > 0 ? nonSuccessGateIds.join(', ') : 'none';
 const attentionGateIdsLabel = attentionGateIds.length > 0 ? attentionGateIds.join(', ') : 'none';
-const retriedGateCount = normalizeNonNegativeInteger(summary.retriedGateCount) ?? retriedGateIds.length;
-const totalRetryCount = normalizeNonNegativeInteger(summary.totalRetryCount) ?? sumIntegerValues(Object.values(gateRetryCountById));
-const totalRetryBackoffSeconds = normalizeNonNegativeInteger(summary.totalRetryBackoffSeconds) ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
-const executedDurationSeconds = normalizeNonNegativeInteger(summary.executedDurationSeconds) ?? executedGateIds.reduce((total, gateId) => {
+const retriedGateCount = normalizeSelectedScopedNonNegativeInteger(summary.retriedGateCount) ?? retriedGateIds.length;
+const totalRetryCount = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryCount) ?? sumIntegerValues(Object.values(gateRetryCountById));
+const totalRetryBackoffSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalRetryBackoffSeconds) ?? Object.values(gateRetryCountById).reduce((total, retryCount) => total + computeRetryBackoffSeconds(retryCount), 0);
+const executedDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.executedDurationSeconds) ?? executedGateIds.reduce((total, gateId) => {
 	const durationSeconds = toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0;
 	return total + durationSeconds;
 }, 0);
-const averageExecutedDurationSeconds = normalizeNonNegativeInteger(summary.averageExecutedDurationSeconds) ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
-const retryRatePercent = normalizeNonNegativeInteger(summary.retryRatePercent) ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
-const passRatePercent = normalizeNonNegativeInteger(summary.passRatePercent) ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
-const retryBackoffSharePercent = normalizeNonNegativeInteger(summary.retryBackoffSharePercent) ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
+const averageExecutedDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.averageExecutedDurationSeconds) ?? (executedGateCount > 0 ? Math.floor(executedDurationSeconds / executedGateCount) : null);
+const retryRatePercent = normalizeSelectedScopedNonNegativeInteger(summary.retryRatePercent) ?? (executedGateCount > 0 ? Math.floor((retriedGateCount * 100) / executedGateCount) : null);
+const passRatePercent = normalizeSelectedScopedNonNegativeInteger(summary.passRatePercent) ?? (executedGateCount > 0 ? Math.floor((passedGateCount * 100) / executedGateCount) : null);
+const retryBackoffSharePercent = normalizeSelectedScopedNonNegativeInteger(summary.retryBackoffSharePercent) ?? (executedDurationSeconds > 0 ? Math.floor((totalRetryBackoffSeconds * 100) / executedDurationSeconds) : null);
 const executedGateDurations = executedGateIds.map((gateId) => ({ gateId, durationSeconds: toIntegerOrNull(gateDurationSecondsById[gateId]) ?? 0 }));
 const slowestExecutedGate = executedGateDurations.reduce((slowestGate, gateDuration) => {
 	if (!slowestGate) {
@@ -791,7 +791,7 @@ const completedAt = normalizeSummaryTimestamp(summary.completedAt) ?? (() => {
 	return latestTimestamp;
 })();
 const totalDurationSeconds = (() => {
-	const explicitTotalDurationSeconds = normalizeNonNegativeInteger(summary.totalDurationSeconds);
+	const explicitTotalDurationSeconds = normalizeSelectedScopedNonNegativeInteger(summary.totalDurationSeconds);
 	if (explicitTotalDurationSeconds !== null) {
 		return explicitTotalDurationSeconds;
 	}

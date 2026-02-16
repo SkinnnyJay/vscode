@@ -109,6 +109,8 @@ selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-a
 selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
 selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
 selected_slow_fast_scope_step_summary="$tmpdir/selected-slow-fast-scope-step.md"
+selected_aggregate_metrics_scope_summary="$tmpdir/selected-aggregate-metrics-scope.json"
+selected_aggregate_metrics_scope_step_summary="$tmpdir/selected-aggregate-metrics-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -842,6 +844,37 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_slow_fast_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_slow_fast_scope_summary" "Verify Gates Selected Slow/Fast Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-scope-contract',
+	selectedGateIds: ['lint'],
+	executedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateRetryCountById: { lint: 0 },
+	gateDurationSecondsById: { lint: 4 },
+	retriedGateCount: 8,
+	totalRetryCount: 8,
+	totalRetryBackoffSeconds: 8,
+	executedDurationSeconds: 99,
+	averageExecutedDurationSeconds: 99,
+	retryRatePercent: 80,
+	retryBackoffSharePercent: 80,
+	passRatePercent: 0,
+	totalDurationSeconds: 200,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_scope_summary" "Verify Gates Selected Aggregate Metrics Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2139,6 +2172,30 @@ if grep -Fq "build" "$selected_slow_fast_scope_step_summary" || grep -Fq "9s" "$
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_slow_fast_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-slow-fast-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 0" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scope summary to ignore conflicting aggregate retry scalars under explicit selected scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 4s" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Executed duration average:** 4s" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Total duration:** 4s" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scope summary to ignore conflicting aggregate duration scalars under explicit selected scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 0%" "$selected_aggregate_metrics_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scope summary to ignore conflicting aggregate rate scalars under explicit selected scope." >&2
+	exit 1
+fi
+if grep -Fq "99" "$selected_aggregate_metrics_scope_step_summary" || grep -Fq "200" "$selected_aggregate_metrics_scope_step_summary" || grep -Fq "80%" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scope summary to exclude conflicting unscoped aggregate scalar values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
