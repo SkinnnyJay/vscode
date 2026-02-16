@@ -3032,3 +3032,12 @@
   - Assertions confirm trimmed numeric-string scalar values normalize to integers and remain authoritative over derived fallback metrics.
   - `scripts/README.md` unscoped aggregate scalar notes updated to explicitly include trimmed numeric-string precedence behavior.
   **Why:** ensures operator-provided scalar metrics remain stable when serialized as numeric strings (common in shell/env-propagated JSON payloads).
+- **Selected aggregate non-selected-evidence scoping coverage (2026-02-16 AM)** Expanded selected aggregate scope matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_nonselected_evidence_scope`.
+  - Scenario provides selected gate `lint` with only non-selected execution/retry/duration evidence (`build`) plus conflicting selected aggregate scalars.
+  - Assertions confirm non-selected execution evidence is fully scoped out for selected aggregate metrics:
+    - selected executed/retried metrics collapse to zero/none
+    - selected retry/duration/rate aggregates render deterministic zero/`n/a` no-evidence values
+    - non-selected gate IDs and conflicting selected aggregate scalar values are suppressed.
+  - `scripts/README.md` selected aggregate notes updated to explicitly include non-selected-evidence scoping behavior.
+  **Why:** prevents selected-scope aggregate summaries from leaking unselected execution evidence in sparse or mixed payloads.
