@@ -3283,3 +3283,9 @@
   - Assertions confirm explicit empty attention override remains authoritative (`Attention gates list: none`) while retried metadata/aggregates still derive normally.
   - `scripts/README.md` explicit empty non-success/attention note updated to explicitly mention unscoped empty attention coexistence with retried evidence.
   **Why:** closes unscoped parity with selected behavior so explicit empty attention overrides are preserved even under explicit retried-gate evidence.
+- **Unscoped mixed valid/malformed statusCounts fallback coverage (2026-02-16 PM)** Extended unscoped status-count precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_status_counts_partial_fallback`.
+  - Scenario injects mixed raw `statusCounts` fields (`pass`/`skip` valid, `fail`/`not-run` malformed) with sparse partition evidence.
+  - Assertions confirm per-field precedence: valid raw status-count fields remain authoritative while malformed siblings fall back to normalized sparse partition counts; executed/pass-rate metadata remains coherent under mixed count sources.
+  - `scripts/README.md` overlapping partition-list note updated to explicitly mention per-field mixed valid+malformed `statusCounts` fallback behavior.
+  **Why:** closes a per-field precedence gap so partially malformed unscoped `statusCounts` payloads stay deterministic without discarding valid fields.
