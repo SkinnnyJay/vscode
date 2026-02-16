@@ -109,6 +109,8 @@ selected_status_map_scope_summary="$tmpdir/selected-status-map-scope.json"
 selected_status_map_scope_step_summary="$tmpdir/selected-status-map-scope-step.md"
 selected_status_counts_conflict_status_map_scope_summary="$tmpdir/selected-status-counts-conflict-status-map-scope.json"
 selected_status_counts_conflict_status_map_scope_step_summary="$tmpdir/selected-status-counts-conflict-status-map-scope-step.md"
+selected_status_counts_partial_malformed_status_map_scope_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope.json"
+selected_status_counts_partial_malformed_status_map_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope-step.md"
 selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
 selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
 selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
@@ -1141,6 +1143,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_conflict_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_conflict_status_map_scope_summary" "Verify Gates Selected Status Counts Conflict Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_partial_malformed_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-partial-malformed-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck', 'docs'],
+	passedGateCount: 8,
+	failedGateCount: 'bad',
+	skippedGateCount: 6,
+	notRunGateCount: -1,
+	executedGateCount: 7,
+	statusCounts: { pass: 'bad', fail: 9, skip: null, 'not-run': '2' },
+	gateStatusById: { lint: 'pass', typecheck: 'fail', docs: 'not-run' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_status_map_scope_summary" "Verify Gates Selected Status Counts Partial Malformed Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_scalar_failure_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6094,6 +6121,26 @@ if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_conflict_status_m
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_conflict_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-conflict-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, docs" "$selected_status_counts_partial_malformed_status_map_scope_step_summary" || ! grep -Fq "**Gate count:** 3" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-status-map-scope summary to preserve selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_status_counts_partial_malformed_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_status_map_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_status_counts_partial_malformed_status_map_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-status-map-scope summary to suppress mixed scalar/raw status-count conflicts and derive selected counters from status-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":0,"not-run":1}' "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-status-map-scope summary to align status counts with selected status-map evidence despite partially malformed raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-status-map-scope summary to derive selected executed/pass-rate metadata from status-map evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-partial-malformed-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Passed gates:** 1" "$selected_scalar_failure_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_scalar_failure_scope_step_summary"; then

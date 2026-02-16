@@ -3368,3 +3368,9 @@
   - Assertions confirm per-field status-count derivation merges raw values with status-map fallback for missing/malformed fields, while partition labels/executed metadata stay deterministic.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention partial raw status-count fallback to status-map/list evidence.
   **Why:** closes the remaining unscoped partial-raw fallback branch so missing/malformed raw status-count fields cannot destabilize status-map-driven fallback outputs.
+- **Selected partial raw status-count suppression with status-map evidence coverage (2026-02-16 PM)** Extended selected status-map suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_malformed_status_map_scope`.
+  - Scenario injects selected status-map evidence with conflicting scalar counters and partially malformed raw `statusCounts`.
+  - Assertions confirm selected status-map-derived count/status lines remain authoritative while mixed scalar + partially malformed raw counters are ignored, with executed/pass-rate metadata remaining selection-scoped.
+  - `scripts/README.md` selected scope note updated to explicitly mention partially malformed raw status-count suppression under selected status-map evidence.
+  **Why:** closes the remaining selected status-map suppression edge so partially malformed raw status-count inputs cannot leak into selected status-map-derived counters.
