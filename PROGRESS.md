@@ -3071,3 +3071,9 @@
   - Assertions confirm scientific-notation scalar values are treated as invalid and aggregate metrics re-derive from normalized retry/duration evidence.
   - `scripts/README.md` unscoped scalar notes updated to explicitly include scientific-notation numeric-string rejection behavior.
   **Why:** guarantees scalar parsing remains strict base-10 integer only and avoids accidental acceptance of exponent-form inputs from loosely typed JSON producers.
+- **Selected scientific-notation aggregate scalar scope coverage (2026-02-16 AM)** Extended selected aggregate normalization matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_scientific_string_scope`.
+  - Scenario injects scientific-notation aggregate scalar strings (`*e*` form) for selected retry/duration/rate fields under explicit selected scope.
+  - Assertions confirm scientific-notation selected aggregate scalars are ignored and selected retry/duration evidence-derived aggregates remain authoritative.
+  - `scripts/README.md` selected aggregate notes updated to explicitly include scientific-notation scalar suppression.
+  **Why:** keeps selected-scope scalar handling aligned with strict integer-only parsing and prevents scientific-notation scalar overrides from bypassing selected evidence precedence.

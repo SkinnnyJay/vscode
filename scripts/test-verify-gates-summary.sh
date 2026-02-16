@@ -117,6 +117,8 @@ selected_aggregate_metrics_string_scalar_scope_summary="$tmpdir/selected-aggrega
 selected_aggregate_metrics_string_scalar_scope_step_summary="$tmpdir/selected-aggregate-metrics-string-scalar-scope-step.md"
 selected_aggregate_metrics_decimal_string_scope_summary="$tmpdir/selected-aggregate-metrics-decimal-string-scope.json"
 selected_aggregate_metrics_decimal_string_scope_step_summary="$tmpdir/selected-aggregate-metrics-decimal-string-scope-step.md"
+selected_aggregate_metrics_scientific_string_scope_summary="$tmpdir/selected-aggregate-metrics-scientific-string-scope.json"
+selected_aggregate_metrics_scientific_string_scope_step_summary="$tmpdir/selected-aggregate-metrics-scientific-string-scope-step.md"
 selected_aggregate_metrics_malformed_scope_summary="$tmpdir/selected-aggregate-metrics-malformed-scope.json"
 selected_aggregate_metrics_malformed_scope_step_summary="$tmpdir/selected-aggregate-metrics-malformed-scope-step.md"
 selected_aggregate_metrics_no_evidence_scope_summary="$tmpdir/selected-aggregate-metrics-no-evidence-scope.json"
@@ -1155,6 +1157,36 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_decimal_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_decimal_string_scope_summary" "Verify Gates Selected Aggregate Metrics Decimal String Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_aggregate_metrics_scientific_string_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-aggregate-metrics-scientific-string-scope-contract',
+	selectedGateIds: ['lint'],
+	executedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass' },
+	gateRetryCountById: { lint: 1 },
+	gateDurationSecondsById: { lint: 4 },
+	retriedGateCount: '8e1',
+	totalRetryCount: '8e1',
+	totalRetryBackoffSeconds: '8e1',
+	executedDurationSeconds: '99e1',
+	averageExecutedDurationSeconds: '99e1',
+	retryRatePercent: '80e1',
+	retryBackoffSharePercent: '80e1',
+	passRatePercent: '0e1',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_scientific_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_scientific_string_scope_summary" "Verify Gates Selected Aggregate Metrics Scientific String Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_aggregate_metrics_malformed_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4784,6 +4816,30 @@ if grep -Fq "99.5" "$selected_aggregate_metrics_decimal_string_scope_step_summar
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_decimal_string_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-aggregate-metrics-decimal-string-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scientific-string-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gate count:** 1" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || ! grep -Fq "**Total retries:** 1" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scientific-string-scope summary to ignore scientific-notation aggregate retry scalars under explicit selected scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 4s" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || ! grep -Fq "**Executed duration average:** 4s" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scientific-string-scope summary to ignore scientific-notation aggregate duration scalars under explicit selected scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 100%" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 25%" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scientific-string-scope summary to ignore scientific-notation aggregate rate scalars under explicit selected scope." >&2
+	exit 1
+fi
+if grep -Fq "99e1" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || grep -Fq "80e1" "$selected_aggregate_metrics_scientific_string_scope_step_summary" || grep -Fq "8e1" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Expected selected-aggregate-metrics-scientific-string-scope summary to suppress conflicting scientific-notation aggregate scalar values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_scientific_string_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-aggregate-metrics-scientific-string-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_aggregate_metrics_malformed_scope_step_summary"; then
