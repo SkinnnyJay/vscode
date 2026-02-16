@@ -139,6 +139,8 @@ selected_run_state_not_run_blocked_selected_scope_summary="$tmpdir/selected-run-
 selected_run_state_not_run_blocked_selected_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-scope-step.md"
 selected_run_state_not_run_blocked_selected_continue_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continue-scope.json"
 selected_run_state_not_run_blocked_selected_continue_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continue-scope-step.md"
+selected_run_state_not_run_blocked_selected_dry_reason_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-dry-reason-scope.json"
+selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-dry-reason-scope-step.md"
 selected_run_state_not_run_blocked_selected_continued_conflict_scope_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continued-conflict-scope.json"
 selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary="$tmpdir/selected-run-state-not-run-blocked-selected-continued-conflict-scope-step.md"
 selected_run_state_not_run_blocked_nonselected_scope_summary="$tmpdir/selected-run-state-not-run-blocked-nonselected-scope.json"
@@ -1250,6 +1252,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_selected_continue_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Selected Continue Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-not-run-blocked-selected-dry-reason-scope-contract',
+	selectedGateIds: ['lint'],
+	success: true,
+	dryRun: true,
+	continueOnFailure: false,
+	exitReason: 'dry-run',
+	runClassification: 'dry-run',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'NOT-RUN', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:lint' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_blocked_selected_dry_reason_scope_summary" "Verify Gates Selected Run-State Not-Run Blocked Selected Dry-Reason Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3092,6 +3119,22 @@ if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_not_run_bloc
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-continue-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-dry-reason-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-dry-reason-scope summary to ignore conflicting dry-run reason/classification under selected blocked-reason fail-fast evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Dry run:** false" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-dry-reason-scope summary to clear dry-run metadata under selected blocked-reason fail-fast evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-dry-reason-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary"; then
