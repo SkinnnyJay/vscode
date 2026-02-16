@@ -3166,3 +3166,9 @@
   - Assertions confirm `100%` scalars are preserved (not treated as overflow) and are not replaced by `n/a` sparse fallback values.
   - `scripts/README.md` updated to explicitly note inclusive `100%` scalar precedence.
   **Why:** guards the normalization boundary so the new `>100` rejection logic remains strict while still accepting valid maximum percentage metadata.
+- **Mixed boundary/overflow rate precedence coverage (2026-02-16 AM)** Extended per-field percentage precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_rate_scalar_mixed_boundary_precedence`.
+  - Scenario combines valid boundary and overflow rate scalars in one payload (`retryRatePercent=100`, `retryBackoffSharePercent=101`, `passRatePercent=0`) with executable map/list evidence.
+  - Assertions confirm per-field resolution: valid boundary values are preserved, overflow values are ignored/re-derived, and overflow literals are suppressed.
+  - `scripts/README.md` unscoped aggregate note updated to call out mixed boundary + overflow per-field precedence behavior.
+  **Why:** locks deterministic per-field behavior when upstream payloads mix valid and invalid percentage scalars in the same summary object.
