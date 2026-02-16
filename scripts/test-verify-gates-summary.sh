@@ -131,6 +131,8 @@ selected_timestamps_invalid_second_no_rows_scope_summary="$tmpdir/selected-times
 selected_timestamps_invalid_second_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-second-no-rows-scope-step.md"
 selected_timestamps_invalid_hour_no_rows_scope_summary="$tmpdir/selected-timestamps-invalid-hour-no-rows-scope.json"
 selected_timestamps_invalid_hour_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-hour-no-rows-scope-step.md"
+selected_timestamps_invalid_minute_no_rows_scope_summary="$tmpdir/selected-timestamps-invalid-minute-no-rows-scope.json"
+selected_timestamps_invalid_minute_no_rows_scope_step_summary="$tmpdir/selected-timestamps-invalid-minute-no-rows-scope-step.md"
 selected_timestamps_year_boundary_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-year-boundary-valid-no-rows-scope.json"
 selected_timestamps_year_boundary_valid_no_rows_scope_step_summary="$tmpdir/selected-timestamps-year-boundary-valid-no-rows-scope-step.md"
 selected_timestamps_day_boundary_valid_no_rows_scope_summary="$tmpdir/selected-timestamps-day-boundary-valid-no-rows-scope.json"
@@ -155,6 +157,8 @@ timestamps_invalid_explicit_no_rows_unscoped_summary="$tmpdir/timestamps-invalid
 timestamps_invalid_explicit_no_rows_unscoped_step_summary="$tmpdir/timestamps-invalid-explicit-no-rows-unscoped-step.md"
 timestamps_whitespace_no_rows_unscoped_summary="$tmpdir/timestamps-whitespace-no-rows-unscoped.json"
 timestamps_whitespace_no_rows_unscoped_step_summary="$tmpdir/timestamps-whitespace-no-rows-unscoped-step.md"
+timestamps_conflicting_no_rows_unscoped_summary="$tmpdir/timestamps-conflicting-no-rows-unscoped.json"
+timestamps_conflicting_no_rows_unscoped_step_summary="$tmpdir/timestamps-conflicting-no-rows-unscoped-step.md"
 selected_total_duration_no_rows_scope_summary="$tmpdir/selected-total-duration-no-rows-scope.json"
 selected_total_duration_no_rows_scope_step_summary="$tmpdir/selected-total-duration-no-rows-scope-step.md"
 selected_run_state_scope_summary="$tmpdir/selected-run-state-scope.json"
@@ -1232,6 +1236,26 @@ NODE
 
 GITHUB_STEP_SUMMARY="$selected_timestamps_invalid_hour_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_invalid_hour_no_rows_scope_summary" "Verify Gates Selected Timestamps Invalid Hour No Rows Scope Contract Test"
 
+node - "$expected_schema_version" "$selected_timestamps_invalid_minute_no_rows_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-invalid-minute-no-rows-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20260215T116000Z',
+	completedAt: '20260215T116005Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_invalid_minute_no_rows_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_invalid_minute_no_rows_scope_summary" "Verify Gates Selected Timestamps Invalid Minute No Rows Scope Contract Test"
+
 node - "$expected_schema_version" "$selected_timestamps_year_boundary_valid_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
 const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
@@ -1476,6 +1500,25 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$timestamps_whitespace_no_rows_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$timestamps_whitespace_no_rows_unscoped_summary" "Verify Gates Timestamps Whitespace No Rows Unscoped Contract Test"
+
+node - "$expected_schema_version" "$timestamps_conflicting_no_rows_unscoped_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'timestamps-conflicting-no-rows-unscoped-contract',
+	startedAt: '20260215T190010Z',
+	completedAt: '20260215T190000Z',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$timestamps_conflicting_no_rows_unscoped_step_summary" ./scripts/publish-verify-gates-summary.sh "$timestamps_conflicting_no_rows_unscoped_summary" "Verify Gates Timestamps Conflicting No Rows Unscoped Contract Test"
 
 node - "$expected_schema_version" "$selected_total_duration_no_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4234,6 +4277,26 @@ if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_invalid_hour_no_rows_
 	echo "Did not expect schema warning for selected-timestamps-invalid-hour-no-rows-scope summary." >&2
 	exit 1
 fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-minute-no-rows-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** unknown" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary" || ! grep -Fq "**Completed:** unknown" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-minute-no-rows-scope summary to suppress invalid-minute timestamp literals." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-minute-no-rows-scope summary to render unknown duration for invalid-minute timestamps." >&2
+	exit 1
+fi
+if grep -Fq "20260215T116000Z" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary" || grep -Fq "20260215T116005Z" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary"; then
+	echo "Expected selected-timestamps-invalid-minute-no-rows-scope summary to ignore invalid-minute timestamp literals." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_invalid_minute_no_rows_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-invalid-minute-no-rows-scope summary." >&2
+	exit 1
+fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_year_boundary_valid_no_rows_scope_step_summary"; then
 	echo "Expected selected-timestamps-year-boundary-valid-no-rows-scope summary to preserve selected-gate metadata." >&2
 	exit 1
@@ -4472,6 +4535,22 @@ if grep -Fq " 20260215T181500Z " "$timestamps_whitespace_no_rows_unscoped_step_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$timestamps_whitespace_no_rows_unscoped_step_summary"; then
 	echo "Did not expect schema warning for timestamps-whitespace-no-rows-unscoped summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$timestamps_conflicting_no_rows_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-unscoped summary to keep selected-gate metadata empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T190010Z" "$timestamps_conflicting_no_rows_unscoped_step_summary" || ! grep -Fq "**Completed:** 20260215T190000Z" "$timestamps_conflicting_no_rows_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-unscoped summary to preserve conflicting explicit timestamps for diagnostics." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** unknown" "$timestamps_conflicting_no_rows_unscoped_step_summary"; then
+	echo "Expected timestamps-conflicting-no-rows-unscoped summary to render unknown duration for reversed unscoped timestamps." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$timestamps_conflicting_no_rows_unscoped_step_summary"; then
+	echo "Did not expect schema warning for timestamps-conflicting-no-rows-unscoped summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_total_duration_no_rows_scope_step_summary"; then

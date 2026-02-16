@@ -2930,3 +2930,9 @@
     - `selected_timestamps_year_boundary_valid_no_rows_scope` validating valid year-boundary timestamps (`20261231T235959Z` -> `20270101T000004Z`) are preserved and derive `Total duration: 5s`.
   - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-hour rejection and year-boundary acceptance coverage.
   **Why:** closes remaining clock-boundary gaps so canonical parsing rejects invalid hour values while preserving valid cross-year duration derivation.
+- **Invalid-minute + unscoped conflicting no-row timestamp coverage (2026-02-16 AM)** Extended remaining sparse timing edge contracts:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_timestamps_invalid_minute_no_rows_scope` validating invalid-minute literals are rejected (`Started/Completed: unknown`, `Total duration: unknown`)
+    - `timestamps_conflicting_no_rows_unscoped` validating reversed explicit unscoped no-row timestamps preserve diagnostic start/end values while rendering `Total duration: unknown`.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include invalid-minute rejection and unscoped conflicting no-row duration behavior.
+  **Why:** rounds out canonical parser edge coverage for malformed minute fields and confirms negative-duration avoidance applies consistently in unscoped sparse summaries.
