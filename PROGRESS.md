@@ -3160,3 +3160,9 @@
   - Scenario injects overflow numeric-string rate scalars (`"150"`, `"140"`, `"120"`) without execution evidence.
   - Assertions confirm overflow scalar values are rejected and sparse no-evidence defaults remain `n/a` for all rate fields (with overflow literals suppressed from rendered output).
   **Why:** ensures rate bound enforcement also holds in sparse no-evidence payloads where fallback should stay `n/a` rather than leaking invalid explicit percentages.
+- **Rate upper-bound precedence coverage (2026-02-16 AM)** Added explicit boundary test for valid max percentages:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence`.
+  - Scenario injects sparse no-evidence explicit rate scalars at the inclusive upper bound (`"100"` for retry/share/pass rates).
+  - Assertions confirm `100%` scalars are preserved (not treated as overflow) and are not replaced by `n/a` sparse fallback values.
+  - `scripts/README.md` updated to explicitly note inclusive `100%` scalar precedence.
+  **Why:** guards the normalization boundary so the new `>100` rejection logic remains strict while still accepting valid maximum percentage metadata.

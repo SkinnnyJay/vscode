@@ -339,6 +339,8 @@ unscoped_aggregate_metrics_rate_scalar_overflow_fallback_summary="$tmpdir/unscop
 unscoped_aggregate_metrics_rate_scalar_overflow_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-fallback-step.md"
 unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback.json"
 unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback-step.md"
+unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence.json"
+unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence-step.md"
 unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback.json"
 unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary="$tmpdir/unscoped-aggregate-metrics-rate-derived-clamp-fallback-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -3785,6 +3787,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Overflow No Evidence Fallback Contract Test"
+
+node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence-contract',
+	retryRatePercent: '100',
+	retryBackoffSharePercent: '100',
+	passRatePercent: '100',
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_summary" "Verify Gates Unscoped Aggregate Metrics Rate Scalar Upper Bound Precedence Contract Test"
 
 node - "$expected_schema_version" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7377,6 +7399,18 @@ if grep -Fq "150%" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_overflow_no_evidence_fallback_step_summary"; then
 	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-overflow-no-evidence-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 100%" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** 100%" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence summary to preserve explicit upper-bound 100% rate scalars in sparse no-evidence payloads." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary"; then
+	echo "Expected unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence summary to avoid replacing explicit 100% rate scalars with no-evidence fallback values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_aggregate_metrics_rate_scalar_upper_bound_precedence_step_summary"; then
+	echo "Did not expect schema warning for unscoped-aggregate-metrics-rate-scalar-upper-bound-precedence summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Passed gates:** 5" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary" || ! grep -Fq "**Executed gates:** 1" "$unscoped_aggregate_metrics_rate_derived_clamp_fallback_step_summary"; then
