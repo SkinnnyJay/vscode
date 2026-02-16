@@ -2910,3 +2910,11 @@
   - Scenario verifies padded selected no-row `startedAt/completedAt` values (spaces/tabs) are trimmed before rendering and duration derivation (`5s`), with raw padded literals suppressed.
   - `scripts/README.md` timestamp-whitespace notes updated to explicitly include selected no-row scope behavior.
   **Why:** ensures whitespace normalization remains consistent after canonical parser hardening, including selected sparse metadata paths.
+- **Selected unmatched-row malformed explicit timestamp isolation coverage (2026-02-16 AM)** Clarified selected-scope timing isolation from fallback table rows:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_malformed_explicit_scope`.
+  - Scenario verifies when `selectedGateIds` match no rows and explicit selected-scope `startedAt/completedAt` values are malformed:
+    - selected-scope timing metadata remains unresolved (`Started/Completed: unknown`)
+    - `Total duration` remains `unknown`
+    - non-selected fallback table rows still render for visibility but do not influence selected-scope timing metadata.
+  - `scripts/README.md` updated to document unmatched-row malformed-explicit timestamp isolation coverage.
+  **Why:** prevents false precision where fallback table rows could be mistaken as selected-scope timing evidence when selected timing metadata is malformed.
