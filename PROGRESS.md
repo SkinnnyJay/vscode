@@ -2569,6 +2569,10 @@
     - retry aggregates (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`)
     - duration aggregates (`executedDurationSeconds`, `averageExecutedDurationSeconds`, `totalDurationSeconds`)
     - percentage aggregates (`retryRatePercent`, `retryBackoffSharePercent`, `passRatePercent`).
+  - Publisher now filters explicit run-state scalars against selected-scope evidence:
+    - conflicting `success` / `dryRun` / `continueOnFailure` values are ignored when selected-scope status evidence proves otherwise.
+    - conflicting `exitReason` / `runClassification` values are ignored when selected-scope failure/execution evidence contradicts them.
+    - explicit run-state values remain preserved when selected scope has no outcome evidence.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
@@ -2581,6 +2585,8 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_slow_fast_scope` scenario and verifies non-selected explicit slow/fast scalar metadata is ignored (`Slowest/Fastest gate: lint`, durations `3s`) under selected scope.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_scope` scenario and verifies conflicting aggregate scalar metrics are ignored in favor of selected-scope derived values (retry totals `0`, duration totals `4s`, rate outputs `0%/0%/100%`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_total_duration_no_rows_scope` scenario and verifies explicit `totalDurationSeconds` is preserved when selected scope has no rows and no duration-map evidence (`Total duration: 7s`).
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scope` scenario and verifies conflicting explicit run-state values are ignored when selected-scope pass evidence exists (`Success: true`, `Exit reason: success`, `Run classification: success-no-retries`, `Dry run: false`, `Continue on failure: false`).
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_no_evidence_scope` scenario and verifies explicit run-state values are preserved when selected scope has no outcome evidence (`Success: false`, `Exit reason: completed-with-failures`, `Run classification: failed-continued`, `Continue on failure: true`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.
