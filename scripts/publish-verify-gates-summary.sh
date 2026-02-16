@@ -848,6 +848,7 @@ const explicitExitReasonRaw = normalizeKnownValue(summary.exitReason, ['dry-run'
 const explicitExitReason = selectedScopeHasOutcomeEvidence && (
 	((explicitExitReasonRaw === 'fail-fast' || explicitExitReasonRaw === 'completed-with-failures') && selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| (explicitExitReasonRaw === 'success' && selectedScopeHasFailures)
+	|| (explicitExitReasonRaw === 'completed-with-failures' && blockedByGateId !== 'none')
 	|| (explicitExitReasonRaw === 'dry-run' && selectedScopeHasExecuted)
 )
 	? null
@@ -856,6 +857,7 @@ const explicitRunClassificationRaw = normalizeKnownValue(summary.runClassificati
 const explicitRunClassification = selectedScopeHasOutcomeEvidence && (
 	((explicitRunClassificationRaw === 'failed-fail-fast' || explicitRunClassificationRaw === 'failed-continued') && selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| ((explicitRunClassificationRaw === 'success-no-retries' || explicitRunClassificationRaw === 'success-with-retries') && selectedScopeHasFailures)
+	|| (explicitRunClassificationRaw === 'failed-continued' && blockedByGateId !== 'none')
 	|| (explicitRunClassificationRaw === 'dry-run' && selectedScopeHasExecuted)
 )
 	? null
