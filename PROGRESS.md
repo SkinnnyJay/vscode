@@ -3427,3 +3427,9 @@
   - Assertions confirm merged selected status-map/partition counters remain authoritative while explicit zero scalar/raw bundles stay ignored, with executed/pass-rate metadata remaining deterministic.
   - `scripts/README.md` selected status-map scope note updated to explicitly mention partial status-map + partition blends suppressing explicit-zero scalar/raw bundles.
   **Why:** closes the selected mixed-evidence explicit-zero scalar+raw branch so falsy selected scalar/raw bundles cannot override selected partial status-map + partition-derived counters.
+- **Unscoped explicit-zero executed-count scalar override over explicit executed list coverage (2026-02-16 PM)** Extended unscoped executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_zero_scalar_overrides_explicit_list`.
+  - Scenario injects explicit non-empty `executedGateIds` plus explicit zero `executedGateCount`, with sparse pass/fail/retried evidence.
+  - Assertions confirm zero scalar executed-count remains authoritative (`Executed gates: 0`, executed-rate metrics `n/a`) while explicit executed list labels and sparse partition/attention metadata remain preserved.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention explicit-zero executed-count scalar overrides over non-empty executed lists.
+  **Why:** closes the executed zero-scalar/list-decoupling branch so explicit executed-count zero cannot be overridden by explicit executed list length in unscoped sparse payloads.

@@ -437,6 +437,8 @@ unscoped_executed_explicit_empty_list_summary="$tmpdir/unscoped-executed-explici
 unscoped_executed_explicit_empty_list_step_summary="$tmpdir/unscoped-executed-explicit-empty-list-step.md"
 unscoped_executed_scalar_count_overrides_empty_list_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list.json"
 unscoped_executed_scalar_count_overrides_empty_list_step_summary="$tmpdir/unscoped-executed-scalar-count-overrides-empty-list-step.md"
+unscoped_executed_zero_scalar_overrides_explicit_list_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list.json"
+unscoped_executed_zero_scalar_overrides_explicit_list_step_summary="$tmpdir/unscoped-executed-zero-scalar-overrides-explicit-list-step.md"
 unscoped_executed_fallback_partial_status_map_summary="$tmpdir/unscoped-executed-fallback-partial-status-map.json"
 unscoped_executed_fallback_partial_status_map_step_summary="$tmpdir/unscoped-executed-fallback-partial-status-map-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -5060,6 +5062,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_executed_scalar_count_overrides_empty_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_scalar_count_overrides_empty_list_summary" "Verify Gates Unscoped Executed Scalar Count Overrides Empty List Contract Test"
+
+node - "$expected_schema_version" "$unscoped_executed_zero_scalar_overrides_explicit_list_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-executed-zero-scalar-overrides-explicit-list-contract',
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck'],
+	executedGateIds: ['lint', 'typecheck'],
+	executedGateCount: 0,
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 2, typecheck: 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_executed_zero_scalar_overrides_explicit_list_summary" "Verify Gates Unscoped Executed Zero Scalar Overrides Explicit List Contract Test"
 
 node - "$expected_schema_version" "$unscoped_executed_fallback_partial_status_map_summary" <<'NODE'
 const fs = require('node:fs');
@@ -9772,6 +9797,34 @@ if ! grep -Fq "**Attention gates list:** build" "$unscoped_executed_scalar_count
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_scalar_count_overrides_empty_list_step_summary"; then
 	echo "Did not expect schema warning for unscoped-executed-scalar-count-overrides-empty-list summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to preserve sparse gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary" || ! grep -Fq "**Executed gates list:** lint, typecheck" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to keep explicit executed list labels while scalar executed count zero remains authoritative." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to render executed-rate metrics as n/a when scalar executedGateCount is zero despite explicit executed lists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary" || ! grep -Fq "**Failed gates:** 1" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to preserve partition counters while scalar executed-count zero controls rates." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint, typecheck" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to preserve non-success and retried-derived attention metadata under scalar executed-count zero override." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 2" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary" || grep -Fq "**Pass rate (executed gates):** 50%" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Expected unscoped-executed-zero-scalar-overrides-explicit-list summary to ignore executed list length for executed-count/rate calculations when scalar executedGateCount is explicitly zero." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_executed_zero_scalar_overrides_explicit_list_step_summary"; then
+	echo "Did not expect schema warning for unscoped-executed-zero-scalar-overrides-explicit-list summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 2" "$unscoped_executed_fallback_partial_status_map_step_summary"; then
