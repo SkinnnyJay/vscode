@@ -785,7 +785,8 @@ const blockedByGateId = scopedSummaryBlockedByGateId ?? (() => {
 			continue;
 		}
 		const gateStatus = gateStatusById[gateId];
-		const gateHasNotRunStatus = gateStatus !== undefined ? gateStatus === 'not-run' : notRunGateIds.includes(gateId);
+		const gateHasNotRunStatus = gateStatus === 'not-run'
+			|| ((gateStatus === undefined || gateStatus === 'unknown') && notRunGateIds.includes(gateId));
 		if (!gateHasNotRunStatus) {
 			continue;
 		}

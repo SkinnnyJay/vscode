@@ -173,6 +173,8 @@ selected_run_state_blocked_reason_pass_status_scope_summary="$tmpdir/selected-ru
 selected_run_state_blocked_reason_pass_status_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-pass-status-scope-step.md"
 selected_run_state_blocked_reason_not_run_list_scope_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope.json"
 selected_run_state_blocked_reason_not_run_list_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-not-run-list-scope-step.md"
+selected_run_state_blocked_reason_unknown_status_not_run_list_scope_summary="$tmpdir/selected-run-state-blocked-reason-unknown-status-not-run-list-scope.json"
+selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary="$tmpdir/selected-run-state-blocked-reason-unknown-status-not-run-list-scope-step.md"
 selected_non_success_partition_fallback_scope_summary="$tmpdir/selected-non-success-partition-fallback-scope.json"
 selected_non_success_partition_fallback_scope_step_summary="$tmpdir/selected-non-success-partition-fallback-scope-step.md"
 selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-success-status-precedence-scope.json"
@@ -1696,6 +1698,33 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_blocked_reason_not_run_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_reason_not_run_list_scope_summary" "Verify Gates Selected Run-State Blocked-Reason Not-Run-List Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-blocked-reason-unknown-status-not-run-list-scope-contract',
+	selectedGateIds: ['lint'],
+	notRunGateIds: ['lint'],
+	gateNotRunReasonById: { lint: 'blocked-by-fail-fast:lint' },
+	success: true,
+	dryRun: false,
+	continueOnFailure: false,
+	exitReason: 'success',
+	runClassification: 'success-no-retries',
+	gates: [
+		{ id: 'build', command: 'make build', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 1, exitCode: 0, startedAt: '20260215T170000Z', completedAt: '20260215T170001Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_summary" "Verify Gates Selected Run-State Blocked-Reason Unknown-Status Not-Run-List Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_non_success_partition_fallback_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3699,6 +3728,22 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_blocked_reason_no
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_reason_not_run_list_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-blocked-reason-not-run-list-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-unknown-status-not-run-list-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary" || ! grep -Fq "**Exit reason:** fail-fast" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary" || ! grep -Fq "**Run classification:** failed-fail-fast" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-unknown-status-not-run-list-scope summary to treat selected unknown-status placeholders as defer-to-not-run-list for blocked-reason fail-fast derivation." >&2
+	exit 1
+fi
+if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary"; then
+	echo "Expected selected-run-state-blocked-reason-unknown-status-not-run-list-scope summary to preserve blocked-by metadata from selected not-run list when status map is unknown placeholder." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_blocked_reason_unknown_status_not_run_list_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-blocked-reason-unknown-status-not-run-list-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_non_success_partition_fallback_scope_step_summary"; then
