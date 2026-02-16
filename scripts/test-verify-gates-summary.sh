@@ -299,6 +299,8 @@ explicit_retried_missing_retry_map_key_summary="$tmpdir/explicit-retried-missing
 explicit_retried_missing_retry_map_key_step_summary="$tmpdir/explicit-retried-missing-retry-map-key-step.md"
 explicit_empty_retried_with_retry_map_summary="$tmpdir/explicit-empty-retried-with-retry-map.json"
 explicit_empty_retried_with_retry_map_step_summary="$tmpdir/explicit-empty-retried-with-retry-map-step.md"
+scalar_failed_gate_with_empty_failed_ids_summary="$tmpdir/scalar-failed-gate-with-empty-failed-ids.json"
+scalar_failed_gate_with_empty_failed_ids_step_summary="$tmpdir/scalar-failed-gate-with-empty-failed-ids-step.md"
 scalar_failed_gate_selected_fallback_summary="$tmpdir/scalar-failed-gate-selected-fallback.json"
 scalar_failed_gate_selected_fallback_step_summary="$tmpdir/scalar-failed-gate-selected-fallback-step.md"
 scalar_blocked_gate_selected_fallback_summary="$tmpdir/scalar-blocked-gate-selected-fallback.json"
@@ -3310,6 +3312,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_empty_retried_with_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_empty_retried_with_retry_map_summary" "Verify Gates Explicit Empty Retried With Retry Map Contract Test"
+
+node - "$expected_schema_version" "$scalar_failed_gate_with_empty_failed_ids_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'scalar-failed-gate-with-empty-failed-ids-contract',
+	failedGateIds: [],
+	failedGateExitCodes: [],
+	failedGateId: ' lint ',
+	failedGateExitCode: 7,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$scalar_failed_gate_with_empty_failed_ids_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_failed_gate_with_empty_failed_ids_summary" "Verify Gates Scalar Failed Gate With Empty Failed IDs Contract Test"
 
 node - "$expected_schema_version" "$scalar_failed_gate_selected_fallback_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7564,6 +7587,30 @@ if ! grep -Fq "**Attention gates list:** none" "$explicit_empty_retried_with_ret
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_empty_retried_with_retry_map_step_summary"; then
 	echo "Did not expect schema warning for explicit-empty-retried-with-retry-map summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Expected scalar-failed-gate-with-empty-failed-ids summary to derive selected-gate metadata from scalar failed-gate fallback when failedGateIds is explicitly empty." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gates:** 0" "$scalar_failed_gate_with_empty_failed_ids_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Expected scalar-failed-gate-with-empty-failed-ids summary to preserve explicit empty failed-count metadata while still projecting scalar failed-gate list fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit code:** 7" "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Expected scalar-failed-gate-with-empty-failed-ids summary to preserve scalar failed-gate exit code metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit codes:** 7" "$scalar_failed_gate_with_empty_failed_ids_step_summary" || ! grep -Fq '**Gate exit-code map:** {"lint":7}' "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Expected scalar-failed-gate-with-empty-failed-ids summary to align failed exit-code list/map with scalar failed-gate fallback." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** true" "$scalar_failed_gate_with_empty_failed_ids_step_summary" || ! grep -Fq "**Exit reason:** success" "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Expected scalar-failed-gate-with-empty-failed-ids summary to preserve success run-state metadata when explicit failed-count evidence stays zero." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$scalar_failed_gate_with_empty_failed_ids_step_summary"; then
+	echo "Did not expect schema warning for scalar-failed-gate-with-empty-failed-ids summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$scalar_failed_gate_selected_fallback_step_summary"; then

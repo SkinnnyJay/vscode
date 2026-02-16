@@ -3295,3 +3295,9 @@
   - Assertions confirm selected explicit scope still ignores selected scalar `executedGateCount`, preserving empty executed metadata and `n/a` executed-rate outputs.
   - `scripts/README.md` selected empty executed-list note updated to explicitly mention conflicting selected executed-count scalar suppression.
   **Why:** closes selected parity with scalar suppression rules by ensuring selected explicit scope never allows scalar executed-count overrides to bypass explicit empty executed-list behavior.
+- **Scalar failed-gate fallback with explicit empty failed list coverage (2026-02-16 PM)** Extended sparse scalar-failure matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `scalar_failed_gate_with_empty_failed_ids`.
+  - Scenario injects explicit empty `failedGateIds: []`/`failedGateExitCodes: []` with scalar failed metadata (`failedGateId`, `failedGateExitCode`).
+  - Assertions confirm explicit empty failed-count metadata remains zero while scalar fallback still projects failed gate list/pointer/exit-code map metadata.
+  - `scripts/README.md` scalar-failure fallback note updated to explicitly mention this empty-list + scalar-fallback coexistence behavior.
+  **Why:** locks sparse scalar-failure behavior in ambiguous payloads so explicit empty failed lists do not erase scalar failure identity metadata unexpectedly.
