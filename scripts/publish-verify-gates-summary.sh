@@ -841,7 +841,7 @@ const selectedScopeHasUnresolvedStatuses = selectedGateIdsFromSummary !== null
 const selectedScopeHasFailures = failedGateCount > 0 || scopedSummaryFailedGateId !== null || blockedByGateId !== 'none';
 const selectedScopeHasExecuted = executedGateCount > 0;
 const explicitDryRunRaw = normalizeBoolean(summary.dryRun);
-const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === true && selectedScopeHasExecuted
+const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === true && (selectedScopeHasExecuted || selectedScopeHasFailures)
 	? null
 	: explicitDryRunRaw;
 const explicitExitReasonRaw = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
