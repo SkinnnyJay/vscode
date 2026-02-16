@@ -3326,3 +3326,9 @@
   - Assertions confirm selected partition counters/status-count rendering derive from selected partition evidence, not conflicting raw status-count fields, while executed/pass-rate metadata stays selection-scoped and deterministic.
   - `scripts/README.md` selected scope note updated to explicitly mention this selected partition-evidence status-count suppression branch.
   **Why:** closes the remaining selected status-count precedence branch so valid raw `statusCounts` cannot override selected partition evidence when explicit selection is active.
+- **Unscoped per-field scalar/raw status-count merge coverage (2026-02-16 PM)** Extended unscoped mixed-source precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_partial_mix`.
+  - Scenario injects mixed valid/malformed unscoped partition-count scalars with partially valid raw `statusCounts` values and sparse partition lists.
+  - Assertions confirm per-field precedence remains deterministic: valid scalar fields win, malformed scalar fields fall back to valid raw status-count values, and rendered `statusCounts` lines merge raw/fallback values per key.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw status-count precedence branches.
+  **Why:** closes the last mixed-source unscoped counter branch so partial scalar/raw payloads cannot regress into nondeterministic per-field count selection.
