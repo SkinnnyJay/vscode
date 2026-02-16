@@ -3499,3 +3499,10 @@
   - Assertions also confirm executed-rate metrics render `n/a` from zero scalar denominator (`Pass rate: n/a`, `Retry rate: n/a`) and reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate/Retry rate: 50%`).
   - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention zero integer/numeric-string executed-count scalar overrides over sparse status-map/partition executed fallback with visible executed-list labels and `n/a` rates.
   **Why:** closes the unscoped numeric-string zero executed-count + implicit executed-fallback branch so normalized zero scalars remain authoritative over sparse fallback counts/rates when explicit executed lists are omitted.
+- **Selected numeric-string executed-count scalar suppression under explicit non-empty executed-list scope coverage (2026-02-16 PM)** Extended selected executed-list precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_executed_string_scalar_count_ignored_nonempty_list_scope`.
+  - Scenario keeps explicit non-empty selected executed-list evidence while injecting conflicting numeric-string `executedGateCount: ' 5 '`.
+  - Assertions confirm selected scope ignores conflicting numeric-string scalar executed-count and preserves explicit selected executed list derivation (`Executed gates: 2`, pass/retry rates `50%`).
+  - Assertions also reject scalar-driven executed/rate derivation (`Executed gates: 5`, pass rate `20%`) under explicit selected scope.
+  - `scripts/README.md` selected executed-list precedence note updated to explicitly mention conflicting selected integer or numeric-string `executedGateCount` scalar suppression.
+  **Why:** closes the selected numeric-string executed-count scalar + explicit non-empty executed-list branch so normalized numeric-string scalars cannot override explicit selected executed list evidence.
