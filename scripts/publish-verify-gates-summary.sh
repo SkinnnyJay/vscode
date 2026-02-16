@@ -767,9 +767,9 @@ const blockedByGateId = summaryBlockedByGateId ?? (() => {
 	}
 	return null;
 })() ?? 'none';
-const startedAt = normalizeSummaryTimestamp(summary.startedAt) ?? (() => {
+const startedAt = (selectedGateIdsFromSummary === null ? normalizeSummaryTimestamp(summary.startedAt) : null) ?? (() => {
 	let earliestTimestamp = null;
-	for (const gate of gates) {
+	for (const gate of resolvedRowsForSelectionScope) {
 		const gateStartedAt = normalizeSummaryTimestamp(gate.startedAt);
 		if (!gateStartedAt) {
 			continue;
@@ -780,9 +780,9 @@ const startedAt = normalizeSummaryTimestamp(summary.startedAt) ?? (() => {
 	}
 	return earliestTimestamp;
 })();
-const completedAt = normalizeSummaryTimestamp(summary.completedAt) ?? (() => {
+const completedAt = (selectedGateIdsFromSummary === null ? normalizeSummaryTimestamp(summary.completedAt) : null) ?? (() => {
 	let latestTimestamp = null;
-	for (const gate of gates) {
+	for (const gate of resolvedRowsForSelectionScope) {
 		const gateCompletedAt = normalizeSummaryTimestamp(gate.completedAt);
 		if (!gateCompletedAt) {
 			continue;

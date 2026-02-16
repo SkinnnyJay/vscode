@@ -113,6 +113,8 @@ selected_aggregate_metrics_scope_summary="$tmpdir/selected-aggregate-metrics-sco
 selected_aggregate_metrics_scope_step_summary="$tmpdir/selected-aggregate-metrics-scope-step.md"
 selected_failed_exit_codes_without_ids_scope_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope.json"
 selected_failed_exit_codes_without_ids_scope_step_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope-step.md"
+selected_timestamps_scope_summary="$tmpdir/selected-timestamps-scope.json"
+selected_timestamps_scope_step_summary="$tmpdir/selected-timestamps-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -898,6 +900,29 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_failed_exit_codes_without_ids_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_failed_exit_codes_without_ids_scope_summary" "Verify Gates Selected Failed Exit-Codes Without IDs Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_timestamps_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-timestamps-scope-contract',
+	selectedGateIds: ['lint'],
+	startedAt: '20250101T000000Z',
+	completedAt: '20250101T000010Z',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 3, exitCode: 0, startedAt: '20260215T100000Z', completedAt: '20260215T100003Z', notRunReason: null },
+		{ id: 'build', command: 'make build', status: 'pass', attempts: 1, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 8, exitCode: 0, startedAt: '20260215T090000Z', completedAt: '20260215T090008Z', notRunReason: null },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_timestamps_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_timestamps_scope_summary" "Verify Gates Selected Timestamps Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2235,6 +2260,30 @@ if grep -Fq "9" "$selected_failed_exit_codes_without_ids_scope_step_summary"; th
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-failed-exit-codes-without-ids-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_timestamps_scope_step_summary"; then
+	echo "Expected selected-timestamps-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Started:** 20260215T100000Z" "$selected_timestamps_scope_step_summary" || ! grep -Fq "**Completed:** 20260215T100003Z" "$selected_timestamps_scope_step_summary"; then
+	echo "Expected selected-timestamps-scope summary to ignore unscoped explicit started/completed timestamps under selected scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total duration:** 3s" "$selected_timestamps_scope_step_summary"; then
+	echo "Expected selected-timestamps-scope summary to derive total duration from selected-scope timestamps/durations." >&2
+	exit 1
+fi
+if grep -Fq "20250101T000000Z" "$selected_timestamps_scope_step_summary" || grep -Fq "20250101T000010Z" "$selected_timestamps_scope_step_summary"; then
+	echo "Expected selected-timestamps-scope summary to suppress non-selected explicit start/completion metadata values." >&2
+	exit 1
+fi
+if grep -Fq "20260215T090000Z" "$selected_timestamps_scope_step_summary" || grep -Fq "20260215T090008Z" "$selected_timestamps_scope_step_summary"; then
+	echo "Expected selected-timestamps-scope summary to ignore non-selected gate-row timestamps during selected-scope derivation." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_timestamps_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-timestamps-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then
