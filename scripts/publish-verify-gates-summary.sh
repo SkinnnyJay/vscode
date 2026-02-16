@@ -838,7 +838,7 @@ const selectedScopeHasUnresolvedStatuses = selectedGateIdsFromSummary !== null
 		const gateStatus = gateStatusById[gateId];
 		return gateStatus !== 'pass' && gateStatus !== 'fail' && gateStatus !== 'skip' && gateStatus !== 'not-run';
 	});
-const selectedScopeHasFailures = failedGateCount > 0 || scopedSummaryFailedGateId !== null;
+const selectedScopeHasFailures = failedGateCount > 0 || scopedSummaryFailedGateId !== null || blockedByGateId !== 'none';
 const selectedScopeHasExecuted = executedGateCount > 0;
 const explicitDryRunRaw = normalizeBoolean(summary.dryRun);
 const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === true && selectedScopeHasExecuted
@@ -936,7 +936,7 @@ const successValue = explicitSuccess !== null
 			? successForExplicitExitReason
 			: (successForRunClassification !== null
 				? successForRunClassification
-				: (hasOutcomeEvidence ? failedGateCount === 0 : 'unknown'))));
+					: (hasOutcomeEvidence ? (failedGateCount === 0 && blockedByGateId === 'none') : 'unknown'))));
 const derivedExitReason = explicitExitReason ?? exitReasonFromRunClassification ?? (() => {
 	if (explicitDryRun === true) {
 		return 'dry-run';
