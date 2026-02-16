@@ -3478,3 +3478,10 @@
   - Assertions also reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate: 50%`) under explicit scalar-zero override.
   - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention scalar-zero executed-count overrides over sparse status-map/partition executed fallback with list-label preservation.
   **Why:** closes the unscoped scalar-zero + implicit executed-fallback branch so explicit executed-count zero cannot be overridden by sparse derived executed fallback when explicit executed lists are omitted.
+- **Unscoped non-zero executed-count scalar override over sparse status-map/partition executed fallback coverage (2026-02-16 PM)** Extended unscoped executed precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_scalar_count_overrides_partial_status_map`.
+  - Scenario keeps sparse unscoped executed fallback evidence from partial status-map + partition lists while executed lists remain implicit and explicit `executedGateCount: 5` is provided.
+  - Assertions confirm explicit unscoped scalar executed-count remains authoritative (`Executed gates: 5`) while sparse derived executed-list labels stay visible (`Executed gates list: typecheck, lint`).
+  - Assertions also confirm executed-rate metrics use scalar denominator (`Pass rate: 20%`, `Retry rate: 20%`) and reject stale sparse fallback count/rate derivation (`Executed gates: 2`, `Pass rate/Retry rate: 50%`).
+  - `scripts/README.md` unscoped scalar precedence note updated to explicitly mention non-zero scalar executed-count overrides over sparse status-map/partition executed fallback with implicit executed-list-label preservation and scalar-denominator rate derivation.
+  **Why:** closes the unscoped non-zero scalar + implicit executed-fallback branch so explicit executed-count scalars remain authoritative over sparse fallback counts/rates even when executed lists are omitted.
