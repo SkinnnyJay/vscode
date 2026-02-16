@@ -2870,3 +2870,11 @@
   - This guards against regressions where selected no-row payloads with explicit zero duration evidence might be incorrectly treated as lacking duration evidence (`unknown`).
   - `scripts/README.md` updated to document zero-valued explicit selected duration-map fallback coverage.
   **Why:** keeps selected-scope duration behavior deterministic for explicit zero-duration evidence while still suppressing synthetic zero totals when no timing evidence exists.
+- **Valid leap-day timestamp acceptance coverage (2026-02-16 AM)** Strengthened canonical timestamp regression guardrails:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_leap_valid_no_rows_scope` and verifies canonical leap-day timestamps (`20240229`) remain accepted in selected no-row scope.
+  - Assertions verify:
+    - `Started/Completed` preserve the explicit leap-day timestamps
+    - `Total duration` derives correctly (`5s`)
+    - no schema warning.
+  - `scripts/README.md` timestamp-canonicalization notes updated to include leap-day acceptance coverage.
+  **Why:** ensures strict calendar validation hardening does not over-reject valid leap-day timestamps.
