@@ -3356,3 +3356,9 @@
   - Assertions confirm per-field precedence remains deterministic across scalar → raw status-count → list/status-map fallback layers, including not-run list fallback from status-map evidence and clamped pass-rate behavior under mixed-source counts.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw/list/status-map precedence branches.
   **Why:** closes the final fallback-layering gap so unscoped not-run/status-map fallback remains stable when scalar/raw/list evidence is only partially populated.
+- **Selected status-map evidence counter suppression coverage (2026-02-16 PM)** Extended selected status-map precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_conflict_status_map_scope`.
+  - Scenario injects explicit selected status-map evidence with conflicting scalar counters and valid raw `statusCounts`.
+  - Assertions confirm selected status-map projections remain authoritative for count/status lines and executed/pass-rate metadata, while conflicting scalar/raw count inputs stay ignored under selected scope.
+  - `scripts/README.md` selected scope note updated to explicitly mention selected status-map-evidence suppression of conflicting scalar/raw counters.
+  **Why:** closes the remaining selected status-map conflict branch so scalar/raw counter bundles cannot override selected status-map evidence.
