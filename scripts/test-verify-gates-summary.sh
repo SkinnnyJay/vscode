@@ -187,6 +187,8 @@ selected_non_success_status_precedence_scope_summary="$tmpdir/selected-non-succe
 selected_non_success_status_precedence_scope_step_summary="$tmpdir/selected-non-success-status-precedence-scope-step.md"
 selected_attention_retried_scope_summary="$tmpdir/selected-attention-retried-scope.json"
 selected_attention_retried_scope_step_summary="$tmpdir/selected-attention-retried-scope-step.md"
+selected_attention_retried_without_map_scope_summary="$tmpdir/selected-attention-retried-without-map-scope.json"
+selected_attention_retried_without_map_scope_step_summary="$tmpdir/selected-attention-retried-without-map-scope-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -1879,6 +1881,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_attention_retried_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_attention_retried_scope_summary" "Verify Gates Selected Attention Retried Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_attention_retried_without_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-attention-retried-without-map-scope-contract',
+	selectedGateIds: ['lint'],
+	gateStatusById: { lint: 'pass', build: 'fail' },
+	retriedGateIds: ['lint', 'build'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_attention_retried_without_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_attention_retried_without_map_scope_summary" "Verify Gates Selected Attention Retried Without Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -3987,6 +4009,34 @@ if grep -Fq "build" "$selected_attention_retried_scope_step_summary"; then
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_attention_retried_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-attention-retried-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$selected_attention_retried_without_map_scope_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to scope retried metadata to selected IDs when retry map is omitted." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate retry-count map:** {\"lint\":1}" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to synthesize scoped retry-count map from selected retried IDs." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 1" "$selected_attention_retried_without_map_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to derive retry aggregates from synthesized scoped retry-count map." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to include selected retried pass gate in attention list." >&2
+	exit 1
+fi
+if grep -Fq "build" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Expected selected-attention-retried-without-map-scope summary to exclude non-selected retried/status IDs from rendered metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_attention_retried_without_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-attention-retried-without-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then
