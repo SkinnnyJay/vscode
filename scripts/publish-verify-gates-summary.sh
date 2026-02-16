@@ -838,7 +838,7 @@ const explicitDryRun = selectedScopeHasOutcomeEvidence && explicitDryRunRaw === 
 	: explicitDryRunRaw;
 const explicitExitReasonRaw = normalizeKnownValue(summary.exitReason, ['dry-run', 'success', 'fail-fast', 'completed-with-failures']);
 const explicitExitReason = selectedScopeHasOutcomeEvidence && (
-	((explicitExitReasonRaw === 'fail-fast' || explicitExitReasonRaw === 'completed-with-failures') && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
+	((explicitExitReasonRaw === 'fail-fast' || explicitExitReasonRaw === 'completed-with-failures') && selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| (explicitExitReasonRaw === 'success' && selectedScopeHasFailures)
 	|| (explicitExitReasonRaw === 'dry-run' && selectedScopeHasExecuted)
 )
@@ -846,7 +846,7 @@ const explicitExitReason = selectedScopeHasOutcomeEvidence && (
 	: explicitExitReasonRaw;
 const explicitRunClassificationRaw = normalizeKnownValue(summary.runClassification, ['dry-run', 'success-no-retries', 'success-with-retries', 'failed-fail-fast', 'failed-continued']);
 const explicitRunClassification = selectedScopeHasOutcomeEvidence && (
-	((explicitRunClassificationRaw === 'failed-fail-fast' || explicitRunClassificationRaw === 'failed-continued') && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
+	((explicitRunClassificationRaw === 'failed-fail-fast' || explicitRunClassificationRaw === 'failed-continued') && selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| ((explicitRunClassificationRaw === 'success-no-retries' || explicitRunClassificationRaw === 'success-with-retries') && selectedScopeHasFailures)
 	|| (explicitRunClassificationRaw === 'dry-run' && selectedScopeHasExecuted)
 )
@@ -907,7 +907,7 @@ const successForRunClassification = (() => {
 })();
 const explicitSuccessFromSummaryRaw = normalizeBoolean(summary.success);
 const explicitSuccessFromSummary = selectedScopeHasOutcomeEvidence && (
-	(explicitSuccessFromSummaryRaw === false && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
+	(explicitSuccessFromSummaryRaw === false && selectedScopeHasExecuted && !selectedScopeHasFailures && !selectedScopeHasUnresolvedStatuses)
 	|| (explicitSuccessFromSummaryRaw === true && selectedScopeHasFailures)
 )
 	? null

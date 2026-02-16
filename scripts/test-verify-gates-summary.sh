@@ -133,6 +133,8 @@ selected_run_state_partial_status_scope_summary="$tmpdir/selected-run-state-part
 selected_run_state_partial_status_scope_step_summary="$tmpdir/selected-run-state-partial-status-scope-step.md"
 selected_run_state_failure_scope_summary="$tmpdir/selected-run-state-failure-scope.json"
 selected_run_state_failure_scope_step_summary="$tmpdir/selected-run-state-failure-scope-step.md"
+selected_run_state_not_run_scope_summary="$tmpdir/selected-run-state-not-run-scope.json"
+selected_run_state_not_run_scope_step_summary="$tmpdir/selected-run-state-not-run-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
 selected_run_state_unmatched_rows_scope_step_summary="$tmpdir/selected-run-state-unmatched-rows-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
@@ -1149,6 +1151,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_run_state_failure_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_failure_scope_summary" "Verify Gates Selected Run-State Failure Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_run_state_not_run_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-run-state-not-run-scope-contract',
+	selectedGateIds: ['lint'],
+	success: false,
+	dryRun: false,
+	continueOnFailure: true,
+	exitReason: 'completed-with-failures',
+	runClassification: 'failed-continued',
+	gates: [
+		{ id: 'lint', command: 'make lint', status: 'NOT-RUN', attempts: 0, retryCount: 0, retryBackoffSeconds: 0, durationSeconds: 0, exitCode: null, startedAt: null, completedAt: null, notRunReason: 'blocked-by-fail-fast:build' },
+	],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_run_state_not_run_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_run_state_not_run_scope_summary" "Verify Gates Selected Run-State Not-Run Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_run_state_unmatched_rows_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2695,6 +2722,26 @@ if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_failure_scop
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_failure_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-failure-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_run_state_not_run_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_scope_step_summary" || ! grep -Fq "**Exit reason:** completed-with-failures" "$selected_run_state_not_run_scope_step_summary" || ! grep -Fq "**Run classification:** failed-continued" "$selected_run_state_not_run_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-scope summary to preserve explicit failure run-state when selected-scope evidence is non-executed only." >&2
+	exit 1
+fi
+if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_not_run_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_run_state_not_run_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-scope summary to preserve explicit continue-on-failure alongside selected not-run evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '| `lint` | `make lint` | not-run |' "$selected_run_state_not_run_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-scope summary to render selected not-run row." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-run-state-not-run-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** missing-only" "$selected_run_state_unmatched_rows_scope_step_summary"; then
