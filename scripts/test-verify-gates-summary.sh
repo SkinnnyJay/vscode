@@ -391,6 +391,8 @@ unscoped_partition_scalar_vs_status_counts_conflict_summary="$tmpdir/unscoped-pa
 unscoped_partition_scalar_vs_status_counts_conflict_step_summary="$tmpdir/unscoped-partition-scalar-vs-status-counts-conflict-step.md"
 unscoped_partition_scalar_partial_mix_summary="$tmpdir/unscoped-partition-scalar-partial-mix.json"
 unscoped_partition_scalar_partial_mix_step_summary="$tmpdir/unscoped-partition-scalar-partial-mix-step.md"
+unscoped_partition_scalar_raw_list_hybrid_summary="$tmpdir/unscoped-partition-scalar-raw-list-hybrid.json"
+unscoped_partition_scalar_raw_list_hybrid_step_summary="$tmpdir/unscoped-partition-scalar-raw-list-hybrid-step.md"
 unscoped_partition_scalar_invalid_fallback_status_counts_summary="$tmpdir/unscoped-partition-scalar-invalid-fallback-status-counts.json"
 unscoped_partition_scalar_invalid_fallback_status_counts_step_summary="$tmpdir/unscoped-partition-scalar-invalid-fallback-status-counts-step.md"
 unscoped_status_counts_partial_fallback_summary="$tmpdir/unscoped-status-counts-partial-fallback.json"
@@ -4474,6 +4476,32 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_partial_mix_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_partial_mix_summary" "Verify Gates Unscoped Partition Scalar Partial Mix Contract Test"
+
+node - "$expected_schema_version" "$unscoped_partition_scalar_raw_list_hybrid_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-partition-scalar-raw-list-hybrid-contract',
+	passedGateCount: 4,
+	failedGateCount: 'bad',
+	skippedGateCount: 'bad',
+	notRunGateCount: -1,
+	statusCounts: { pass: null, fail: 3, skip: 'x', 'not-run': null },
+	passedGateIds: ['lint'],
+	failedGateIds: ['typecheck', 'test-unit'],
+	skippedGateIds: ['build'],
+	notRunGateIds: ['deploy', 'package'],
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_partition_scalar_raw_list_hybrid_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_partition_scalar_raw_list_hybrid_summary" "Verify Gates Unscoped Partition Scalar Raw List Hybrid Contract Test"
 
 node - "$expected_schema_version" "$unscoped_partition_scalar_invalid_fallback_status_counts_summary" <<'NODE'
 const fs = require('node:fs');
@@ -8782,6 +8810,26 @@ if ! grep -Fq "**Executed gates:** 2" "$unscoped_partition_scalar_partial_mix_st
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_partial_mix_step_summary"; then
 	echo "Did not expect schema warning for unscoped-partition-scalar-partial-mix summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck, test-unit, build, deploy, package" "$unscoped_partition_scalar_raw_list_hybrid_step_summary" || ! grep -Fq "**Gate count:** 6" "$unscoped_partition_scalar_raw_list_hybrid_step_summary"; then
+	echo "Expected unscoped-partition-scalar-raw-list-hybrid summary to preserve sparse partition gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 4" "$unscoped_partition_scalar_raw_list_hybrid_step_summary" || ! grep -Fq "**Failed gates:** 3" "$unscoped_partition_scalar_raw_list_hybrid_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$unscoped_partition_scalar_raw_list_hybrid_step_summary" || ! grep -Fq "**Not-run gates:** 2" "$unscoped_partition_scalar_raw_list_hybrid_step_summary"; then
+	echo "Expected unscoped-partition-scalar-raw-list-hybrid summary to resolve per-field count precedence across scalar/raw/list fallback branches." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":4,"fail":3,"skip":1,"not-run":2}' "$unscoped_partition_scalar_raw_list_hybrid_step_summary"; then
+	echo "Expected unscoped-partition-scalar-raw-list-hybrid summary to render merged per-field status-count precedence metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 3" "$unscoped_partition_scalar_raw_list_hybrid_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_partition_scalar_raw_list_hybrid_step_summary"; then
+	echo "Expected unscoped-partition-scalar-raw-list-hybrid summary to derive executed metadata from sparse partition lists while clamping mixed-source pass-rate derivation." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_partition_scalar_raw_list_hybrid_step_summary"; then
+	echo "Did not expect schema warning for unscoped-partition-scalar-raw-list-hybrid summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck, build, test-unit, e2e, docs" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary" || ! grep -Fq "**Gate count:** 6" "$unscoped_partition_scalar_invalid_fallback_status_counts_step_summary"; then

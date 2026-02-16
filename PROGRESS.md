@@ -3332,3 +3332,9 @@
   - Assertions confirm per-field precedence remains deterministic: valid scalar fields win, malformed scalar fields fall back to valid raw status-count values, and rendered `statusCounts` lines merge raw/fallback values per key.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw status-count precedence branches.
   **Why:** closes the last mixed-source unscoped counter branch so partial scalar/raw payloads cannot regress into nondeterministic per-field count selection.
+- **Unscoped per-field scalar/raw/list status-count merge coverage (2026-02-16 PM)** Extended unscoped fallback layering matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_partition_scalar_raw_list_hybrid`.
+  - Scenario injects mixed valid/malformed unscoped partition-count scalars, partially valid raw `statusCounts`, and sparse partition lists requiring list-length fallback on select fields.
+  - Assertions confirm per-field layering remains deterministic across all sources (scalar → raw status-count → list fallback), with merged rendered `statusCounts` and clamped pass-rate behavior under mixed-source counts.
+  - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention mixed per-field scalar/raw/list precedence branches.
+  **Why:** closes the final unscoped count-source layering gap so list-length fallback remains stable when scalar and raw status-count inputs are only partially usable.
