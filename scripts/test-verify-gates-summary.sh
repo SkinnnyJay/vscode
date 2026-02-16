@@ -111,6 +111,8 @@ selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.jso
 selected_scalar_failure_scope_step_summary="$tmpdir/selected-scalar-failure-scope-step.md"
 selected_scalar_counts_scope_summary="$tmpdir/selected-scalar-counts-scope.json"
 selected_scalar_counts_scope_step_summary="$tmpdir/selected-scalar-counts-scope-step.md"
+selected_status_counts_no_evidence_scope_summary="$tmpdir/selected-status-counts-no-evidence-scope.json"
+selected_status_counts_no_evidence_scope_step_summary="$tmpdir/selected-status-counts-no-evidence-scope-step.md"
 selected_failed_exit_code_alignment_summary="$tmpdir/selected-failed-exit-code-alignment.json"
 selected_failed_exit_code_alignment_step_summary="$tmpdir/selected-failed-exit-code-alignment-step.md"
 selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
@@ -1150,6 +1152,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_scalar_counts_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_scalar_counts_scope_summary" "Verify Gates Selected Scalar Counts Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_no_evidence_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-no-evidence-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateCount: 9,
+	passedGateCount: 8,
+	failedGateCount: 7,
+	skippedGateCount: 6,
+	notRunGateCount: 5,
+	executedGateCount: 4,
+	statusCounts: { pass: 3, fail: 2, skip: 1, 'not-run': 0 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_no_evidence_scope_summary" "Verify Gates Selected Status Counts No Evidence Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_failed_exit_code_alignment_summary" <<'NODE'
 const fs = require('node:fs');
@@ -5874,6 +5901,30 @@ if ! grep -Fq "**Executed gates:** 1" "$selected_scalar_counts_scope_step_summar
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_scalar_counts_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-scalar-counts-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Expected selected-status-counts-no-evidence-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Expected selected-status-counts-no-evidence-scope summary to ignore selected-scope scalar and raw status-count counters when no selected execution evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Expected selected-status-counts-no-evidence-scope summary to keep status counts aligned with selected no-evidence fallback counters." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Expected selected-status-counts-no-evidence-scope summary to keep executed metadata empty under selected no-evidence payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_no_evidence_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Expected selected-status-counts-no-evidence-scope summary to render executed-rate metrics as n/a under selected no-evidence payloads." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_no_evidence_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-no-evidence-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_code_alignment_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_code_alignment_step_summary"; then

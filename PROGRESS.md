@@ -3314,3 +3314,9 @@
   - Assertions confirm count lines continue honoring valid partition-count scalars while rendered `statusCounts` metadata still preserves explicit raw status-count fields; executed/pass-rate metadata stays deterministic under this conflict branch.
   - `scripts/README.md` unscoped aggregate precedence note updated to explicitly mention scalar-count authority over conflicting valid raw `statusCounts` for count lines.
   **Why:** locks the remaining unscoped precedence branch so valid scalar counters and valid raw status-count metadata cannot regress into ambiguous count-source selection.
+- **Selected no-evidence status-count scalar suppression coverage (2026-02-16 PM)** Extended selected count-suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_no_evidence_scope`.
+  - Scenario injects explicit selected gate scope with conflicting selected scalar counters (`gateCount`, partition counts, `executedGateCount`) and valid raw `statusCounts`, but no selected row/status/list evidence.
+  - Assertions confirm selected scope still ignores all conflicting selected counter/status scalars under no-evidence conditions, preserving zero partition/executed counters, `n/a` executed-rate fields, and selected gate-count scope metadata.
+  - `scripts/README.md` selected scope note updated to explicitly mention selected no-evidence counter suppression behavior.
+  **Why:** closes selected sparse parity so no-evidence selected payloads cannot leak unscoped scalar/status counter values into selected summary outputs.
