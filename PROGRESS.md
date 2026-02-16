@@ -3083,3 +3083,13 @@
   - Assertions confirm non-integer selected aggregate scalars are ignored and selected evidence-derived aggregate metrics remain authoritative.
   - `scripts/README.md` selected aggregate notes updated to explicitly include non-integer numeric scalar suppression.
   **Why:** ensures selected-scope scalar parsing stays integer-only for numeric inputs (not just strings), preventing fractional aggregate scalar overrides from leaking into selected summaries.
+- **Selected no-evidence numeric-string aggregate suppression coverage (2026-02-16 AM)** Extended selected sparse aggregate matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_no_evidence_string_scope`.
+  - Scenario injects numeric-string aggregate retry/duration/rate scalars under explicit selected scope with no selected execution evidence.
+  - Assertions confirm selected sparse no-evidence behavior remains authoritative (`0`/`n/a`) and numeric-string aggregate scalars are suppressed.
+  **Why:** locks selected no-evidence fallback behavior against numeric-string scalar leakage in sparse selected payloads.
+- **Unscoped no-evidence numeric-string aggregate precedence coverage (2026-02-16 AM)** Extended unscoped sparse precedence matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_aggregate_metrics_explicit_no_evidence_string`.
+  - Scenario injects numeric-string aggregate retry/duration/rate scalars in sparse unscoped no-evidence payloads.
+  - Assertions confirm normalized numeric-string aggregate scalars remain authoritative and no-evidence fallback values are not substituted.
+  **Why:** guarantees unscoped sparse payloads preserve valid explicit numeric-string aggregate metadata with the same precedence as numeric values.
