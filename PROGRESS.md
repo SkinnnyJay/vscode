@@ -2581,6 +2581,7 @@
   - Selected non-executed-only evidence (`skip` / `not-run` with zero executed gates) now preserves explicit failure-oriented run-state metadata instead of forcing success-by-zero-failures overrides.
   - Selected scalar failure metadata (`failedGateId`) now contributes failure evidence when failed partition lists are absent, keeping failed counters/lists/run-state derivation consistent for scalar-only sparse payloads.
   - Selected scalar blocked-by metadata (`blockedByGateId`) now contributes fail-fast evidence when partition lists are absent, preventing success defaults in scalar-blocked sparse payloads.
+  - Non-selected scalar blocked-by IDs are now explicitly verified to scope out (no selected-scope run-state impact).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_status_map_scope` scenario (`selectedGateIds: ['lint']`, summary maps include extra `build`) and verifies:
     - counters stay selected-scope (`Passed gates: 1`, `Failed gates: 0`)
     - map outputs only include `lint`
@@ -2603,6 +2604,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_not_run_scope` scenario and verifies explicit failure run-state metadata is preserved when selected-scope evidence is non-executed-only (`not-run`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_failure_only_scope` scenario and verifies selected scalar failed-gate metadata alone (`failedGateId/failedGateExitCode`) drives failure run-state overrides.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_scalar_blocked_only_scope` scenario and verifies selected scalar blocked-by metadata alone (`blockedByGateId`) drives fail-fast run-state overrides.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_run_state_nonselected_blocked_scope` scenario and verifies non-selected scalar blocked-by metadata is excluded from selected-scope run-state derivation.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_scope` scenario and verifies explicit unscoped start/end timestamps are ignored while selected-row timestamps drive rendered `Started`/`Completed`/`Total duration` lines.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_no_rows_scope` scenario and verifies explicit selected-scope timestamps are preserved when no rows exist (`Started/Completed` rendered, `Total duration: 5s`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_timestamps_unmatched_rows_scope` scenario and verifies explicit selected-scope timestamps remain preserved when only non-selected fallback table rows exist (`Started/Completed` from explicit summary, `Total duration: 5s`).
