@@ -191,6 +191,8 @@ selected_attention_retried_without_map_scope_summary="$tmpdir/selected-attention
 selected_attention_retried_without_map_scope_step_summary="$tmpdir/selected-attention-retried-without-map-scope-step.md"
 explicit_retried_zero_count_retry_map_summary="$tmpdir/explicit-retried-zero-count-retry-map.json"
 explicit_retried_zero_count_retry_map_step_summary="$tmpdir/explicit-retried-zero-count-retry-map-step.md"
+explicit_retried_subset_retry_map_summary="$tmpdir/explicit-retried-subset-retry-map.json"
+explicit_retried_subset_retry_map_step_summary="$tmpdir/explicit-retried-subset-retry-map-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -1925,6 +1927,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$explicit_retried_zero_count_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_zero_count_retry_map_summary" "Verify Gates Explicit Retried Zero Count Retry Map Contract Test"
+
+node - "$expected_schema_version" "$explicit_retried_subset_retry_map_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'explicit-retried-subset-retry-map-contract',
+	gateStatusById: { lint: 'pass', build: 'pass' },
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { lint: 3, build: 5 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$explicit_retried_subset_retry_map_step_summary" ./scripts/publish-verify-gates-summary.sh "$explicit_retried_subset_retry_map_summary" "Verify Gates Explicit Retried Subset Retry Map Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4106,6 +4128,26 @@ if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_zero_count_ret
 fi
 if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_zero_count_retry_map_step_summary"; then
 	echo "Did not expect schema warning for explicit-retried-zero-count-retry-map summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, build" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Expected explicit-retried-subset-retry-map summary to preserve derived gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$explicit_retried_subset_retry_map_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Expected explicit-retried-subset-retry-map summary to preserve explicit retried-gate subset metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 3" "$explicit_retried_subset_retry_map_step_summary" || ! grep -Fq "**Total retry backoff:** 7s" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Expected explicit-retried-subset-retry-map summary to constrain retry aggregates to explicit retried-gate subset." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Expected explicit-retried-subset-retry-map summary to keep attention list constrained to explicit retried subset." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$explicit_retried_subset_retry_map_step_summary"; then
+	echo "Did not expect schema warning for explicit-retried-subset-retry-map summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then
