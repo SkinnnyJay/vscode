@@ -2561,6 +2561,7 @@
     - `statusCounts` aggregate map.
   - Selected-scope counters now derive from scoped gate lists/status maps instead of unscoped scalar aggregates.
   - Publisher now preserves failed exit-code pairing under selected scope by aligning `failedGateExitCodes` to the scoped `failedGateIds` identity set (instead of raw positional indexes from unscoped arrays).
+  - Publisher now ignores ambiguous `failedGateExitCodes` arrays under selected scope when `failedGateIds` is absent/unusable, preventing positional misassignment from unscoped lists.
   - Publisher now scopes scalar slow/fast metadata (`slowestExecutedGateId`/`fastestExecutedGateId` + durations) to selected gate IDs, ignoring non-selected explicit values in favor of selected-scope derived timings.
   - Publisher now ignores conflicting selected-unsafe aggregate scalar metrics when explicit `selectedGateIds` is present:
     - retry aggregates (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`)
@@ -2574,6 +2575,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_failure_scope` scenario and verifies non-selected scalar failure metadata is suppressed (`Failed gate: none`, `Failed gate exit code: none`, `Blocked by gate: none`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_scalar_counts_scope` scenario and verifies conflicting scalar/status counters are ignored under explicit selection (`Gate count: 1`, pass/fail/skip/not-run + executed counts aligned to selected scope, scoped status-count map output).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_failed_exit_code_alignment` scenario and verifies selected-scope failed exit-code output stays gate-ID aligned (`Failed gate exit codes: 2`, `gateExitCodeById.lint = 2`) even when unselected failed IDs precede selected IDs in raw arrays.
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_failed_exit_codes_without_ids_scope` scenario and verifies ambiguous `failedGateExitCodes` values are ignored under selected scope unless paired to scoped `failedGateIds` (`Failed gate exit codes: 2` from `gateExitCodeById`, no leaked `9`).
   - `scripts/test-verify-gates-summary.sh` now adds `selected_slow_fast_scope` scenario and verifies non-selected explicit slow/fast scalar metadata is ignored (`Slowest/Fastest gate: lint`, durations `3s`) under selected scope.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_scope` scenario and verifies conflicting aggregate scalar metrics are ignored in favor of selected-scope derived values (retry totals `0`, duration totals `4s`, rate outputs `0%/0%/100%`).
   - `scripts/README.md` updated to document selected-scope filtering for summary-provided map/list inputs.

@@ -111,6 +111,8 @@ selected_slow_fast_scope_summary="$tmpdir/selected-slow-fast-scope.json"
 selected_slow_fast_scope_step_summary="$tmpdir/selected-slow-fast-scope-step.md"
 selected_aggregate_metrics_scope_summary="$tmpdir/selected-aggregate-metrics-scope.json"
 selected_aggregate_metrics_scope_step_summary="$tmpdir/selected-aggregate-metrics-scope-step.md"
+selected_failed_exit_codes_without_ids_scope_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope.json"
+selected_failed_exit_codes_without_ids_scope_step_summary="$tmpdir/selected-failed-exit-codes-without-ids-scope-step.md"
 derived_lists_summary="$tmpdir/derived-lists.json"
 derived_lists_step_summary="$tmpdir/derived-lists-step.md"
 derived_status_map_summary="$tmpdir/derived-status-map.json"
@@ -875,6 +877,27 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_aggregate_metrics_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_aggregate_metrics_scope_summary" "Verify Gates Selected Aggregate Metrics Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_failed_exit_codes_without_ids_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-failed-exit-codes-without-ids-scope-contract',
+	selectedGateIds: ['lint'],
+	failedGateExitCodes: [9],
+	gateStatusById: { lint: 'fail' },
+	gateExitCodeById: { lint: 2 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_failed_exit_codes_without_ids_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_failed_exit_codes_without_ids_scope_summary" "Verify Gates Selected Failed Exit-Codes Without IDs Scope Contract Test"
 
 node - "$expected_schema_version" "$derived_lists_summary" <<'NODE'
 const fs = require('node:fs');
@@ -2196,6 +2219,22 @@ if grep -Fq "99" "$selected_aggregate_metrics_scope_step_summary" || grep -Fq "2
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_aggregate_metrics_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-aggregate-metrics-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary" || ! grep -Fq "**Failed gates list:** lint" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
+	echo "Expected selected-failed-exit-codes-without-ids-scope summary to preserve selected-scope failed gate identity." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate exit codes:** 2" "$selected_failed_exit_codes_without_ids_scope_step_summary" || ! grep -Fq '**Gate exit-code map:** {"lint":2}' "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
+	echo "Expected selected-failed-exit-codes-without-ids-scope summary to ignore ambiguous failedGateExitCodes list without failedGateIds under selected scope." >&2
+	exit 1
+fi
+if grep -Fq "9" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
+	echo "Expected selected-failed-exit-codes-without-ids-scope summary to suppress ambiguous unscoped failedGateExitCodes values." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_failed_exit_codes_without_ids_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-failed-exit-codes-without-ids-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 4" "$derived_lists_step_summary"; then

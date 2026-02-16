@@ -468,6 +468,9 @@ const failedGateExitCodesFromSummary = (() => {
 		return null;
 	}
 	if (failedGateIdsByIndexFromSummary === null || failedGateIdsFromSummary === null) {
+		if (selectedGateIdsFromSummary !== null) {
+			return null;
+		}
 		return normalizeIntegerList(summary.failedGateExitCodes, normalizeNonNegativeInteger);
 	}
 	const failedGateExitCodeById = {};
