@@ -3344,3 +3344,9 @@
   - Assertions confirm selected partition evidence remains authoritative across counters/status counts, while conflicting mixed scalar/raw count inputs are ignored and executed/pass-rate metadata stays selection-scoped.
   - `scripts/README.md` selected scope note updated to explicitly mention mixed scalar+raw counter suppression when selected partition evidence exists.
   **Why:** closes the selected mixed-source precedence branch so mixed scalar/raw counter bundles cannot override explicit selected partition evidence.
+- **Selected partially malformed raw status-count suppression coverage (2026-02-16 PM)** Extended selected status-count suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_malformed_partition_scope`.
+  - Scenario injects explicit selected partition lists with partially malformed/conflicting raw `statusCounts` fields.
+  - Assertions confirm selected partition evidence remains authoritative for counters/status counts and executed/pass-rate metadata, with partially malformed raw status-count inputs still ignored under selected scope.
+  - `scripts/README.md` selected scope note updated to explicitly mention partially malformed raw status-count suppression under selected partition evidence.
+  **Why:** closes the last selected status-count suppression edge so partially malformed raw status-count payloads cannot leak into selected partition-derived metadata.
