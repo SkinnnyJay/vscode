@@ -217,6 +217,8 @@ selected_explicit_retried_zero_count_retry_map_scope_summary="$tmpdir/selected-e
 selected_explicit_retried_zero_count_retry_map_scope_step_summary="$tmpdir/selected-explicit-retried-zero-count-retry-map-scope-step.md"
 selected_explicit_retried_missing_retry_map_key_scope_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-scope.json"
 selected_explicit_retried_missing_retry_map_key_scope_step_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-scope-step.md"
+selected_explicit_retried_missing_retry_map_key_with_map_scope_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-with-map-scope.json"
+selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary="$tmpdir/selected-explicit-retried-missing-retry-map-key-with-map-scope-step.md"
 selected_explicit_retried_nonselected_scope_summary="$tmpdir/selected-explicit-retried-nonselected-scope.json"
 selected_explicit_retried_nonselected_scope_step_summary="$tmpdir/selected-explicit-retried-nonselected-scope-step.md"
 selected_run_state_unmatched_rows_scope_summary="$tmpdir/selected-run-state-unmatched-rows-scope.json"
@@ -2213,6 +2215,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_explicit_retried_missing_retry_map_key_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_retried_missing_retry_map_key_scope_summary" "Verify Gates Selected Explicit Retried Missing Retry Map Key Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-explicit-retried-missing-retry-map-key-with-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	retriedGateIds: ['lint'],
+	gateRetryCountById: { typecheck: 7 },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_explicit_retried_missing_retry_map_key_with_map_scope_summary" "Verify Gates Selected Explicit Retried Missing Retry Map Key With Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_retried_nonselected_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4560,6 +4582,30 @@ if ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_retried_missi
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_retried_missing_retry_map_key_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-explicit-retried-missing-retry-map-key-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-missing-retry-map-key-with-map-scope summary to preserve selected-gate ordering metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** lint" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary" || ! grep -Fq "**Retried gate count:** 1" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-missing-retry-map-key-with-map-scope summary to preserve explicit retried-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "\"lint\":1" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary" || ! grep -Fq "\"typecheck\":0" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-missing-retry-map-key-with-map-scope summary to synthesize missing retried keys and zero non-retried map entries." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 1" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 1s" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-missing-retry-map-key-with-map-scope summary to keep retry aggregates aligned with synthesized selected retried entries." >&2
+	exit 1
+fi
+if ! grep -Fq "**Attention gates list:** lint" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Expected selected-explicit-retried-missing-retry-map-key-with-map-scope summary to constrain attention list to retried selected entries." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_explicit_retried_missing_retry_map_key_with_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-explicit-retried-missing-retry-map-key-with-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_retried_nonselected_scope_step_summary"; then
