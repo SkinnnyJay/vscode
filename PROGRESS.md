@@ -3190,3 +3190,9 @@
   - Assertions confirm overflow selected rate scalars are suppressed and selected no-evidence rate metadata remains `n/a`.
   - `scripts/README.md` selected aggregate note updated to explicitly mention overflow-rate suppression in selected no-evidence payloads.
   **Why:** locks sparse selected fallback behavior so invalid explicit rate scalars cannot force non-`n/a` selected rates when execution evidence is absent.
+- **Selected boundary-rate scalar suppression coverage (2026-02-16 AM)** Added selected-scope valid-boundary regression test:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_aggregate_metrics_rate_scalar_boundary_scope`.
+  - Scenario injects valid boundary selected rate scalars (`0%`) alongside selected execution/retry/duration evidence that derives non-zero rates.
+  - Assertions confirm selected scope still ignores explicit selected rate scalars (even when valid boundary values) and keeps selected evidence-derived rates authoritative.
+  - `scripts/README.md` selected aggregate note updated to explicitly mention selected boundary-rate scalar suppression behavior.
+  **Why:** ensures selected-scope precedence remains evidence-first across both malformed and valid boundary scalar inputs, preventing selected scalar overrides from bypassing selected derivation rules.
