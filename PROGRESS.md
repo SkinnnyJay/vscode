@@ -3391,3 +3391,9 @@
   - Assertions confirm malformed selected status-map values are dropped from normalized status-map metadata while selected partition fallback still deterministically fills fail/not-run counters and list metadata.
   - `scripts/README.md` selected status-map scope note updated to explicitly mention malformed selected status-map value filtering before partition fallback.
   **Why:** closes the malformed selected status-map value branch so invalid selected status-map statuses cannot block selected partition fallback or leak into rendered selected status maps.
+- **Selected explicit-zero raw status-count suppression under status-map evidence coverage (2026-02-16 PM)** Extended selected status-map suppression matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_zero_raw_status_map_scope`.
+  - Scenario injects selected status-map evidence with explicit zero scalar and raw `statusCounts` bundles.
+  - Assertions confirm selected status-map-derived counters/status map/executed-rate metadata remain authoritative while explicit zero scalar/raw counter bundles are ignored under selected scope.
+  - `scripts/README.md` selected status-map scope note updated to explicitly mention explicit-zero raw `statusCounts` suppression under selected status-map evidence.
+  **Why:** closes the explicit-zero selected scalar/raw suppression branch so falsy selected count bundles cannot override selected status-map evidence.

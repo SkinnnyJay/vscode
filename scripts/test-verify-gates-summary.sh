@@ -111,6 +111,8 @@ selected_status_counts_conflict_status_map_scope_summary="$tmpdir/selected-statu
 selected_status_counts_conflict_status_map_scope_step_summary="$tmpdir/selected-status-counts-conflict-status-map-scope-step.md"
 selected_status_counts_partial_malformed_status_map_scope_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope.json"
 selected_status_counts_partial_malformed_status_map_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-status-map-scope-step.md"
+selected_status_counts_zero_raw_status_map_scope_summary="$tmpdir/selected-status-counts-zero-raw-status-map-scope.json"
+selected_status_counts_zero_raw_status_map_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-status-map-scope-step.md"
 selected_status_counts_partial_status_map_partition_scope_summary="$tmpdir/selected-status-counts-partial-status-map-partition-scope.json"
 selected_status_counts_partial_status_map_partition_scope_step_summary="$tmpdir/selected-status-counts-partial-status-map-partition-scope-step.md"
 selected_scalar_failure_scope_summary="$tmpdir/selected-scalar-failure-scope.json"
@@ -1172,6 +1174,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_status_map_scope_summary" "Verify Gates Selected Status Counts Partial Malformed Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	passedGateCount: 0,
+	failedGateCount: 0,
+	skippedGateCount: 0,
+	notRunGateCount: 0,
+	executedGateCount: 0,
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	gateStatusById: { lint: 'pass', typecheck: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_status_map_scope_summary" "Verify Gates Selected Status Counts Zero Raw Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_status_counts_partial_status_map_partition_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -6191,6 +6218,26 @@ if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-partial-malformed-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_status_map_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-status-map-scope summary to preserve selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_status_map_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_status_counts_zero_raw_status_map_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_status_counts_zero_raw_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-status-map-scope summary to ignore explicit zero selected scalar/raw counters and derive selected status counts from status-map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":1,"fail":1,"skip":0,"not-run":0}' "$selected_status_counts_zero_raw_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-status-map-scope summary to keep selected status counts aligned with status-map evidence despite explicit zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_zero_raw_status_map_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-status-map-scope summary to derive selected executed/pass-rate metadata from status-map evidence under explicit zero scalar/raw count conflicts." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck, build" "$selected_status_counts_partial_status_map_partition_scope_step_summary" || ! grep -Fq "**Gate count:** 3" "$selected_status_counts_partial_status_map_partition_scope_step_summary"; then
