@@ -199,6 +199,8 @@ scalar_failed_gate_selected_fallback_summary="$tmpdir/scalar-failed-gate-selecte
 scalar_failed_gate_selected_fallback_step_summary="$tmpdir/scalar-failed-gate-selected-fallback-step.md"
 scalar_blocked_gate_selected_fallback_summary="$tmpdir/scalar-blocked-gate-selected-fallback.json"
 scalar_blocked_gate_selected_fallback_step_summary="$tmpdir/scalar-blocked-gate-selected-fallback-step.md"
+scalar_none_sentinel_gate_ids_summary="$tmpdir/scalar-none-sentinel-gate-ids.json"
+scalar_none_sentinel_gate_ids_step_summary="$tmpdir/scalar-none-sentinel-gate-ids-step.md"
 selected_explicit_attention_scope_summary="$tmpdir/selected-explicit-attention-scope.json"
 selected_explicit_attention_scope_step_summary="$tmpdir/selected-explicit-attention-scope-step.md"
 selected_explicit_empty_attention_with_retries_scope_summary="$tmpdir/selected-explicit-empty-attention-with-retries-scope.json"
@@ -2022,6 +2024,26 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$scalar_blocked_gate_selected_fallback_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_blocked_gate_selected_fallback_summary" "Verify Gates Scalar Blocked-Gate Selected Fallback Contract Test"
+
+node - "$expected_schema_version" "$scalar_none_sentinel_gate_ids_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'scalar-none-sentinel-gate-ids-contract',
+	failedGateId: 'none',
+	blockedByGateId: 'none',
+	failedGateExitCode: 2,
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$scalar_none_sentinel_gate_ids_step_summary" ./scripts/publish-verify-gates-summary.sh "$scalar_none_sentinel_gate_ids_summary" "Verify Gates Scalar None Sentinel Gate IDs Contract Test"
 
 node - "$expected_schema_version" "$selected_explicit_attention_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -4331,6 +4353,26 @@ if ! grep -Fq "**Success:** true" "$scalar_blocked_gate_selected_fallback_step_s
 fi
 if grep -q "\*\*Schema warning:\*\*" "$scalar_blocked_gate_selected_fallback_step_summary"; then
 	echo "Did not expect schema warning for scalar-blocked-gate-selected-fallback summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** none" "$scalar_none_sentinel_gate_ids_step_summary"; then
+	echo "Expected scalar-none-sentinel-gate-ids summary to ignore scalar 'none' sentinel gate identifiers in selected-gate fallback derivation." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 0" "$scalar_none_sentinel_gate_ids_step_summary" || ! grep -Fq "**Failed gates:** 0" "$scalar_none_sentinel_gate_ids_step_summary"; then
+	echo "Expected scalar-none-sentinel-gate-ids summary to keep gate and failed counts clear when scalar sentinels resolve to null." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate exit-code map:** {}" "$scalar_none_sentinel_gate_ids_step_summary"; then
+	echo "Expected scalar-none-sentinel-gate-ids summary to avoid synthesizing 'none' gate IDs in exit-code maps." >&2
+	exit 1
+fi
+if ! grep -Fq "**Failed gate:** none" "$scalar_none_sentinel_gate_ids_step_summary" || ! grep -Fq "**Blocked by gate:** none" "$scalar_none_sentinel_gate_ids_step_summary"; then
+	echo "Expected scalar-none-sentinel-gate-ids summary to normalize scalar failed/blocked 'none' sentinels to absent metadata." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$scalar_none_sentinel_gate_ids_step_summary"; then
+	echo "Did not expect schema warning for scalar-none-sentinel-gate-ids summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint" "$selected_explicit_attention_scope_step_summary"; then

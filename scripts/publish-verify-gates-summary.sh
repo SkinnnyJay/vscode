@@ -76,6 +76,13 @@ const normalizeNonEmptyString = (value) => {
 	const normalizedValue = value.trim();
 	return normalizedValue.length > 0 ? normalizedValue : null;
 };
+const normalizeSummaryScalarGateId = (value) => {
+	const normalizedGateId = normalizeNonEmptyString(value);
+	if (normalizedGateId === null) {
+		return null;
+	}
+	return normalizedGateId.toLowerCase() === 'none' ? null : normalizedGateId;
+};
 const normalizeBoolean = (value) => {
 	if (typeof value === 'boolean') {
 		return value;
@@ -318,8 +325,8 @@ const scopeGateIdToSelection = (gateId) => {
 	return selectedGateIdSetFromSummary.has(gateId) ? gateId : null;
 };
 const normalizeSelectedScopedNonNegativeInteger = (value) => selectedGateIdsFromSummary === null ? normalizeNonNegativeInteger(value) : null;
-const scopedSummaryFailedGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.failedGateId));
-const scopedSummaryBlockedByGateId = scopeGateIdToSelection(normalizeNonEmptyString(summary.blockedByGateId));
+const scopedSummaryFailedGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.failedGateId));
+const scopedSummaryBlockedByGateId = scopeGateIdToSelection(normalizeSummaryScalarGateId(summary.blockedByGateId));
 const scopedSummaryFailedGateExitCode = normalizeNonNegativeInteger(summary.failedGateExitCode);
 const passedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.passedGateIds));
 const failedGateIdsFromSummary = scopeGateIdListToSelection(normalizeGateIdList(summary.failedGateIds));

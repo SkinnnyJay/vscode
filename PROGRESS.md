@@ -2662,6 +2662,7 @@
   - `scripts/test-verify-gates-summary.sh` now adds `explicit_retried_missing_retry_map_key` scenario and verifies explicit retried IDs missing from retry-count maps are synthesized to minimum retry count (`1`) for aggregate/map consistency.
   - `scripts/test-verify-gates-summary.sh` now adds `scalar_failed_gate_selected_fallback` scenario and verifies scalar failed-gate metadata contributes fallback unscoped `Selected gates` / `Gate count` derivation when rows and map/list evidence are absent.
   - `scripts/test-verify-gates-summary.sh` now adds `scalar_blocked_gate_selected_fallback` scenario and verifies scalar blocked-by metadata contributes fallback unscoped `Selected gates` / `Gate count` derivation while preserving explicit success run-state metadata when no conflicting unscoped outcome evidence exists.
+  - `scripts/test-verify-gates-summary.sh` now adds `scalar_none_sentinel_gate_ids` scenario and verifies scalar `failedGateId` / `blockedByGateId` sentinel values (`none`) are ignored (no synthetic `none` gate IDs in selected-gate fallback maps/counts).
   - `scripts/publish-verify-gates-summary.sh` now expands unscoped fallback `selectedGateIds` derivation to include explicit partition/retried/non-success/attention lists when row/status-map evidence is absent.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_attention_scope` scenario and verifies explicit non-success/attention lists are trimmed/scoped to selected IDs.
   - `scripts/test-verify-gates-summary.sh` now adds `selected_explicit_empty_attention_with_retries_scope` scenario and verifies explicit empty attention lists remain authoritative despite selected retried-gate evidence.
@@ -2832,3 +2833,13 @@
   - `scripts/test-verify-gates-summary.sh` now updates explicit retried missing-key assertions to validate `Selected gates: lint` under list-only sparse payloads and adds scalar-failed/scalar-blocked fallback coverage (`scalar_failed_gate_selected_fallback`, `scalar_blocked_gate_selected_fallback`).
   - `scripts/README.md` updated to document unscoped selected-gate fallback expansion behavior.
   **Why:** improves summary interpretability under sparse producer payloads that communicate gate identity via explicit partition lists only.
+- **Scalar `none` sentinel suppression for gate-id fallbacks (2026-02-16 AM)** Hardened sparse scalar normalization:
+  - `scripts/publish-verify-gates-summary.sh` now treats scalar `failedGateId` / `blockedByGateId` values equal to `none` (case-insensitive) as absent metadata.
+  - This prevents synthetic `none` gate IDs from polluting fallback selected-gate derivation, gate maps, and count outputs.
+  - `scripts/test-verify-gates-summary.sh` now adds `scalar_none_sentinel_gate_ids` scenario and verifies:
+    - `Selected gates: none`
+    - `Gate count: 0`
+    - no synthesized `none` map keys
+    - scalar failed/blocked metadata rendered as `none`.
+  - `scripts/README.md` updated to document sentinel suppression behavior for scalar gate IDs.
+  **Why:** avoids contradictory sparse summaries where sentinel strings were interpreted as literal gate IDs.
