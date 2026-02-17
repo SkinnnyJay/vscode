@@ -4481,3 +4481,27 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes blocked-reason run-state aggregate hardening gaps so selected blocked-by/fail-fast precedence branches enforce the same retry/duration scalar suppression guarantees already required across other selected run-state variants.
+
+- **Selected run-state residual scalar suppression parity sweep (2026-02-17 PM)** Closed remaining selected run-state aggregate suppression gaps identified by parity audit:
+  - `scripts/test-verify-gates-summary.sh` payload hardening:
+    - Added missing map/list conflict fields to `selected-run-state-no-evidence-scope` (`retriedGateIds`, `gateRetryCountById`, `gateDurationSecondsById`) so scalar-only suppression coverage now includes explicit list/map conflict evidence as well.
+    - Enriched remaining selected run-state payloads with conflicting non-selected retry/duration scalar bundles (`retriedGateIds`, `gateRetryCountById`, `retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`):
+      - `selected-run-state-failure-scope`
+      - `selected-run-state-unmatched-rows-scope`
+      - `selected-run-state-not-run-blocked-selected-{whitespace,uppercase,spaced-colon,continue,dry-reason,continued-conflict}-scope`
+      - `selected-run-state-not-run-blocked-{empty,none-sentinel}-scope`
+  - Assertion hardening:
+    - Added explicit non-leak checks rejecting conflicting scalar outputs (`90%`, `80%`, `4s`, `7`, `8s`, `6s`) for all remaining selected run-state summaries that lacked them:
+      - `selected_run_state_failure_scope`
+      - `selected_run_state_unmatched_rows_scope`
+      - `selected_run_state_not_run_blocked_selected_{whitespace,uppercase,spaced_colon,continue,dry_reason,continued_conflict}_scope`
+      - `selected_run_state_not_run_blocked_{empty,none_sentinel}_scope`
+  - Verification audit:
+    - Re-ran parity scanner confirming `missing payloads 0` and `missing assertion vars 0` for all `selected-run-state*scope` contract payloads and step-summary non-leak checks.
+  - Documentation:
+    - `scripts/README.md` now explicitly calls out blocked-format normalization + failure + unmatched-rows selected run-state scalar suppression parity.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** completes the selected run-state hardening matrix so every remaining selected run-state branch now carries conflicting aggregate evidence and explicit scalar non-leak assertions, eliminating the final parity gaps in selected-scope retry/duration/rate suppression coverage.

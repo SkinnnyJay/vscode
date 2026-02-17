@@ -5479,9 +5479,12 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-no-evidence-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
 	retriedGateCount: 5,
 	totalRetryCount: 7,
 	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
 	executedDurationSeconds: 8,
 	averageExecutedDurationSeconds: 6,
 	retryRatePercent: 90,
@@ -5616,6 +5619,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-failure-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5713,6 +5727,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-whitespace-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5738,6 +5763,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-uppercase-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5763,6 +5799,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-spaced-colon-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5788,6 +5835,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-empty-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5813,6 +5871,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-none-sentinel-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5838,6 +5907,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-continue-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: true,
@@ -5863,6 +5943,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-dry-reason-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: true,
 	continueOnFailure: false,
@@ -5888,6 +5979,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-continued-conflict-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -7834,6 +7936,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-unmatched-rows-scope-contract',
 	selectedGateIds: ['missing-only'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -14432,6 +14545,10 @@ if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_failure_scop
 	echo "Expected selected-run-state-failure-scope summary to preserve selected failure metadata and derived fail-fast/continued semantics." >&2
 	exit 1
 fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_failure_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_failure_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_failure_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_failure_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_failure_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_failure_scope_step_summary"; then
+	echo "Expected selected-run-state-failure-scope summary to suppress conflicting scalar retry/duration leakage under selected failure scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_failure_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-failure-scope summary." >&2
 	exit 1
@@ -14508,6 +14625,10 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_s
 	echo "Expected selected-run-state-not-run-blocked-selected-whitespace-scope summary to trim blocked-by-fail-fast reason gate IDs before selected-scope matching." >&2
 	exit 1
 fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-whitespace-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_whitespace_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-whitespace-scope summary." >&2
 	exit 1
@@ -14522,6 +14643,10 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected
 fi
 if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
 	echo "Expected selected-run-state-not-run-blocked-selected-uppercase-scope summary to normalize uppercase blocked-by-fail-fast reasons to selected gate IDs." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-uppercase-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_uppercase_scope_step_summary"; then
@@ -14540,6 +14665,10 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_s
 	echo "Expected selected-run-state-not-run-blocked-selected-spaced-colon-scope summary to resolve blocked gate ID when blocked-by prefix contains whitespace before colon." >&2
 	exit 1
 fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-spaced-colon-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_spaced_colon_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-spaced-colon-scope summary." >&2
 	exit 1
@@ -14554,6 +14683,10 @@ if ! grep -Fq "**Success:** true" "$selected_run_state_not_run_blocked_empty_sco
 fi
 if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_not_run_blocked_empty_scope_step_summary"; then
 	echo "Expected selected-run-state-not-run-blocked-empty-scope summary to suppress blank blocked-by-fail-fast reason IDs." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_empty_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_empty_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_empty_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_empty_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_empty_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_empty_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-empty-scope summary to suppress conflicting scalar retry/duration leakage under selected non-executed fallback scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_empty_scope_step_summary"; then
@@ -14572,6 +14705,10 @@ if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_not_run_blocked_n
 	echo "Expected selected-run-state-not-run-blocked-none-sentinel-scope summary to suppress blocked-by-fail-fast sentinel gate IDs." >&2
 	exit 1
 fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-none-sentinel-scope summary to suppress conflicting scalar retry/duration leakage under selected non-executed fallback scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_none_sentinel_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-none-sentinel-scope summary." >&2
 	exit 1
@@ -14586,6 +14723,10 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected
 fi
 if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary"; then
 	echo "Expected selected-run-state-not-run-blocked-selected-continue-scope summary to ignore conflicting continue-on-failure=true under selected blocked reason fail-fast evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-continue-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_continue_scope_step_summary"; then
@@ -14604,6 +14745,10 @@ if ! grep -Fq "**Dry run:** false" "$selected_run_state_not_run_blocked_selected
 	echo "Expected selected-run-state-not-run-blocked-selected-dry-reason-scope summary to clear dry-run metadata under selected blocked-reason fail-fast evidence." >&2
 	exit 1
 fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-dry-reason-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_dry_reason_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-dry-reason-scope summary." >&2
 	exit 1
@@ -14618,6 +14763,10 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_not_run_blocked_selected
 fi
 if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary"; then
 	echo "Expected selected-run-state-not-run-blocked-selected-continued-conflict-scope summary to ignore continue-on-failure=true under selected blocked-reason fail-fast evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-continued-conflict-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_continued_conflict_scope_step_summary"; then
@@ -16638,6 +16787,10 @@ if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_unmatched_row
 fi
 if ! grep -Fq '| `lint` | `make lint` | pass |' "$selected_run_state_unmatched_rows_scope_step_summary"; then
 	echo "Expected selected-run-state-unmatched-rows-scope summary to retain unmatched-selection table fallback rows." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_unmatched_rows_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_unmatched_rows_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_unmatched_rows_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_unmatched_rows_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_unmatched_rows_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_unmatched_rows_scope_step_summary"; then
+	echo "Expected selected-run-state-unmatched-rows-scope summary to suppress conflicting scalar retry/duration leakage under selected no-matching-row scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_unmatched_rows_scope_step_summary"; then
