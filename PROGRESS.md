@@ -4057,3 +4057,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed explicit-zero denominator parity so selected scoped evidence remains authoritative even when valid-zero raw status-count bundles and zero-denominator scalars are simultaneously present.
+- **Selected/non-selected mixed map-only scoped-evidence parity under valid-zero raw statusCounts (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_map_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_map_only_string_scope`
+  - Scenarios provide mixed selected+non-selected status-map evidence (`gateStatusById` includes selected and extra non-selected IDs) with valid-zero raw `statusCounts` and conflicting scalar counters, while omitting explicit executed/passed/failed lists to force map-only fallback behavior.
+  - Assertions confirm mixed map-only selected-scope parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected map evidence (`Passed/Failed/Skipped/Not-run = 1/1/0/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed metadata/rates remain selected-scoped (`Executed gates: 2`, list `lint, typecheck`, pass rate `50%`)
+    - zero-raw/scalar and non-selected map leakage is suppressed (`Passed gates: 0`, `Executed gates: 0`, `Executed gates list: lint, typecheck, build` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include mixed selected+non-selected valid-zero raw branches for both explicit-list-backed and map-only evidence paths.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed map-only scoped-evidence parity so selected map evidence remains authoritative while non-selected map memberships and conflicting scalar/raw branches stay filtered.
