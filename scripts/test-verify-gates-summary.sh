@@ -1742,7 +1742,17 @@ const payload = {
 	passedGateIds: ['build'],
 	failedGateIds: ['deploy'],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1772,7 +1782,17 @@ const payload = {
 	passedGateIds: [' build '],
 	failedGateIds: [' deploy '],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1802,7 +1822,17 @@ const payload = {
 	passedGateIds: ['build'],
 	failedGateIds: ['deploy'],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1832,7 +1862,17 @@ const payload = {
 	passedGateIds: [' build '],
 	failedGateIds: [' deploy '],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1862,7 +1902,17 @@ const payload = {
 	passedGateIds: ['build'],
 	failedGateIds: ['deploy'],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1892,7 +1942,17 @@ const payload = {
 	passedGateIds: ['build'],
 	failedGateIds: ['deploy'],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1922,7 +1982,17 @@ const payload = {
 	passedGateIds: [' build '],
 	failedGateIds: [' deploy '],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1952,7 +2022,17 @@ const payload = {
 	passedGateIds: [' build '],
 	failedGateIds: [' deploy '],
 	gateStatusById: { build: 'pass', deploy: 'fail' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -1978,8 +2058,18 @@ const payload = {
 	notRunGateCount: 5,
 	executedGateCount: 4,
 	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2005,8 +2095,18 @@ const payload = {
 	notRunGateCount: ' 5 ',
 	executedGateCount: ' 4 ',
 	statusCounts: { pass: 'bad', fail: '3', skip: null, 'not-run': 'bad' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2032,8 +2132,18 @@ const payload = {
 	notRunGateCount: 5,
 	executedGateCount: 0,
 	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2059,8 +2169,18 @@ const payload = {
 	notRunGateCount: ' 5 ',
 	executedGateCount: ' 0 ',
 	statusCounts: { pass: 'bad', fail: '3', skip: null, 'not-run': 'bad' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2086,8 +2206,18 @@ const payload = {
 	notRunGateCount: 5,
 	executedGateCount: 4,
 	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2113,8 +2243,18 @@ const payload = {
 	notRunGateCount: 5,
 	executedGateCount: 0,
 	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: 2, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2140,8 +2280,18 @@ const payload = {
 	notRunGateCount: ' 5 ',
 	executedGateCount: ' 4 ',
 	statusCounts: { pass: ' 0 ', fail: '0', skip: ' 0 ', 'not-run': '0' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -2167,8 +2317,18 @@ const payload = {
 	notRunGateCount: ' 5 ',
 	executedGateCount: ' 0 ',
 	statusCounts: { pass: ' 0 ', fail: '0', skip: ' 0 ', 'not-run': '0' },
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
 	gateStatusById: { build: 'pass', deploy: 'fail' },
 	gateDurationSecondsById: { build: ' 2 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -10665,7 +10825,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_evidence_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-scope summary to suppress non-selected evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10693,7 +10853,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-string-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-string-scope summary to suppress normalized non-selected evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10721,7 +10881,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_evidence_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-zero-scope summary to suppress non-selected evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10749,7 +10909,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-string-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-evidence-string-zero-scope summary to suppress normalized non-selected evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10777,7 +10937,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_evidence_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-scope summary to suppress non-selected evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10805,7 +10965,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_evidence_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-zero-scope summary to suppress non-selected evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10833,7 +10993,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-string-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_evidence_string_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-string-scope summary to suppress non-selected evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10861,7 +11021,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-string-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-evidence-string-zero-scope summary to suppress non-selected evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10889,7 +11049,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_map_only_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-scope summary to suppress non-selected map-only evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10917,7 +11077,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-string-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-string-scope summary to suppress normalized non-selected map-only evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10945,7 +11105,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_map_only_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-zero-scope summary to suppress non-selected map-only evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -10973,7 +11133,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-string-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-nonselected-map-only-string-zero-scope summary to suppress normalized non-selected map-only evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -11001,7 +11161,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_map_only_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-scope summary to suppress non-selected map evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -11029,7 +11189,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_map_only_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-zero-scope summary to suppress non-selected map evidence and conflicting scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -11057,7 +11217,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-string-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_map_only_string_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-string-scope summary to suppress non-selected map evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
@@ -11085,7 +11245,7 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-string-zero-scope summary to render executed-rate metrics as n/a when selected execution evidence is absent." >&2
 	exit 1
 fi
-if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary"; then
+if grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_nonselected_map_only_string_zero_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-nonselected-map-only-string-zero-scope summary to suppress non-selected map evidence and conflicting normalized scalar/raw branch leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
