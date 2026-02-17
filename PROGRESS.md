@@ -3993,3 +3993,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (initial flaky `McpStdioStateHandler sigterm after grace` failure on first run, pass on immediate retry)
   **Why:** closes selected explicit-list valid-zero raw status-count parity so valid-zero raw status-count bundles cannot reintroduce non-selected execution leakage into selected counters/rates.
+- **Selected non-selected valid-zero raw statusCounts numeric-string non-zero denominator parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_nonselected_evidence_string_scope`
+    - `selected_status_counts_zero_raw_nonselected_map_only_string_scope`
+  - Scenarios extend the existing selected non-selected valid-zero raw branches by using normalized numeric-string non-zero selected executed denominators (`executedGateCount: ' 4 '`) while preserving non-selected evidence in explicit-list-backed and map-only fallback forms.
+  - Assertions confirm numeric-string non-zero denominator parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts stay collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates stay `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected evidence/scalar/raw leak branches remain suppressed (`Failed gates: 1`, `Executed gates: 2`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out integer/numeric-string non-zero + zero denominator coverage for valid-zero raw `statusCounts` scoping in both explicit-list-backed and map-only selected branches.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes normalized numeric-string non-zero denominator parity for selected non-selected valid-zero raw branches so denominator encoding cannot reintroduce selected-scope leakage.
