@@ -5534,6 +5534,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-unknown-status-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -5560,6 +5571,17 @@ const payload = {
 	runId: 'selected-run-state-partial-status-scope-contract',
 	selectedGateIds: ['lint', 'typecheck'],
 	gateStatusById: { lint: 'pass' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -14136,8 +14158,20 @@ if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_unknown_statu
 	echo "Expected selected-run-state-unknown-status-scope summary to preserve explicit continue-on-failure when selected-scope statuses are unresolved." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to scope out non-selected retry aggregates when selected status remains unresolved." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_unknown_status_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to keep rate/duration aggregates at selected unresolved fallback values." >&2
+	exit 1
+fi
 if ! grep -Fq '| `lint` | `make lint` | unknown |' "$selected_run_state_unknown_status_scope_step_summary"; then
 	echo "Expected selected-run-state-unknown-status-scope summary to render unresolved selected row status as unknown." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_unknown_status_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_unknown_status_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_unknown_status_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_unknown_status_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_unknown_status_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_unknown_status_scope_step_summary"; then
+	echo "Expected selected-run-state-unknown-status-scope summary to suppress conflicting scalar retry/duration leakage under selected unresolved-status scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_unknown_status_scope_step_summary"; then
@@ -14156,8 +14190,20 @@ if ! grep -Fq "**Continue on failure:** true" "$selected_run_state_partial_statu
 	echo "Expected selected-run-state-partial-status-scope summary to preserve explicit continue-on-failure when selected status coverage is partial." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_partial_status_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_partial_status_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_partial_status_scope_step_summary"; then
+	echo "Expected selected-run-state-partial-status-scope summary to suppress non-selected retry aggregates under selected partial status-map coverage." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_run_state_partial_status_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 100%" "$selected_run_state_partial_status_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_partial_status_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_run_state_partial_status_scope_step_summary"; then
+	echo "Expected selected-run-state-partial-status-scope summary to derive selected executed/rate aggregates from partial selected status evidence." >&2
+	exit 1
+fi
 if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_run_state_partial_status_scope_step_summary"; then
 	echo "Expected selected-run-state-partial-status-scope summary to keep scoped status-map entries without synthesizing missing selected statuses in map output." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_partial_status_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_partial_status_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_partial_status_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_partial_status_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_partial_status_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_partial_status_scope_step_summary"; then
+	echo "Expected selected-run-state-partial-status-scope summary to suppress conflicting scalar retry/duration leakage under selected partial status scope." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_partial_status_scope_step_summary"; then
