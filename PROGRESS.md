@@ -4143,3 +4143,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed partial-malformed partition-only parity so selected scoped partition evidence remains authoritative when partial malformed raw status-count bundles and zero/non-zero scalar denominators coexist.
+- **Selected/non-selected mixed valid-zero raw partition-only parity (including explicit zero denominators) (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_partition_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_partition_only_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_partition_only_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_partition_only_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected partition-list evidence (`passedGateIds`/`failedGateIds` include selected and non-selected IDs) with valid-zero raw `statusCounts` and conflicting scalar counters, while omitting explicit executed lists and status maps to force partition-only executed fallback behavior across integer/numeric-string non-zero and zero selected executed-denominator scalar variants.
+  - Assertions confirm mixed valid-zero raw partition-only parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected partition evidence (`Passed/Failed/Skipped/Not-run = 1/1/0/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed metadata/rates remain selected-scoped (`Executed gates: 2`, pass rate `50%`) despite conflicting zero-raw and explicit zero-denominator scalar inputs
+    - scalar/zero-raw and non-selected partition leakage is suppressed (`Passed gates: 0`, `Executed gates: 0`, `Executed gates list: lint, typecheck, build` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include valid-zero raw parity for explicit-list-backed, partition-only, and map-only evidence paths.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed valid-zero raw partition-only parity so selected scoped partition evidence remains authoritative when zero-raw status-count bundles and zero/non-zero scalar denominators coexist.
