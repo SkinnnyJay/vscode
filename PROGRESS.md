@@ -4389,3 +4389,15 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes the remaining non-zero selected-denominator precedence gap so conflicting non-selected retry/duration/rate scalars cannot leak into selected non-executed partition/map summaries even when explicit scalar denominators are non-zero.
+- **Selected non-executed explicit-list non-zero integer scalar parity (2026-02-17 AM)** Backfilled explicit-list non-zero integer branches with conflicting aggregate scalars:
+  - `scripts/test-verify-gates-summary.sh` now enriches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_scope`
+  - Added conflicting non-selected aggregate scalar bundle (`retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`) alongside existing retry/duration map/list evidence so integer explicit-list non-zero payloads match string and partition/map parity.
+  - Existing selected-scope assertions already requiring `Retried gate count: 0`, `Total retries: 0`, `Pass/Retry rate: n/a`, and duration/share `0s`/`n/a` now also validate suppression of these conflicting explicit-list integer scalar bundles.
+  - `scripts/README.md` mixed selected/non-selected partial-malformed notes now explicitly call out explicit-list non-zero integer/numeric-string scalar conflict suppression.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes explicit-list non-zero integer parity so selected non-executed scope handling is uniform across integer and string scalar encodings in explicit-list, partition-only, and map-only branches.
