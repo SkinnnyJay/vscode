@@ -3977,3 +3977,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes selected map-only valid-zero raw status-count parity so selected counter/rate suppression remains deterministic when raw `statusCounts` are syntactically valid zeros but selected execution evidence is absent after scoping.
+- **Selected non-selected explicit-list valid-zero raw statusCounts scoping parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_nonselected_evidence_scope`
+    - `selected_status_counts_zero_raw_nonselected_evidence_string_zero_scope`
+  - Scenarios preserve selected scope (`selectedGateIds: ['lint', 'typecheck']`) while providing non-selected execution evidence through explicit lists (`executedGateIds`, `passedGateIds`, `failedGateIds`) plus status/duration maps for `build`/`deploy`, with valid-zero raw `statusCounts` and integer/numeric-string executed-denominator variants.
+  - Assertions confirm selected explicit-list valid-zero isolation:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts remain collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates stay `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected explicit-list evidence and scalar/raw leak branches remain suppressed (`Failed gates: 1`, `Executed gates: 2`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include valid-zero raw `statusCounts` variants across both explicit-list-backed and map-only selected non-selected-evidence branches.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (initial flaky `McpStdioStateHandler sigterm after grace` failure on first run, pass on immediate retry)
+  **Why:** closes selected explicit-list valid-zero raw status-count parity so valid-zero raw status-count bundles cannot reintroduce non-selected execution leakage into selected counters/rates.
