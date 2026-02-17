@@ -4179,3 +4179,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed non-executed selected-scope parity so selected skip/not-run evidence remains authoritative while non-selected executed evidence and conflicting scalar/raw bundles stay filtered.
+- **Selected/non-selected mixed partial-malformed non-executed selected-scope parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_string_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected evidence where selected gates are skip/not-run only (non-executed), while non-selected gates hold pass/fail/executed evidence and raw `statusCounts` is partial malformed with conflicting scalar counters.
+  - Assertions confirm mixed partial-malformed non-executed selected-scope parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected non-executed projections (`Passed/Failed/Skipped/Not-run = 0/0/1/1`, `Status counts: {"pass":0,"fail":0,"skip":1,"not-run":1}`)
+    - executed metadata/rates remain selected-scoped no-execution (`Executed gates: 0`, list `none`, pass/retry rates `n/a`) across integer/numeric-string non-zero and zero selected executed-denominator scalar variants
+    - non-selected executed branch leakage and partial-malformed scalar/raw override leakage is suppressed (`Passed/Failed = 1/1`, `Failed gates: 3`, `Executed gates: 2/4`, executed list `build, deploy` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include mixed partial-malformed branches with selected non-executed skip/not-run projections.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed partial-malformed non-executed selected-scope parity so selected skip/not-run evidence remains authoritative while non-selected executed evidence and conflicting partial-malformed scalar/raw bundles stay filtered.
