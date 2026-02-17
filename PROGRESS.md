@@ -4215,3 +4215,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed non-executed map-only valid-zero raw parity so selected skip/not-run map evidence remains authoritative while non-selected executed map evidence and conflicting scalar/raw bundles stay filtered.
+- **Selected/non-selected mixed partial-malformed non-executed map-only parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected status-map evidence where selected gates are skip/not-run only (non-executed) and non-selected gates carry pass/fail/executed evidence, with partial malformed raw `statusCounts` and conflicting scalar counters while omitting explicit list evidence to force map-only fallback behavior.
+  - Assertions confirm mixed non-executed map-only partial-malformed parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected non-executed map projections (`Passed/Failed/Skipped/Not-run = 0/0/1/1`, `Status counts: {"pass":0,"fail":0,"skip":1,"not-run":1}`)
+    - executed metadata/rates remain selected-scoped no-execution (`Executed gates: 0`, list `none`, pass/retry rates `n/a`) across integer/numeric-string non-zero and zero selected executed-denominator scalar variants
+    - non-selected executed map leakage and partial-malformed scalar/raw override leakage is suppressed (`Passed/Failed = 1/1`, `Failed gates: 3`, `Executed gates: 2/4`, executed list `build, deploy` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out explicit-list-backed and map-only selected non-executed partial-malformed projections.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed non-executed map-only partial-malformed parity so selected skip/not-run map evidence remains authoritative while non-selected executed map evidence and conflicting partial-malformed scalar/raw bundles stay filtered.
