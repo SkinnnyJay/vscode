@@ -3881,3 +3881,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T022459Z`, classification `success-with-retries`)
   **Why:** closes zero-denominator parity for sparse unscoped partial-malformed merges so executed-rate output remains deterministic across integer and normalized numeric-string zero scalar encodings.
+- **Selected no-evidence partial malformed statusCounts zero-denominator scalar parity coverage (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_no_evidence_zero_scope`
+    - `selected_status_counts_partial_malformed_no_evidence_string_zero_scope`
+  - Scenarios keep selected sparse no-evidence + partial malformed raw `statusCounts` inputs but force explicit zero executed denominators (`executedGateCount: 0` and `' 0 '`) across integer and normalized numeric-string scalar variants.
+  - Assertions confirm deterministic selected-scope suppression behavior:
+    - selected metadata is preserved (`Selected gates: lint, typecheck`, `Gate count: 2`)
+    - selected counters/status counts stay collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rate fields stay `n/a` (`Executed gates: 0`, executed list `none`, pass/retry rates `n/a`)
+    - conflicting partial malformed raw/scalar leak branches are suppressed (`Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out selected sparse no-evidence partial malformed suppression parity for integer and normalized numeric-string zero executed-denominator scalar inputs.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes selected zero-denominator parity for sparse partial-malformed no-evidence payloads so scoped counter suppression and executed-rate `n/a` rendering remain deterministic across integer and normalized numeric-string zero scalar encodings.
