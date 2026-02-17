@@ -4089,3 +4089,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed map-only explicit-zero denominator parity so selected map evidence remains authoritative when valid-zero raw status counts and zero-denominator scalars coexist.
+- **Selected/non-selected mixed partial-malformed explicit-list parity (including explicit zero denominators) (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected explicit list evidence (`executed/passed/failed` lists include selected and non-selected IDs) with partially malformed raw `statusCounts` and conflicting scalar counters, across integer/numeric-string non-zero and zero `executedGateCount` scalar variants.
+  - Assertions confirm mixed partial-malformed explicit-list parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected list evidence (`Passed/Failed/Skipped/Not-run = 1/1/0/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed metadata/rates remain selected-scoped (`Executed gates: 2`, list `lint, typecheck`, pass rate `50%`) despite conflicting malformed/raw and explicit zero-denominator scalar inputs
+    - partial-malformed scalar/raw and non-selected list leakage is suppressed (`Passed gates: 0`, `Executed gates: 0`, `Executed gates list: lint, typecheck, build` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include mixed selected+non-selected partial-malformed raw status-count explicit-list parity, including integer/numeric-string zero-denominator scalar variants.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed partial-malformed explicit-list parity so selected scoped evidence remains authoritative even when malformed raw status-count bundles and zero/non-zero scalar denominators coexist.
