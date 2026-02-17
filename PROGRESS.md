@@ -4025,3 +4025,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes integer-zero denominator parity for selected non-selected valid-zero raw branches so zero denominators cannot reintroduce selected-scope leakage under explicit-list-backed or map-only fallback evidence.
+- **Selected/non-selected mixed scoped-evidence parity under valid-zero raw statusCounts (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope`
+  - Scenarios provide both selected and non-selected explicit-list evidence (`executed/passed/failed` lists containing selected IDs plus extra non-selected IDs) with valid-zero raw `statusCounts` and conflicting scalar counters, ensuring selected evidence remains after scoping instead of collapsing to no-evidence fallback.
+  - Assertions confirm mixed-evidence selected-scope behavior:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts reflect scoped explicit-list evidence (`Passed/Failed/Skipped/Not-run = 1/1/0/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed metadata/rates remain selected-scoped (`Executed gates: 2`, list `lint, typecheck`, pass rate `50%`)
+    - zero-raw/scalar and non-selected list leakage is suppressed (`Passed gates: 0`, `Executed gates: 0`, `Executed gates list: lint, typecheck, build` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out mixed selected+non-selected explicit-list valid-zero raw branches retaining selected pass/fail/executed projections after scoping.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed selected+non-selected valid-zero raw scoping parity so selected evidence is preserved when present, while non-selected memberships and conflicting scalar/raw branches remain filtered.
