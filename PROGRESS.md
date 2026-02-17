@@ -3709,3 +3709,18 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260216T235250Z`, classification `success-with-retries`)
   **Why:** closes the partial-malformed raw-status branch for explicit non-empty executed-list scalar+raw conflicts so unscoped summaries stay deterministic per status key while keeping scalar executed denominators authoritative.
+- **Unscoped explicit non-empty executed-list partial malformed raw statusCounts fallback under integer scalar denominator coverage (2026-02-17 AM)** Extended unscoped executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_executed_scalar_partial_malformed_raw_status_counts_overrides_explicit_list`.
+  - Scenario keeps explicit non-empty `executedGateIds: ['lint', 'typecheck']`, integer scalar denominator (`executedGateCount: 5`), and partially malformed raw status counts (`pass: 'bad'`, `fail: 3`, `skip: null`, `not-run: 'bad'`).
+  - Assertions confirm mixed per-field fallback behavior:
+    - valid raw `fail` counter remains authoritative (`Failed gates: 3`)
+    - malformed raw `pass/skip/not-run` fields fall back to sparse list evidence (`Passed gates: 1`, `Skipped gates: 0`, `Not-run gates: 0`)
+    - rendered status-count metadata reflects merged per-key resolution (`{"pass":1,"fail":3,"skip":0,"not-run":0}`)
+    - integer scalar denominator remains authoritative (`Executed gates: 5`, `Pass rate: 20%`, `Retry rate: 20%`) while explicit executed-list labels stay visible (`lint, typecheck`).
+  - Assertions also reject sparse fallback leakage (`Executed gates: 2`, `Pass rate: 50%`) and preserve attention metadata (`lint, typecheck`).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly clarify that partial malformed raw status-count fallback under explicit non-empty executed-list conflicts is covered for both integer and numeric-string scalar forms.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T000206Z`, classification `success-with-retries`)
+  **Why:** closes the integer-form parity gap for explicit non-empty executed-list partial-malformed raw-status conflicts so per-status fallback and scalar denominator precedence remain deterministic across scalar encodings.
