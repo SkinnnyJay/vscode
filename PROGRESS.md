@@ -4336,3 +4336,17 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes the remaining explicit-list zero-denominator gap so selected non-executed scopes keep retry/backoff/duration aggregates fully scoped even when conflicting non-selected evidence and explicit zero executed-denominator scalars coexist.
+- **Selected non-executed explicit-list zero-denominator scalar precedence parity (2026-02-17 AM)** Hardened explicit-list zero-denominator branches against conflicting aggregate scalars:
+  - `scripts/test-verify-gates-summary.sh` further enriches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_string_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope`
+  - Added conflicting non-selected aggregate scalar bundles (`retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`) alongside existing non-selected retry/duration map/list evidence and backoff/share fields.
+  - Existing selected-scope assertions (`Retried gate count: 0`, `Total retries: 0`, `Pass/Retry rate: n/a`, `Executed duration average: n/a`, duration/backoff totals `0`) now explicitly verify these conflicting scalar aggregates are also ignored under selected non-executed explicit-list zero-denominator scope.
+  - `scripts/README.md` selected precedence notes now call out suppression of conflicting explicit retry/duration/rate scalar bundles for these explicit-list zero-denominator selected branches.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (with known transient `McpStdioStateHandler sigterm after grace` flake on first attempt, passing on rerun)
+  **Why:** closes the remaining scalar-precedence surface for explicit-list zero-denominator selected non-executed scenarios, ensuring conflicting non-selected aggregate scalar bundles cannot override selected-scope zero/`n/a` retry/duration/rate rendering.
