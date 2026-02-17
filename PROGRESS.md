@@ -4302,3 +4302,20 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes numeric-string parity for selected non-executed map-only retry/backoff/duration scoping, preventing non-selected aggregate leakage under normalized string payload variants.
+- **Selected non-executed explicit-list retry/duration scoping parity (2026-02-17 AM)** Hardened selected non-executed explicit-list aggregate checks:
+  - `scripts/test-verify-gates-summary.sh` now enriches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_scope`
+  - Added non-selected-only retry/duration evidence (`retriedGateIds`, `gateRetryCountById`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `retryBackoffSharePercent`) in integer and normalized numeric-string encodings to ensure selected non-executed explicit-list scope does not leak non-selected aggregates.
+  - Assertions now additionally verify selected aggregate scoping for explicit-list branches:
+    - `Retried gates: none`, `Retried gate count: 0`, `Total retries: 0`, `Total retry backoff: 0s`
+    - `Executed duration total: 0s`, `Executed duration average: n/a`, `Retry backoff share (executed duration): n/a`
+    - non-selected retry/duration aggregates remain suppressed alongside prior explicit-list selected non-executed executed/rate assertions.
+  - `scripts/README.md` selected aggregate precedence notes now call out explicit-list-backed suppression (alongside partition/map) for non-selected retry/duration aggregates under selected non-executed scope.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes explicit-list parity so selected non-executed scopes consistently suppress non-selected retry/backoff/duration aggregates across integer and normalized string payload variants.
