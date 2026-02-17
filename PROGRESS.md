@@ -4425,3 +4425,6 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** completes explicit-list zero-denominator parity for zero-raw selected non-executed branches so conflicting non-selected aggregate scalars are suppressed consistently across integer and normalized string encodings.
+
+- **Selected mixed-scope retry/duration scalar suppression parity (2026-02-14 PM)** Added conflicting non-selected retry/duration aggregate evidence + scalar bundles (`retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`) to selected explicit-list mixed selected/non-selected partial-malformed and zero-raw scope + string-scope contract payloads; extended assertions to require selected-scope retry/duration aggregates stay `0`/`none`/`0s` with `Retry rate: 0%` and `Retry backoff share: n/a` while suppressing leaked non-selected scalar values (`90%`, `80%`, `4s`, `7`, `8s`, `6s`).
+  **Why:** closes an executed-denominator selected-scope gap so mixed selected/non-selected explicit-list branches now verify non-selected retry/duration aggregate suppression even when conflicting aggregate scalars are present.

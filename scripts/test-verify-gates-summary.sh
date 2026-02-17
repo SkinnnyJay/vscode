@@ -2197,6 +2197,17 @@ const payload = {
 	executedGateIds: ['lint', 'typecheck', 'build'],
 	passedGateIds: ['lint', 'build'],
 	failedGateIds: ['typecheck', 'deploy'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gateStatusById: { lint: 'pass', typecheck: 'fail', build: 'pass', deploy: 'fail' },
 	gates: [],
 };
@@ -2226,6 +2237,17 @@ const payload = {
 	executedGateIds: [' lint ', ' typecheck ', ' build '],
 	passedGateIds: [' lint ', ' build '],
 	failedGateIds: [' typecheck ', ' deploy '],
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
+	gateDurationSecondsById: { build: ' 5 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gateStatusById: { lint: 'pass', typecheck: 'fail', build: 'pass', deploy: 'fail' },
 	gates: [],
 };
@@ -2255,6 +2277,17 @@ const payload = {
 	executedGateIds: ['lint', 'typecheck', 'build'],
 	passedGateIds: ['lint', 'build'],
 	failedGateIds: ['typecheck', 'deploy'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gateStatusById: { lint: 'pass', typecheck: 'fail', build: 'pass', deploy: 'fail' },
 	gates: [],
 };
@@ -2284,6 +2317,17 @@ const payload = {
 	executedGateIds: [' lint ', ' typecheck ', ' build '],
 	passedGateIds: [' lint ', ' build '],
 	failedGateIds: [' typecheck ', ' deploy '],
+	retriedGateIds: [' build ', ' deploy '],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: ' 5 ',
+	totalRetryCount: ' 7 ',
+	totalRetryBackoffSeconds: ' 4 ',
+	gateDurationSecondsById: { build: ' 5 ', deploy: ' 3 ' },
+	executedDurationSeconds: ' 8 ',
+	averageExecutedDurationSeconds: ' 6 ',
+	retryRatePercent: ' 90 ',
+	passRatePercent: ' 80 ',
+	retryBackoffSharePercent: ' 80 ',
 	gateStatusById: { lint: 'pass', typecheck: 'fail', build: 'pass', deploy: 'fail' },
 	gates: [],
 };
@@ -10849,8 +10893,16 @@ if ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-scope summary to derive pass-rate metadata from selected executed scope evidence." >&2
 	exit 1
 fi
-if grep -Fq "**Passed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary"; then
-	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-scope summary to suppress partial malformed scalar/raw and non-selected explicit-list branch leakage." >&2
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-scope summary to scope out non-selected retry evidence and conflicting retry scalar aggregates while preserving selected executed denominator behavior." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-scope summary to suppress non-selected duration evidence and conflicting duration scalar aggregates while keeping selected executed duration metadata zeroed." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-scope summary to suppress partial malformed scalar/raw and non-selected explicit-list retry/duration branch leakage." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_scope_step_summary"; then
@@ -10877,8 +10929,16 @@ if ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-string-scope summary to derive pass-rate metadata from normalized selected executed scope evidence." >&2
 	exit 1
 fi
-if grep -Fq "**Passed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary"; then
-	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-string-scope summary to suppress normalized partial malformed scalar/raw and non-selected explicit-list branch leakage." >&2
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-string-scope summary to scope out normalized non-selected retry evidence and conflicting normalized retry scalar aggregates while preserving selected executed denominator behavior." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-string-scope summary to suppress normalized non-selected duration evidence and conflicting normalized duration scalar aggregates while keeping selected executed duration metadata zeroed." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-string-scope summary to suppress normalized partial malformed scalar/raw and non-selected explicit-list retry/duration branch leakage." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_string_scope_step_summary"; then
@@ -12161,8 +12221,16 @@ if ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-scope summary to derive pass-rate metadata from selected executed scope evidence." >&2
 	exit 1
 fi
-if grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then
-	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-scope summary to suppress zero-raw/scalar and non-selected explicit-list branch leakage." >&2
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-scope summary to scope out non-selected retry evidence and conflicting retry scalar aggregates while preserving selected executed denominator behavior." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-scope summary to suppress non-selected duration evidence and conflicting duration scalar aggregates while keeping selected executed duration metadata zeroed." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-scope summary to suppress zero-raw/scalar and non-selected explicit-list retry/duration branch leakage." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then
@@ -12189,8 +12257,16 @@ if ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_status_counts_zer
 	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-string-scope summary to derive pass-rate metadata from normalized selected executed scope evidence." >&2
 	exit 1
 fi
-if grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary"; then
-	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-string-scope summary to suppress normalized zero-raw/scalar and non-selected explicit-list branch leakage." >&2
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-string-scope summary to scope out normalized non-selected retry evidence and conflicting normalized retry scalar aggregates while preserving selected executed denominator behavior." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-string-scope summary to suppress normalized non-selected duration evidence and conflicting normalized duration scalar aggregates while keeping selected executed duration metadata zeroed." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed gates list:** lint, typecheck, build" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Retry rate (executed gates):** 90%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-string-scope summary to suppress normalized zero-raw/scalar and non-selected explicit-list retry/duration branch leakage." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_string_scope_step_summary"; then
