@@ -3945,3 +3945,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes selected map-only fallback scoping coverage so non-selected status/duration maps cannot leak into selected counter/rate projections when explicit executed/partition list evidence is absent.
+- **Selected non-selected map-only zero-denominator scoping parity for partial malformed statusCounts no-evidence branch (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_nonselected_map_only_zero_scope`
+    - `selected_status_counts_partial_malformed_nonselected_map_only_string_zero_scope`
+  - Scenarios mirror selected non-selected map-only fallback payloads while forcing explicit selected executed denominators to zero (`executedGateCount: 0` and `' 0 '`), with non-selected evidence still present only via `gateStatusById`/`gateDurationSecondsById` and conflicting scalar + partial malformed raw `statusCounts`.
+  - Assertions confirm selected map-only zero-denominator isolation:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts remain collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates stay `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected map-only evidence and scalar/raw leak branches remain suppressed (`Failed gates: 1`, `Executed gates: 2`, `Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out integer/numeric-string map-only zero-denominator variants within selected non-selected-evidence scoping behavior.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes zero-denominator parity for selected map-only fallback scoping so selected counter/rate suppression remains deterministic when non-selected evidence is map-only and selected executed denominators are explicitly zero.
