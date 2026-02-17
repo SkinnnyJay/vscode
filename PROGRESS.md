@@ -4414,3 +4414,14 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes the last explicit-list non-zero numeric-string scalar gap so scalar-suppression parity is now consistent across explicit-list, partition-only, and map-only selected non-executed branches.
+- **Selected non-executed explicit-list zero-denominator zero-raw scalar parity (2026-02-17 AM)** Closed final explicit-list zero-denominator scalar gap for zero-raw branches:
+  - `scripts/test-verify-gates-summary.sh` now further enriches:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope`
+  - Added conflicting aggregate scalar bundle (`retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`) in integer and normalized numeric-string forms, in addition to existing retry/duration map/list evidence.
+  - Existing zero-denominator assertions for these branches already enforce selected-scoped suppression (`Retried gate count/Total retries = 0`, rate fields `n/a`, duration/share `0s`/`n/a`), and now cover these conflicting scalar forms as well.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** completes explicit-list zero-denominator parity for zero-raw selected non-executed branches so conflicting non-selected aggregate scalars are suppressed consistently across integer and normalized string encodings.
