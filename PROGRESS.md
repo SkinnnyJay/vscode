@@ -4440,3 +4440,6 @@
 
 - **Selected non-executed explicit-list scalar leakage assertion parity (2026-02-14 PM)** Strengthened non-executed explicit-list branch assertions (`partial-malformed` + `zero-raw`; scope/string-scope/zero-scope/string-zero-scope) to explicitly fail on leaked conflicting aggregate scalar outputs (`Retry rate 90%`, `Pass rate 80%`, `Total retry backoff 4s`, `Total retries 7`, `Executed duration total 8s`, `Executed duration average 6s`) in addition to existing executed/list leakage guards.
   **Why:** verifies selected non-executed suppression is enforced against conflicting retry/duration/rate scalar bundles, not just against leaked executed gate IDs/counts.
+
+- **Selected non-executed map/partition scalar leakage assertion parity (2026-02-14 PM)** Extended map-only + partition-only non-executed mixed selected/non-selected assertions (partial-malformed + zero-raw; scope/string-scope/zero-scope/string-zero-scope) to explicitly reject leaked conflicting aggregate scalar outputs (`Retry rate 90%`, `Pass rate 80%`, `Total retry backoff 4s`, `Total retries 7`, `Executed duration total 8s`, `Executed duration average 6s`).
+  **Why:** completes selected non-executed suppression parity across explicit-list, partition-only, and map-only branches so all paths now enforce both execution-leak and scalar-leak rejection.
