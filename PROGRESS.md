@@ -3865,3 +3865,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T021500Z`, classification `success-with-retries`)
   **Why:** closes numeric-string scalar parity for selected no-evidence partial-malformed branches so normalization cannot reintroduce scoped counter leakage when selected execution evidence is absent.
+- **Unscoped no-evidence partial malformed statusCounts zero-denominator scalar parity coverage (2026-02-17 AM)** Extended unscoped status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `unscoped_status_counts_partial_malformed_no_evidence_zero_scalar`
+    - `unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar`
+  - Scenarios retain sparse no-evidence partial-malformed raw branch inputs but force explicit zero executed denominators (`executedGateCount: 0` and `' 0 '`), while keeping valid partition scalar counters and partial malformed raw `statusCounts`.
+  - Assertions confirm deterministic zero-denominator behavior:
+    - partition count lines remain scalar-authoritative (`8/7/6/5`)
+    - rendered status-count metadata still merges valid raw fail override + scalar fallback siblings (`{"pass":8,"fail":3,"skip":6,"not-run":5}`)
+    - explicit zero executed denominators are authoritative (`Executed gates: 0`, executed list `none`) and rates render `n/a`
+    - non-zero executed/rate branches are suppressed (`Executed gates: 4`, pass rate `100%` absent).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly mention sparse no-evidence partial-malformed fallback retaining integer/numeric-string scalar partition-count authority while zero denominators force executed-rate `n/a`.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T022459Z`, classification `success-with-retries`)
+  **Why:** closes zero-denominator parity for sparse unscoped partial-malformed merges so executed-rate output remains deterministic across integer and normalized numeric-string zero scalar encodings.

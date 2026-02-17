@@ -497,6 +497,10 @@ unscoped_status_counts_partial_malformed_no_evidence_summary="$tmpdir/unscoped-s
 unscoped_status_counts_partial_malformed_no_evidence_step_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-step.md"
 unscoped_status_counts_partial_malformed_no_evidence_string_scalar_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-string-scalar.json"
 unscoped_status_counts_partial_malformed_no_evidence_string_scalar_step_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-string-scalar-step.md"
+unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-zero-scalar.json"
+unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-zero-scalar-step.md"
+unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar.json"
+unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary="$tmpdir/unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar-step.md"
 unscoped_partition_list_overlap_summary="$tmpdir/unscoped-partition-list-overlap.json"
 unscoped_partition_list_overlap_step_summary="$tmpdir/unscoped-partition-list-overlap-step.md"
 unscoped_partition_list_malformed_counts_summary="$tmpdir/unscoped-partition-list-malformed-counts.json"
@@ -5872,6 +5876,52 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$unscoped_status_counts_partial_malformed_no_evidence_string_scalar_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_status_counts_partial_malformed_no_evidence_string_scalar_summary" "Verify Gates Unscoped Status Counts Partial Malformed No Evidence String Scalar Contract Test"
+
+node - "$expected_schema_version" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-status-counts-partial-malformed-no-evidence-zero-scalar-contract',
+	passedGateCount: 8,
+	failedGateCount: 7,
+	skippedGateCount: 6,
+	notRunGateCount: 5,
+	executedGateCount: 0,
+	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_summary" "Verify Gates Unscoped Status Counts Partial Malformed No Evidence Zero Scalar Contract Test"
+
+node - "$expected_schema_version" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar-contract',
+	passedGateCount: ' 8 ',
+	failedGateCount: ' 7 ',
+	skippedGateCount: ' 6 ',
+	notRunGateCount: ' 5 ',
+	executedGateCount: ' 0 ',
+	statusCounts: { pass: 'bad', fail: '3', skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" ./scripts/publish-verify-gates-summary.sh "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_summary" "Verify Gates Unscoped Status Counts Partial Malformed No Evidence String Zero Scalar Contract Test"
 
 node - "$expected_schema_version" "$unscoped_partition_list_overlap_summary" <<'NODE'
 const fs = require('node:fs');
@@ -12011,6 +12061,62 @@ if grep -Fq "**Status counts:** {\"pass\":8,\"fail\":7,\"skip\":6,\"not-run\":5}
 fi
 if grep -q "\*\*Schema warning:\*\*" "$unscoped_status_counts_partial_malformed_no_evidence_string_scalar_step_summary"; then
 	echo "Did not expect schema warning for unscoped-status-counts-partial-malformed-no-evidence-string-scalar summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 0" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to keep gate count at zero when no gate evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 8" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || ! grep -Fq "**Failed gates:** 7" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || ! grep -Fq "**Skipped gates:** 6" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || ! grep -Fq "**Not-run gates:** 5" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to preserve valid scalar partition counters under zero executed denominator." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":8,"fail":3,"skip":6,"not-run":5}' "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to merge valid raw fail status-count with scalar fallback for malformed raw siblings." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to preserve explicit zero scalar denominator while no executed-list evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to render executed-rate metrics as n/a under zero scalar denominator." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 4" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary" || grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary to suppress non-zero executed/rate branches under zero scalar denominator precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_status_counts_partial_malformed_no_evidence_zero_scalar_step_summary"; then
+	echo "Did not expect schema warning for unscoped-status-counts-partial-malformed-no-evidence-zero-scalar summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Gate count:** 0" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to keep gate count at zero when no gate evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 8" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || ! grep -Fq "**Failed gates:** 7" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || ! grep -Fq "**Skipped gates:** 6" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || ! grep -Fq "**Not-run gates:** 5" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to preserve valid normalized numeric-string scalar partition counters under zero executed denominator." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":8,"fail":3,"skip":6,"not-run":5}' "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to merge valid raw fail status-count with normalized numeric-string scalar fallback for malformed raw siblings." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || ! grep -Fq "**Executed gates list:** none" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to preserve normalized numeric-string zero scalar denominator while no executed-list evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to render executed-rate metrics as n/a under normalized numeric-string zero scalar denominator." >&2
+	exit 1
+fi
+if grep -Fq "**Executed gates:** 4" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary" || grep -Fq "**Pass rate (executed gates):** 100%" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Expected unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary to suppress non-zero executed/rate branches under normalized numeric-string zero scalar denominator precedence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$unscoped_status_counts_partial_malformed_no_evidence_string_zero_scalar_step_summary"; then
+	echo "Did not expect schema warning for unscoped-status-counts-partial-malformed-no-evidence-string-zero-scalar summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Gate count:** 3" "$unscoped_partition_list_overlap_step_summary"; then
