@@ -4401,3 +4401,16 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes explicit-list non-zero integer parity so selected non-executed scope handling is uniform across integer and string scalar encodings in explicit-list, partition-only, and map-only branches.
+- **Selected non-executed explicit-list non-zero normalized-string scalar parity (2026-02-17 AM)** Completed explicit-list string-encoded non-zero scalar suppression parity:
+  - `scripts/test-verify-gates-summary.sh` now enriches `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_scope` with the same conflicting aggregate scalar bundle already used by other non-zero branches:
+    - `retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent` (normalized numeric-string forms)
+  - Existing selected-scope assertions for this branch already enforced:
+    - retry aggregates zeroed (`Retried gate count: 0`, `Total retries: 0`, `Total retry backoff: 0s`)
+    - executed/rate/duration suppression (`Executed gates: 0`, `Pass/Retry rate: n/a`, `Executed duration total/average/share: 0s/n/a/n/a`)
+    - no non-selected executed/retry leakage in lists/counts.
+  - `scripts/README.md` mixed selected/non-selected partial-malformed coverage notes now explicitly call out explicit-list non-zero integer and numeric-string scalar conflict suppression.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes the last explicit-list non-zero numeric-string scalar gap so scalar-suppression parity is now consistent across explicit-list, partition-only, and map-only selected non-executed branches.
