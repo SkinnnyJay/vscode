@@ -4350,3 +4350,24 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (with known transient `McpStdioStateHandler sigterm after grace` flake on first attempt, passing on rerun)
   **Why:** closes the remaining scalar-precedence surface for explicit-list zero-denominator selected non-executed scenarios, ensuring conflicting non-selected aggregate scalar bundles cannot override selected-scope zero/`n/a` retry/duration/rate rendering.
+- **Selected non-executed partition/map zero-denominator scalar precedence parity (2026-02-17 AM)** Extended zero-denominator non-executed scoping checks across partition-only/map-only branches:
+  - `scripts/test-verify-gates-summary.sh` now enriches all mixed selected+non-selected non-executed zero-denominator partition/map payloads:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_partition_only_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_partition_only_string_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_partition_only_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_partition_only_string_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_zero_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+  - Added non-selected retry/duration evidence plus conflicting aggregate scalar bundles (`retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`) to zero-denominator partition/map branches in integer and normalized numeric-string forms.
+  - Added/extended assertions for partition/map zero-denominator summaries to require selected-scoped suppression:
+    - `Retried gates: none`, `Retried gate count: 0`, `Total retries: 0`, `Total retry backoff: 0s`
+    - `Executed duration total: 0s`, `Executed duration average: n/a`, `Retry backoff share (executed duration): n/a`
+    - executed-rate lines remain `n/a` and non-selected executed/retry leakage remains absent.
+  - `scripts/README.md` mixed selected/non-selected partial-malformed coverage notes now explicitly mention explicit-list/partition-only/map-only zero-denominator branches with conflicting retry/duration/rate scalar suppression.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes remaining parity gaps so selected non-executed zero-denominator partition/map branches cannot be overridden by conflicting non-selected retry/duration/rate scalar bundles and still render deterministic selected zero/`n/a` aggregates.
