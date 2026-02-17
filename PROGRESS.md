@@ -3806,3 +3806,18 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T012156Z`, classification `success-with-retries`)
   **Why:** closes the remaining selected sparse-fallback mixed-source precedence gap so partial-malformed raw aggregate fragments and scalar executed-count branches cannot override selected status-map/partition-derived executed metadata.
+- **Selected no-evidence partial malformed statusCounts suppression coverage (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_malformed_no_evidence_scope`.
+  - Scenario keeps selected scope metadata with no selected execution evidence (`selectedGateIds: ['lint', 'typecheck']`, no lists/status-map rows) while injecting conflicting selected scalar counters and partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: 3`, `skip: null`, `'not-run': 'bad'`).
+  - Assertions confirm selected no-evidence fallback remains deterministic:
+    - selected scope metadata is preserved (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts collapse to zero (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty with `n/a` rates (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - conflicting raw/scalar branches are suppressed (`Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected status-counter precedence notes now explicitly mention selected no-evidence partial malformed raw-status suppression.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T014217Z`, classification `success-with-retries`; transient `McpStdioStateHandler` flake reproduced on two prior attempts and passed on rerun)
+    - `make test-unit` ✅
+  **Why:** closes selected no-evidence partial-malformed parity so malformed raw fragments cannot leak into selected status counters when explicit selected execution evidence is absent.
