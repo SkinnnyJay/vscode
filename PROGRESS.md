@@ -4161,3 +4161,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed valid-zero raw partition-only parity so selected scoped partition evidence remains authoritative when zero-raw status-count bundles and zero/non-zero scalar denominators coexist.
+- **Selected/non-selected mixed valid-zero raw non-executed selected-scope parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected evidence where selected gates are skip/not-run only (non-executed), while non-selected gates hold pass/fail/executed evidence and raw `statusCounts` is valid-zero with conflicting scalar counters.
+  - Assertions confirm mixed non-executed selected-scope parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected non-executed projections (`Passed/Failed/Skipped/Not-run = 0/0/1/1`, `Status counts: {"pass":0,"fail":0,"skip":1,"not-run":1}`)
+    - executed metadata/rates remain selected-scoped no-execution (`Executed gates: 0`, list `none`, pass/retry rates `n/a`) across integer/numeric-string non-zero and zero selected executed-denominator scalar variants
+    - non-selected executed branch leakage and scalar/raw override leakage is suppressed (`Passed/Failed = 1/1`, `Executed gates: 2`, executed list `build, deploy` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include mixed valid-zero raw branches with selected non-executed skip/not-run projections.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed non-executed selected-scope parity so selected skip/not-run evidence remains authoritative while non-selected executed evidence and conflicting scalar/raw bundles stay filtered.
