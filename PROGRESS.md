@@ -4009,3 +4009,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes normalized numeric-string non-zero denominator parity for selected non-selected valid-zero raw branches so denominator encoding cannot reintroduce selected-scope leakage.
+- **Selected non-selected valid-zero raw statusCounts integer-zero denominator parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_nonselected_evidence_zero_scope`
+    - `selected_status_counts_zero_raw_nonselected_map_only_zero_scope`
+  - Scenarios extend selected non-selected valid-zero raw branches with explicit integer zero selected executed denominators (`executedGateCount: 0`) across both explicit-list-backed and map-only fallback evidence paths.
+  - Assertions confirm integer-zero denominator parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts remain collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates remain `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected evidence/scalar/raw leak branches remain suppressed (`Failed gates: 1`, `Executed gates: 2`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include integer-zero selected denominator variants for valid-zero raw `statusCounts` scoping in both explicit-list-backed and map-only selected branches.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes integer-zero denominator parity for selected non-selected valid-zero raw branches so zero denominators cannot reintroduce selected-scope leakage under explicit-list-backed or map-only fallback evidence.
