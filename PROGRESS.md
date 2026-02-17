@@ -3724,3 +3724,18 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T000206Z`, classification `success-with-retries`)
   **Why:** closes the integer-form parity gap for explicit non-empty executed-list partial-malformed raw-status conflicts so per-status fallback and scalar denominator precedence remain deterministic across scalar encodings.
+- **Selected explicit non-empty executed-list scalar+raw statusCounts suppression coverage (2026-02-17 AM)** Extended selected-scope executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_scalar_and_raw_status_counts_ignored_nonempty_list_scope`
+    - `selected_executed_string_scalar_and_raw_status_counts_ignored_nonempty_list_scope`
+    - `selected_executed_string_zero_scalar_and_raw_status_counts_ignored_nonempty_list_scope`
+  - All scenarios pin selected explicit list evidence (`selectedGateIds: ['lint', 'typecheck']`, `executedGateIds: ['lint', 'typecheck']`, partition lists, retried map/list) while injecting conflicting aggregate payloads (`statusCounts: { pass: 2, fail: 3, skip: 0, not-run: 0 }` plus integer, numeric-string, and numeric-string-zero `executedGateCount` scalars).
+  - Assertions confirm selected precedence remains deterministic:
+    - selected counters/metadata stay list-scoped (`Passed/Failed/Executed = 1/1/2`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - selected executed rates stay list-derived (`Pass rate: 50%`, `Retry rate: 50%`) and attention list ordering remains stable (`lint, typecheck`)
+    - conflicting scalar/raw aggregate branches are suppressed (`Executed gates: 5`, `Pass rate: 40%`, and normalized-zero `Executed gates: 0`/`Pass rate: n/a` do not appear).
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T004042Z`, classification `success-no-retries`)
+  **Why:** closes selected-scope explicit-list mixed-source precedence gaps so scalar/raw unscoped aggregates cannot override selected executed/count/rate metadata when scoped list evidence is present.
