@@ -4467,3 +4467,17 @@
 
 - **Selected run-state success/scalar-failure aggregate scalar suppression parity (2026-02-14 PM)** Enriched `selected-run-state-scope` and `selected-run-state-scalar-failure-only-scope` payloads with conflicting non-selected retry/duration evidence + scalar bundles (`retriedGateIds`, `gateRetryCountById`, `retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`) and extended assertions to require selected aggregate projections (`scope`: `Retry rate 0%`, `Pass rate 100%`; `scalar-failure-only`: `Retry rate 0%`, `Pass rate 0%`, both with retries/backoff/durations zeroed) while explicitly rejecting leaked conflicting scalar outputs (`90%`, `80%`, `4s`, `7`, `8s`, `6s`).
   **Why:** closes selected run-state success + scalar-failure aggregate hardening gaps so conflicting scalar retry/duration bundles cannot override selected outcome-driven aggregate derivation.
+
+- **Selected blocked-reason run-state aggregate scalar suppression parity (2026-02-17 PM)** Enriched selected blocked-reason run-state scope payloads with conflicting non-selected retry/duration evidence + scalar bundles and hardened aggregate fallback assertions:
+  - `selected-run-state-blocked-reason-pass-status-scope`
+  - `selected-run-state-blocked-scalar-precedence-scope`
+  - `selected-run-state-blocked-reason-not-run-list-scope`
+  - `selected-run-state-blocked-reason-unknown-status-not-run-list-scope`
+  - `selected-run-state-blocked-reason-selected-order-scope`
+  - Added conflicting bundle fields (`retriedGateIds`, `gateRetryCountById`, `retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`) to each payload while preserving selected run-state metadata precedence conditions under test.
+  - Extended each corresponding step-summary assertion block to require selected-scoped retry/duration fallback rendering (`Total retries: 0`, `Retried gates: none`, `Total retry backoff: 0s`, durations `0s`, rates `0%/100%` for pass-status or `n/a` for blocked non-executed branches) and to explicitly reject leaked conflicting scalar outputs (`90%`, `80%`, `4s`, `7`, `8s`, `6s`).
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes blocked-reason run-state aggregate hardening gaps so selected blocked-by/fail-fast precedence branches enforce the same retry/duration scalar suppression guarantees already required across other selected run-state variants.
