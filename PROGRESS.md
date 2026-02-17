@@ -4371,3 +4371,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes remaining parity gaps so selected non-executed zero-denominator partition/map branches cannot be overridden by conflicting non-selected retry/duration/rate scalar bundles and still render deterministic selected zero/`n/a` aggregates.
+- **Selected non-executed partition/map non-zero scalar precedence parity (2026-02-17 AM)** Extended selected non-executed branch hardening beyond zero-denominator-only paths:
+  - `scripts/test-verify-gates-summary.sh` now enriches non-zero selected-denominator partition/map branches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_partition_only_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_partition_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_partition_only_string_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+  - Added/normalized conflicting aggregate scalar bundles (`retriedGateCount`, `totalRetryCount`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`) plus retry/duration map/list evidence where previously missing, while keeping selected non-executed status evidence.
+  - Added missing retry/duration suppression assertions for partition-only string non-zero branches (`Retried gates/count/total/backoff` zeroed + duration/share `0s`/`n/a`) so they match partition-only/map-only parity already enforced elsewhere.
+  - Existing selected-scope assertions continue to require `Pass/Retry rate: n/a`, `Executed gates: 0`, and no non-selected branch leakage, now under conflicting non-zero scalar bundles as well.
+  - `scripts/README.md` mixed selected/non-selected partial-malformed coverage notes now explicitly call out zero and non-zero selected-denominator branch suppression across explicit-list/partition-only/map-only non-executed paths.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes the remaining non-zero selected-denominator precedence gap so conflicting non-selected retry/duration/rate scalars cannot leak into selected non-executed partition/map summaries even when explicit scalar denominators are non-zero.
