@@ -3913,3 +3913,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** locks selected-gate scoping guarantees so non-selected execution evidence cannot contaminate selected count/rate projections even when scalar/raw malformed aggregate fields are simultaneously present.
+- **Selected non-selected-evidence zero-denominator scoping parity for partial malformed statusCounts no-evidence branch (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_nonselected_evidence_zero_scope`
+    - `selected_status_counts_partial_malformed_nonselected_evidence_string_zero_scope`
+  - Scenarios mirror the selected non-selected-evidence branch while forcing explicit zero selected executed denominators (`executedGateCount: 0` and `' 0 '`) with execution/status evidence still present only for non-selected IDs (`build`, `deploy`) via explicit lists and status/duration maps.
+  - Assertions confirm zero-denominator selected-scope isolation:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts stay collapsed (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates stay `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected evidence and scalar/raw malformed leak branches remain suppressed (`Failed gates: 1`, `Executed gates: 2`, `Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly include non-selected-evidence scoping-out behavior under both non-zero and explicit zero selected executed-denominator scalar inputs.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes zero-denominator parity for selected non-selected-evidence branches so scoped counter/rate suppression remains deterministic regardless of whether selected executed denominators are explicitly zero or non-zero.
