@@ -4073,3 +4073,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed map-only scoped-evidence parity so selected map evidence remains authoritative while non-selected map memberships and conflicting scalar/raw branches stay filtered.
+- **Selected/non-selected mixed map-only explicit zero-denominator parity under valid-zero raw statusCounts (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_map_only_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_map_only_string_zero_scope`
+  - Scenarios extend mixed selected+non-selected map-only valid-zero raw branches with explicit selected zero denominators (`executedGateCount: 0` and `' 0 '`) while preserving selected/non-selected memberships in `gateStatusById`.
+  - Assertions confirm map-only explicit-zero denominator parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected map evidence (`Passed/Failed/Skipped/Not-run = 1/1/0/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed metadata/rates remain selected-scoped (`Executed gates: 2`, list `lint, typecheck`, pass rate `50%`) despite explicit zero denominators
+    - explicit-zero scalar/zero-raw and non-selected map leakage is suppressed (`Passed gates: 0`, `Executed gates: 0`, `Executed gates list: lint, typecheck, build` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out mixed map-only valid-zero raw parity including explicit integer/numeric-string zero-denominator scalar variants.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed map-only explicit-zero denominator parity so selected map evidence remains authoritative when valid-zero raw status counts and zero-denominator scalars coexist.
