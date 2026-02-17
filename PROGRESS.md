@@ -3837,3 +3837,17 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T020501Z`, classification `success-with-retries`)
   **Why:** closes unscoped sparse no-evidence partial-malformed parity so partially malformed raw statusCounts can only override valid per-key branches and cannot destabilize scalar-driven aggregate counters/rates.
+- **Unscoped no-evidence partial malformed statusCounts numeric-string scalar parity coverage (2026-02-17 AM)** Extended unscoped status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_status_counts_partial_malformed_no_evidence_string_scalar`.
+  - Scenario mirrors the existing sparse no-evidence partial-malformed branch but switches partition/executed scalar counters to normalized numeric-string forms while keeping the same partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: '3'`, `skip: null`, `'not-run': 'bad'`).
+  - Assertions confirm parity with integer scalar behavior:
+    - normalized numeric-string scalar counters remain authoritative for count lines (`8/7/6/5`)
+    - rendered status-count metadata keeps valid raw fail override + numeric-string scalar fallback for malformed raw siblings (`{"pass":8,"fail":3,"skip":6,"not-run":5}`)
+    - executed denominator/rates stay normalized scalar-driven (`Executed gates: 4`, pass rate `100%`, executed list `none`)
+    - mismatch branches remain suppressed (`{"pass":8,"fail":7,"skip":6,"not-run":5}` and `Executed gates: 0` absent).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly call out sparse no-evidence partial-malformed fallback with valid integer/numeric-string scalar partition-count authority.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T020501Z`, classification `success-with-retries`)
+  **Why:** closes numeric-string scalar parity for unscoped sparse no-evidence partial-malformed merges so normalization semantics remain deterministic across scalar encodings.
