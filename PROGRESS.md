@@ -4505,3 +4505,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** completes the selected run-state hardening matrix so every remaining selected run-state branch now carries conflicting aggregate evidence and explicit scalar non-leak assertions, eliminating the final parity gaps in selected-scope retry/duration/rate suppression coverage.
+
+- **Selected non-success scope aggregate scalar suppression parity (2026-02-17 PM)** Hardened selected non-success partition/status-precedence scope contracts against conflicting retry/duration scalar leakage:
+  - `scripts/test-verify-gates-summary.sh` payload enrichment:
+    - Added conflicting non-selected retry/duration evidence + scalar bundles (`retriedGateIds`, `gateRetryCountById`, `retriedGateCount`, `totalRetryCount`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `averageExecutedDurationSeconds`, `retryRatePercent`, `passRatePercent`, `retryBackoffSharePercent`) to:
+      - `selected-non-success-partition-fallback-scope`
+      - `selected-non-success-status-precedence-{scope,fail-scope,skip-scope,not-run-scope}`
+  - Assertion hardening:
+    - Added retry/duration fallback assertions per selected outcome class:
+      - pass/fail precedence branches: retries/backoff/durations zeroed, retry rate `0%`, pass rate preserved (`100%`/`0%`).
+      - non-executed partition/skip/not-run branches: retries/backoff zeroed, rates `n/a`, durations `0s`/`n/a`.
+    - Added explicit non-leak guards rejecting conflicting scalar outputs (`90%`, `80%`, `4s`, `7`, `8s`, `6s`) for all affected non-success summaries.
+  - Documentation:
+    - `scripts/README.md` selected run-state suppression bullet now explicitly includes selected non-success partition/status-precedence scope parity.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes the remaining selected non-success aggregate hardening gap so partition-fallback and status-precedence selected scopes enforce the same scalar suppression guarantees already applied across selected run-state branches.

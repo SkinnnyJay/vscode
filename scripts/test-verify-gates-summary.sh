@@ -6562,6 +6562,17 @@ const payload = {
 	selectedGateIds: ['lint'],
 	gateStatusById: {},
 	notRunGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -6583,6 +6594,17 @@ const payload = {
 	gateStatusById: { lint: 'pass' },
 	notRunGateIds: ['lint'],
 	executedGateCount: 0,
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -6604,6 +6626,17 @@ const payload = {
 	gateStatusById: { lint: 'fail' },
 	notRunGateIds: ['lint'],
 	executedGateCount: 0,
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -6625,6 +6658,17 @@ const payload = {
 	gateStatusById: { lint: 'skip' },
 	passedGateIds: ['lint'],
 	executedGateCount: 5,
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -6646,6 +6690,17 @@ const payload = {
 	gateStatusById: { lint: 'not-run' },
 	passedGateIds: ['lint'],
 	executedGateCount: 4,
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -15213,6 +15268,18 @@ if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_partitio
 	echo "Expected selected-non-success-partition-fallback-scope summary to derive non-success/attention lists from selected partition evidence when status map entries are missing." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to suppress non-selected retry aggregates under selected non-executed partition fallback scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_non_success_partition_fallback_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to keep aggregate rates/durations at selected non-executed partition fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_non_success_partition_fallback_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_non_success_partition_fallback_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_non_success_partition_fallback_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_non_success_partition_fallback_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_non_success_partition_fallback_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_non_success_partition_fallback_scope_step_summary"; then
+	echo "Expected selected-non-success-partition-fallback-scope summary to suppress conflicting scalar retry/duration leakage under selected non-executed partition fallback scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_partition_fallback_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-partition-fallback-scope summary." >&2
 	exit 1
@@ -15235,6 +15302,18 @@ if grep -Fq "**Executed gates:** 0" "$selected_non_success_status_precedence_sco
 fi
 if ! grep -Fq "**Non-success gates list:** none" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Attention gates list:** none" "$selected_non_success_status_precedence_scope_step_summary"; then
 	echo "Expected selected-non-success-status-precedence-scope summary to prioritize selected status-map pass evidence over fallback not-run partition membership for non-success/attention derivation." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to suppress non-selected retry aggregates under selected pass status precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_non_success_status_precedence_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to keep selected executed aggregate rates/durations status-driven under conflicting scalar bundles." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_non_success_status_precedence_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_non_success_status_precedence_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-scope summary to suppress conflicting scalar retry/duration leakage under selected pass status precedence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_scope_step_summary"; then
@@ -15261,6 +15340,18 @@ if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_status_p
 	echo "Expected selected-non-success-status-precedence-fail-scope summary to prioritize selected status-map fail evidence over fallback not-run partition membership for non-success/attention derivation." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_non_success_status_precedence_fail_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_non_success_status_precedence_fail_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_non_success_status_precedence_fail_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-fail-scope summary to suppress non-selected retry aggregates under selected fail status precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** 0%" "$selected_non_success_status_precedence_fail_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_non_success_status_precedence_fail_scope_step_summary" || ! grep -Fq "**Executed duration average:** 0s" "$selected_non_success_status_precedence_fail_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-fail-scope summary to keep selected executed aggregate rates/durations status-driven under conflicting scalar bundles." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_non_success_status_precedence_fail_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_non_success_status_precedence_fail_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_non_success_status_precedence_fail_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_non_success_status_precedence_fail_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_non_success_status_precedence_fail_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_non_success_status_precedence_fail_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-fail-scope summary to suppress conflicting scalar retry/duration leakage under selected fail status precedence." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_fail_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-status-precedence-fail-scope summary." >&2
 	exit 1
@@ -15285,6 +15376,18 @@ if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_status_p
 	echo "Expected selected-non-success-status-precedence-skip-scope summary to prioritize selected status-map skip evidence for non-success/attention derivation." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_non_success_status_precedence_skip_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_non_success_status_precedence_skip_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_non_success_status_precedence_skip_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-skip-scope summary to suppress non-selected retry aggregates under selected skip status precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_non_success_status_precedence_skip_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_non_success_status_precedence_skip_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_non_success_status_precedence_skip_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-skip-scope summary to keep aggregate rates/durations at selected non-executed skip precedence values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_non_success_status_precedence_skip_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_non_success_status_precedence_skip_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_non_success_status_precedence_skip_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_non_success_status_precedence_skip_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_non_success_status_precedence_skip_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_non_success_status_precedence_skip_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-skip-scope summary to suppress conflicting scalar retry/duration leakage under selected skip status precedence." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_skip_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-non-success-status-precedence-skip-scope summary." >&2
 	exit 1
@@ -15307,6 +15410,18 @@ if grep -Fq "**Executed gates:** 1" "$selected_non_success_status_precedence_not
 fi
 if ! grep -Fq "**Non-success gates list:** lint" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Attention gates list:** lint" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
 	echo "Expected selected-non-success-status-precedence-not-run-scope summary to prioritize selected status-map not-run evidence for non-success/attention derivation." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to suppress non-selected retry aggregates under selected not-run status precedence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_non_success_status_precedence_not_run_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to keep aggregate rates/durations at selected non-executed not-run precedence values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_non_success_status_precedence_not_run_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
+	echo "Expected selected-non-success-status-precedence-not-run-scope summary to suppress conflicting scalar retry/duration leakage under selected not-run status precedence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_non_success_status_precedence_not_run_scope_step_summary"; then
