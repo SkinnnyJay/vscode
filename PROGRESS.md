@@ -3897,3 +3897,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes selected zero-denominator parity for sparse partial-malformed no-evidence payloads so scoped counter suppression and executed-rate `n/a` rendering remain deterministic across integer and normalized numeric-string zero scalar encodings.
+- **Selected non-selected-evidence scoping coverage for partial malformed statusCounts no-evidence branch (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_partial_malformed_nonselected_evidence_scope`
+    - `selected_status_counts_partial_malformed_nonselected_evidence_string_scope`
+  - Scenarios preserve selected scope (`selectedGateIds: ['lint', 'typecheck']`) while providing execution/status evidence only for non-selected IDs (`build`, `deploy`) via `executedGateIds`, partition lists, `gateStatusById`, and `gateDurationSecondsById`, alongside conflicting scalar counters and partial malformed raw `statusCounts`.
+  - Assertions confirm selected-scope isolation:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts collapse to zero (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty and rates stay `n/a` (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - non-selected evidence and scalar/raw branch leakage is suppressed (`Failed gates: 1`, `Executed gates: 2`, `Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected aggregate precedence notes now explicitly call out full scoping-out of non-selected list/status-map/duration-map evidence (including normalized numeric-string forms) in selected sparse no-evidence partial-malformed branches.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** locks selected-gate scoping guarantees so non-selected execution evidence cannot contaminate selected count/rate projections even when scalar/raw malformed aggregate fields are simultaneously present.
