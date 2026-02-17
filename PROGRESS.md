@@ -3739,3 +3739,20 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T004042Z`, classification `success-no-retries`)
   **Why:** closes selected-scope explicit-list mixed-source precedence gaps so scalar/raw unscoped aggregates cannot override selected executed/count/rate metadata when scoped list evidence is present.
+- **Selected explicit empty executed-list scalar+raw statusCounts suppression coverage (2026-02-17 AM)** Extended selected-scope executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_scalar_and_raw_status_counts_ignored_empty_list_scope`
+    - `selected_executed_string_scalar_and_raw_status_counts_ignored_empty_list_scope`
+    - `selected_executed_string_zero_scalar_and_raw_status_counts_ignored_empty_list_scope`
+  - Scenarios pin selected explicit empty executed evidence (`selectedGateIds: ['lint', 'typecheck']`, `executedGateIds: []`) with selected partition+retry metadata while injecting conflicting scalar/raw aggregate bundles (`statusCounts: { pass: 2, fail: 3, skip: 0, not-run: 0 }` plus integer, numeric-string, and numeric-string-zero `executedGateCount` scalars).
+  - Assertions confirm deterministic selected suppression:
+    - selected counters/status-count metadata remain selected-list scoped (`Passed/Failed/Executed = 1/1/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - executed list/rate metadata preserves explicit empty-list semantics (`Executed gates list: none`, executed pass/retry rates `n/a`)
+    - selected attention metadata remains stable (`lint, typecheck`)
+    - conflicting scalar/raw branches are suppressed (`Passed/Failed = 2/3`, `Executed gates: 5`, `Pass rate: 40%` do not appear).
+  - `scripts/README.md` selected explicit executed-list override coverage notes now explicitly include scalar+raw suppression under explicit selected empty executed-list evidence.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T010124Z`, classification `success-with-retries`)
+  **Why:** closes the selected explicit-empty executed-list mixed-source precedence gap so conflicting scalar/raw aggregates cannot leak into selected executed counters or rates when explicit empty executed-list evidence is present.
