@@ -127,6 +127,8 @@ selected_status_counts_no_evidence_scope_summary="$tmpdir/selected-status-counts
 selected_status_counts_no_evidence_scope_step_summary="$tmpdir/selected-status-counts-no-evidence-scope-step.md"
 selected_status_counts_partial_malformed_no_evidence_scope_summary="$tmpdir/selected-status-counts-partial-malformed-no-evidence-scope.json"
 selected_status_counts_partial_malformed_no_evidence_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-no-evidence-scope-step.md"
+selected_status_counts_partial_malformed_no_evidence_string_scope_summary="$tmpdir/selected-status-counts-partial-malformed-no-evidence-string-scope.json"
+selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-no-evidence-string-scope-step.md"
 selected_status_counts_conflict_partition_scope_summary="$tmpdir/selected-status-counts-conflict-partition-scope.json"
 selected_status_counts_conflict_partition_scope_step_summary="$tmpdir/selected-status-counts-conflict-partition-scope-step.md"
 selected_scalar_raw_count_mix_partition_scope_summary="$tmpdir/selected-scalar-raw-count-mix-partition-scope.json"
@@ -1506,6 +1508,31 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_no_evidence_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_no_evidence_scope_summary" "Verify Gates Selected Status Counts Partial Malformed No Evidence Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_partial_malformed_no_evidence_string_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-partial-malformed-no-evidence-string-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateCount: ' 9 ',
+	passedGateCount: ' 8 ',
+	failedGateCount: ' 7 ',
+	skippedGateCount: ' 6 ',
+	notRunGateCount: ' 5 ',
+	executedGateCount: ' 4 ',
+	statusCounts: { pass: 'bad', fail: '3', skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_partial_malformed_no_evidence_string_scope_summary" "Verify Gates Selected Status Counts Partial Malformed No Evidence String Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_status_counts_conflict_partition_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -7972,6 +7999,34 @@ if grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_no_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_no_evidence_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-partial-malformed-no-evidence-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Skipped gates:** 0" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Not-run gates:** 0" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to ignore normalized numeric-string scalar counters and partial malformed raw status-count counters when no selected execution evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":0,"not-run":0}' "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to keep status counts aligned with selected no-evidence fallback counters under partial malformed raw statusCounts input." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to keep executed metadata empty under selected no-evidence partial malformed numeric-string payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to render executed-rate metrics as n/a under selected no-evidence partial malformed numeric-string payloads." >&2
+	exit 1
+fi
+if grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-no-evidence-string-scope summary to suppress partial malformed raw/normalized numeric-string scalar branch leakage under selected no-evidence fallback." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_partial_malformed_no_evidence_string_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-partial-malformed-no-evidence-string-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck, build, deploy" "$selected_status_counts_conflict_partition_scope_step_summary" || ! grep -Fq "**Gate count:** 4" "$selected_status_counts_conflict_partition_scope_step_summary"; then

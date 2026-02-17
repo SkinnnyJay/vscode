@@ -3851,3 +3851,17 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T020501Z`, classification `success-with-retries`)
   **Why:** closes numeric-string scalar parity for unscoped sparse no-evidence partial-malformed merges so normalization semantics remain deterministic across scalar encodings.
+- **Selected no-evidence partial malformed statusCounts numeric-string scalar parity coverage (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `selected_status_counts_partial_malformed_no_evidence_string_scope`.
+  - Scenario mirrors selected no-evidence partial-malformed branch while switching scalar/status counter fields to normalized numeric-string values and keeping partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: '3'`, `skip: null`, `'not-run': 'bad'`).
+  - Assertions confirm parity with integer scalar behavior:
+    - selected scope metadata is preserved (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts collapse to zero (`Passed/Failed/Skipped/Not-run = 0`, `Status counts: {"pass":0,"fail":0,"skip":0,"not-run":0}`)
+    - executed metadata remains empty with `n/a` rates (`Executed gates: 0`, list `none`, pass/retry rates `n/a`)
+    - conflicting normalized scalar/raw malformed branches are suppressed (`Failed gates: 3`, `Executed gates: 4` absent).
+  - `scripts/README.md` selected status-counter precedence notes now explicitly include selected no-evidence integer/numeric-string scalar suppression for partial malformed raw status-count payloads.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T021500Z`, classification `success-with-retries`)
+  **Why:** closes numeric-string scalar parity for selected no-evidence partial-malformed branches so normalization cannot reintroduce scoped counter leakage when selected execution evidence is absent.
