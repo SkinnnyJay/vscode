@@ -4285,3 +4285,20 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** locks selected non-executed map-only behavior for retry/backoff/duration aggregates so non-selected evidence cannot leak into selected aggregate metadata/rate rendering.
+- **Selected non-executed map-only retry/duration numeric-string parity (2026-02-17 AM)** Extended selected non-executed map-only aggregate checks:
+  - `scripts/test-verify-gates-summary.sh` now enriches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+  - Added normalized numeric-string non-selected retry/duration evidence (`retriedGateIds`, `gateRetryCountById`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `retryBackoffSharePercent`) to prove selected non-executed map scope still suppresses aggregate leakage under string-encoded inputs.
+  - Assertions now additionally verify selected aggregate scoping for these normalized string branches:
+    - `Retried gates: none`, `Retried gate count: 0`, `Total retries: 0`, `Total retry backoff: 0s`
+    - `Executed duration total: 0s`, `Executed duration average: n/a`, `Retry backoff share (executed duration): n/a`
+    - existing selected pass/fail/skip/not-run + executed/list/rate assertions continue to suppress non-selected map leakage.
+  - `scripts/README.md` selected aggregate precedence notes now explicitly mention normalized numeric-string coverage for partition-only/map-only non-selected retry/duration suppression under selected non-executed scope.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes numeric-string parity for selected non-executed map-only retry/backoff/duration scoping, preventing non-selected aggregate leakage under normalized string payload variants.
