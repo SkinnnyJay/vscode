@@ -5666,6 +5666,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-selected-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5891,6 +5902,17 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-not-run-blocked-nonselected-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -14281,6 +14303,18 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_not_run_blocked_s
 	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to derive blocked-by gate from selected not-run reason." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to suppress non-selected retry aggregates under selected blocked non-executed scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_selected_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-selected-scope summary to suppress conflicting scalar retry/duration leakage under selected blocked non-executed scope." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_selected_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-not-run-blocked-selected-scope summary." >&2
 	exit 1
@@ -14427,6 +14461,18 @@ if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_not_run_blocked_n
 fi
 if grep -Fq "**Blocked by gate:** build" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary"; then
 	echo "Expected selected-run-state-not-run-blocked-nonselected-scope summary to exclude non-selected blocked-by reason gate IDs from blocked-by metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-nonselected-scope summary to suppress non-selected retry aggregates when blocked reason is scoped out." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-nonselected-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary"; then
+	echo "Expected selected-run-state-not-run-blocked-nonselected-scope summary to suppress conflicting scalar retry/duration leakage under scoped-out blocked evidence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_not_run_blocked_nonselected_scope_step_summary"; then
