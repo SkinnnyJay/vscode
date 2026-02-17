@@ -205,6 +205,14 @@ selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_zero_scop
 selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_zero_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-zero-scope-step.md"
 selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-string-zero-scope.json"
 selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-string-zero-scope-step.md"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope.json"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope-step.md"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope.json"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope-step.md"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope.json"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope-step.md"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope.json"
+selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary="$tmpdir/selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope-step.md"
 selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_scope_summary="$tmpdir/selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-scope.json"
 selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_scope_step_summary="$tmpdir/selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-scope-step.md"
 selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_string_scope_summary="$tmpdir/selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-string-scope.json"
@@ -2827,6 +2835,110 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope_summary" "Verify Gates Selected Status Counts Zero Raw Mixed Selected Nonselected Nonexecuted String Zero Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateCount: 9,
+	passedGateCount: 8,
+	failedGateCount: 7,
+	skippedGateCount: 6,
+	notRunGateCount: 5,
+	executedGateCount: 4,
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_summary" "Verify Gates Selected Status Counts Zero Raw Mixed Selected Nonselected Nonexecuted Map Only Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope-contract',
+	selectedGateIds: [' lint ', ' typecheck '],
+	gateCount: ' 9 ',
+	passedGateCount: ' 8 ',
+	failedGateCount: ' 7 ',
+	skippedGateCount: ' 6 ',
+	notRunGateCount: ' 5 ',
+	executedGateCount: ' 4 ',
+	statusCounts: { pass: ' 0 ', fail: '0', skip: ' 0 ', 'not-run': '0' },
+	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_summary" "Verify Gates Selected Status Counts Zero Raw Mixed Selected Nonselected Nonexecuted Map Only String Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateCount: 9,
+	passedGateCount: 8,
+	failedGateCount: 7,
+	skippedGateCount: 6,
+	notRunGateCount: 5,
+	executedGateCount: 0,
+	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
+	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_summary" "Verify Gates Selected Status Counts Zero Raw Mixed Selected Nonselected Nonexecuted Map Only Zero Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope-contract',
+	selectedGateIds: [' lint ', ' typecheck '],
+	gateCount: ' 9 ',
+	passedGateCount: ' 8 ',
+	failedGateCount: ' 7 ',
+	skippedGateCount: ' 6 ',
+	notRunGateCount: ' 5 ',
+	executedGateCount: ' 0 ',
+	statusCounts: { pass: ' 0 ', fail: '0', skip: ' 0 ', 'not-run': '0' },
+	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_summary" "Verify Gates Selected Status Counts Zero Raw Mixed Selected Nonselected Nonexecuted Map Only String Zero Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -10763,6 +10875,118 @@ if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_select
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_string_zero_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-string-zero-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to preserve selected non-executed map evidence while scoping out non-selected executed map memberships and conflicting scalar/zero-raw counters." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":1,"not-run":1}' "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to align selected status counts with selected non-executed map evidence instead of zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to keep selected executed metadata empty under selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to render executed-rate metrics as n/a under selected non-executed map evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to suppress non-selected executed map branch leakage and conflicting scalar/raw overrides." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to preserve normalized selected non-executed map evidence while scoping out normalized non-selected executed map memberships and conflicting normalized scalar/zero-raw counters." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":1,"not-run":1}' "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to align selected status counts with normalized selected non-executed map evidence instead of zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to keep selected executed metadata empty under normalized selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to render executed-rate metrics as n/a under normalized selected non-executed map evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary to suppress normalized non-selected executed map branch leakage and conflicting normalized scalar/raw overrides." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to preserve selected non-executed map evidence while scoping out non-selected executed map memberships and conflicting explicit-zero scalar/zero-raw counters." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":1,"not-run":1}' "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to align selected status counts with selected non-executed map evidence instead of zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to keep selected executed metadata empty under selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to render executed-rate metrics as n/a under selected non-executed map evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary to suppress non-selected executed map branch leakage and conflicting explicit-zero scalar/raw overrides." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-zero-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to preserve explicit selected scope metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Failed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Skipped gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Not-run gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to preserve normalized selected non-executed map evidence while scoping out normalized non-selected executed map memberships and conflicting normalized explicit-zero scalar/zero-raw counters." >&2
+	exit 1
+fi
+if ! grep -Fq '**Status counts:** {"pass":0,"fail":0,"skip":1,"not-run":1}' "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to align selected status counts with normalized selected non-executed map evidence instead of zero raw statusCounts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Executed gates list:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to keep selected executed metadata empty under normalized selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to render executed-rate metrics as n/a under normalized selected non-executed map evidence." >&2
+	exit 1
+fi
+if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary to suppress normalized non-selected executed map branch leakage and conflicting normalized explicit-zero scalar/raw overrides." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-string-zero-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary" || ! grep -Fq "**Gate count:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_scope_step_summary"; then

@@ -4197,3 +4197,21 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** closes mixed partial-malformed non-executed selected-scope parity so selected skip/not-run evidence remains authoritative while non-selected executed evidence and conflicting partial-malformed scalar/raw bundles stay filtered.
+- **Selected/non-selected mixed valid-zero raw non-executed map-only parity (2026-02-17 AM)** Extended selected-scope status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_zero_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_string_zero_scope`
+  - Scenarios provide mixed selected+non-selected status-map evidence where selected gates are skip/not-run only (non-executed) and non-selected gates carry pass/fail/executed evidence, with valid-zero raw `statusCounts` and conflicting scalar counters while omitting explicit list evidence to force map-only fallback behavior.
+  - Assertions confirm mixed non-executed map-only valid-zero raw parity:
+    - selected metadata remains canonical (`Selected gates`, `Gate count: 2`)
+    - selected counters/status counts preserve scoped selected non-executed map projections (`Passed/Failed/Skipped/Not-run = 0/0/1/1`, `Status counts: {"pass":0,"fail":0,"skip":1,"not-run":1}`)
+    - executed metadata/rates remain selected-scoped no-execution (`Executed gates: 0`, list `none`, pass/retry rates `n/a`) across integer/numeric-string non-zero and zero selected executed-denominator scalar variants
+    - non-selected executed map leakage and scalar/raw override leakage is suppressed (`Passed/Failed = 1/1`, `Executed gates: 2`, executed list `build, deploy` absent).
+  - `scripts/README.md` selected aggregate precedence notes already include mixed valid-zero raw branches across explicit-list-backed/partition-only/map-only paths with selected non-executed projections.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** closes mixed non-executed map-only valid-zero raw parity so selected skip/not-run map evidence remains authoritative while non-selected executed map evidence and conflicting scalar/raw bundles stay filtered.
