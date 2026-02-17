@@ -4270,3 +4270,18 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅
   **Why:** locks selected non-executed partition-only behavior for retry/backoff/duration aggregates so non-selected evidence cannot leak into selected aggregate metadata/rate rendering.
+- **Selected non-executed map-only retry/duration scoping parity (2026-02-17 AM)** Hardened selected non-executed map-only aggregate checks:
+  - `scripts/test-verify-gates-summary.sh` now enriches:
+    - `selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope`
+    - `selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope`
+  - Added non-selected-only retry/duration evidence (`retriedGateIds`, `gateRetryCountById`, `totalRetryBackoffSeconds`, `gateDurationSecondsById`, `executedDurationSeconds`, `retryBackoffSharePercent`) to ensure selected non-executed map scope does not leak non-selected aggregates.
+  - Assertions now additionally verify selected aggregate scoping:
+    - `Retried gates: none`, `Retried gate count: 0`, `Total retries: 0`, `Total retry backoff: 0s`
+    - `Executed duration total: 0s`, `Executed duration average: n/a`, `Retry backoff share (executed duration): n/a`
+    - non-selected retry/duration aggregates remain suppressed alongside prior executed/pass-rate assertions.
+  - `scripts/README.md` selected aggregate precedence notes now call out partition-only/map-only non-selected retry/duration aggregate suppression under selected non-executed scope.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅
+  **Why:** locks selected non-executed map-only behavior for retry/backoff/duration aggregates so non-selected evidence cannot leak into selected aggregate metadata/rate rendering.

@@ -2999,6 +2999,12 @@ const payload = {
 	executedGateCount: 4,
 	statusCounts: { pass: 'bad', fail: '3', skip: null, 'not-run': 'bad' },
 	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -3227,6 +3233,12 @@ const payload = {
 	executedGateCount: 4,
 	statusCounts: { pass: 0, fail: '0', skip: 0, 'not-run': 0 },
 	gateStatusById: { lint: 'skip', typecheck: 'not-run', build: 'pass', deploy: 'fail' },
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	retryBackoffSharePercent: 80,
 	gates: [],
 };
 fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
@@ -11397,6 +11409,14 @@ if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_par
 	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-map-only-scope summary to render executed-rate metrics as n/a under selected non-executed map evidence." >&2
 	exit 1
 fi
+if ! grep -Fq "**Retried gates:** none" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-map-only-scope summary to scope out non-selected retry aggregates under selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-map-only-scope summary to suppress non-selected duration/backoff aggregates and keep retry-backoff share n/a." >&2
+	exit 1
+fi
 if grep -Fq "**Passed gates:** 1" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 3" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 4" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_partial_malformed_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
 	echo "Expected selected-status-counts-partial-malformed-mixed-selected-nonselected-nonexecuted-map-only-scope summary to suppress non-selected executed map branch leakage and conflicting partial malformed scalar/raw overrides." >&2
 	exit 1
@@ -11619,6 +11639,14 @@ if ! grep -Fq "**Executed gates:** 0" "$selected_status_counts_zero_raw_mixed_se
 fi
 if ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
 	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to render executed-rate metrics as n/a under selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retried gates:** none" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retried gate count:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Total retries:** 0" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to scope out non-selected retry aggregates under selected non-executed map evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed duration total:** 0s" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || ! grep -Fq "**Retry backoff share (executed duration):** n/a" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
+	echo "Expected selected-status-counts-zero-raw-mixed-selected-nonselected-nonexecuted-map-only-scope summary to suppress non-selected duration/backoff aggregates and keep retry-backoff share n/a." >&2
 	exit 1
 fi
 if grep -Fq "**Passed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Failed gates:** 1" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates:** 2" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary" || grep -Fq "**Executed gates list:** build, deploy" "$selected_status_counts_zero_raw_mixed_selected_nonselected_nonexecuted_map_only_scope_step_summary"; then
