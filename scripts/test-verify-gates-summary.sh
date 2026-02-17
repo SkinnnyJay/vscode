@@ -361,6 +361,12 @@ selected_executed_string_scalar_and_raw_status_counts_ignored_partial_status_map
 selected_executed_string_scalar_and_raw_status_counts_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-string-scalar-and-raw-status-counts-ignored-partial-status-map-scope-step.md"
 selected_executed_string_zero_scalar_and_raw_status_counts_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-zero-scalar-and-raw-status-counts-ignored-partial-status-map-scope.json"
 selected_executed_string_zero_scalar_and_raw_status_counts_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-string-zero-scalar-and-raw-status-counts-ignored-partial-status-map-scope-step.md"
+selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope.json"
+selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-step.md"
+selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope.json"
+selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-step.md"
+selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope.json"
+selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-step.md"
 selected_executed_scalar_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-scalar-ignored-partial-status-map-scope.json"
 selected_executed_scalar_ignored_partial_status_map_scope_step_summary="$tmpdir/selected-executed-scalar-ignored-partial-status-map-scope-step.md"
 selected_executed_string_scalar_ignored_partial_status_map_scope_summary="$tmpdir/selected-executed-string-scalar-ignored-partial-status-map-scope.json"
@@ -4224,6 +4230,72 @@ fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
 NODE
 
 GITHUB_STEP_SUMMARY="$selected_executed_string_zero_scalar_and_raw_status_counts_ignored_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_string_zero_scalar_and_raw_status_counts_ignored_partial_status_map_scope_summary" "Verify Gates Selected Executed String Zero Scalar And Raw Status Counts Ignored Partial Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass' },
+	failedGateIds: ['typecheck'],
+	executedGateCount: 5,
+	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" "Verify Gates Selected Executed Scalar Partial Malformed Raw Status Counts Ignored Partial Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass' },
+	failedGateIds: ['typecheck'],
+	executedGateCount: ' 5 ',
+	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" "Verify Gates Selected Executed String Scalar Partial Malformed Raw Status Counts Ignored Partial Status-Map Scope Contract Test"
+
+node - "$expected_schema_version" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" <<'NODE'
+const fs = require('node:fs');
+const [schemaVersionRaw, summaryPath] = process.argv.slice(2);
+const schemaVersion = Number.parseInt(schemaVersionRaw, 10);
+if (!Number.isInteger(schemaVersion) || schemaVersion <= 0) {
+	throw new Error(`Invalid schema version: ${schemaVersionRaw}`);
+}
+const payload = {
+	schemaVersion,
+	runId: 'selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope-contract',
+	selectedGateIds: ['lint', 'typecheck'],
+	gateStatusById: { lint: 'pass' },
+	failedGateIds: ['typecheck'],
+	executedGateCount: ' 0 ',
+	statusCounts: { pass: 'bad', fail: 3, skip: null, 'not-run': 'bad' },
+	gates: [],
+};
+fs.writeFileSync(summaryPath, JSON.stringify(payload, null, 2));
+NODE
+
+GITHUB_STEP_SUMMARY="$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" ./scripts/publish-verify-gates-summary.sh "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_summary" "Verify Gates Selected Executed String Zero Scalar Partial Malformed Raw Status Counts Ignored Partial Status-Map Scope Contract Test"
 
 node - "$expected_schema_version" "$selected_executed_scalar_ignored_partial_status_map_scope_summary" <<'NODE'
 const fs = require('node:fs');
@@ -10219,6 +10291,90 @@ if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_string_
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_executed_string_zero_scalar_and_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-executed-string-zero-scalar-and-raw-status-counts-ignored-partial-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Executed gates:** 2" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed counters despite conflicting scalar and partial malformed raw statusCounts payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed-rate derivation under mixed scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected non-success/attention metadata under mixed scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve explicit partial selected status-map metadata." >&2
+	exit 1
+fi
+if grep -Fq "**Failed gates:** 3" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Executed gates:** 5" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 20%" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to suppress scalar/partial malformed raw overrides under selected sparse status-map/partition fallback evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Executed gates:** 2" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed counters despite conflicting numeric-string scalar and partial malformed raw statusCounts payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed-rate derivation under mixed numeric-string scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected non-success/attention metadata under mixed numeric-string scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve explicit partial selected status-map metadata." >&2
+	exit 1
+fi
+if grep -Fq "**Failed gates:** 3" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Executed gates:** 5" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 20%" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to suppress numeric-string scalar/partial malformed raw overrides under selected sparse status-map/partition fallback evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-string-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary." >&2
+	exit 1
+fi
+if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected-gate metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Passed gates:** 1" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Failed gates:** 1" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Executed gates:** 2" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed counters despite conflicting numeric-string zero scalar and partial malformed raw statusCounts payloads." >&2
+	exit 1
+fi
+if ! grep -Fq "**Executed gates list:** lint, typecheck" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** 50%" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected sparse status-map/partition executed-rate derivation under mixed numeric-string zero scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq "**Non-success gates list:** typecheck" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || ! grep -Fq "**Attention gates list:** typecheck" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve selected non-success/attention metadata under mixed numeric-string zero scalar/raw conflicts." >&2
+	exit 1
+fi
+if ! grep -Fq '**Gate status map:** {"lint":"pass"}' "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to preserve explicit partial selected status-map metadata." >&2
+	exit 1
+fi
+if grep -Fq "**Failed gates:** 3" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Executed gates:** 0" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** n/a" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Expected selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary to suppress numeric-string zero scalar/partial malformed raw overrides under selected sparse status-map/partition fallback evidence." >&2
+	exit 1
+fi
+if grep -q "\*\*Schema warning:\*\*" "$selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope_step_summary"; then
+	echo "Did not expect schema warning for selected-executed-string-zero-scalar-partial-malformed-raw-status-counts-ignored-partial-status-map-scope summary." >&2
 	exit 1
 fi
 if ! grep -Fq "**Selected gates:** lint, typecheck" "$selected_executed_scalar_ignored_partial_status_map_scope_step_summary"; then

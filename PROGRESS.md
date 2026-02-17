@@ -3790,3 +3790,19 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T011102Z`, classification `success-with-retries`)
   **Why:** closes partial-malformed raw parity for selected explicit non-empty executed-list mixed-source conflicts so malformed raw aggregate fragments cannot leak into selected executed/status/rate metadata when explicit non-empty list evidence is present.
+- **Selected sparse status-map fallback partial malformed scalar+raw statusCounts suppression coverage (2026-02-17 AM)** Extended selected-scope executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope`
+    - `selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope`
+    - `selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_partial_status_map_scope`
+  - Scenarios pin sparse selected status-map/partition fallback evidence (`selectedGateIds: ['lint', 'typecheck']`, `gateStatusById: { lint: 'pass' }`, `failedGateIds: ['typecheck']`) while injecting conflicting mixed-source aggregate bundles with partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: 3`, `skip: null`, `not-run: 'bad'`) plus integer, numeric-string, and numeric-string-zero `executedGateCount` scalars.
+  - Assertions confirm deterministic selected sparse-fallback suppression:
+    - selected counters and executed metadata stay sparse-fallback scoped (`Passed/Failed/Executed = 1/1/2`, executed list `lint, typecheck`, pass rate `50%`)
+    - selected non-success/attention and explicit partial status-map metadata remain aligned (`typecheck`, `{"lint":"pass"}`)
+    - conflicting malformed raw/scalar branches are suppressed (`Failed gates: 3`, `Executed gates: 5`, scalar-zero `Executed gates: 0`, and `n/a` pass-rate branch do not appear).
+  - `scripts/README.md` selected explicit executed-list override notes now explicitly include combined scalar+partial-malformed raw suppression under sparse selected status-map/partition fallback evidence.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T012156Z`, classification `success-with-retries`)
+  **Why:** closes the remaining selected sparse-fallback mixed-source precedence gap so partial-malformed raw aggregate fragments and scalar executed-count branches cannot override selected status-map/partition-derived executed metadata.
