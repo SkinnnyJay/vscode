@@ -3756,3 +3756,20 @@
     - `make lint` ✅
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T010124Z`, classification `success-with-retries`)
   **Why:** closes the selected explicit-empty executed-list mixed-source precedence gap so conflicting scalar/raw aggregates cannot leak into selected executed counters or rates when explicit empty executed-list evidence is present.
+- **Selected explicit empty executed-list partial malformed raw statusCounts scalar+raw suppression coverage (2026-02-17 AM)** Extended selected-scope executed override matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds:
+    - `selected_executed_scalar_partial_malformed_raw_status_counts_ignored_empty_list_scope`
+    - `selected_executed_string_scalar_partial_malformed_raw_status_counts_ignored_empty_list_scope`
+    - `selected_executed_string_zero_scalar_partial_malformed_raw_status_counts_ignored_empty_list_scope`
+  - Scenarios retain selected explicit empty executed evidence (`selectedGateIds: ['lint', 'typecheck']`, `executedGateIds: []`) and selected partition+retry metadata while injecting conflicting mixed-source aggregates with partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: 3`, `skip: null`, `not-run: 'bad'`) plus integer, numeric-string, and numeric-string-zero `executedGateCount` scalars.
+  - Assertions confirm selected explicit-empty-list precedence remains deterministic:
+    - selected counters/status-count metadata stay selected-list scoped (`Passed/Failed/Executed = 1/1/0`, `Status counts: {"pass":1,"fail":1,"skip":0,"not-run":0}`)
+    - explicit empty executed-list/rate metadata stays authoritative (`Executed gates list: none`, executed pass/retry rates `n/a`)
+    - selected attention metadata remains stable (`lint, typecheck`)
+    - conflicting malformed/raw+scalar branches are suppressed (`Failed gates: 3`, `Executed gates: 5`, `Pass rate: 20%` do not appear).
+  - `scripts/README.md` selected explicit executed-list override notes now explicitly include partial malformed raw scalar+raw suppression under explicit selected empty executed-list evidence.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T010124Z`, classification `success-with-retries`)
+  **Why:** closes partial-malformed raw parity for selected explicit-empty executed-list mixed-source conflicts so malformed raw aggregate fragments cannot leak into selected executed/status/rate metadata when empty-list scope evidence is explicit.
