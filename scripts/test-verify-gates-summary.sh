@@ -5964,6 +5964,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-only-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'lint',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -5988,6 +5999,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-whitespace-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: ' lint ',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -6012,6 +6034,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-empty-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: '   ',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -6036,6 +6069,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-continue-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'lint',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: true,
@@ -6060,6 +6104,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-dry-run-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'lint',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: true,
 	continueOnFailure: false,
@@ -6084,6 +6139,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-dry-reason-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'lint',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -6108,6 +6174,17 @@ const payload = {
 	runId: 'selected-run-state-scalar-blocked-continued-conflict-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'lint',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -6132,6 +6209,17 @@ const payload = {
 	runId: 'selected-run-state-nonselected-blocked-scope-contract',
 	selectedGateIds: ['lint'],
 	blockedByGateId: 'build',
+	retriedGateIds: ['build', 'deploy'],
+	gateRetryCountById: { build: 2, deploy: 1 },
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	gateDurationSecondsById: { build: 5, deploy: 3 },
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: true,
 	dryRun: false,
 	continueOnFailure: false,
@@ -14507,6 +14595,18 @@ if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_scalar_blocked_on
 	echo "Expected selected-run-state-scalar-blocked-only-scope summary to preserve selected scalar blocked-by metadata." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_only_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_only_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_only_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-only-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_only_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_only_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_only_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_only_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-only-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_only_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_only_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_only_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_only_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_only_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_only_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-only-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_only_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-scalar-blocked-only-scope summary." >&2
 	exit 1
@@ -14521,6 +14621,18 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_scalar_blocked_whitespac
 fi
 if ! grep -Fq "**Blocked by gate:** lint" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary"; then
 	echo "Expected selected-run-state-scalar-blocked-whitespace-scope summary to trim scalar blockedByGateId values." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-whitespace-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-whitespace-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-whitespace-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_whitespace_scope_step_summary"; then
@@ -14539,6 +14651,18 @@ if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_scalar_blocked_em
 	echo "Expected selected-run-state-scalar-blocked-empty-scope summary to suppress blank scalar blockedByGateId values." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_empty_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-empty-scope summary to suppress non-selected retry aggregates when selected blocked scalar is blank." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_empty_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-empty-scope summary to keep aggregate rates/durations at selected no-evidence fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_empty_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_empty_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-empty-scope summary to suppress conflicting scalar retry/duration leakage when selected blocked scalar is blank." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_empty_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-scalar-blocked-empty-scope summary." >&2
 	exit 1
@@ -14553,6 +14677,18 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_scalar_blocked_continue_
 fi
 if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
 	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to ignore conflicting continue-on-failure=true when selected fail-fast evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_continue_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continue-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_continue_scope_step_summary"; then
@@ -14571,6 +14707,18 @@ if ! grep -Fq "**Dry run:** false" "$selected_run_state_scalar_blocked_dry_run_s
 	echo "Expected selected-run-state-scalar-blocked-dry-run-scope summary to clear dry-run metadata when selected fail-fast evidence exists." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-run-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-run-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-run-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_dry_run_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-scalar-blocked-dry-run-scope summary." >&2
 	exit 1
@@ -14585,6 +14733,18 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_scalar_blocked_dry_reaso
 fi
 if ! grep -Fq "**Dry run:** false" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary"; then
 	echo "Expected selected-run-state-scalar-blocked-dry-reason-scope summary to clear dry-run metadata when selected fail-fast evidence exists." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-reason-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-reason-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-dry-reason-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_dry_reason_scope_step_summary"; then
@@ -14603,6 +14763,18 @@ if ! grep -Fq "**Continue on failure:** false" "$selected_run_state_scalar_block
 	echo "Expected selected-run-state-scalar-blocked-continued-conflict-scope summary to ignore continue-on-failure=true under selected fail-fast evidence." >&2
 	exit 1
 fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continued-conflict-scope summary to suppress non-selected retry aggregates under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continued-conflict-scope summary to keep aggregate rates/durations at selected non-executed fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary"; then
+	echo "Expected selected-run-state-scalar-blocked-continued-conflict-scope summary to suppress conflicting scalar retry/duration leakage under selected fail-fast scalar evidence." >&2
+	exit 1
+fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_scalar_blocked_continued_conflict_scope_step_summary"; then
 	echo "Did not expect schema warning for selected-run-state-scalar-blocked-continued-conflict-scope summary." >&2
 	exit 1
@@ -14617,6 +14789,18 @@ if ! grep -Fq "**Success:** true" "$selected_run_state_nonselected_blocked_scope
 fi
 if ! grep -Fq "**Blocked by gate:** none" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
 	echo "Expected selected-run-state-nonselected-blocked-scope summary to suppress non-selected blocked-by scalar metadata." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_nonselected_blocked_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_nonselected_blocked_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
+	echo "Expected selected-run-state-nonselected-blocked-scope summary to suppress non-selected retry aggregates under selected no-evidence scope." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_nonselected_blocked_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_nonselected_blocked_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_nonselected_blocked_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
+	echo "Expected selected-run-state-nonselected-blocked-scope summary to keep aggregate rates/durations at selected no-evidence fallback values." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_nonselected_blocked_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_nonselected_blocked_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_nonselected_blocked_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_nonselected_blocked_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_nonselected_blocked_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
+	echo "Expected selected-run-state-nonselected-blocked-scope summary to suppress conflicting scalar retry/duration leakage under selected no-evidence scope." >&2
 	exit 1
 fi
 if grep -Fq "build" "$selected_run_state_nonselected_blocked_scope_step_summary"; then
