@@ -3821,3 +3821,19 @@
     - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T014217Z`, classification `success-with-retries`; transient `McpStdioStateHandler` flake reproduced on two prior attempts and passed on rerun)
     - `make test-unit` ✅
   **Why:** closes selected no-evidence partial-malformed parity so malformed raw fragments cannot leak into selected status counters when explicit selected execution evidence is absent.
+- **Unscoped no-evidence partial malformed statusCounts scalar-fallback merge coverage (2026-02-17 AM)** Extended unscoped status-count matrix:
+  - `scripts/test-verify-gates-summary.sh` now adds `unscoped_status_counts_partial_malformed_no_evidence`.
+  - Scenario intentionally omits row/list/status-map evidence and injects:
+    - valid unscoped scalar partition/executed counters (`passed/failed/skipped/not-run/executed`)
+    - partial malformed raw `statusCounts` (`pass: 'bad'`, `fail: 3`, `skip: null`, `'not-run': 'bad'`).
+  - Assertions confirm deterministic mixed-source merge behavior:
+    - unscoped scalar counters remain authoritative for counter lines (`8/7/6/5`)
+    - valid raw fail count remains authoritative in rendered status-count metadata while malformed raw siblings fall back to scalar fields (`{"pass":8,"fail":3,"skip":6,"not-run":5}`)
+    - executed denominator and rates remain scalar-driven (`Executed gates: 4`, pass rate `100%`) with no executed-list evidence (`none`)
+    - malformed/raw omission branches are suppressed (`{"pass":8,"fail":7,"skip":6,"not-run":5}` and `Executed gates: 0` absent).
+  - `scripts/README.md` unscoped aggregate precedence notes now explicitly call out sparse no-evidence partial malformed raw fallback where valid scalar partition counts remain authoritative.
+  - Validation:
+    - `./scripts/test-verify-gates-summary.sh` ✅
+    - `make lint` ✅
+    - `./scripts/verify-gates.sh --quick` ✅ (`quick-20260217T020501Z`, classification `success-with-retries`)
+  **Why:** closes unscoped sparse no-evidence partial-malformed parity so partially malformed raw statusCounts can only override valid per-key branches and cannot destabilize scalar-driven aggregate counters/rates.
