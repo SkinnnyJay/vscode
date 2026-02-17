@@ -5468,6 +5468,14 @@ const payload = {
 	schemaVersion,
 	runId: 'selected-run-state-no-evidence-scope-contract',
 	selectedGateIds: ['lint'],
+	retriedGateCount: 5,
+	totalRetryCount: 7,
+	totalRetryBackoffSeconds: 4,
+	executedDurationSeconds: 8,
+	averageExecutedDurationSeconds: 6,
+	retryRatePercent: 90,
+	passRatePercent: 80,
+	retryBackoffSharePercent: 80,
 	success: false,
 	dryRun: false,
 	continueOnFailure: true,
@@ -14066,6 +14074,18 @@ if ! grep -Fq "**Success:** false" "$selected_run_state_no_evidence_scope_step_s
 fi
 if ! grep -Fq "**Dry run:** false" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Continue on failure:** true" "$selected_run_state_no_evidence_scope_step_summary"; then
 	echo "Expected selected-run-state-no-evidence-scope summary to preserve explicit dry-run/continue-on-failure when selected-scope outcome evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Total retries:** 0" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Retried gates:** none" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Total retry backoff:** 0s" "$selected_run_state_no_evidence_scope_step_summary"; then
+	echo "Expected selected-run-state-no-evidence-scope summary to suppress scalar retry aggregates when selected execution evidence is absent." >&2
+	exit 1
+fi
+if ! grep -Fq "**Retry rate (executed gates):** n/a" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Pass rate (executed gates):** n/a" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Executed duration total:** 0s" "$selected_run_state_no_evidence_scope_step_summary" || ! grep -Fq "**Executed duration average:** n/a" "$selected_run_state_no_evidence_scope_step_summary"; then
+	echo "Expected selected-run-state-no-evidence-scope summary to keep selected-scope rate/duration aggregates at fallback values when only scalar aggregate overrides are provided." >&2
+	exit 1
+fi
+if grep -Fq "**Retry rate (executed gates):** 90%" "$selected_run_state_no_evidence_scope_step_summary" || grep -Fq "**Pass rate (executed gates):** 80%" "$selected_run_state_no_evidence_scope_step_summary" || grep -Fq "**Total retry backoff:** 4s" "$selected_run_state_no_evidence_scope_step_summary" || grep -Fq "**Total retries:** 7" "$selected_run_state_no_evidence_scope_step_summary" || grep -Fq "**Executed duration total:** 8s" "$selected_run_state_no_evidence_scope_step_summary" || grep -Fq "**Executed duration average:** 6s" "$selected_run_state_no_evidence_scope_step_summary"; then
+	echo "Expected selected-run-state-no-evidence-scope summary to reject conflicting scalar retry/duration leakage under selected no-evidence fallback." >&2
 	exit 1
 fi
 if grep -q "\*\*Schema warning:\*\*" "$selected_run_state_no_evidence_scope_step_summary"; then
