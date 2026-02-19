@@ -6,7 +6,7 @@
 import * as playwright from '@playwright/test';
 import type { Protocol } from 'playwright-core/types/protocol';
 import { dirname, join } from 'path';
-import { promises, readFileSync } from 'fs';
+import { existsSync, promises, readFileSync, statSync } from 'fs';
 import { IWindowDriver } from './driver';
 import { measureAndLog } from './logger';
 import { LaunchOptions } from './code';
@@ -48,6 +48,11 @@ export class PlaywrightDriver {
 
 	private static traceCounter = 1;
 	private static screenShotCounter = 1;
+	private static readonly recentRequestFailureCapacity = 25;
+	private static readonly recentScriptResponseCapacity = 25;
+	private static readonly recentCdpScriptLoadCapacity = 25;
+	private static readonly recentConsoleErrorCapacity = 25;
+	private static readonly recentSummaryCapacity = 200;
 
 	private static readonly vscodeToPlaywrightKey: { [key: string]: string } = {
 		cmd: 'Meta',
@@ -63,6 +68,48 @@ export class PlaywrightDriver {
 		esc: 'Escape'
 	};
 
+	private lastPageError: string | undefined;
+	private readonly recentRequestFailures: string[] = [];
+	private totalRecordedRequestFailures = 0;
+	private droppedRecentRequestFailures = 0;
+	private readonly requestFailureSummariesByUrl = new Map<string, string>();
+	private readonly requestFailureSeenCountsByUrl = new Map<string, number>();
+	private readonly recentScriptResponses: string[] = [];
+	private totalRecordedScriptResponses = 0;
+	private droppedRecentScriptResponses = 0;
+	private readonly recentCdpScriptLoads: string[] = [];
+	private totalRecordedCdpScriptLoads = 0;
+	private droppedRecentCdpScriptLoads = 0;
+	private readonly recentConsoleErrors: string[] = [];
+	private totalRecordedConsoleErrors = 0;
+	private droppedRecentConsoleErrors = 0;
+	private readonly consoleErrorSummariesByUrl = new Map<string, string>();
+	private readonly consoleErrorSeenCountsByUrl = new Map<string, number>();
+	private readonly scriptResponseSummariesByUrl = new Map<string, string>();
+	private readonly scriptResponseSeenCountsByUrl = new Map<string, number>();
+	private readonly cdpScriptLoadSummariesByUrl = new Map<string, string>();
+	private readonly cdpScriptLoadSeenCountsByUrl = new Map<string, number>();
+	private readonly cdpScriptLifecycleByUrl = new Map<string, { requestWillBeSentCount: number; loadingFinishedCount: number; loadingFailedCount: number; latestOutcome: string }>();
+	private readonly playwrightScriptLifecycleByUrl = new Map<string, { requestCount: number; responseCount: number; finishedCount: number; failedCount: number; latestOutcome: string }>();
+	private readonly requestFailureCountByUrl = new Map<string, number>();
+	private readonly scriptResponseCountByUrl = new Map<string, number>();
+	private readonly cdpScriptLoadCountByUrl = new Map<string, number>();
+	private readonly consoleErrorCountByUrl = new Map<string, number>();
+	private readonly firstRequestFailureSeenAtByUrl = new Map<string, number>();
+	private readonly firstScriptRequestSeenAtByUrl = new Map<string, number>();
+	private readonly firstScriptResponseSeenAtByUrl = new Map<string, number>();
+	private readonly firstCdpScriptLoadSeenAtByUrl = new Map<string, number>();
+	private readonly firstCdpScriptLifecycleSeenAtByUrl = new Map<string, number>();
+	private readonly firstConsoleErrorSeenAtByUrl = new Map<string, number>();
+	private readonly pagesWithDiagnostics = new WeakSet<playwright.Page>();
+	private cdpNetworkDiagnosticsAttached = false;
+	private cdpNetworkDiagnosticsAttachStartedAtMs: number | undefined;
+	private cdpNetworkDiagnosticsAttachCompletedAtMs: number | undefined;
+	private cdpNetworkDiagnosticsAttachError: string | undefined;
+	private readonly cdpRequestUrls = new Map<string, string>();
+	private readonly cdpRequestResourceTypes = new Map<string, string>();
+	private readonly diagnosticsStartTimeMs = Date.now();
+
 	constructor(
 		private readonly application: playwright.Browser | playwright.ElectronApplication,
 		private readonly context: playwright.BrowserContext,
@@ -71,6 +118,7 @@ export class PlaywrightDriver {
 		private readonly whenLoaded: Promise<unknown>,
 		private readonly options: LaunchOptions
 	) {
+		this.registerPageDiagnostics(this._currentPage);
 	}
 
 	get browserContext(): playwright.BrowserContext {
@@ -111,6 +159,7 @@ export class PlaywrightDriver {
 		if (typeof indexOrUrl === 'number') {
 			if (indexOrUrl >= 0 && indexOrUrl < windows.length) {
 				this._currentPage = windows[indexOrUrl];
+				this.registerPageDiagnostics(this._currentPage);
 				// Clear CDP session as it's attached to the previous page
 				this._cdpSession = undefined;
 				return this._currentPage;
@@ -123,6 +172,7 @@ export class PlaywrightDriver {
 			}
 			if (found) {
 				this._currentPage = found;
+				this.registerPageDiagnostics(this._currentPage);
 				// Clear CDP session as it's attached to the previous page
 				this._cdpSession = undefined;
 				return this._currentPage;
@@ -400,6 +450,581 @@ export class PlaywrightDriver {
 	}
 
 	private _cdpSession: playwright.CDPSession | undefined;
+
+	getLastPageError(): string | undefined {
+		return this.lastPageError;
+	}
+
+	getRecentRequestFailures(): readonly string[] {
+		return this.recentRequestFailures;
+	}
+
+	getRecentRequestFailureCapacity(): number {
+		return PlaywrightDriver.recentRequestFailureCapacity;
+	}
+
+	getTotalRecordedRequestFailureCount(): number {
+		return this.totalRecordedRequestFailures;
+	}
+
+	getDroppedRecentRequestFailureCount(): number {
+		return this.droppedRecentRequestFailures;
+	}
+
+	getLatestRequestFailureSummaryForUrl(url: string): string | undefined {
+		return this.requestFailureSummariesByUrl.get(this.toUrlKey(url));
+	}
+
+	getRecentScriptResponses(): readonly string[] {
+		return this.recentScriptResponses;
+	}
+
+	getRecentScriptResponseCapacity(): number {
+		return PlaywrightDriver.recentScriptResponseCapacity;
+	}
+
+	getTotalRecordedScriptResponseCount(): number {
+		return this.totalRecordedScriptResponses;
+	}
+
+	getDroppedRecentScriptResponseCount(): number {
+		return this.droppedRecentScriptResponses;
+	}
+
+	getLatestScriptResponseSummaryForUrl(url: string): string | undefined {
+		return this.scriptResponseSummariesByUrl.get(this.toUrlKey(url));
+	}
+
+	getRecentCdpScriptLoads(): readonly string[] {
+		return this.recentCdpScriptLoads;
+	}
+
+	getRecentCdpScriptLoadCapacity(): number {
+		return PlaywrightDriver.recentCdpScriptLoadCapacity;
+	}
+
+	getTotalRecordedCdpScriptLoadCount(): number {
+		return this.totalRecordedCdpScriptLoads;
+	}
+
+	getDroppedRecentCdpScriptLoadCount(): number {
+		return this.droppedRecentCdpScriptLoads;
+	}
+
+	getRecentConsoleErrors(): readonly string[] {
+		return this.recentConsoleErrors;
+	}
+
+	getRecentConsoleErrorCapacity(): number {
+		return PlaywrightDriver.recentConsoleErrorCapacity;
+	}
+
+	getTotalRecordedConsoleErrorCount(): number {
+		return this.totalRecordedConsoleErrors;
+	}
+
+	getDroppedRecentConsoleErrorCount(): number {
+		return this.droppedRecentConsoleErrors;
+	}
+
+	getLatestConsoleErrorSummaryForUrl(url: string): string | undefined {
+		return this.consoleErrorSummariesByUrl.get(this.toUrlKey(url));
+	}
+
+	getImportTargetConsoleErrorCount(url: string): number {
+		return this.consoleErrorCountByUrl.get(this.toUrlKey(url)) ?? 0;
+	}
+
+	getLatestCdpScriptLoadSummaryForUrl(url: string): string | undefined {
+		return this.cdpScriptLoadSummariesByUrl.get(this.toUrlKey(url));
+	}
+
+	getCdpScriptLifecycleSummaryForUrl(url: string): string | undefined {
+		const lifecycle = this.cdpScriptLifecycleByUrl.get(this.toUrlKey(url));
+		if (!lifecycle) {
+			return undefined;
+		}
+
+		return `requestWillBeSent=${lifecycle.requestWillBeSentCount} loadingFinished=${lifecycle.loadingFinishedCount} loadingFailed=${lifecycle.loadingFailedCount} latestOutcome=${lifecycle.latestOutcome}`;
+	}
+
+	getPlaywrightScriptLifecycleSummaryForUrl(url: string): string | undefined {
+		const lifecycle = this.playwrightScriptLifecycleByUrl.get(this.toUrlKey(url));
+		if (!lifecycle) {
+			return undefined;
+		}
+
+		return `request=${lifecycle.requestCount} response=${lifecycle.responseCount} finished=${lifecycle.finishedCount} failed=${lifecycle.failedCount} latestOutcome=${lifecycle.latestOutcome}`;
+	}
+
+	getImportTargetEventCounts(url: string): { requestFailures: number; scriptResponses: number; cdpScriptLoads: number } {
+		const urlKey = this.toUrlKey(url);
+		return {
+			requestFailures: this.requestFailureCountByUrl.get(urlKey) ?? 0,
+			scriptResponses: this.scriptResponseCountByUrl.get(urlKey) ?? 0,
+			cdpScriptLoads: this.cdpScriptLoadCountByUrl.get(urlKey) ?? 0
+		};
+	}
+
+	getImportTargetFirstSeenTimes(url: string): {
+		requestFailureFirstSeenAtMs: number | undefined;
+		scriptRequestFirstSeenAtMs: number | undefined;
+		scriptResponseFirstSeenAtMs: number | undefined;
+		cdpScriptLoadFirstSeenAtMs: number | undefined;
+		cdpScriptLifecycleFirstSeenAtMs: number | undefined;
+		consoleErrorFirstSeenAtMs: number | undefined;
+	} {
+		const urlKey = this.toUrlKey(url);
+		return {
+			requestFailureFirstSeenAtMs: this.firstRequestFailureSeenAtByUrl.get(urlKey),
+			scriptRequestFirstSeenAtMs: this.firstScriptRequestSeenAtByUrl.get(urlKey),
+			scriptResponseFirstSeenAtMs: this.firstScriptResponseSeenAtByUrl.get(urlKey),
+			cdpScriptLoadFirstSeenAtMs: this.firstCdpScriptLoadSeenAtByUrl.get(urlKey),
+			cdpScriptLifecycleFirstSeenAtMs: this.firstCdpScriptLifecycleSeenAtByUrl.get(urlKey),
+			consoleErrorFirstSeenAtMs: this.firstConsoleErrorSeenAtByUrl.get(urlKey)
+		};
+	}
+
+	getCdpNetworkDiagnosticsStatus(): {
+		attachStartedAtMs: number | undefined;
+		attachCompletedAtMs: number | undefined;
+		attachError: string | undefined;
+		isAttached: boolean;
+	} {
+		return {
+			attachStartedAtMs: this.cdpNetworkDiagnosticsAttachStartedAtMs,
+			attachCompletedAtMs: this.cdpNetworkDiagnosticsAttachCompletedAtMs,
+			attachError: this.cdpNetworkDiagnosticsAttachError,
+			isAttached: this.cdpNetworkDiagnosticsAttachCompletedAtMs !== undefined && this.cdpNetworkDiagnosticsAttachError === undefined
+		};
+	}
+
+	private registerPageDiagnostics(page: playwright.Page): void {
+		if (this.pagesWithDiagnostics.has(page)) {
+			return;
+		}
+		this.pagesWithDiagnostics.add(page);
+
+		page.on('pageerror', error => {
+			if (!this.lastPageError) {
+				this.lastPageError = String(error);
+			}
+		});
+
+		page.on('requestfailed', request => {
+			const failureText = request.failure()?.errorText;
+			if (!failureText) {
+				return;
+			}
+
+			const url = request.url();
+			if (request.resourceType() === 'script' && url.startsWith('vscode-file://')) {
+				this.updatePlaywrightScriptLifecycle(url, 'failed', 'requestfailed');
+			}
+			const entry = this.toFailureEntry(failureText, url);
+			this.pushRecentRequestFailure(entry);
+		});
+
+		page.on('request', request => {
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = request.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			this.rememberFirstSeenTimestamp(this.firstScriptRequestSeenAtByUrl, this.toUrlKey(url));
+			this.updatePlaywrightScriptLifecycle(url, 'request', 'request');
+		});
+
+		page.on('response', response => {
+			const request = response.request();
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = response.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			this.updatePlaywrightScriptLifecycle(url, 'response', 'response');
+			const responseHeaders = response.headers();
+			const contentType = responseHeaders['content-type'] ?? 'unknown';
+			const cacheControl = responseHeaders['cache-control'] ?? 'unknown';
+			const contentLength = responseHeaders['content-length'];
+			const entry = this.toScriptResponseEntry(url, response.status(), contentType, cacheControl, contentLength);
+			this.pushRecentScriptResponse(entry);
+		});
+
+		page.on('requestfinished', request => {
+			if (request.resourceType() !== 'script') {
+				return;
+			}
+
+			const url = request.url();
+			if (!url.startsWith('vscode-file://')) {
+				return;
+			}
+
+			this.updatePlaywrightScriptLifecycle(url, 'finished', 'requestfinished');
+		});
+
+		page.on('console', message => {
+			if (message.type() !== 'error') {
+				return;
+			}
+
+			const entry = this.toConsoleErrorEntry(message);
+			this.pushRecentConsoleError(entry);
+		});
+
+		void this.attachCdpNetworkDiagnostics(page);
+	}
+
+	private toFilePathFromVscodeFileUrl(url: string): string | undefined {
+		if (!url.startsWith('vscode-file://')) {
+			return undefined;
+		}
+
+		try {
+			const parsed = new URL(url);
+			let pathname = decodeURIComponent(parsed.pathname);
+
+			// Windows paths in file-like URLs can come as `/c:/...`
+			if (/^\/[a-zA-Z]:\//.test(pathname)) {
+				pathname = pathname.slice(1);
+			}
+
+			return pathname;
+		} catch {
+			return undefined;
+		}
+	}
+
+	private toFailureEntry(errorText: string, url: string, details?: string): string {
+		const normalizedErrorText = this.normalizeFailureText(errorText);
+		const urlKey = this.toUrlKey(url);
+		this.rememberFirstSeenTimestamp(this.firstRequestFailureSeenAtByUrl, urlKey);
+		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const detailsSuffix = details ? ` ${details}` : '';
+		const seenCount = (this.requestFailureSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.requestFailureSeenCountsByUrl.set(urlKey, seenCount);
+		this.requestFailureCountByUrl.set(urlKey, (this.requestFailureCountByUrl.get(urlKey) ?? 0) + 1);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount} error=${normalizedErrorText}${fileExistsSuffix}${detailsSuffix}`);
+		this.setLatestSummary(this.requestFailureSummariesByUrl, urlKey, summary);
+
+		return this.normalizeFailureText(`${normalizedErrorText} ${url}${fileExistsSuffix}${detailsSuffix}`);
+	}
+
+	private toScriptResponseEntry(url: string, statusCode: number, contentType: string, cacheControl: string, contentLengthHeader: string | undefined): string {
+		const urlKey = this.toUrlKey(url);
+		this.rememberFirstSeenTimestamp(this.firstScriptResponseSeenAtByUrl, urlKey);
+		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const onDiskBytes = this.readOnDiskByteCount(resolvedPath);
+		const parsedContentLength = this.parseByteCount(contentLengthHeader);
+		const byteDelta = parsedContentLength !== undefined && onDiskBytes !== undefined ? parsedContentLength - onDiskBytes : undefined;
+		const byteDeltaKind = this.classifyByteDelta(parsedContentLength, onDiskBytes, byteDelta);
+		const contentLengthSuffix = ` contentLength=${contentLengthHeader ?? 'unknown'}`;
+		const onDiskBytesSuffix = ` onDiskBytes=${onDiskBytes ?? 'unknown'}`;
+		const byteDeltaSuffix = ` contentLengthDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
+		const seenCount = (this.scriptResponseSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.scriptResponseSeenCountsByUrl.set(urlKey, seenCount);
+		this.scriptResponseCountByUrl.set(urlKey, (this.scriptResponseCountByUrl.get(urlKey) ?? 0) + 1);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount} status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
+		this.setLatestScriptResponseSummary(urlKey, summary);
+
+		return this.normalizeFailureText(`[response] status=${statusCode} contentType=${contentType} cacheControl=${cacheControl}${contentLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
+	}
+
+	private toCdpScriptLoadEntry(url: string, encodedDataLength: number): string {
+		const urlKey = this.toUrlKey(url);
+		this.rememberFirstSeenTimestamp(this.firstCdpScriptLoadSeenAtByUrl, urlKey);
+		const resolvedPath = this.toFilePathFromVscodeFileUrl(url);
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const onDiskBytes = this.readOnDiskByteCount(resolvedPath);
+		const encodedDataLengthNumber = Number.isFinite(encodedDataLength) ? Math.round(encodedDataLength) : undefined;
+		const byteDelta = encodedDataLengthNumber !== undefined && onDiskBytes !== undefined ? encodedDataLengthNumber - onDiskBytes : undefined;
+		const byteDeltaKind = this.classifyEncodedByteDelta(encodedDataLengthNumber, onDiskBytes, byteDelta);
+		const encodedDataLengthSuffix = ` encodedDataLength=${encodedDataLengthNumber ?? 'unknown'}`;
+		const onDiskBytesSuffix = ` onDiskBytes=${onDiskBytes ?? 'unknown'}`;
+		const byteDeltaSuffix = ` encodedDiskByteDelta=${byteDelta ?? 'unknown'} byteDeltaKind=${byteDeltaKind}`;
+		const seenCount = (this.cdpScriptLoadSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+		this.cdpScriptLoadSeenCountsByUrl.set(urlKey, seenCount);
+		this.cdpScriptLoadCountByUrl.set(urlKey, (this.cdpScriptLoadCountByUrl.get(urlKey) ?? 0) + 1);
+		const summary = this.normalizeFailureText(`seenCount=${seenCount}${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix}${fileExistsSuffix}`);
+		this.setLatestSummary(this.cdpScriptLoadSummariesByUrl, urlKey, summary);
+
+		return this.normalizeFailureText(`[cdp-script-load]${encodedDataLengthSuffix}${onDiskBytesSuffix}${byteDeltaSuffix} ${url}${fileExistsSuffix}`);
+	}
+
+	private toConsoleErrorEntry(message: playwright.ConsoleMessage): string {
+		const text = this.normalizeFailureText(message.text());
+		const location = message.location();
+		const locationUrl = location.url || undefined;
+		const locationSuffix = locationUrl
+			? ` url=${locationUrl} line=${location.lineNumber} column=${location.columnNumber}`
+			: '';
+		const resolvedPath = locationUrl ? this.toFilePathFromVscodeFileUrl(locationUrl) : undefined;
+		const fileExistsSuffix = resolvedPath ? ` existsOnDisk=${existsSync(resolvedPath)}` : '';
+		const urlKey = locationUrl ? this.toUrlKey(locationUrl) : undefined;
+		if (urlKey) {
+			this.rememberFirstSeenTimestamp(this.firstConsoleErrorSeenAtByUrl, urlKey);
+			const seenCount = (this.consoleErrorSeenCountsByUrl.get(urlKey) ?? 0) + 1;
+			this.consoleErrorSeenCountsByUrl.set(urlKey, seenCount);
+			this.consoleErrorCountByUrl.set(urlKey, (this.consoleErrorCountByUrl.get(urlKey) ?? 0) + 1);
+			const summary = this.normalizeFailureText(`seenCount=${seenCount} text=${text}${locationSuffix}${fileExistsSuffix}`);
+			this.setLatestSummary(this.consoleErrorSummariesByUrl, urlKey, summary);
+		}
+		return this.normalizeFailureText(`[console-error] ${text}${locationSuffix}${fileExistsSuffix}`);
+	}
+
+	private readOnDiskByteCount(path: string | undefined): number | undefined {
+		if (!path) {
+			return undefined;
+		}
+
+		try {
+			return statSync(path).size;
+		} catch {
+			return undefined;
+		}
+	}
+
+	private parseByteCount(value: string | undefined): number | undefined {
+		if (!value) {
+			return undefined;
+		}
+
+		const parsed = Number.parseInt(value, 10);
+		if (!Number.isFinite(parsed)) {
+			return undefined;
+		}
+
+		return parsed;
+	}
+
+	private classifyByteDelta(contentLength: number | undefined, onDiskBytes: number | undefined, byteDelta: number | undefined): string {
+		if (contentLength === undefined) {
+			return 'content-length-unavailable';
+		}
+
+		if (onDiskBytes === undefined) {
+			return 'disk-bytes-unavailable';
+		}
+
+		if (byteDelta === undefined) {
+			return 'delta-unavailable';
+		}
+
+		return byteDelta === 0 ? 'byte-match' : 'byte-mismatch';
+	}
+
+	private classifyEncodedByteDelta(encodedDataLength: number | undefined, onDiskBytes: number | undefined, byteDelta: number | undefined): string {
+		if (encodedDataLength === undefined) {
+			return 'encoded-bytes-unavailable';
+		}
+
+		if (onDiskBytes === undefined) {
+			return 'disk-bytes-unavailable';
+		}
+
+		if (byteDelta === undefined) {
+			return 'delta-unavailable';
+		}
+
+		return byteDelta === 0 ? 'byte-match' : 'byte-mismatch';
+	}
+
+	private updateCdpScriptLifecycle(url: string, eventType: 'requestWillBeSent' | 'loadingFinished' | 'loadingFailed', latestOutcome: string): void {
+		const urlKey = this.toUrlKey(url);
+		this.rememberFirstSeenTimestamp(this.firstCdpScriptLifecycleSeenAtByUrl, urlKey);
+		const existing = this.cdpScriptLifecycleByUrl.get(urlKey) ?? { requestWillBeSentCount: 0, loadingFinishedCount: 0, loadingFailedCount: 0, latestOutcome: 'unseen' };
+		if (eventType === 'requestWillBeSent') {
+			existing.requestWillBeSentCount++;
+		} else if (eventType === 'loadingFinished') {
+			existing.loadingFinishedCount++;
+		} else {
+			existing.loadingFailedCount++;
+		}
+		existing.latestOutcome = latestOutcome;
+		this.cdpScriptLifecycleByUrl.set(urlKey, existing);
+	}
+
+	private updatePlaywrightScriptLifecycle(url: string, eventType: 'request' | 'response' | 'finished' | 'failed', latestOutcome: string): void {
+		const urlKey = this.toUrlKey(url);
+		const existing = this.playwrightScriptLifecycleByUrl.get(urlKey) ?? { requestCount: 0, responseCount: 0, finishedCount: 0, failedCount: 0, latestOutcome: 'unseen' };
+		if (eventType === 'request') {
+			existing.requestCount++;
+		} else if (eventType === 'response') {
+			existing.responseCount++;
+		} else if (eventType === 'finished') {
+			existing.finishedCount++;
+		} else {
+			existing.failedCount++;
+		}
+
+		existing.latestOutcome = latestOutcome;
+		this.playwrightScriptLifecycleByUrl.set(urlKey, existing);
+	}
+
+	private toUrlKey(url: string): string {
+		try {
+			const parsed = new URL(url);
+			return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+		} catch {
+			return url;
+		}
+	}
+
+	private setLatestScriptResponseSummary(urlKey: string, summary: string): void {
+		this.setLatestSummary(this.scriptResponseSummariesByUrl, urlKey, summary);
+	}
+
+	private setLatestSummary(summaryMap: Map<string, string>, url: string, summary: string): void {
+		if (summaryMap.has(url)) {
+			summaryMap.delete(url);
+		} else if (summaryMap.size >= PlaywrightDriver.recentSummaryCapacity) {
+			const oldestUrl = summaryMap.keys().next().value;
+			if (oldestUrl) {
+				summaryMap.delete(oldestUrl);
+			}
+		}
+
+		summaryMap.set(url, summary);
+	}
+
+	private getElapsedSinceDiagnosticsStartMs(): number {
+		return Math.max(0, Date.now() - this.diagnosticsStartTimeMs);
+	}
+
+	private rememberFirstSeenTimestamp(firstSeenMap: Map<string, number>, urlKey: string): void {
+		if (firstSeenMap.has(urlKey)) {
+			return;
+		}
+
+		firstSeenMap.set(urlKey, this.getElapsedSinceDiagnosticsStartMs());
+	}
+
+	private toErrorMessage(error: unknown): string {
+		if (error instanceof Error) {
+			return error.message;
+		}
+
+		return String(error);
+	}
+
+	private normalizeFailureText(value: string): string {
+		return value
+			.replace(/\s+after\s+\d+ms\b/gi, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	private pushRecentRequestFailure(entry: string): void {
+		this.totalRecordedRequestFailures++;
+		this.recentRequestFailures.push(entry);
+		if (this.recentRequestFailures.length > PlaywrightDriver.recentRequestFailureCapacity) {
+			this.droppedRecentRequestFailures++;
+			this.recentRequestFailures.shift();
+		}
+	}
+
+	private pushRecentScriptResponse(entry: string): void {
+		this.totalRecordedScriptResponses++;
+		this.recentScriptResponses.push(entry);
+		if (this.recentScriptResponses.length > PlaywrightDriver.recentScriptResponseCapacity) {
+			this.droppedRecentScriptResponses++;
+			this.recentScriptResponses.shift();
+		}
+	}
+
+	private pushRecentCdpScriptLoad(entry: string): void {
+		this.totalRecordedCdpScriptLoads++;
+		this.recentCdpScriptLoads.push(entry);
+		if (this.recentCdpScriptLoads.length > PlaywrightDriver.recentCdpScriptLoadCapacity) {
+			this.droppedRecentCdpScriptLoads++;
+			this.recentCdpScriptLoads.shift();
+		}
+	}
+
+	private pushRecentConsoleError(entry: string): void {
+		this.totalRecordedConsoleErrors++;
+		this.recentConsoleErrors.push(entry);
+		if (this.recentConsoleErrors.length > PlaywrightDriver.recentConsoleErrorCapacity) {
+			this.droppedRecentConsoleErrors++;
+			this.recentConsoleErrors.shift();
+		}
+	}
+
+	private async attachCdpNetworkDiagnostics(page: playwright.Page): Promise<void> {
+		if (this.cdpNetworkDiagnosticsAttached) {
+			return;
+		}
+		this.cdpNetworkDiagnosticsAttached = true;
+		this.cdpNetworkDiagnosticsAttachStartedAtMs = this.getElapsedSinceDiagnosticsStartMs();
+		this.cdpNetworkDiagnosticsAttachCompletedAtMs = undefined;
+		this.cdpNetworkDiagnosticsAttachError = undefined;
+
+		try {
+			const cdpSession = await page.context().newCDPSession(page);
+			await cdpSession.send('Network.enable');
+			this.cdpNetworkDiagnosticsAttachCompletedAtMs = this.getElapsedSinceDiagnosticsStartMs();
+
+			cdpSession.on('Network.requestWillBeSent', event => {
+				if (event.request?.url) {
+					this.cdpRequestUrls.set(event.requestId, event.request.url);
+				}
+				if (event.type) {
+					this.cdpRequestResourceTypes.set(event.requestId, event.type);
+				}
+				if (event.request?.url && event.type === 'Script' && event.request.url.startsWith('vscode-file://')) {
+					this.updateCdpScriptLifecycle(event.request.url, 'requestWillBeSent', 'requestWillBeSent');
+				}
+			});
+
+			cdpSession.on('Network.loadingFailed', event => {
+				const url = this.cdpRequestUrls.get(event.requestId) ?? 'unknown-url';
+				const resourceType = event.type ?? this.cdpRequestResourceTypes.get(event.requestId);
+				const details = [
+					event.blockedReason ? `blockedReason=${event.blockedReason}` : undefined,
+					event.canceled ? 'canceled=true' : undefined,
+					resourceType ? `resourceType=${resourceType}` : undefined,
+					event.corsErrorStatus?.corsError ? `corsError=${event.corsErrorStatus.corsError}` : undefined,
+					event.corsErrorStatus?.failedParameter ? `corsParam=${event.corsErrorStatus.failedParameter}` : undefined
+				].filter(Boolean).join(' ');
+				const entry = this.toFailureEntry(`[cdp] ${event.errorText}`, url, details);
+				this.pushRecentRequestFailure(entry);
+				if (resourceType === 'Script' && url.startsWith('vscode-file://')) {
+					this.updateCdpScriptLifecycle(url, 'loadingFailed', 'loadingFailed');
+				}
+				this.cdpRequestUrls.delete(event.requestId);
+				this.cdpRequestResourceTypes.delete(event.requestId);
+			});
+
+			cdpSession.on('Network.loadingFinished', event => {
+				const url = this.cdpRequestUrls.get(event.requestId);
+				const resourceType = this.cdpRequestResourceTypes.get(event.requestId);
+				this.cdpRequestUrls.delete(event.requestId);
+				this.cdpRequestResourceTypes.delete(event.requestId);
+
+				if (!url || resourceType !== 'Script' || !url.startsWith('vscode-file://')) {
+					return;
+				}
+
+				this.updateCdpScriptLifecycle(url, 'loadingFinished', 'loadingFinished');
+				const entry = this.toCdpScriptLoadEntry(url, event.encodedDataLength);
+				this.pushRecentCdpScriptLoad(entry);
+			});
+		} catch (error) {
+			this.cdpNetworkDiagnosticsAttachError = this.toErrorMessage(error);
+			// CDP diagnostics are best effort
+		}
+	}
 
 	async startCDP() {
 		if (this._cdpSession) {

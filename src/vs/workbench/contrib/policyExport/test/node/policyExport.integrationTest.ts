@@ -13,7 +13,13 @@ import { dirname, join } from '../../../../../base/common/path.js';
 import { FileAccess } from '../../../../../base/common/network.js';
 import * as util from 'util';
 
-const exec = util.promisify(cp.exec);
+const execFile = util.promisify(cp.execFile);
+const policyExportRetries = 3;
+const policyExportRetryDelayMs = 500;
+const policyExportAttemptTimeoutMs = 90000;
+const policyExportTestTimeoutMs = 300000;
+const policyExportFileWaitTimeoutMs = 5000;
+const policyExportFileWaitIntervalMs = 200;
 
 suite('PolicyExport Integration Tests', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -25,7 +31,7 @@ suite('PolicyExport Integration Tests', () => {
 		}
 
 		// This test launches VS Code with --export-policy-data flag, so it takes longer
-		this.timeout(60000);
+		this.timeout(policyExportTestTimeoutMs);
 
 		// Get the repository root (FileAccess.asFileUri('') points to the 'out' directory)
 		const rootPath = dirname(FileAccess.asFileUri('').fsPath);
@@ -38,11 +44,7 @@ suite('PolicyExport Integration Tests', () => {
 				? join(rootPath, 'scripts', 'code.bat')
 				: join(rootPath, 'scripts', 'code.sh');
 
-			// Skip prelaunch to avoid redownloading electron while the parent VS Code is using it
-			await exec(`"${scriptPath}" --export-policy-data="${tempFile}"`, {
-				cwd: rootPath,
-				env: { ...process.env, VSCODE_SKIP_PRELAUNCH: '1' }
-			});
+			await runPolicyExportWithRetry(scriptPath, tempFile, rootPath);
 
 			// Read both files
 			const [exportedContent, checkedInContent] = await Promise.all([
@@ -66,3 +68,53 @@ suite('PolicyExport Integration Tests', () => {
 		}
 	});
 });
+
+async function runPolicyExportWithRetry(scriptPath: string, targetPath: string, cwd: string): Promise<void> {
+	let lastError: Error | undefined;
+
+	for (let attempt = 1; attempt <= policyExportRetries; attempt++) {
+		try {
+			await fs.unlink(targetPath).catch(() => undefined);
+			const execResult = await execFile(scriptPath, [
+				`--export-policy-data=${targetPath}`,
+				'--disable-extensions',
+				'--disable-gpu',
+				'--skip-welcome'
+			], {
+				cwd,
+				env: { ...process.env, VSCODE_SKIP_PRELAUNCH: '1' },
+				timeout: policyExportAttemptTimeoutMs
+			});
+
+			const fileCreated = await waitForFile(targetPath, policyExportFileWaitTimeoutMs, policyExportFileWaitIntervalMs);
+			if (fileCreated) {
+				return;
+			}
+
+			lastError = new Error(`Policy export command completed but did not produce output file '${targetPath}' (attempt ${attempt}/${policyExportRetries}). stdout='${execResult.stdout.trim()}' stderr='${execResult.stderr.trim()}'`);
+		} catch (error) {
+			lastError = error instanceof Error ? error : new Error(String(error));
+		}
+
+		if (attempt < policyExportRetries) {
+			await new Promise<void>(resolve => setTimeout(resolve, policyExportRetryDelayMs));
+		}
+	}
+
+	throw lastError ?? new Error(`Policy export failed after ${policyExportRetries} attempts.`);
+}
+
+async function waitForFile(path: string, timeoutMs: number, intervalMs: number): Promise<boolean> {
+	const startedAt = Date.now();
+
+	while ((Date.now() - startedAt) < timeoutMs) {
+		try {
+			await fs.access(path);
+			return true;
+		} catch {
+			await new Promise<void>(resolve => setTimeout(resolve, intervalMs));
+		}
+	}
+
+	return false;
+}

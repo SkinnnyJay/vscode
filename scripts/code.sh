@@ -13,6 +13,10 @@ else
 	fi
 fi
 
+source "$ROOT/scripts/electron-launcher-utils.sh"
+
+maybe_reexec_with_xvfb "$0" "$@"
+
 function code() {
 	cd "$ROOT"
 
@@ -28,6 +32,10 @@ function code() {
 	# Get electron, compile, built-in extensions
 	if [[ -z "${VSCODE_SKIP_PRELAUNCH}" ]]; then
 		node build/lib/preLaunch.ts
+	fi
+
+	if ! ensure_electron_binary_with_retry "$CODE"; then
+		exit 1
 	fi
 
 	# Manage built-in extensions

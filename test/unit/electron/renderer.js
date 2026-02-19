@@ -68,7 +68,7 @@ const path = require('path');
 const glob = require('glob');
 const util = require('util');
 const coverage = require('../coverage');
-const { pathToFileURL } = require('url');
+const { fileURLToPath, pathToFileURL } = require('url');
 
 // Disabled custom inspect. See #38847
 if (util.inspect && util.inspect['defaultOptions']) {
@@ -90,6 +90,7 @@ Object.assign(globalThis, {
 
 const IS_CI = !!process.env.BUILD_ARTIFACTSTAGINGDIRECTORY || !!process.env.GITHUB_WORKSPACE;
 const _tests_glob = '**/test/**/*.test.js';
+const ESM_DIAGNOSTIC_SCHEMA_VERSION = 1;
 
 
 /**
@@ -119,12 +120,360 @@ function initLoadFn(opts) {
 	const baseUrl = pathToFileURL(path.join(__dirname, `../../../${outdir}/`));
 	globalThis._VSCODE_FILE_ROOT = baseUrl.href;
 
+	const staticImportRegex = /(?:import\s+(?:[^'"]+from\s*)?["']([^"']+)["'])|(?:export\s+[^'"]*from\s*["']([^"']+)["'])/g;
+	const seenDependencyDiagnostics = new Set();
+	const dependencyDiagnosticsByUrl = new Map();
+
+	function extractDirectImportSpecifiers(sourceText) {
+		staticImportRegex.lastIndex = 0;
+		const matches = [];
+		let match;
+		while ((match = staticImportRegex.exec(sourceText)) !== null) {
+			const specifier = match[1] || match[2];
+			if (specifier) {
+				matches.push(specifier);
+			}
+		}
+		return [...new Set(matches)];
+	}
+
+	function resolveImportSpecifier(specifier, parentUrl) {
+		if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(specifier)) {
+			return specifier;
+		}
+		if (specifier.startsWith('.') || specifier.startsWith('/')) {
+			return new URL(specifier, parentUrl).href;
+		}
+		return specifier;
+	}
+
+	function deriveFailureFamily(resolved) {
+		if (!resolved.startsWith('file://')) {
+			return 'non-file';
+		}
+
+		try {
+			const path = fileURLToPath(resolved);
+			const marker = `${require('path').sep}out${require('path').sep}`;
+			const outIndex = path.indexOf(marker);
+			if (outIndex === -1) {
+				return 'file-outside-out';
+			}
+
+			const relative = path.slice(outIndex + marker.length).replace(/\\/g, '/');
+			const segments = relative.split('/').filter(Boolean);
+			if (segments.length >= 3) {
+				return segments.slice(0, 3).join('/');
+			}
+			if (segments.length > 0) {
+				return segments.join('/');
+			}
+
+			return 'file-empty';
+		} catch {
+			return 'file-parse-error';
+		}
+	}
+
+	function classifyResolvedSpecifier(resolved) {
+		if (resolved.startsWith('file://')) {
+			return 'file-url';
+		}
+
+		if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(resolved)) {
+			return 'other-url';
+		}
+
+		return 'bare-specifier';
+	}
+
+	async function getImportFetchDiagnostics(url) {
+		let fetchStatus = 'unavailable';
+		let fetchOk = false;
+		let fetchedBytes = 0;
+
+		try {
+			const response = await fetch(url);
+			fetchStatus = String(response.status);
+			fetchOk = response.ok;
+			if (response.ok) {
+				const text = await response.text();
+				fetchedBytes = text.length;
+			}
+		} catch (fetchError) {
+			fetchStatus = String(fetchError);
+		}
+
+		return { fetchStatus, fetchOk, fetchedBytes };
+	}
+
+	function getFileImportDiagnostics(url) {
+		let existsOnDisk = false;
+		let onDiskBytes = 0;
+
+		if (!url.startsWith('file://')) {
+			return { existsOnDisk, onDiskBytes };
+		}
+
+		try {
+			const path = fileURLToPath(url);
+			existsOnDisk = fs.existsSync(path);
+			if (existsOnDisk) {
+				onDiskBytes = fs.statSync(path).size;
+			}
+		} catch {
+			existsOnDisk = false;
+			onDiskBytes = 0;
+		}
+
+		return { existsOnDisk, onDiskBytes };
+	}
+
+	function computeByteDelta(fetchOk, fetchedBytes, onDiskBytes) {
+		if (!fetchOk || onDiskBytes <= 0) {
+			return null;
+		}
+
+		return fetchedBytes - onDiskBytes;
+	}
+
+	function classifyByteDelta(fetchOk, onDiskBytes, fetchDiskByteDelta) {
+		if (!fetchOk) {
+			return 'fetch-not-ok';
+		}
+		if (onDiskBytes <= 0) {
+			return 'disk-bytes-unavailable';
+		}
+		if (fetchDiskByteDelta === 0) {
+			return 'byte-match';
+		}
+		return 'byte-mismatch';
+	}
+
+	function classifyImportError(error) {
+		const value = String(error);
+		if (value.includes('Failed to fetch dynamically imported module')) {
+			return 'dynamic-import-fetch-failure';
+		}
+
+		return 'other';
+	}
+
+	function toSortedCountEntries(counts) {
+		return Object.entries(counts)
+			.sort((left, right) => {
+				if (right[1] !== left[1]) {
+					return right[1] - left[1];
+				}
+
+				return left[0].localeCompare(right[0]);
+			})
+			.map(([key, count]) => ({ key, count }));
+	}
+
+	function toPercent(part, total) {
+		if (!total) {
+			return 0;
+		}
+
+		return Math.round((part / total) * 10000) / 100;
+	}
+
+	function computeStableSignature(value) {
+		let hash = 2166136261;
+		for (let index = 0; index < value.length; index++) {
+			hash ^= value.charCodeAt(index);
+			hash = Math.imul(hash, 16777619);
+		}
+
+		return (hash >>> 0).toString(16).padStart(8, '0');
+	}
+
+	async function logDirectImportDiagnostics(moduleId, moduleUrl) {
+		if (seenDependencyDiagnostics.has(moduleUrl)) {
+			return dependencyDiagnosticsByUrl.get(moduleUrl);
+		}
+		seenDependencyDiagnostics.add(moduleUrl);
+
+		try {
+			const response = await fetch(moduleUrl);
+			if (!response.ok) {
+				console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
+					module: moduleId,
+					url: moduleUrl,
+					error: `dependency source fetch failed (${response.status})`
+				}));
+				return undefined;
+			}
+
+			const source = await response.text();
+			const allSpecifiers = extractDirectImportSpecifiers(source);
+			const specifierLimit = 25;
+			const failureDetailsLimit = 12;
+			const specifiers = allSpecifiers.slice(0, specifierLimit);
+			const failures = [];
+			const failureFamilies = Object.create(null);
+			const failureKinds = Object.create(null);
+			const failureResolvedKinds = Object.create(null);
+			const failureFetchStatuses = Object.create(null);
+			const failureFetchOk = Object.create(null);
+			const failureByteDeltaKinds = Object.create(null);
+			const attemptedResolvedKinds = Object.create(null);
+			let successfulDependencyImportCount = 0;
+			for (const specifier of specifiers) {
+				const resolved = resolveImportSpecifier(specifier, moduleUrl);
+				const resolvedKind = classifyResolvedSpecifier(resolved);
+				attemptedResolvedKinds[resolvedKind] = (attemptedResolvedKinds[resolvedKind] ?? 0) + 1;
+
+				try {
+					await import(resolved);
+					successfulDependencyImportCount++;
+				} catch (depErr) {
+					const fileDiagnostics = getFileImportDiagnostics(resolved);
+					const fetchDiagnostics = await getImportFetchDiagnostics(resolved);
+					const errorKind = classifyImportError(depErr);
+					const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
+					const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
+
+					if (failures.length < failureDetailsLimit) {
+						failures.push({
+							module: moduleId,
+							parentUrl: moduleUrl,
+							specifier,
+							resolved,
+							resolvedKind,
+							error: String(depErr),
+							errorKind,
+							...fileDiagnostics,
+							...fetchDiagnostics,
+							fetchDiskByteDelta,
+							byteDeltaKind
+						});
+					}
+					const family = deriveFailureFamily(resolved);
+					failureFamilies[family] = (failureFamilies[family] ?? 0) + 1;
+					failureKinds[errorKind] = (failureKinds[errorKind] ?? 0) + 1;
+					failureResolvedKinds[resolvedKind] = (failureResolvedKinds[resolvedKind] ?? 0) + 1;
+					failureFetchStatuses[fetchDiagnostics.fetchStatus] = (failureFetchStatuses[fetchDiagnostics.fetchStatus] ?? 0) + 1;
+					failureFetchOk[String(fetchDiagnostics.fetchOk)] = (failureFetchOk[String(fetchDiagnostics.fetchOk)] ?? 0) + 1;
+					failureByteDeltaKinds[byteDeltaKind] = (failureByteDeltaKinds[byteDeltaKind] ?? 0) + 1;
+				}
+			}
+
+			if (failures.length > 0) {
+				const dependencyAttemptedCount = specifiers.length;
+				const totalFailedDependencyImportCount = Object.values(failureKinds).reduce((sum, count) => sum + count, 0);
+				const dependencyFailureRatePercent = toPercent(totalFailedDependencyImportCount, dependencyAttemptedCount);
+				const dependencySuccessRatePercent = toPercent(successfulDependencyImportCount, dependencyAttemptedCount);
+				const failureFamilyEntries = toSortedCountEntries(failureFamilies)
+					.map(entry => ({ family: entry.key, count: entry.count }));
+				const failureKindEntries = toSortedCountEntries(failureKinds)
+					.map(entry => ({ errorKind: entry.key, count: entry.count }));
+				const failureResolvedKindEntries = toSortedCountEntries(failureResolvedKinds)
+					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
+				const failureFetchStatusEntries = toSortedCountEntries(failureFetchStatuses)
+					.map(entry => ({ fetchStatus: entry.key, count: entry.count }));
+				const failureFetchOkEntries = toSortedCountEntries(failureFetchOk)
+					.map(entry => ({ fetchOk: entry.key === 'true', count: entry.count }));
+				const failureByteDeltaKindEntries = toSortedCountEntries(failureByteDeltaKinds)
+					.map(entry => ({ byteDeltaKind: entry.key, count: entry.count }));
+				const attemptedResolvedKindEntries = toSortedCountEntries(attemptedResolvedKinds)
+					.map(entry => ({ resolvedKind: entry.key, count: entry.count }));
+				const failureSignaturePayload = failures
+					.map(failure => `${failure.specifier}|${failure.resolved}|${failure.errorKind}|${failure.fetchStatus}|${failure.fetchOk}|${failure.fetchedBytes}|${failure.onDiskBytes}|${failure.byteDeltaKind}`)
+					.sort()
+					.join('||');
+				const failureSignature = computeStableSignature(failureSignaturePayload);
+
+				console.error('[ESM IMPORT FAILURE DEPS SUMMARY]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
+					module: moduleId,
+					url: moduleUrl,
+					totalSpecifierCount: allSpecifiers.length,
+					specifierCount: specifiers.length,
+					specifierLimit,
+					isSpecifierListTruncated: allSpecifiers.length > specifierLimit,
+					skippedSpecifierCount: allSpecifiers.length - specifiers.length,
+					failureDetailsLimit,
+					dependencyAttemptedCount,
+					successfulDependencyImportCount,
+					failedDependencyImportCount: totalFailedDependencyImportCount,
+					dependencySuccessRatePercent,
+					dependencyFailureRatePercent,
+					failureCount: totalFailedDependencyImportCount,
+					failureDetailsReturnedCount: failures.length,
+					failureDetailsDroppedCount: Math.max(0, totalFailedDependencyImportCount - failures.length),
+					failureFamilies,
+					failureFamilyEntries,
+					failureKinds,
+					failureKindEntries,
+					attemptedResolvedKinds,
+					attemptedResolvedKindEntries,
+					failureResolvedKinds,
+					failureResolvedKindEntries,
+					failureFetchStatuses,
+					failureFetchStatusEntries,
+					failureFetchOk,
+					failureFetchOkEntries,
+					failureByteDeltaKinds,
+					failureByteDeltaKindEntries,
+					failureSignature,
+					failures
+				}));
+
+				const summary = {
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
+					module: moduleId,
+					url: moduleUrl,
+					failureSignature,
+					failureCount: totalFailedDependencyImportCount,
+					failureDetailsReturnedCount: failures.length
+				};
+
+				dependencyDiagnosticsByUrl.set(moduleUrl, summary);
+				return summary;
+			}
+		} catch (diagnosticErr) {
+			console.error('[ESM IMPORT FAILURE DEPS]', JSON.stringify({
+				schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
+				module: moduleId,
+				url: moduleUrl,
+				error: String(diagnosticErr)
+			}));
+		}
+
+		return undefined;
+	}
+
 	// set loader
 	function importModules(modules) {
 		const moduleArray = Array.isArray(modules) ? modules : [modules];
 		const tasks = moduleArray.map(mod => {
 			const url = new URL(`./${mod}.js`, baseUrl).href;
-			return import(url).catch(err => {
+			return import(url).catch(async err => {
+				const fileDiagnostics = getFileImportDiagnostics(url);
+				const fetchDiagnostics = await getImportFetchDiagnostics(url);
+				const fetchDiskByteDelta = computeByteDelta(fetchDiagnostics.fetchOk, fetchDiagnostics.fetchedBytes, fileDiagnostics.onDiskBytes);
+				const byteDeltaKind = classifyByteDelta(fetchDiagnostics.fetchOk, fileDiagnostics.onDiskBytes, fetchDiskByteDelta);
+				const dependencyDiagnosticsSummary = await logDirectImportDiagnostics(mod, url);
+
+				console.error('[ESM IMPORT FAILURE]', JSON.stringify({
+					schemaVersion: ESM_DIAGNOSTIC_SCHEMA_VERSION,
+					module: mod,
+					url,
+					moduleFamily: deriveFailureFamily(url),
+					error: String(err),
+					errorKind: classifyImportError(err),
+					...fileDiagnostics,
+					...fetchDiagnostics,
+					fetchDiskByteDelta,
+					byteDeltaKind,
+					dependencySummarySchemaVersion: dependencyDiagnosticsSummary?.schemaVersion,
+					dependencyFailureSignature: dependencyDiagnosticsSummary?.failureSignature,
+					dependencyFailureCount: dependencyDiagnosticsSummary?.failureCount,
+					dependencyFailureDetailsReturnedCount: dependencyDiagnosticsSummary?.failureDetailsReturnedCount
+				}));
 				console.log(mod, url);
 				console.log(err);
 				_loaderErrors.push(err);

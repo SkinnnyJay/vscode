@@ -8,6 +8,10 @@ else
 	ROOT=$(dirname $(dirname $(readlink -f $0)))
 fi
 
+source "$ROOT/scripts/electron-launcher-utils.sh"
+
+maybe_reexec_with_xvfb "$0" "$@"
+
 cd $ROOT
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -20,6 +24,14 @@ else
 fi
 
 VSCODECRASHDIR=$ROOT/.build/crashes
+ELECTRON_TEST_ARGS=()
+DISABLE_DEV_SHM_WORKAROUND=${VSCODE_TEST_DISABLE_DEV_SHM_WORKAROUND:-0}
+
+# Headless Linux environments can hit /dev/shm pressure and fail dynamic imports.
+# Keep the mitigation on by default for tests, with an opt-out for local debugging.
+if [[ "$OSTYPE" != "darwin"* ]] && [[ "$DISABLE_DEV_SHM_WORKAROUND" != "1" ]]; then
+	ELECTRON_TEST_ARGS+=(--disable-dev-shm-usage)
+fi
 
 # Node modules
 test -d node_modules || npm i
@@ -29,15 +41,19 @@ if [[ -z "${VSCODE_SKIP_PRELAUNCH}" ]]; then
 	npm run electron
 fi
 
+if ! ensure_electron_binary_with_retry "$CODE"; then
+	exit 1
+fi
+
 # Unit Tests
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	cd $ROOT ; ulimit -n 4096 ; \
 		ELECTRON_ENABLE_LOGGING=1 \
 		"$CODE" \
-		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR "$@"
+		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR "${ELECTRON_TEST_ARGS[@]}" "$@"
 else
 	cd $ROOT ; \
 		ELECTRON_ENABLE_LOGGING=1 \
 		"$CODE" \
-		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR "$@"
+		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR "${ELECTRON_TEST_ARGS[@]}" "$@"
 fi

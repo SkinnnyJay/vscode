@@ -1,0 +1,1 @@
+2934	Pointer Dev	0000000000	93696717-8e00-4c9e-b6ac-3ac29191bd621771065073879	standard_start	0015ms	Heap: 206MB (used) 176MB (garbage) 2 (MajorGC) 22 (MinorGC) 120ms (GC duration)

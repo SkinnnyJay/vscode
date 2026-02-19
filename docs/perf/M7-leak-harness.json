@@ -1,0 +1,131 @@
+{
+  "timestamp": 1771074649482,
+  "iterations": 30,
+  "rssStart": 46743552,
+  "rssEnd": 62763008,
+  "rssGrowthBytes": 16019456,
+  "thresholdBytes": 52428800,
+  "passed": true,
+  "samples": [
+    {
+      "iteration": 0,
+      "rssBytes": 48971776
+    },
+    {
+      "iteration": 1,
+      "rssBytes": 50151424
+    },
+    {
+      "iteration": 2,
+      "rssBytes": 51200000
+    },
+    {
+      "iteration": 3,
+      "rssBytes": 51724288
+    },
+    {
+      "iteration": 4,
+      "rssBytes": 51724288
+    },
+    {
+      "iteration": 5,
+      "rssBytes": 54636544
+    },
+    {
+      "iteration": 6,
+      "rssBytes": 56340480
+    },
+    {
+      "iteration": 7,
+      "rssBytes": 60272640
+    },
+    {
+      "iteration": 8,
+      "rssBytes": 61059072
+    },
+    {
+      "iteration": 9,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 10,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 11,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 12,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 13,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 14,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 15,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 16,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 17,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 18,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 19,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 20,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 21,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 22,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 23,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 24,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 25,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 26,
+      "rssBytes": 62500864
+    },
+    {
+      "iteration": 27,
+      "rssBytes": 62763008
+    },
+    {
+      "iteration": 28,
+      "rssBytes": 62763008
+    },
+    {
+      "iteration": 29,
+      "rssBytes": 62763008
+    }
+  ]
+}

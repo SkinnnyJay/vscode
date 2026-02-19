@@ -1,0 +1,30 @@
+[
+  {
+    "label": "baseline-start",
+    "timestamp": 1771074649426,
+    "rssBytes": 46526464,
+    "heapUsedBytes": 4278192,
+    "heapTotalBytes": 5607424
+  },
+  {
+    "label": "after-chat-simulation",
+    "timestamp": 1771074649428,
+    "rssBytes": 49016832,
+    "heapUsedBytes": 5569224,
+    "heapTotalBytes": 7442432
+  },
+  {
+    "label": "after-indexer-simulation",
+    "timestamp": 1771074649433,
+    "rssBytes": 53342208,
+    "heapUsedBytes": 8759936,
+    "heapTotalBytes": 16617472
+  },
+  {
+    "label": "after-release",
+    "timestamp": 1771074649433,
+    "rssBytes": 53342208,
+    "heapUsedBytes": 8760408,
+    "heapTotalBytes": 16617472
+  }
+]

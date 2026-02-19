@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from 'child_process';
+import * as fs from 'fs';
 import { Application, Logger } from '../../../../automation';
 import { installAllHandlers } from '../../utils';
 
@@ -20,10 +21,14 @@ export function setup(logger: Logger) {
 		});
 
 		after(async function () {
-			const app = this.app as Application;
+			const app = this.app as Application | undefined;
+			const workspacePathOrFolder = app?.workspacePathOrFolder;
+			if (!workspacePathOrFolder || !fs.existsSync(workspacePathOrFolder)) {
+				return;
+			}
 
-			cp.execSync('git checkout . --quiet', { cwd: app.workspacePathOrFolder });
-			cp.execSync('git reset --hard HEAD --quiet', { cwd: app.workspacePathOrFolder });
+			cp.spawnSync('git', ['checkout', '.', '--quiet'], { cwd: workspacePathOrFolder });
+			cp.spawnSync('git', ['reset', '--hard', 'HEAD', '--quiet'], { cwd: workspacePathOrFolder });
 		});
 
 		// the heap snapshot fails to parse

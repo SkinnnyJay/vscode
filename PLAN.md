@@ -42,31 +42,31 @@ Success metrics:
 - Clean macOS/Linux/Windows dev build success rate ≥ 90% in CI.
 - First dev watch build completes without manual edits.
 Tasks:
-- [ ] - M0 - [repo] Fork `microsoft/vscode` into this repo (or subtree) and set upstream remote.
-- [ ] - M0 - [repo] Verify upstream tree lands (expects `src/`, `extensions/`, `product.json`, `package.json`).
-- [ ] - M0 - [repo] Add `upstream` remote and record upstream branch tracking.
-- [ ] - M0 - [docs] Document upstream merge strategy (cadence + rebase/merge policy).
-- [ ] - M0 - [docs] Add a short “merge playbook” with exact commands and conflict policy.
-- [ ] - M0 - [ci] Add CI check that reports upstream merge conflicts early.
-- [ ] - M0 - [ci] Add CI job to run smoke launch (`./scripts/code.sh`) on macOS/Linux.
-- [ ] - M0 - [core] Replace product branding in `product.json` (Pointer name/icons/URLs).
-- [ ] - M0 - [core] Replace product icons and ensure no VS Code/Cursor assets remain.
-- [ ] - M0 - [core] Update product strings (about dialog, app name, update URL).
-- [ ] - M0 - [docs] Add `pointer/BRANDING.md` describing allowed assets and forbidden trademarks.
-- [ ] - M0 - [docs] Add `SECURITY.md` and `CODE_OF_CONDUCT.md`.
-- [ ] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.
-- [ ] - M0 - [core] Point `product.json` at the chosen extension registry.
-- [ ] - M0 - [core] Add documentation for VSIX sideloading fallback.
-- [ ] - M0 - [core] Ensure `npm install` works on a clean machine.
-- [ ] - M0 - [core] Ensure `npm run watch` works and stays watching.
-- [ ] - M0 - [core] Ensure `./scripts/code.sh` and `./scripts/code.bat` launch a dev build.
-- [ ] - M0 - [ci] Add CI to build dev artifacts for macOS/Linux/Windows.
-- [ ] - M0 - [ci] Add CI to run unit tests and lint for Pointer-owned packages.
-- [ ] - M0 - [repo] Update `.gitignore` to include `scratchpad/` and local binaries.
-- [ ] - M0 - [repo] Add pre-commit guard to block large binaries/decompiled output.
-- [ ] - M0 - [docs] Add clean-room contribution rules.
-- [ ] - M0 - [perf] Baseline stock Code - OSS perf (startup, idle memory, typing latency) and set budgets.
-- [ ] - M0 - [perf] Capture baseline memory snapshots and store in `docs/perf/`.
+- [x] - M0 - [repo] Fork `microsoft/vscode` into this repo (or subtree) and set upstream remote.
+- [x] - M0 - [repo] Verify upstream tree lands (expects `src/`, `extensions/`, `product.json`, `package.json`).
+- [x] - M0 - [repo] Add `upstream` remote and record upstream branch tracking.
+- [x] - M0 - [docs] Document upstream merge strategy (cadence + rebase/merge policy).
+- [x] - M0 - [docs] Add a short “merge playbook” with exact commands and conflict policy.
+- [x] - M0 - [ci] Add CI check that reports upstream merge conflicts early.
+- [x] - M0 - [ci] Add CI job to run smoke launch (`./scripts/code.sh`) on macOS/Linux.
+- [x] - M0 - [core] Replace product branding in `product.json` (Pointer name/icons/URLs).
+- [x] - M0 - [core] Replace product icons and ensure no VS Code/Cursor assets remain.
+- [x] - M0 - [core] Update product strings (about dialog, app name, update URL).
+- [x] - M0 - [docs] Add `pointer/BRANDING.md` describing allowed assets and forbidden trademarks.
+- [x] - M0 - [docs] Add `SECURITY.md` and `CODE_OF_CONDUCT.md`.
+- [x] - M0 - [core] Decide extension distribution strategy (Open VSX/private/VSIX) and document it.
+- [x] - M0 - [core] Point `product.json` at the chosen extension registry.
+- [x] - M0 - [core] Add documentation for VSIX sideloading fallback.
+- [x] - M0 - [core] Ensure `npm install` works on a clean machine.
+- [x] - M0 - [core] Ensure `npm run watch` works and stays watching.
+- [x] - M0 - [core] Ensure `./scripts/code.sh` and `./scripts/code.bat` launch a dev build.
+- [x] - M0 - [ci] Add CI to build dev artifacts for macOS/Linux/Windows.
+- [x] - M0 - [ci] Add CI to run unit tests and lint for Pointer-owned packages.
+- [x] - M0 - [repo] Update `.gitignore` to include `scratchpad/` and local binaries.
+- [x] - M0 - [repo] Add pre-commit guard to block large binaries/decompiled output.
+- [x] - M0 - [docs] Add clean-room contribution rules.
+- [x] - M0 - [perf] Baseline stock Code - OSS perf (startup, idle memory, typing latency) and set budgets.
+- [x] - M0 - [perf] Capture baseline memory snapshots and store in `docs/perf/`.
 
 ### M1 — Pointer shell UX
 Criteria (exit):
@@ -76,22 +76,22 @@ Success metrics:
 - Pointer view container opens with one click from Activity Bar.
 - No Copilot commands visible in default command palette.
 Tasks:
-- [ ] - M1 - [extension] Add Activity Bar icon and “Pointer” view container.
-- [ ] - M1 - [extension] Create view container contribution in `package.json`.
-- [ ] - M1 - [extension] Wire placeholder view with empty state messaging.
-- [ ] - M1 - [extension] Register commands: Open Chat, Toggle Tab, Select Model, Open Settings.
-- [ ] - M1 - [extension] Add command palette labels and categories.
-- [ ] - M1 - [extension] Add status bar item showing active provider/model per surface.
-- [ ] - M1 - [extension] Add status item tooltip with surface-specific selection.
-- [ ] - M1 - [extension] Create settings categories: Providers, Models, Context, Tools and Safety, Prompts and Rules.
-- [ ] - M1 - [extension] Add settings schema defaults and descriptions.
-- [ ] - M1 - [extension] Add defaults UI for tab/chat/agent provider+model selection.
-- [ ] - M1 - [extension] Add settings validation and migration placeholder.
-- [ ] - M1 - [core] Hide/disable Copilot commands and menus by default.
-- [ ] - M1 - [core] Add setting to re-enable Copilot visibility.
-- [ ] - M1 - [extension] Add compatibility setting to re-enable Copilot if needed.
-- [ ] - M1 - [policy] Define workspace trust model for loading `.pointer/` config and rules.
-- [ ] - M1 - [docs] Document Pointer settings categories and defaults.
+- [x] - M1 - [extension] Add Activity Bar icon and “Pointer” view container.
+- [x] - M1 - [extension] Create view container contribution in `package.json`.
+- [x] - M1 - [extension] Wire placeholder view with empty state messaging.
+- [x] - M1 - [extension] Register commands: Open Chat, Toggle Tab, Select Model, Open Settings.
+- [x] - M1 - [extension] Add command palette labels and categories.
+- [x] - M1 - [extension] Add status bar item showing active provider/model per surface.
+- [x] - M1 - [extension] Add status item tooltip with surface-specific selection.
+- [x] - M1 - [extension] Create settings categories: Providers, Models, Context, Tools and Safety, Prompts and Rules.
+- [x] - M1 - [extension] Add settings schema defaults and descriptions.
+- [x] - M1 - [extension] Add defaults UI for tab/chat/agent provider+model selection.
+- [x] - M1 - [extension] Add settings validation and migration placeholder.
+- [x] - M1 - [core] Hide/disable Copilot commands and menus by default.
+- [x] - M1 - [core] Add setting to re-enable Copilot visibility.
+- [x] - M1 - [extension] Add compatibility setting to re-enable Copilot if needed.
+- [x] - M1 - [policy] Define workspace trust model for loading `.pointer/` config and rules.
+- [x] - M1 - [docs] Document Pointer settings categories and defaults.
 
 ### M2 — Model Router + Provider CLI adapters
 Criteria (exit):
@@ -101,28 +101,28 @@ Success metrics:
 - Router emits structured request plans for 100% of AI calls.
 - Provider cancellation resolves within 500ms (or documented CLI limitation).
 Tasks:
-- [ ] - M2 - [research] Spike CLI feasibility: codex/claude/opencode stdin/stdout, streaming, JSON, cancel.
-- [ ] - M2 - [research] Capture example transcripts for each CLI mode.
-- [ ] - M2 - [docs] Document CLI findings and kill non-viable adapters early.
-- [ ] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).
-- [ ] - M2 - [sidecar] Define config schema for router defaults and policies.
-- [ ] - M2 - [sidecar] Implement resolution order (workspace overrides → user overrides → defaults).
-- [ ] - M2 - [extension] Expose stable internal API for UI surfaces.
-- [ ] - M2 - [extension] Add router client with request/response types.
-- [ ] - M2 - [sidecar] Implement prompt assembly (system, rules, pinned, retrieved, user, tools).
-- [ ] - M2 - [sidecar] Add prompt part ordering tests.
-- [ ] - M2 - [sidecar] Add hard token budgets per surface with explainability data.
-- [ ] - M2 - [extension] Render “context sent” panel from router plan.
-- [ ] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
-- [ ] - M2 - [sidecar] Add provider health checks, missing-binary detection, and “Test provider”.
-- [ ] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
-- [ ] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
-- [ ] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
-- [ ] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
-- [ ] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
-- [ ] - M2 - [sidecar] Implement OpenCode adapter with JSON/table output support.
-- [ ] - M2 - [sidecar] Add OpenCode adapter unit tests (JSON mode).
-- [ ] - M2 - [sidecar] Decide on ACP compatibility layer and document decision.
+- [x] - M2 - [research] Spike CLI feasibility: codex/claude/opencode stdin/stdout, streaming, JSON, cancel.
+- [x] - M2 - [research] Capture example transcripts for each CLI mode.
+- [x] - M2 - [docs] Document CLI findings and kill non-viable adapters early.
+- [x] - M2 - [sidecar] Define router contract (surface, provider, model, template, policy).
+- [x] - M2 - [sidecar] Define config schema for router defaults and policies.
+- [x] - M2 - [sidecar] Implement resolution order (workspace overrides → user overrides → defaults).
+- [x] - M2 - [extension] Expose stable internal API for UI surfaces.
+- [x] - M2 - [extension] Add router client with request/response types.
+- [x] - M2 - [sidecar] Implement prompt assembly (system, rules, pinned, retrieved, user, tools).
+- [x] - M2 - [sidecar] Add prompt part ordering tests.
+- [x] - M2 - [sidecar] Add hard token budgets per surface with explainability data.
+- [x] - M2 - [extension] Render “context sent” panel from router plan.
+- [x] - M2 - [sidecar] Add provider capability model (tab/tools/json/long-context).
+- [x] - M2 - [sidecar] Add provider health checks, missing-binary detection, and “Test provider”.
+- [x] - M2 - [sidecar] Add provider error classification (missing binary, auth, rate limit).
+- [x] - M2 - [sidecar] Implement Codex CLI adapter with streaming + cancellation.
+- [x] - M2 - [sidecar] Add Codex adapter unit tests (streaming + cancel).
+- [x] - M2 - [sidecar] Implement Claude Code adapter with streaming + cancellation.
+- [x] - M2 - [sidecar] Add Claude adapter unit tests (streaming + cancel).
+- [x] - M2 - [sidecar] Implement OpenCode adapter with JSON/table output support.
+- [x] - M2 - [sidecar] Add OpenCode adapter unit tests (JSON mode).
+- [x] - M2 - [sidecar] Decide on ACP compatibility layer and document decision.
 
 ### M3 — Tab completion MVP
 Criteria (exit):
@@ -131,16 +131,16 @@ Success metrics:
 - p95 suggestion latency < 500ms on warm cache.
 - Cancellation success rate ≥ 95% within 200ms.
 Tasks:
-- [ ] - M3 - [extension] Implement inline completion provider (ghost text).
-- [ ] - M3 - [extension] Add provider request plumbing to router for tab surface.
-- [ ] - M3 - [extension] Support accept with Tab and cancel on Escape/typing.
-- [ ] - M3 - [extension] Handle multi-cursor safely (best-effort in MVP).
-- [ ] - M3 - [extension+sidecar] Add debounce strategy and end-to-end cancellation wiring.
-- [ ] - M3 - [sidecar] Add local cache keyed by uri/position/nearby text/provider/model/rules.
-- [ ] - M3 - [extension] Add settings: enable/disable, default provider/model, max latency.
-- [ ] - M3 - [sidecar] Enforce privacy: send only necessary snippets by default.
-- [ ] - M3 - [tests] Add basic tab completion integration test (happy path + cancel).
-- [ ] - M3 - [tests] Add perf smoke test for tab latency budget.
+- [x] - M3 - [extension] Implement inline completion provider (ghost text).
+- [x] - M3 - [extension] Add provider request plumbing to router for tab surface.
+- [x] - M3 - [extension] Support accept with Tab and cancel on Escape/typing.
+- [x] - M3 - [extension] Handle multi-cursor safely (best-effort in MVP).
+- [x] - M3 - [extension+sidecar] Add debounce strategy and end-to-end cancellation wiring.
+- [x] - M3 - [sidecar] Add local cache keyed by uri/position/nearby text/provider/model/rules.
+- [x] - M3 - [extension] Add settings: enable/disable, default provider/model, max latency.
+- [x] - M3 - [sidecar] Enforce privacy: send only necessary snippets by default.
+- [x] - M3 - [tests] Add basic tab completion integration test (happy path + cancel).
+- [x] - M3 - [tests] Add perf smoke test for tab latency budget.
 
 ### M4 — Chat + Agent edits MVP
 Criteria (exit):
@@ -150,24 +150,24 @@ Success metrics:
 - 100% of agent edits go through diff-first apply flow.
 - Tool gating prevents silent terminal/fs/network actions.
 Tasks:
-- [ ] - M4 - [extension] Create chat view container and session list.
-- [ ] - M4 - [extension] Add new-session action and session rename/delete.
-- [ ] - M4 - [extension] Implement message list rendering with streaming updates.
-- [ ] - M4 - [extension] Add prompt composer input with send/cancel.
-- [ ] - M4 - [extension] Add attach file/selection and pin context actions.
-- [ ] - M4 - [extension] Add context chips UI with remove action.
-- [ ] - M4 - [extension] Add provider/model selector for chat.
-- [ ] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
-- [ ] - M4 - [sidecar] Add chat request plan logging and trace IDs.
-- [ ] - M4 - [sidecar] Define patch schema and diff-first agent response format.
-- [ ] - M4 - [extension] Render per-file diff view with apply/reject/apply all.
-- [ ] - M4 - [extension] Add apply summary banner and conflict messaging.
-- [ ] - M4 - [extension] Track and show changed files with rationale.
-- [ ] - M4 - [sidecar] Gate terminal tool (confirm-by-default or disabled).
-- [ ] - M4 - [sidecar] Gate filesystem edits to diff apply only.
-- [ ] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).
-- [ ] - M4 - [policy] Add prompt injection defense strategy for tools and patches.
-- [ ] - M4 - [tests] Add agent patch apply tests (apply/reject/conflict).
+- [x] - M4 - [extension] Create chat view container and session list.
+- [x] - M4 - [extension] Add new-session action and session rename/delete.
+- [x] - M4 - [extension] Implement message list rendering with streaming updates.
+- [x] - M4 - [extension] Add prompt composer input with send/cancel.
+- [x] - M4 - [extension] Add attach file/selection and pin context actions.
+- [x] - M4 - [extension] Add context chips UI with remove action.
+- [x] - M4 - [extension] Add provider/model selector for chat.
+- [x] - M4 - [extension+sidecar] Implement chat request/stream protocol over router.
+- [x] - M4 - [sidecar] Add chat request plan logging and trace IDs.
+- [x] - M4 - [sidecar] Define patch schema and diff-first agent response format.
+- [x] - M4 - [extension] Render per-file diff view with apply/reject/apply all.
+- [x] - M4 - [extension] Add apply summary banner and conflict messaging.
+- [x] - M4 - [extension] Track and show changed files with rationale.
+- [x] - M4 - [sidecar] Gate terminal tool (confirm-by-default or disabled).
+- [x] - M4 - [sidecar] Gate filesystem edits to diff apply only.
+- [x] - M4 - [sidecar] Gate network tool (disabled or confirm-by-default).
+- [x] - M4 - [policy] Add prompt injection defense strategy for tools and patches.
+- [x] - M4 - [tests] Add agent patch apply tests (apply/reject/conflict).
 
 ### M5 — Context engine v1
 Criteria (exit):
@@ -176,15 +176,15 @@ Success metrics:
 - Indexed workspace updates reflect changes without full reindex.
 - Token estimation shown for all context chunks.
 Tasks:
-- [ ] - M5 - [sidecar] Implement file discovery respecting `.gitignore` and Pointer excludes.
-- [ ] - M5 - [sidecar] Add incremental updates via watcher-based indexing.
-- [ ] - M5 - [sidecar] Store metadata in a local DB (embeddings optional for MVP).
-- [ ] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.
-- [ ] - M5 - [sidecar] Add optional embeddings retrieval if configured.
-- [ ] - M5 - [extension] Add pinned context list per chat.
-- [ ] - M5 - [extension] Add workspace exclude UI and `.pointer/excludes` support.
-- [ ] - M5 - [extension] Show token estimate per context chunk.
-- [ ] - M5 - [tests] Add context retrieval unit tests (lexical + dedupe).
+- [x] - M5 - [sidecar] Implement file discovery respecting `.gitignore` and Pointer excludes.
+- [x] - M5 - [sidecar] Add incremental updates via watcher-based indexing.
+- [x] - M5 - [sidecar] Store metadata in a local DB (embeddings optional for MVP).
+- [x] - M5 - [sidecar] Implement lexical retrieval and context dedupe/merge.
+- [x] - M5 - [sidecar] Add optional embeddings retrieval if configured.
+- [x] - M5 - [extension] Add pinned context list per chat.
+- [x] - M5 - [extension] Add workspace exclude UI and `.pointer/excludes` support.
+- [x] - M5 - [extension] Show token estimate per context chunk.
+- [x] - M5 - [tests] Add context retrieval unit tests (lexical + dedupe).
 
 ### M6 — Rules + Hooks + MCP v1
 Criteria (exit):
@@ -193,16 +193,16 @@ Success metrics:
 - 100% of requests show applied rules list.
 - Hook timeouts enforced with safe failure.
 Tasks:
-- [ ] - M6 - [sidecar] Implement `.pointer/rules/` loader.
-- [ ] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
-- [ ] - M6 - [extension] Display applied rules in UI.
-- [ ] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
-- [ ] - M6 - [sidecar] Run hooks sandboxed with timeouts.
-- [ ] - M6 - [sidecar] Allow hooks to block, redact, or modify prompts (policy-limited).
-- [ ] - M6 - [sidecar] Implement MCP client to connect to local servers.
-- [ ] - M6 - [sidecar] Add tool allowlist per workspace.
-- [ ] - M6 - [extension] Add UI for MCP servers, tools, and permissions.
-- [ ] - M6 - [tests] Add hook timeout and failure-mode tests.
+- [x] - M6 - [sidecar] Implement `.pointer/rules/` loader.
+- [x] - M6 - [sidecar] Add rules precedence (global → workspace → session override).
+- [x] - M6 - [extension] Display applied rules in UI.
+- [x] - M6 - [sidecar] Implement hook events (pre/post prompt, tool, patch, tab).
+- [x] - M6 - [sidecar] Run hooks sandboxed with timeouts.
+- [x] - M6 - [sidecar] Allow hooks to block, redact, or modify prompts (policy-limited).
+- [x] - M6 - [sidecar] Implement MCP client to connect to local servers.
+- [x] - M6 - [sidecar] Add tool allowlist per workspace.
+- [x] - M6 - [extension] Add UI for MCP servers, tools, and permissions.
+- [x] - M6 - [tests] Add hook timeout and failure-mode tests.
 
 ### M7 — Performance hardening
 Criteria (exit):
@@ -211,15 +211,15 @@ Success metrics:
 - Budgets (set in M0) are met in perf runs.
 - Leak harness shows bounded memory after repeated agent ops.
 Tasks:
-- [ ] - M7 - [sidecar] Instrument request latency per surface and cancellation success.
-- [ ] - M7 - [sidecar] Track time-to-first-token for chat.
-- [ ] - M7 - [sidecar] Measure indexer CPU/memory and log locally (opt-in).
-- [ ] - M7 - [perf] Capture baseline memory snapshots after key scenarios.
-- [ ] - M7 - [perf] Build automated leak test harness and scenario runner.
-- [ ] - M7 - [core] Lazy-load heavy AI components.
-- [ ] - M7 - [core] Ensure indexer runs off UI critical path.
-- [ ] - M7 - [sidecar] Add backpressure on provider requests.
-- [ ] - M7 - [perf] Add perf regression thresholds to CI.
+- [x] - M7 - [sidecar] Instrument request latency per surface and cancellation success.
+- [x] - M7 - [sidecar] Track time-to-first-token for chat.
+- [x] - M7 - [sidecar] Measure indexer CPU/memory and log locally (opt-in).
+- [x] - M7 - [perf] Capture baseline memory snapshots after key scenarios.
+- [x] - M7 - [perf] Build automated leak test harness and scenario runner.
+- [x] - M7 - [core] Lazy-load heavy AI components.
+- [x] - M7 - [core] Ensure indexer runs off UI critical path.
+- [x] - M7 - [sidecar] Add backpressure on provider requests.
+- [x] - M7 - [perf] Add perf regression thresholds to CI.
 
 ### M8 — Parity polish
 Criteria (exit):
@@ -228,14 +228,14 @@ Success metrics:
 - User flows require fewer than 3 clicks for common actions.
 - Diff and session workflows have no “dead ends”.
 Tasks:
-- [ ] - M8 - [extension] Add partial accept for tab suggestions.
-- [ ] - M8 - [extension] Add grouped diffs for multi-file refactors.
-- [ ] - M8 - [extension] Add slash commands and structured workflows.
-- [ ] - M8 - [extension] Add workspace-level “intent/project brief” pinned context.
-- [ ] - M8 - [extension+sidecar] Add session management: named sessions, export/import.
-- [ ] - M8 - [decision] Decide whether AI settings sync is parity or V2 scope.
-- [ ] - M8 - [extension] Improve UX polish (empty states, error states, loading).
-- [ ] - M8 - [security][external-fix][upstream] Update Electron/Chromium/deps to reduce active vulns; flag as upstream VS Code fix with comment/tag.
+- [x] - M8 - [extension] Add partial accept for tab suggestions.
+- [x] - M8 - [extension] Add grouped diffs for multi-file refactors.
+- [x] - M8 - [extension] Add slash commands and structured workflows.
+- [x] - M8 - [extension] Add workspace-level “intent/project brief” pinned context.
+- [x] - M8 - [extension+sidecar] Add session management: named sessions, export/import.
+- [x] - M8 - [decision] Decide whether AI settings sync is parity or V2 scope.
+- [x] - M8 - [extension] Improve UX polish (empty states, error states, loading).
+- [x] - M8 - [security][external-fix][upstream] Update Electron/Chromium/deps to reduce active vulns; flag as upstream VS Code fix with comment/tag.
 
 ### M9 — V2 bets
 Criteria (exit):
@@ -244,13 +244,13 @@ Success metrics:
 - Headless agent can run in CI and produce patches consistently.
 - Enterprise policy bundle prototype validated with a test org.
 Tasks:
-- [ ] - M9 - [sidecar] Implement `pointer-agent` headless/CI mode with patch output.
-- [ ] - M9 - [sidecar] Add policy and secrets handling for CI mode.
-- [ ] - M9 - [sidecar+cloud] Build PR review bot prototype (Bugbot-like).
-- [ ] - M9 - [cloud] Add PR annotations and suggested changes.
-- [ ] - M9 - [cloud] Integrate with GitHub checks.
-- [ ] - M9 - [sidecar] Add enterprise policy bundles and audit log schema.
-- [ ] - M9 - [sidecar] Add provider allowlists and data boundary controls.
-- [ ] - M9 - [extension+sidecar] Add settings sync for AI config if approved in M8.
-- [ ] - M9 - [research] Explore alternative runtime experiments (web-first/light shell).
-- [ ] - M9 - [docs] Document why runtime experiments do not block core delivery.
+- [x] - M9 - [sidecar] Implement `pointer-agent` headless/CI mode with patch output.
+- [x] - M9 - [sidecar] Add policy and secrets handling for CI mode.
+- [x] - M9 - [sidecar+cloud] Build PR review bot prototype (Bugbot-like).
+- [x] - M9 - [cloud] Add PR annotations and suggested changes.
+- [x] - M9 - [cloud] Integrate with GitHub checks.
+- [x] - M9 - [sidecar] Add enterprise policy bundles and audit log schema.
+- [x] - M9 - [sidecar] Add provider allowlists and data boundary controls.
+- [x] - M9 - [extension+sidecar] Add settings sync for AI config if approved in M8.
+- [x] - M9 - [research] Explore alternative runtime experiments (web-first/light shell).
+- [x] - M9 - [docs] Document why runtime experiments do not block core delivery.

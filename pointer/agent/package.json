@@ -1,0 +1,17 @@
+{
+	"name": "@pointer/agent",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"description": "Pointer sidecar agent/router package.",
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"test": "tsx --test test/**/*.test.ts",
+		"pointer-agent": "tsx src/cli/pointer-agent.ts"
+	},
+	"devDependencies": {
+		"@types/node": "^24.5.2",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3"
+	}
+}

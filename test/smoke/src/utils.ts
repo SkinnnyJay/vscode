@@ -7,6 +7,21 @@ import { Suite, Context } from 'mocha';
 import { dirname, join } from 'path';
 import { Application, ApplicationOptions, Logger } from '../../automation';
 
+let fatalWorkbenchStartupFailure: string | undefined;
+let fatalWorkbenchStartupFailureSummary: string | undefined;
+let didLogTestSkipForFatalStartupFailure = false;
+let didLogSuiteSkipForFatalStartupFailure = false;
+
+function isWorkbenchStartupImportFailure(error: unknown): boolean {
+	return String(error).includes('Workbench startup failed due to renderer module import error');
+}
+
+function toSingleLineErrorMessage(error: unknown): string {
+	const value = String(error);
+	const firstLine = value.split('\n', 1)[0]?.trim();
+	return firstLine || value;
+}
+
 export function describeRepeat(n: number, description: string, callback: (this: Suite) => void): void {
 	for (let i = 0; i < n; i++) {
 		describe(`${description} (iteration ${i})`, callback);
@@ -37,6 +52,16 @@ export function installDiagnosticsHandler(logger: Logger, appFn?: () => Applicat
 
 	// Before each test
 	beforeEach(async function () {
+		if (fatalWorkbenchStartupFailure) {
+			if (!didLogTestSkipForFatalStartupFailure) {
+				logger.log(`Skipping test due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+				logger.log('Subsequent tests will be skipped silently while preserving the original startup failure.');
+				didLogTestSkipForFatalStartupFailure = true;
+			}
+			this.skip();
+			return;
+		}
+
 		const testTitle = this.currentTest?.title;
 		logger.log('');
 		logger.log(`>>> Test start: '${testTitle ?? 'unknown'}' <<<`);
@@ -55,9 +80,14 @@ export function installDiagnosticsHandler(logger: Logger, appFn?: () => Applicat
 
 		const failed = currentTest.state === 'failed';
 		const testTitle = currentTest.title;
+		const currentTestError = currentTest.err;
 		logger.log('');
 		if (failed) {
 			logger.log(`>>> !!! FAILURE !!! Test end: '${testTitle}' !!! FAILURE !!! <<<`);
+			if (!fatalWorkbenchStartupFailure && isWorkbenchStartupImportFailure(currentTestError)) {
+				fatalWorkbenchStartupFailure = String(currentTestError);
+				fatalWorkbenchStartupFailureSummary = toSingleLineErrorMessage(currentTestError);
+			}
 		} else {
 			logger.log(`>>> Test end: '${testTitle}' <<<`);
 		}
@@ -81,6 +111,16 @@ export function suiteCrashPath(options: ApplicationOptions, suiteName: string): 
 
 function installAppBeforeHandler(optionsTransform?: (opts: ApplicationOptions) => ApplicationOptions) {
 	before(async function () {
+		if (fatalWorkbenchStartupFailure) {
+			if (!didLogSuiteSkipForFatalStartupFailure) {
+				this.defaultOptions.logger.log(`Skipping suite startup due to prior fatal workbench startup failure: ${fatalWorkbenchStartupFailureSummary}`);
+				this.defaultOptions.logger.log('Subsequent suites will be skipped silently while preserving the original startup failure.');
+				didLogSuiteSkipForFatalStartupFailure = true;
+			}
+			this.skip();
+			return;
+		}
+
 		const suiteName = this.test?.parent?.title ?? 'unknown';
 
 		this.app = createApp({
@@ -88,7 +128,16 @@ function installAppBeforeHandler(optionsTransform?: (opts: ApplicationOptions) =
 			logsPath: suiteLogsPath(this.defaultOptions, suiteName),
 			crashesPath: suiteCrashPath(this.defaultOptions, suiteName)
 		}, optionsTransform);
-		await this.app.start();
+		try {
+			await this.app.start();
+		} catch (error) {
+			if (isWorkbenchStartupImportFailure(error)) {
+				fatalWorkbenchStartupFailure = String(error);
+				fatalWorkbenchStartupFailureSummary = toSingleLineErrorMessage(error);
+			}
+
+			throw error;
+		}
 	});
 }
 

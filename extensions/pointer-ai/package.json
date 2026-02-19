@@ -1,0 +1,511 @@
+{
+	"name": "pointer-ai",
+	"displayName": "Pointer AI",
+	"description": "Pointer first-party AI surface integration.",
+	"version": "0.0.1",
+	"publisher": "pointer",
+	"engines": {
+		"vscode": "^1.110.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:pointer.home",
+		"onView:pointer.contextSent",
+		"onView:pointer.chatSessions",
+		"onView:pointer.chatMessages",
+		"onView:pointer.chatContext",
+		"onView:pointer.patchReview",
+		"onView:pointer.rulesAudit",
+		"onView:pointer.mcp",
+		"onCommand:pointer.openChat",
+		"onCommand:pointer.toggleTab",
+		"onCommand:pointer.tab.cancel",
+		"onCommand:pointer.tab.acceptPartial",
+		"onCommand:pointer.selectModel",
+		"onCommand:pointer.chat.newSession",
+		"onCommand:pointer.chat.renameSession",
+		"onCommand:pointer.chat.deleteSession",
+		"onCommand:pointer.chat.exportSessions",
+		"onCommand:pointer.chat.importSessions",
+		"onCommand:pointer.chat.sendMessage",
+		"onCommand:pointer.chat.cancelMessage",
+		"onCommand:pointer.chat.selectProvider",
+		"onCommand:pointer.chat.selectModel",
+		"onCommand:pointer.chat.attachCurrentFile",
+		"onCommand:pointer.chat.attachSelection",
+		"onCommand:pointer.chat.pinContext",
+		"onCommand:pointer.chat.removePinnedContext",
+		"onCommand:pointer.context.setProjectBrief",
+		"onCommand:pointer.patch.openDiff",
+		"onCommand:pointer.patch.openGroupDiff",
+		"onCommand:pointer.patch.applyFile",
+		"onCommand:pointer.patch.rejectFile",
+		"onCommand:pointer.patch.applyAll",
+		"onCommand:pointer.patch.applyGroup",
+		"onCommand:pointer.context.openExcludes",
+		"onCommand:pointer.rules.refresh",
+		"onCommand:pointer.mcp.refresh",
+		"onCommand:pointer.settings.exportAiConfig",
+		"onCommand:pointer.settings.importAiConfig",
+		"onCommand:pointer.openSettings"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "pointer.openChat",
+				"title": "Pointer: Open Chat",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.toggleTab",
+				"title": "Pointer: Toggle Tab",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.tab.cancel",
+				"title": "Pointer: Cancel Tab Completion",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.tab.acceptPartial",
+				"title": "Pointer: Accept Partial Tab Suggestion",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.selectModel",
+				"title": "Pointer: Select Model",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.newSession",
+				"title": "Pointer: New Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.renameSession",
+				"title": "Pointer: Rename Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.deleteSession",
+				"title": "Pointer: Delete Chat Session",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.exportSessions",
+				"title": "Pointer: Export Sessions",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.importSessions",
+				"title": "Pointer: Import Sessions",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.sendMessage",
+				"title": "Pointer: Send Chat Message",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.cancelMessage",
+				"title": "Pointer: Cancel Chat Message",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.selectProvider",
+				"title": "Pointer: Select Chat Provider",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.selectModel",
+				"title": "Pointer: Select Chat Model",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.attachCurrentFile",
+				"title": "Pointer: Attach Current File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.attachSelection",
+				"title": "Pointer: Attach Selection",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.pinContext",
+				"title": "Pointer: Pin Context",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.chat.removePinnedContext",
+				"title": "Pointer: Remove Pinned Context",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.context.setProjectBrief",
+				"title": "Pointer: Set Project Brief",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.openDiff",
+				"title": "Pointer: Open Patch Diff",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.openGroupDiff",
+				"title": "Pointer: Open Patch Group Diff",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyFile",
+				"title": "Pointer: Apply Patch File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.rejectFile",
+				"title": "Pointer: Reject Patch File",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyAll",
+				"title": "Pointer: Apply All Patch Files",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.patch.applyGroup",
+				"title": "Pointer: Apply Patch Group",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.context.openExcludes",
+				"title": "Pointer: Edit Context Excludes",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.rules.refresh",
+				"title": "Pointer: Refresh Rules Audit",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.mcp.refresh",
+				"title": "Pointer: Refresh MCP Audit",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.openSettings",
+				"title": "Pointer: Open Settings",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.settings.exportAiConfig",
+				"title": "Pointer: Export AI Settings",
+				"category": "Pointer"
+			},
+			{
+				"command": "pointer.settings.importAiConfig",
+				"title": "Pointer: Import AI Settings",
+				"category": "Pointer"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "pointer.settings.exportAiConfig",
+					"when": "view == pointer.home",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.settings.importAiConfig",
+					"when": "view == pointer.home",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.newSession",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.exportSessions",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.importSessions",
+					"when": "view == pointer.chatSessions",
+					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.chat.sendMessage",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.cancelMessage",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.selectProvider",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.chat.selectModel",
+					"when": "view == pointer.chatMessages",
+					"group": "navigation@4"
+				},
+				{
+					"command": "pointer.chat.attachCurrentFile",
+					"when": "view == pointer.chatContext",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.chat.attachSelection",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.chat.pinContext",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@3"
+				},
+				{
+					"command": "pointer.context.setProjectBrief",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@4"
+				},
+				{
+					"command": "pointer.context.openExcludes",
+					"when": "view == pointer.chatContext",
+					"group": "navigation@5"
+				},
+				{
+					"command": "pointer.patch.applyAll",
+					"when": "view == pointer.patchReview",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.patch.openGroupDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
+					"group": "navigation@2"
+				},
+				{
+					"command": "pointer.rules.refresh",
+					"when": "view == pointer.rulesAudit",
+					"group": "navigation"
+				},
+				{
+					"command": "pointer.mcp.refresh",
+					"when": "view == pointer.mcp",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "pointer.chat.renameSession",
+					"when": "view == pointer.chatSessions && viewItem == pointerChatSession",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.chat.deleteSession",
+					"when": "view == pointer.chatSessions && viewItem == pointerChatSession",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.chat.removePinnedContext",
+					"when": "view == pointer.chatContext && viewItem == pointerPinnedContext",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.context.setProjectBrief",
+					"when": "view == pointer.chatContext && viewItem == pointerProjectBrief",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.openDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.applyFile",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.rejectFile",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchFile",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.openGroupDiff",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
+					"group": "inline"
+				},
+				{
+					"command": "pointer.patch.applyGroup",
+					"when": "view == pointer.patchReview && viewItem == pointerPatchGroup",
+					"group": "inline"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "Pointer: Providers",
+				"properties": {
+					"pointer.providers.primary": {
+						"type": "string",
+						"default": "auto",
+						"description": "Primary provider identifier used when a surface does not override provider selection."
+					},
+					"pointer.defaults.chat.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer chat surface."
+					},
+					"pointer.defaults.tab.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer tab completion surface."
+					},
+					"pointer.defaults.agent.provider": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default provider for Pointer agent surface."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Models",
+				"properties": {
+					"pointer.models.default": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model identifier used when a surface does not override model selection."
+					},
+					"pointer.defaults.chat.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer chat surface."
+					},
+					"pointer.defaults.tab.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer tab completion surface."
+					},
+					"pointer.defaults.agent.model": {
+						"type": "string",
+						"default": "auto",
+						"description": "Default model for Pointer agent surface."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Tab Completion",
+				"properties": {
+					"pointer.tab.enabled": {
+						"type": "boolean",
+						"default": true,
+						"description": "Enable or disable Pointer inline tab completions."
+					},
+					"pointer.tab.maxLatencyMs": {
+						"type": "number",
+						"default": 400,
+						"minimum": 50,
+						"description": "Maximum latency budget for tab completion responses before suggestions are dropped from cache."
+					},
+					"pointer.tab.debounceMs": {
+						"type": "number",
+						"default": 80,
+						"minimum": 0,
+						"description": "Debounce delay before sending tab completion requests."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Context",
+				"properties": {
+					"pointer.context.maxFiles": {
+						"type": "number",
+						"default": 8,
+						"minimum": 1,
+						"description": "Maximum number of files to include in automatically assembled context."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Tools and Safety",
+				"properties": {
+					"pointer.tools.terminalPolicy": {
+						"type": "string",
+						"default": "confirm",
+						"enum": ["disabled", "confirm", "allow"],
+						"description": "Default terminal tool execution policy."
+					},
+					"pointer.compatibility.enableCopilotVisibility": {
+						"type": "boolean",
+						"default": false,
+						"description": "When enabled, restores Copilot-related visibility settings for compatibility workflows."
+					}
+				}
+			},
+			{
+				"title": "Pointer: Prompts and Rules",
+				"properties": {
+					"pointer.prompts.rulesProfile": {
+						"type": "string",
+						"default": "workspace",
+						"description": "Default rules profile applied when composing prompts."
+					}
+				}
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "pointer",
+					"title": "Pointer",
+					"icon": "media/pointer-activity.svg"
+				}
+			]
+		},
+		"views": {
+			"pointer": [
+				{
+					"id": "pointer.home",
+					"name": "Pointer"
+				},
+				{
+					"id": "pointer.contextSent",
+					"name": "Context Sent"
+				},
+				{
+					"id": "pointer.chatSessions",
+					"name": "Chat Sessions"
+				},
+				{
+					"id": "pointer.chatMessages",
+					"name": "Messages"
+				},
+				{
+					"id": "pointer.chatContext",
+					"name": "Context Chips"
+				},
+				{
+					"id": "pointer.patchReview",
+					"name": "Patch Review"
+				},
+				{
+					"id": "pointer.rulesAudit",
+					"name": "Rules Audit"
+				},
+				{
+					"id": "pointer.mcp",
+					"name": "MCP"
+				}
+			]
+		}
+	}
+}
